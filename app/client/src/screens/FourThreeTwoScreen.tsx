@@ -13,7 +13,7 @@ type Phase = { kind: "round"; index: number } | { kind: "ae" } | { kind: "done" 
 type RecState = "idle" | "recording" | "transcribing";
 
 /** 4/3/2 流暢性ブロック: 同じ話を4分→(AE)→3分→2分。時間圧タイマー＋ラウンド間の遅延明示フィードバック */
-export function FourThreeTwoScreen(props: { topic: ContentItem }) {
+export function FourThreeTwoScreen(props: { topic: ContentItem; sessionId: string }) {
   const [phase, setPhase] = useState<Phase>({ kind: "round", index: 0 });
   const [recState, setRecState] = useState<RecState>("idle");
   const [transcripts, setTranscripts] = useState<string[]>(["", "", ""]);
@@ -22,6 +22,8 @@ export function FourThreeTwoScreen(props: { topic: ContentItem }) {
   const transcriptsRef = useRef<string[]>(["", "", ""]);
   const [ae, setAe] = useState<AeFeedback | null>(null);
   const [aeLoading, setAeLoading] = useState(false);
+  // Round 1 の発話が空/空白のみで AE フィードバックの取得自体をスキップした場合に立てる
+  const [aeSkippedNoRecording, setAeSkippedNoRecording] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const recorderRef = useRef(new Recorder());
   const timer = useCountdown(ROUNDS[0].seconds);
@@ -34,9 +36,12 @@ export function FourThreeTwoScreen(props: { topic: ContentItem }) {
   // アンマウント時の aborted round_end で使う、現在ラウンド番号の同期ミラー
   // （クリーンアップの deps:[] クロージャは初回描画時の roundIndex のまま古くなるため、ref で最新値を追う）
   const roundIndexRef = useRef(0);
+  // 同じ理由で、round_end の elapsedSec 算出に使う残り時間（timer.remaining）の同期ミラー
+  const remainingRef = useRef(timer.remaining);
 
   const roundIndex = phase.kind === "round" ? phase.index : 0;
   useEffect(() => { roundIndexRef.current = roundIndex; }, [roundIndex]);
+  useEffect(() => { remainingRef.current = timer.remaining; }, [timer.remaining]);
 
   // 録音中に画面を離脱してもマイクが解放されるよう、アンマウント時に停止する。
   // ラウンドが開始済み（round_start 送信済み）のまま離脱した場合は SessionRunner の
@@ -49,7 +54,14 @@ export function FourThreeTwoScreen(props: { topic: ContentItem }) {
       stopPlayback();
       if (roundStartedRef.current) {
         roundStartedRef.current = false;
-        sendSessionEvent("round_end", { block: "four-three-two", round: roundIndexRef.current + 1, aborted: true });
+        const idx = roundIndexRef.current;
+        sendSessionEvent("round_end", props.sessionId, {
+          block: "four-three-two",
+          round: idx + 1,
+          aborted: true,
+          transcript: transcriptsRef.current[idx],
+          elapsedSec: ROUNDS[idx].seconds - remainingRef.current,
+        });
       }
     };
   }, []);
@@ -63,7 +75,7 @@ export function FourThreeTwoScreen(props: { topic: ContentItem }) {
         if (!timer.running && !timer.expired) {
           timer.start();
           roundStartedRef.current = true;
-          sendSessionEvent("round_start", { block: "four-three-two", round: roundIndex + 1 });
+          sendSessionEvent("round_start", props.sessionId, { block: "four-three-two", round: roundIndex + 1 });
         }
       } catch (err) {
         setErrorMsg(`マイクにアクセスできません: ${err instanceof Error ? err.message : String(err)}`);
@@ -95,20 +107,33 @@ export function FourThreeTwoScreen(props: { topic: ContentItem }) {
     timer.pause();
     if (roundStartedRef.current) {
       roundStartedRef.current = false;
-      sendSessionEvent("round_end", { block: "four-three-two", round: roundIndex + 1 });
+      sendSessionEvent("round_end", props.sessionId, {
+        block: "four-three-two",
+        round: roundIndex + 1,
+        transcript: transcriptsRef.current[roundIndex],
+        elapsedSec: ROUNDS[roundIndex].seconds - timer.remaining,
+      });
     }
     if (roundIndex === 0) {
       setPhase({ kind: "ae" });
-      setAeLoading(true);
-      try {
-        const feedback = await fetchAeFeedback(transcriptsRef.current[0], props.topic.title);
-        if (!aliveRef.current) return;
-        setAe(feedback);
-      } catch (err) {
-        if (!aliveRef.current) return;
-        setErrorMsg(err instanceof Error ? err.message : String(err));
-      } finally {
-        if (aliveRef.current) setAeLoading(false);
+      const transcript = transcriptsRef.current[0];
+      if (!transcript.trim()) {
+        // 録音なし/無音のまま終えた場合はAEフィードバックのAPIを呼ばず、専用メッセージだけ出す
+        setAeSkippedNoRecording(true);
+        setAe(null);
+      } else {
+        setAeSkippedNoRecording(false);
+        setAeLoading(true);
+        try {
+          const feedback = await fetchAeFeedback(transcript, props.topic.title);
+          if (!aliveRef.current) return;
+          setAe(feedback);
+        } catch (err) {
+          if (!aliveRef.current) return;
+          setErrorMsg(err instanceof Error ? err.message : String(err));
+        } finally {
+          if (aliveRef.current) setAeLoading(false);
+        }
       }
     } else if (roundIndex < ROUNDS.length - 1) {
       startRound(roundIndex + 1);
@@ -128,6 +153,7 @@ export function FourThreeTwoScreen(props: { topic: ContentItem }) {
       <div>
         <h3>フィードバック（読んだら Round 2 へ）</h3>
         {aeLoading && <p>コーチがフィードバックを書いています…</p>}
+        {aeSkippedNoRecording && <p>録音がなかったのでフィードバックはありません</p>}
         {ae && (
           <div>
             {ae.praise && <p>👏 {ae.praise}</p>}

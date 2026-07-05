@@ -55,8 +55,16 @@ export async function ttsFetch(text: string): Promise<Blob> {
   return res.blob();
 }
 
-export async function sessionStart(): Promise<void> {
-  await fetch("/api/session/start", { method: "POST" });
+/**
+ * sessionId はアプリ起動時に mint するクライアント側セッションUUID（省略可・後方互換）。
+ * converse() が返す会話用 sessionId とは別概念で、ライフサイクル/ブロック/ラウンドイベントの突合に使う。
+ */
+export async function sessionStart(sessionId?: string): Promise<void> {
+  await fetch("/api/session/start", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ sessionId }),
+  });
 }
 
 export async function sessionEnd(sessionId: string): Promise<void> {
@@ -77,7 +85,7 @@ export function sessionEndKeepalive(sessionId: string): void {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ sessionId }),
     keepalive: true,
-  });
+  }).catch(() => {});
 }
 
 export type ContentItem = { id: string; kind: "topic" | "scenario"; title: string; titleJa: string; hints: string[] };
@@ -125,12 +133,13 @@ export async function fetchReflection(): Promise<Reflection> {
 
 export function sendSessionEvent(
   type: "block_start" | "block_end" | "round_start" | "round_end",
+  sessionId: string | undefined,
   meta?: Record<string, unknown>,
 ): void {
   // 進行イベントは fire-and-forget（記録失敗でセッションを止めない）
   void fetch("/api/session/event", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ type, meta }),
-  });
+    body: JSON.stringify({ type, sessionId, meta }),
+  }).catch(() => {});
 }

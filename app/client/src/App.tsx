@@ -10,22 +10,27 @@ export function App() {
   const [health, setHealth] = useState<Health | null>(null);
   const [serverDown, setServerDown] = useState(false);
   const [mode, setMode] = useState<Mode>("start");
-  const sessionIdRef = useRef<string | undefined>(undefined);
+  // このタブのセッションを識別するUUID。ライフサイクル/ブロック/ラウンドイベントは
+  // モードに関わらずすべてこのIDで記録する（converse() が返す会話用sessionIdとは別概念。そちらは変更しない）
+  const [sessionId] = useState(() => crypto.randomUUID());
+  // StrictMode の開発時二重マウントで session_start が重複記録されないようにする冪等ガード
+  const startedRef = useRef(false);
 
   useEffect(() => {
     getHealth()
       .then((h) => { setHealth(h); setServerDown(false); })
       .catch(() => { setHealth(null); setServerDown(true); });
-    sessionStart();
-    const onPageHide = () => {
-      if (sessionIdRef.current) sessionEndKeepalive(sessionIdRef.current);
-    };
+    if (!startedRef.current) {
+      startedRef.current = true;
+      sessionStart(sessionId);
+    }
+    const onPageHide = () => sessionEndKeepalive(sessionId);
     window.addEventListener("pagehide", onPageHide);
     return () => {
       window.removeEventListener("pagehide", onPageHide);
-      if (sessionIdRef.current) sessionEnd(sessionIdRef.current);
+      sessionEnd(sessionId);
     };
-  }, []);
+  }, [sessionId]);
 
   return (
     <main style={{ maxWidth: 640, margin: "2rem auto", fontFamily: "system-ui", padding: "0 1rem" }}>
@@ -54,9 +59,9 @@ export function App() {
         <p style={{ color: "darkorange" }}>OPENAI_API_KEY 未設定のため TTS は say フォールバックです</p>
       )}
       {mode === "start" && <StartScreen onSelect={setMode} />}
-      {mode === "session60" && <SessionRunner minutes={60} onExit={() => setMode("start")} />}
-      {mode === "session30" && <SessionRunner minutes={30} onExit={() => setMode("start")} />}
-      {mode === "free" && <FreeTalkScreen onSessionId={(id) => { sessionIdRef.current = id; }} />}
+      {mode === "session60" && <SessionRunner minutes={60} sessionId={sessionId} onExit={() => setMode("start")} />}
+      {mode === "session30" && <SessionRunner minutes={30} sessionId={sessionId} onExit={() => setMode("start")} />}
+      {mode === "free" && <FreeTalkScreen />}
     </main>
   );
 }

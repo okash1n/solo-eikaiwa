@@ -8,7 +8,7 @@ import { RoleplayScreen } from "./RoleplayScreen";
 import { ShadowingScreen } from "./ShadowingScreen";
 
 /** メニューを取得し、ブロックを順番に進行させる。ブロックタイマーと進行イベント記録を持つ */
-export function SessionRunner(props: { minutes: 60 | 30; onExit: () => void }) {
+export function SessionRunner(props: { minutes: 60 | 30; sessionId: string; onExit: () => void }) {
   const [menu, setMenu] = useState<Menu | null>(null);
   const [index, setIndex] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
@@ -28,7 +28,7 @@ export function SessionRunner(props: { minutes: 60 | 30; onExit: () => void }) {
         timer.reset(first.minutes * 60);
         timer.start();
         openBlockRef.current = { id: first.id, kind: first.kind };
-        sendSessionEvent("block_start", { blockId: first.id, kind: first.kind });
+        sendSessionEvent("block_start", props.sessionId, { blockId: first.id, kind: first.kind });
       })
       .catch((err) => setErrorMsg(err instanceof Error ? err.message : String(err)));
   }
@@ -46,7 +46,7 @@ export function SessionRunner(props: { minutes: 60 | 30; onExit: () => void }) {
       const open = openBlockRef.current;
       if (open) {
         openBlockRef.current = null;
-        sendSessionEvent("block_end", { blockId: open.id, kind: open.kind, aborted: true });
+        sendSessionEvent("block_end", props.sessionId, { blockId: open.id, kind: open.kind, aborted: true });
       }
     };
   }, []);
@@ -65,7 +65,7 @@ export function SessionRunner(props: { minutes: 60 | 30; onExit: () => void }) {
   const isLast = index === menu.blocks.length - 1;
 
   function nextBlock() {
-    sendSessionEvent("block_end", { blockId: block.id, kind: block.kind });
+    sendSessionEvent("block_end", props.sessionId, { blockId: block.id, kind: block.kind });
     openBlockRef.current = null;
     if (isLast) {
       props.onExit();
@@ -76,7 +76,7 @@ export function SessionRunner(props: { minutes: 60 | 30; onExit: () => void }) {
     timer.reset(next.minutes * 60);
     timer.start();
     openBlockRef.current = { id: next.id, kind: next.kind };
-    sendSessionEvent("block_start", { blockId: next.id, kind: next.kind });
+    sendSessionEvent("block_start", props.sessionId, { blockId: next.id, kind: next.kind });
   }
 
   return (
@@ -86,7 +86,7 @@ export function SessionRunner(props: { minutes: 60 | 30; onExit: () => void }) {
         {timer.expired && " — 時間切れ（キリのいいところで次へ）"}
       </p>
       <h2 style={{ fontSize: "1.1rem" }}>{block.title}</h2>
-      <BlockBody block={block} />
+      <BlockBody block={block} sessionId={props.sessionId} />
       <hr style={{ margin: "1.5rem 0" }} />
       <button onClick={nextBlock} style={{ padding: "0.8rem 1.4rem", fontSize: "1rem", cursor: "pointer" }}>
         {isLast ? "✅ セッションを終える" : "次のブロックへ →"}
@@ -95,13 +95,13 @@ export function SessionRunner(props: { minutes: 60 | 30; onExit: () => void }) {
   );
 }
 
-function BlockBody({ block }: { block: MenuBlock }) {
+function BlockBody({ block, sessionId }: { block: MenuBlock; sessionId: string }) {
   switch (block.kind) {
     case "chunk-placeholder":
       return <ChunkPlaceholderScreen />;
     case "four-three-two":
       return block.params.topic ? (
-        <FourThreeTwoScreen topic={block.params.topic} />
+        <FourThreeTwoScreen topic={block.params.topic} sessionId={sessionId} />
       ) : (
         <p>トピックがありません</p>
       );
