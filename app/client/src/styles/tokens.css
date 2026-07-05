@@ -1,9 +1,9 @@
 /* デザイントークン — 静かなフォーカス系。値の変更はこのファイルでのみ行う */
 :root {
   /* 配色: ウォームグレー3層 + テキスト2階調 + アクセント1色 + 情報色（彩度控えめ） */
-  --bg: #faf9f7;
+  --bg: #f4f2ee;
   --surface: #ffffff;
-  --border: #e7e4df;
+  --border: #e5e1da;
   --text: #1f1e1c;
   --text-muted: #6f6b64;
   --accent: #5558c8;

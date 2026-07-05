@@ -43,14 +43,25 @@ export function App() {
   }
 
   return (
-    <main className="app">
-      <div className="app-header">
-        <h1 className="app-brand">learn-english</h1>
-        <span className="app-header-spacer" />
-        {mode.kind !== "start" && (
-          <Button variant="ghost" onClick={() => setMode({ kind: "start" })}>← メニューに戻る</Button>
-        )}
-      </div>
+    <>
+      <header className="app-topbar">
+        <div className="topbar-inner">
+          <h1 className="app-brand"><span className="brand-mark" aria-hidden="true" />learn-english</h1>
+          <span className="app-header-spacer" />
+          {mode.kind === "session" ? (
+            <Button variant="ghost" onClick={() => setMode({ kind: "start" })}>← メニューに戻る</Button>
+          ) : (
+            <nav className="topbar-nav">
+              {mode.kind !== "start" && (
+                <Button variant="ghost" onClick={() => setMode({ kind: "start" })}>← 戻る</Button>
+              )}
+              <Button variant="secondary" onClick={() => setMode({ kind: "free" })}>💬 自由会話</Button>
+              <Button variant="secondary" onClick={() => setMode({ kind: "library" })}>📚 ライブラリ</Button>
+            </nav>
+          )}
+        </div>
+      </header>
+      <main className="app">
       {serverDown && (
         <Banner kind="error">APIサーバに接続できません — `cd app && bun run dev` で起動してください</Banner>
       )}
@@ -64,8 +75,17 @@ export function App() {
       {mode.kind === "session" && (
         <SessionRunner source={mode.source} sessionId={sessionId} onExit={() => setMode({ kind: "start" })} />
       )}
-      {mode.kind === "free" && <FreeTalkScreen />}
+      {mode.kind === "free" && (
+        <div className="stack">
+          <div className="hero">
+            <h2 className="hero-title">自由会話</h2>
+            <p className="hero-date">英語でなんでも話しかけてください — 録音ボタンで開始・停止</p>
+          </div>
+          <FreeTalkScreen />
+        </div>
+      )}
       {mode.kind === "library" && <LibraryScreen />}
-    </main>
+      </main>
+    </>
   );
 }
