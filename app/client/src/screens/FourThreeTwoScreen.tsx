@@ -33,15 +33,15 @@ type PrepState = "loading" | "ready" | "error";
  */
 export function FourThreeTwoScreen(props: { topic: ContentItem; sessionId: string; roundsSec?: number[] }) {
   const roundsSec =
-    props.roundsSec && props.roundsSec.length === 3 && props.roundsSec.every((s) => s > 0)
+    props.roundsSec && props.roundsSec.length >= 2 && props.roundsSec.every((s) => s > 0)
       ? props.roundsSec
       : DEFAULT_ROUNDS_SEC;
 
   const [phase, setPhase] = useState<Phase>({ kind: "prep" });
   const [recState, setRecState] = useState<RecState>("idle");
-  const [transcripts, setTranscripts] = useState<string[]>(["", "", ""]);
+  const [transcripts, setTranscripts] = useState<string[]>(() => Array(roundsSec.length).fill(""));
   // setState は非同期に反映されるため、finishRound が直後に読む用の同期ミラーを持つ
-  const transcriptsRef = useRef<string[]>(["", "", ""]);
+  const transcriptsRef = useRef<string[]>(Array(roundsSec.length).fill(""));
   const [ae, setAe] = useState<AeFeedback | null>(null);
   const [aeLoading, setAeLoading] = useState(false);
   const [aeSkippedNoRecording, setAeSkippedNoRecording] = useState(false);
@@ -207,7 +207,7 @@ export function FourThreeTwoScreen(props: { topic: ContentItem; sessionId: strin
         <h3>準備 — {props.topic.title}</h3>
         {props.topic.titleJa && <p style={{ color: "#666" }}>{props.topic.titleJa}</p>}
         <p style={{ color: "#666" }}>
-          これから同じ話を {roundsSec.map(minLabel).join("→")} で3回話します。まず使えそうな表現と骨組みを確認してください（目安 {minLabel(PREP_SECONDS)}）。
+          これから同じ話を {roundsSec.map(minLabel).join("→")} で{roundsSec.length}回話します。まず使えそうな表現と骨組みを確認してください（目安 {minLabel(PREP_SECONDS)}）。
         </p>
         <p style={{ fontVariantNumeric: "tabular-nums" }}>⏱ 準備 {formatMmSs(prepTimer.remaining)}{prepTimer.expired && " — そろそろ始めましょう"}</p>
         <ul>
@@ -295,7 +295,7 @@ export function FourThreeTwoScreen(props: { topic: ContentItem; sessionId: strin
   }
 
   if (phase.kind === "done") {
-    return <p>4/3/2 完了！同じ話を3回、少しずつ速く話せました。</p>;
+    return <p>4/3/2 完了！同じ話を{roundsSec.length}回、少しずつ速く話せました。</p>;
   }
 
   return (
@@ -303,7 +303,7 @@ export function FourThreeTwoScreen(props: { topic: ContentItem; sessionId: strin
       <h3>
         Round {roundIndex + 1}（{minLabel(roundsSec[roundIndex])}） — {props.topic.title}
       </h3>
-      <p style={{ color: "#666" }}>{LISTENERS[roundIndex]}</p>
+      <p style={{ color: "#666" }}>{LISTENERS[roundIndex % LISTENERS.length]}</p>
       <ul>
         {props.topic.hints.map((h, i) => (
           <li key={i}>{h}</li>

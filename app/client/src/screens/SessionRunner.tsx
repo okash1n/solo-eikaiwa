@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { fetchMenu, sendSessionEvent, type Menu, type MenuBlock } from "../api";
+import { fetchMenu, fetchQuickMenu, sendSessionEvent, type Menu, type MenuBlock, type QuickDrillKind } from "../api";
 import { formatMmSs, useCountdown } from "../useCountdown";
 import { ChunkPlaceholderScreen } from "./ChunkPlaceholderScreen";
 import { FourThreeTwoScreen } from "./FourThreeTwoScreen";
@@ -8,8 +8,10 @@ import { RoleplayScreen } from "./RoleplayScreen";
 import { ShadowingScreen } from "./ShadowingScreen";
 import { WarmupReadingScreen } from "./WarmupReadingScreen";
 
+export type MenuSource = { type: "daily"; minutes: 60 | 30 } | { type: "quick"; drill: QuickDrillKind };
+
 /** メニューを取得し、ブロックを順番に進行させる。ブロックタイマーと進行イベント記録を持つ */
-export function SessionRunner(props: { minutes: 60 | 30; sessionId: string; onExit: () => void }) {
+export function SessionRunner(props: { source: MenuSource; sessionId: string; onExit: () => void }) {
   const [menu, setMenu] = useState<Menu | null>(null);
   const [index, setIndex] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
@@ -22,7 +24,8 @@ export function SessionRunner(props: { minutes: 60 | 30; sessionId: string; onEx
 
   function loadMenu() {
     setErrorMsg("");
-    fetchMenu(props.minutes)
+    const fetching = props.source.type === "daily" ? fetchMenu(props.source.minutes) : fetchQuickMenu(props.source.drill);
+    fetching
       .then((m) => {
         setMenu(m);
         const first = m.blocks[0];
@@ -39,7 +42,7 @@ export function SessionRunner(props: { minutes: 60 | 30; sessionId: string; onEx
     initedRef.current = true;
     loadMenu();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.minutes]);
+  }, []);
 
   // アンマウント時（例: 「← メニューに戻る」での途中離脱）に開いたブロックがあれば block_end を1回だけ送る
   useEffect(() => {

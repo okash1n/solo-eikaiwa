@@ -169,3 +169,34 @@ export function sendSessionEvent(
     body: JSON.stringify({ type, sessionId, meta }),
   }).catch(() => {});
 }
+
+export type QuickDrillKind = "warmup" | "ftt-mini" | "roleplay" | "shadowing";
+
+export async function fetchQuickMenu(kind: QuickDrillKind): Promise<Menu> {
+  const res = await fetch(`/api/menu/quick?kind=${kind}`);
+  if (!res.ok) throw new Error(`quick menu failed: ${await extractErrorMessage(res)}`);
+  return res.json();
+}
+
+export async function fetchPracticeDays(): Promise<string[]> {
+  const res = await fetch("/api/progress/days");
+  if (!res.ok) throw new Error(`practice days failed: ${await extractErrorMessage(res)}`);
+  return ((await res.json()) as { days: string[] }).days;
+}
+
+export type Settings = { anchor: string };
+
+export async function fetchSettings(): Promise<Settings> {
+  const res = await fetch("/api/settings");
+  if (!res.ok) throw new Error(`settings failed: ${await extractErrorMessage(res)}`);
+  return res.json();
+}
+
+export async function saveSettings(s: Settings): Promise<void> {
+  const res = await fetch("/api/settings", {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(s),
+  });
+  if (!res.ok) throw new Error(`settings save failed: ${await extractErrorMessage(res)}`);
+}
