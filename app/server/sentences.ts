@@ -87,7 +87,10 @@ export function makeSentenceStore(db: Database, sentences: Sentence[]): Sentence
           const da = srs.get(a.no)!.due, dbb = srs.get(b.no)!.due;
           return da < dbb ? -1 : da > dbb ? 1 : a.no - b.no;
         });
-      const fresh = sentences.filter((s) => !srs.has(s.no)).slice(0, newCount);
+      const fresh = sentences
+        .filter((s) => !srs.has(s.no))
+        .sort((a, b) => a.no - b.no)
+        .slice(0, newCount);
       return [...reviews, ...fresh].map((s) => ({ ...s, srs: srs.get(s.no) ?? null }));
     },
 

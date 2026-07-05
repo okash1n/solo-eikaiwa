@@ -123,4 +123,16 @@ describe("sentences / queue", () => {
     expect(q.map((s) => s.no)).toEqual([1, 2, 3]);
     expect(q[0].srs).toBeNull();
   });
+
+  test("入力配列が no 順でなくても、新規は no 昇順で返す", () => {
+    // 入力順序が [3, 1, 2] だが、キューは [1, 2] の順（新規枠2件）
+    const outOfOrder: Sentence[] = [
+      { no: 3, category_no: 1, category: "現在形", domain: "daily", en: "Three", ja: "3番", note: "" },
+      { no: 1, category_no: 1, category: "現在形", domain: "daily", en: "One", ja: "1番", note: "" },
+      { no: 2, category_no: 1, category: "現在形", domain: "business", en: "Two", ja: "2番", note: "" },
+    ];
+    const store = makeSentenceStore(openDb(":memory:"), outOfOrder);
+    const q = store.queue(2, "2026-07-06");
+    expect(q.map((s) => s.no)).toEqual([1, 2]);
+  });
 });
