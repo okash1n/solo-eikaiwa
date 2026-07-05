@@ -1,0 +1,175 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* OS のダークモード設定に追従する（.dark クラスは使わない — tokens.css と同じ方式） */
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* 静かなフォーカス系パレット — tokens.css と同じ値を shadcn のセマンティック変数名にマッピング */
+:root {
+    --background: #f4f2ee;
+    --foreground: #1f1e1c;
+    --card: #ffffff;
+    --card-foreground: #1f1e1c;
+    --popover: #ffffff;
+    --popover-foreground: #1f1e1c;
+    --primary: #1e9c5a;
+    --primary-foreground: #ffffff;
+    --secondary: #ffffff;
+    --secondary-foreground: #1f1e1c;
+    --muted: #f4f2ee;
+    --muted-foreground: #6f6b64;
+    --accent: #e4f4ea;
+    --accent-foreground: #1e9c5a;
+    --destructive: #a03d33;
+    --border: #e5e1da;
+    --input: #e5e1da;
+    --ring: #1e9c5a;
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 0.5rem;
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+
+    /* ドリル用アイコンタイル（tokens.css と同じ値。tokens.css 移行完了後もここが正） */
+    --tile-green-bg: #e4f4ea;
+    --tile-green-fg: #1e9c5a;
+    --tile-purple-bg: #efeafb;
+    --tile-purple-fg: #7c5cd6;
+    --tile-orange-bg: #fdeede;
+    --tile-orange-fg: #d9791f;
+    --tile-blue-bg: #e5f0fb;
+    --tile-blue-fg: #2f7cd6;
+
+    /* 情報色（彩度控えめ） */
+    --ok: #33683f;
+    --ok-soft: #e7f2ea;
+    --warn: #8a5d14;
+    --warn-soft: #f7edd8;
+    --danger: #a03d33;
+    --danger-soft: #f7e5e2;
+
+    /* 英文チャンク・音読素材の行間 */
+    --lh-reading: 1.7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #181716;
+    --foreground: #edeae5;
+    --card: #201f1d;
+    --card-foreground: #edeae5;
+    --popover: #201f1d;
+    --popover-foreground: #edeae5;
+    --primary: #4ec584;
+    --primary-foreground: #0c1f14;
+    --secondary: #201f1d;
+    --secondary-foreground: #edeae5;
+    --muted: #181716;
+    --muted-foreground: #a29d95;
+    --accent: #1d3527;
+    --accent-foreground: #4ec584;
+    --destructive: #e08d81;
+    --border: #363330;
+    --input: #363330;
+    --ring: #4ec584;
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+
+    --tile-green-bg: #1d3527;
+    --tile-green-fg: #4ec584;
+    --tile-purple-bg: #2a2440;
+    --tile-purple-fg: #a992e8;
+    --tile-orange-bg: #3a2c1a;
+    --tile-orange-fg: #e8a55c;
+    --tile-blue-bg: #1c2d40;
+    --tile-blue-fg: #6aa8e8;
+
+    --ok: #86c295;
+    --ok-soft: #22331f;
+    --warn: #d9ab61;
+    --warn-soft: #3a301b;
+    --danger: #e08d81;
+    --danger-soft: #3f2623;
+  }
+}
+
+/* --lh-reading を Tailwind ユーティリティとしても使えるようにする（.leading-reading） */
+@utility leading-reading {
+  line-height: var(--lh-reading);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
+  html {
+    @apply font-sans;
+    }
+}

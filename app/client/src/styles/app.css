@@ -14,7 +14,9 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* アプリシェル */
-.app { max-width: 680px; margin: 0 auto; padding: var(--sp-5) var(--sp-4) var(--sp-7); }
+.app { max-width: 920px; margin: 0 auto; padding: var(--sp-5) var(--sp-5) var(--sp-7); flex: 1; min-width: 0; }
+/* セッション系（Screenラッパ）は読みやすさ優先で幅を絞る */
+.screen { max-width: 700px; margin: 0 auto; }
 .app-topbar {
   position: sticky; top: 0; z-index: 10;
   background: color-mix(in srgb, var(--surface) 85%, transparent);
@@ -135,10 +137,11 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 .calendar-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-3); }
 .calendar-head h3 { font-size: var(--fs-md); margin: 0; }
 /* GitHub風: 列=週(8本)・各列は上から月→日の7日 */
-.cal { display: flex; gap: 5px; justify-content: center; }
+.cal { display: flex; gap: 5px; }
 .cal-weekdays { display: flex; flex-direction: column; gap: 5px; margin-right: var(--sp-1); }
 .cal-weekdays span { height: 18px; line-height: 18px; font-size: 10px; color: var(--text-muted); }
 .cal-week { display: flex; flex-direction: column; gap: 5px; }
+.cal-week-label { height: 14px; line-height: 14px; font-size: 10px; color: var(--text-muted); white-space: nowrap; }
 .day { width: 18px; height: 18px; border-radius: 5px; background: var(--border); }
 .day.is-done { background: var(--accent); }
 .day.is-today { outline: 2px solid var(--accent); outline-offset: 1px; }

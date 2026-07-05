@@ -29,11 +29,26 @@ function localYmd(d: Date): string {
 function PracticeCalendar({ days }: { days: string[] }) {
   const set = new Set(days);
   const today = new Date();
+  // 横幅に入るだけ週列を表示（セル18px+隙間5px=23px/列、曜日ラベル分を差し引く）
+  const calRef = useRef<HTMLDivElement | null>(null);
+  const [weekCount, setWeekCount] = useState(8);
+  useEffect(() => {
+    const el = calRef.current;
+    if (!el) return;
+    const compute = () => {
+      const w = el.clientWidth;
+      setWeekCount(Math.max(8, Math.min(52, Math.floor((w - 30) / 23))));
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   // 今週の月曜（getDay: 日=0..土=6 → 月曜始まりに補正）
   const monday = new Date(today);
   monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
   const weeks: Array<Array<{ ymd: string; done: boolean; isToday: boolean; isFuture: boolean }>> = [];
-  for (let w = 7; w >= 0; w--) {
+  for (let w = weekCount - 1; w >= 0; w--) {
     const col: (typeof weeks)[number] = [];
     for (let d = 0; d < 7; d++) {
       const date = new Date(monday);
@@ -47,25 +62,34 @@ function PracticeCalendar({ days }: { days: string[] }) {
     <div className="card">
       <div className="calendar-head">
         <h3>練習日</h3>
-        <span className="text-sm text-muted">直近8週</span>
+        <span className="text-sm text-muted">直近{weekCount}週</span>
       </div>
-      <div className="cal">
+      <div className="cal" ref={calRef}>
         <div className="cal-weekdays">
+          <span className="cal-week-label" aria-hidden="true" />
           {WEEKDAYS_JA.map((w) => (
             <span key={w}>{w}</span>
           ))}
         </div>
-        {weeks.map((col, i) => (
-          <div key={i} className="cal-week">
-            {col.map((c) => (
-              <div
-                key={c.ymd}
-                title={c.isFuture ? undefined : c.ymd}
-                className={`day${c.done ? " is-done" : ""}${c.isToday ? " is-today" : ""}${c.isFuture ? " is-future" : ""}`}
-              />
-            ))}
-          </div>
-        ))}
+        {weeks.map((col, i) => {
+          const mondayLabel = (() => {
+            const [, m, d] = col[0].ymd.split("-");
+            return `${Number(m)}/${Number(d)}`;
+          })();
+          return (
+            <div key={i} className="cal-week">
+              {/* 週頭（月曜）の日付。全列だと詰まるので隔週で表示 */}
+              <span className="cal-week-label">{i % 2 === 0 ? mondayLabel : ""}</span>
+              {col.map((c) => (
+                <div
+                  key={c.ymd}
+                  title={c.isFuture ? undefined : c.ymd}
+                  className={`day${c.done ? " is-done" : ""}${c.isToday ? " is-today" : ""}${c.isFuture ? " is-future" : ""}`}
+                />
+              ))}
+            </div>
+          );
+        })}
       </div>
       <div className="cal-legend text-sm text-muted">
         <span className="day is-done" /> 練習した日

@@ -11,10 +11,10 @@ export function ProgressDots({ current, total }: { current: number; total: numbe
   );
 }
 
-/** 画面シェル: タイトル行 + 右側 meta スロット（進捗ドット・タイマーチップ等） */
+/** 画面シェル: タイトル行 + 右側 meta スロット（進捗ドット・タイマーチップ等）。読み物系は幅を絞る */
 export function Screen({ title, meta, children }: { title?: ReactNode; meta?: ReactNode; children: ReactNode }) {
   return (
-    <div>
+    <div className="screen">
       {(title || meta) && (
         <div className="screen-header">
           {title && <h2 className="screen-title">{title}</h2>}
