@@ -126,8 +126,12 @@ export function FourThreeTwoScreen(props: { topic: ContentItem; sessionId: strin
       });
       if (!aliveRef.current) return;
       setModelText(text);
-      await playBlob(blob);
-      if (aliveRef.current) setModelState("ready");
+      setModelState("playing");
+      try {
+        await playBlob(blob);
+      } finally {
+        if (aliveRef.current) setModelState("ready");
+      }
     } catch (err) {
       if (!aliveRef.current) return;
       setErrorMsg(err instanceof Error ? err.message : String(err));
