@@ -8,10 +8,13 @@ import { generateAeFeedback, generateModelTalk, generatePrepPack, generateReflec
 import { listPracticeDays, readEvents } from "./session-log";
 import { readSettings, writeSettings } from "./settings";
 import { makeFetchHandler, type RouteDeps } from "./routes";
+import { makeLibraryStore, openDb } from "./db";
 
 ensureDirs();
 const PORT = 3111;
 const HOSTNAME = "127.0.0.1";
+
+const libraryStore = makeLibraryStore(openDb());
 
 const realDeps: RouteDeps = {
   transcribe: transcribeAudio,
@@ -25,8 +28,10 @@ const realDeps: RouteDeps = {
   modelTalk: async (topicId) => {
     const topic = loadContent(TOPICS_DIR).find((t) => t.id === topicId);
     if (!topic) return null;
-    return generateModelTalk({ topicTitle: topic.title, hints: topic.hints });
+    const talk = await generateModelTalk({ topicTitle: topic.title, hints: topic.hints });
+    return { text: talk.text, topicTitle: topic.title };
   },
+  libraryStore,
   reflection: () => generateReflection({ events: readEvents(sessionLogPath(new Date())) }),
   scenarioPrompt: (scenarioId) => {
     const sc = loadContent(SCENARIOS_DIR).find((s) => s.id === scenarioId);

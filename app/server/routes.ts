@@ -9,6 +9,7 @@ import { checkHealth } from "./health";
 import { QUICK_KINDS, type Menu, type QuickKind } from "./menu";
 import type { AeFeedback, Reflection, PrepPack } from "./coach";
 import type { Settings } from "./settings";
+import type { LibraryStore } from "./db";
 
 /**
  * HTTP ハンドラが依存する副作用を注入可能にする境界。
@@ -24,8 +25,10 @@ export type RouteDeps = {
   recordingsDir?: string;
   buildMenu: (minutes: 60 | 30) => Menu;
   aeFeedback: (args: { transcript: string; topicTitle: string }) => Promise<AeFeedback>;
-  /** 未知の topicId は null（ルートは404を返す） */
-  modelTalk: (topicId: string) => Promise<{ text: string } | null>;
+  /** 未知の topicId は null（ルートは404を返す）。topicTitle はライブラリ記録用（レスポンスには含めない） */
+  modelTalk: (topicId: string) => Promise<{ text: string; topicTitle?: string } | null>;
+  /** モデルトークの記録と一覧（実体は db.ts、テストはフェイク/インメモリ） */
+  libraryStore: LibraryStore;
   reflection: () => Promise<Reflection>;
   /** 未知の scenarioId は null（ルートは400を返す） */
   scenarioPrompt: (scenarioId: string) => string | null;
@@ -129,7 +132,12 @@ async function handleModelTalk(req: Request, deps: RouteDeps): Promise<Response>
   if (!parsed.body.topicId?.trim()) return json({ error: "topicId is required" }, 400);
   const talk = await deps.modelTalk(parsed.body.topicId);
   if (!talk) return json({ error: "unknown topicId" }, 404);
-  return json(talk);
+  deps.libraryStore.saveModelTalk({
+    topicId: parsed.body.topicId,
+    topicTitle: talk.topicTitle ?? "",
+    text: talk.text,
+  });
+  return json({ text: talk.text });
 }
 
 async function handlePrep(req: Request, deps: RouteDeps): Promise<Response> {
@@ -202,6 +210,8 @@ export function makeFetchHandler(deps: RouteDeps): (req: Request) => Promise<Res
       if (req.method === "GET" && url.pathname === "/api/menu/today") return handleMenuToday(url, deps);
       if (req.method === "GET" && url.pathname === "/api/menu/quick") return handleMenuQuick(url, deps);
       if (req.method === "GET" && url.pathname === "/api/progress/days") return json({ days: deps.practiceDays() });
+      if (req.method === "GET" && url.pathname === "/api/library/model-talks")
+        return json({ entries: deps.libraryStore.listModelTalks() });
       if (req.method === "GET" && url.pathname === "/api/settings") return json(deps.getSettings());
       if (req.method === "PUT" && url.pathname === "/api/settings") return await handleSettingsPut(req, deps);
       if (req.method === "POST" && url.pathname === "/api/feedback/ae") return await handleAeFeedback(req, deps);

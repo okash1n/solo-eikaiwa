@@ -57,6 +57,10 @@ function makeTestDeps(overrides: Partial<RouteDeps> = {}): {
     practiceDays: () => ["2026-07-01", "2026-07-03"],
     getSettings: () => ({ anchor: "" }),
     saveSettings: (_s: { anchor: string }) => {},
+    libraryStore: {
+      saveModelTalk: (_e: { topicId: string; topicTitle: string; text: string }) => {},
+      listModelTalks: () => [],
+    },
     ...overrides,
   };
   return { deps, logFile, recordingsDir };
@@ -624,5 +628,52 @@ describe("routes: quick menu / progress / settings", () => {
       method: "PUT", headers: { "content-type": "application/json" }, body: "{broken",
     }));
     expect(bad3.status).toBe(400);
+  });
+});
+
+describe("library", () => {
+  test("model-talk 成功時に libraryStore.saveModelTalk が topicTitle 付きで呼ばれ、レスポンスは {text} のみ", async () => {
+    const saved: Array<{ topicId: string; topicTitle: string; text: string }> = [];
+    const { deps } = makeTestDeps({
+      modelTalk: async (topicId: string) =>
+        topicId === "known-topic" ? { text: "model talk", topicTitle: "Known Topic" } : null,
+      libraryStore: { saveModelTalk: (e) => saved.push(e), listModelTalks: () => [] },
+    });
+    const res = await makeFetchHandler(deps)(
+      new Request("http://x/api/coach/model-talk", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ topicId: "known-topic" }),
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ text: "model talk" }); // topicTitle を漏らさない
+    expect(saved).toEqual([{ topicId: "known-topic", topicTitle: "Known Topic", text: "model talk" }]);
+  });
+
+  test("unknown topicId (404) では保存しない", async () => {
+    const saved: unknown[] = [];
+    const { deps } = makeTestDeps({
+      libraryStore: { saveModelTalk: (e) => saved.push(e), listModelTalks: () => [] },
+    });
+    const res = await makeFetchHandler(deps)(
+      new Request("http://x/api/coach/model-talk", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ topicId: "nope" }),
+      }),
+    );
+    expect(res.status).toBe(404);
+    expect(saved).toHaveLength(0);
+  });
+
+  test("GET /api/library/model-talks が {entries} を返す", async () => {
+    const entry = { id: 1, createdAt: "2026-07-06T00:00:00.000Z", topicId: "t1", topicTitle: "T", text: "talk" };
+    const { deps } = makeTestDeps({
+      libraryStore: { saveModelTalk: () => {}, listModelTalks: () => [entry] },
+    });
+    const res = await makeFetchHandler(deps)(new Request("http://x/api/library/model-talks"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ entries: [entry] });
   });
 });
