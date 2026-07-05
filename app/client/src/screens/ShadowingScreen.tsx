@@ -1,28 +1,44 @@
-import { useEffect, useState } from "react";
-import { fetchModelTalk, ttsFetch, type ContentItem } from "../api";
+import { useEffect, useRef, useState } from "react";
+import { prefetchModelTalkAudio, type ContentItem } from "../api";
 import { playBlob, stopPlayback } from "../audio";
 
-type State = "init" | "loading" | "ready" | "playing" | "error";
+type State = "script" | "audio" | "ready" | "playing" | "error";
 
 /** モデルトークをTTSで聞きながら重ねて音読するシャドーイングブロック（知覚ドリル） */
 export function ShadowingScreen(props: { topic: ContentItem }) {
-  const [state, setState] = useState<State>("init");
+  const [state, setState] = useState<State>("script");
   const [text, setText] = useState("");
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const aliveRef = useRef(true);
+  const fetchedRef = useRef(false);
 
-  // 再生中に画面を離脱しても音声が解放されるよう、アンマウント時に停止する
-  useEffect(() => () => { stopPlayback(); }, []);
+  useEffect(() => {
+    aliveRef.current = true;
+    if (!fetchedRef.current) {
+      fetchedRef.current = true;
+      prepare();
+    }
+    return () => {
+      aliveRef.current = false;
+      stopPlayback();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function prepare() {
-    setState("loading");
     setErrorMsg("");
+    setState("script");
     try {
-      const talk = await fetchModelTalk(props.topic.id);
-      setText(talk);
-      setAudioBlob(await ttsFetch(talk));
+      const { text: t, blob } = await prefetchModelTalkAudio(props.topic.id, (stage) => {
+        if (aliveRef.current) setState(stage);
+      });
+      if (!aliveRef.current) return;
+      setText(t);
+      setAudioBlob(blob);
       setState("ready");
     } catch (err) {
+      if (!aliveRef.current) return;
       setErrorMsg(err instanceof Error ? err.message : String(err));
       setState("error");
     }
@@ -34,9 +50,10 @@ export function ShadowingScreen(props: { topic: ContentItem }) {
     try {
       await playBlob(audioBlob);
     } catch (err) {
+      if (!aliveRef.current) return;
       setErrorMsg(err instanceof Error ? err.message : String(err));
     }
-    setState("ready");
+    if (aliveRef.current) setState("ready");
   }
 
   return (
@@ -44,10 +61,13 @@ export function ShadowingScreen(props: { topic: ContentItem }) {
       <p style={{ color: "#666" }}>
         音声に少し遅れてかぶせるように声に出して繰り返します（シャドーイング）。まず1回聞くだけでもOK。
       </p>
-      {(state === "init" || state === "error") && (
-        <button onClick={prepare} style={{ padding: "0.6rem 1.2rem" }}>モデルトークを生成する</button>
+      {state === "script" && <p>✍ コーチがモデルトークを書いています…</p>}
+      {state === "audio" && <p>🎙 音声を生成しています…</p>}
+      {state === "error" && (
+        <p style={{ color: "crimson" }}>
+          {errorMsg} <button onClick={prepare}>再試行</button>
+        </p>
       )}
-      {state === "loading" && <p>コーチがモデルトークを書いています…</p>}
       {(state === "ready" || state === "playing") && (
         <div>
           <button onClick={play} disabled={state === "playing"} style={{ padding: "0.6rem 1.2rem" }}>
@@ -56,7 +76,6 @@ export function ShadowingScreen(props: { topic: ContentItem }) {
           <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.8 }}>{text}</p>
         </div>
       )}
-      {errorMsg && <p style={{ color: "crimson" }}>{errorMsg}</p>}
     </div>
   );
 }

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { getHealth, sessionEnd, sessionEndKeepalive, sessionStart, type Health } from "./api";
 import { FreeTalkScreen } from "./screens/FreeTalkScreen";
+import { LibraryScreen } from "./screens/LibraryScreen";
 import { SessionRunner, type MenuSource } from "./screens/SessionRunner";
 import { StartScreen, type StartSelection } from "./screens/StartScreen";
 
-type Mode = { kind: "start" } | { kind: "free" } | { kind: "session"; source: MenuSource };
+type Mode = { kind: "start" } | { kind: "free" } | { kind: "session"; source: MenuSource } | { kind: "library" };
 
 export function App() {
   const [health, setHealth] = useState<Health | null>(null);
@@ -34,6 +35,7 @@ export function App() {
 
   function onSelect(sel: StartSelection) {
     if (sel.type === "free") setMode({ kind: "free" });
+    else if (sel.type === "library") setMode({ kind: "library" });
     else if (sel.type === "daily") setMode({ kind: "session", source: { type: "daily", minutes: sel.minutes } });
     else setMode({ kind: "session", source: { type: "quick", drill: sel.drill } });
   }
@@ -69,6 +71,7 @@ export function App() {
         <SessionRunner source={mode.source} sessionId={sessionId} onExit={() => setMode({ kind: "start" })} />
       )}
       {mode.kind === "free" && <FreeTalkScreen />}
+      {mode.kind === "library" && <LibraryScreen />}
     </main>
   );
 }

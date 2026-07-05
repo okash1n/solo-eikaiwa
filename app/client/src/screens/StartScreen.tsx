@@ -4,7 +4,8 @@ import { fetchPracticeDays, fetchSettings, saveSettings, type QuickDrillKind } f
 export type StartSelection =
   | { type: "quick"; drill: QuickDrillKind }
   | { type: "daily"; minutes: 60 | 30 }
-  | { type: "free" };
+  | { type: "free" }
+  | { type: "library" };
 
 const QUICK_BUTTONS: Array<{ drill: QuickDrillKind; label: string }> = [
   { drill: "warmup", label: "🔊 音読ウォームアップ（6分）" },
@@ -99,6 +100,7 @@ export function StartScreen(props: { onSelect: (sel: StartSelection) => void }) 
       <button style={btn} onClick={() => props.onSelect({ type: "daily", minutes: 60 })}>📋 通しセッション（60分）</button>
       <button style={btn} onClick={() => props.onSelect({ type: "daily", minutes: 30 })}>📋 通しセッション（30分・短縮版）</button>
       <button style={btn} onClick={() => props.onSelect({ type: "free" })}>💬 自由会話のみ</button>
+      <button style={btn} onClick={() => props.onSelect({ type: "library" })}>📚 ライブラリ（モデルトークの復習）</button>
 
       <div style={{ marginTop: "1.5rem" }}>
         <PracticeCalendar days={days} />

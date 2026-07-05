@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  fetchAeFeedback, fetchModelTalk, fetchPrepPack, sendSessionEvent, sttUpload, ttsFetch,
+  fetchAeFeedback, fetchPrepPack, playTtsCached, prefetchModelTalkAudio, sendSessionEvent, sttUpload,
   type AeFeedback, type ContentItem, type PrepPack,
 } from "../api";
 import { playBlob, Recorder, stopPlayback } from "../audio";
@@ -49,7 +49,10 @@ export function FourThreeTwoScreen(props: { topic: ContentItem; sessionId: strin
   // 準備フェーズ
   const [prepState, setPrepState] = useState<PrepState>("loading");
   const [prep, setPrep] = useState<PrepPack | null>(null);
-  const [modelPlaying, setModelPlaying] = useState(false);
+  type ModelState = "script" | "audio" | "ready" | "playing" | "error";
+  const [modelState, setModelState] = useState<ModelState>("script");
+  const [modelText, setModelText] = useState("");
+  const [playingIdx, setPlayingIdx] = useState<number | null>(null);
   const prepFetchedRef = useRef(false); // StrictMode の二重マウントで prep を二重フェッチしない
   const prepTimer = useCountdown(PREP_SECONDS);
   const recorderRef = useRef(new Recorder());
@@ -69,6 +72,17 @@ export function FourThreeTwoScreen(props: { topic: ContentItem; sessionId: strin
       prepFetchedRef.current = true;
       loadPrep();
       prepTimer.start();
+      prefetchModelTalkAudio(props.topic.id, (stage) => {
+        if (aliveRef.current) setModelState(stage);
+      })
+        .then(({ text }) => {
+          if (!aliveRef.current) return;
+          setModelText(text);
+          setModelState("ready");
+        })
+        .catch(() => {
+          if (aliveRef.current) setModelState("error");
+        });
     }
     return () => {
       aliveRef.current = false;
@@ -105,19 +119,31 @@ export function FourThreeTwoScreen(props: { topic: ContentItem; sessionId: strin
   }
 
   async function playModelTalk() {
-    setModelPlaying(true);
     setErrorMsg("");
+    setModelState("playing");
     try {
-      const text = await fetchModelTalk(props.topic.id);
+      const { text, blob } = await prefetchModelTalkAudio(props.topic.id);
       if (!aliveRef.current) return;
-      const blob = await ttsFetch(text);
-      if (!aliveRef.current) return;
+      setModelText(text);
       await playBlob(blob);
+      if (aliveRef.current) setModelState("ready");
+    } catch (err) {
+      if (!aliveRef.current) return;
+      setErrorMsg(err instanceof Error ? err.message : String(err));
+      setModelState("error");
+    }
+  }
+
+  async function playChunk(i: number, text: string) {
+    setErrorMsg("");
+    setPlayingIdx(i);
+    try {
+      await playTtsCached(text);
     } catch (err) {
       if (!aliveRef.current) return;
       setErrorMsg(err instanceof Error ? err.message : String(err));
     } finally {
-      if (aliveRef.current) setModelPlaying(false);
+      if (aliveRef.current) setPlayingIdx(null);
     }
   }
 
@@ -234,6 +260,14 @@ export function FourThreeTwoScreen(props: { topic: ContentItem; sessionId: strin
                     .filter((c) => typeof c.en === "string" && c.en)
                     .map((c, i) => (
                       <li key={i}>
+                        <button
+                          onClick={() => playChunk(i, c.en)}
+                          disabled={playingIdx !== null}
+                          style={{ marginRight: "0.5rem", cursor: "pointer" }}
+                          aria-label={`「${c.en}」を再生`}
+                        >
+                          {playingIdx === i ? "…" : "🔊"}
+                        </button>
                         <strong>{c.en}</strong>
                         {c.ja && <span style={{ color: "#666" }}> — {c.ja}</span>}
                       </li>
@@ -254,13 +288,27 @@ export function FourThreeTwoScreen(props: { topic: ContentItem; sessionId: strin
           </div>
         )}
         <p>
-          <button onClick={playModelTalk} disabled={modelPlaying} style={{ padding: "0.6rem 1.2rem" }}>
-            {modelPlaying ? "🔊 再生中…" : "🎧 モデルトークを聞く（任意）"}
+          <button
+            onClick={playModelTalk}
+            disabled={modelState === "script" || modelState === "audio" || modelState === "playing"}
+            style={{ padding: "0.6rem 1.2rem" }}
+          >
+            {modelState === "script" && "✍ 原稿を作成中…"}
+            {modelState === "audio" && "🎙 音声を生成中…"}
+            {modelState === "ready" && "🎧 モデルトークを聞く（任意）"}
+            {modelState === "playing" && "🔊 再生中…"}
+            {modelState === "error" && "🎧 モデルトーク（再試行）"}
           </button>{" "}
           <button onClick={() => startRound(0)} style={{ padding: "0.6rem 1.2rem" }}>
             Round 1 を始める（{minLabel(roundsSec[0])}）→
           </button>
         </p>
+        {modelText && (
+          <details open style={{ marginTop: "0.5rem" }}>
+            <summary style={{ cursor: "pointer", color: "#666" }}>モデルトーク本文</summary>
+            <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.8 }}>{modelText}</p>
+          </details>
+        )}
         {prepState !== "error" && errorMsg && <p style={{ color: "crimson" }}>{errorMsg}</p>}
       </div>
     );

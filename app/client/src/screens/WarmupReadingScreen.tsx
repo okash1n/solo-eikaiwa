@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { fetchPrepPack, type ContentItem, type PrepPack } from "../api";
+import { fetchPrepPack, playTtsCached, type ContentItem, type PrepPack } from "../api";
+import { stopPlayback } from "../audio";
 
 type State = "loading" | "ready" | "error";
 
@@ -11,6 +12,8 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
   const [state, setState] = useState<State>("loading");
   const [prep, setPrep] = useState<PrepPack | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [playErr, setPlayErr] = useState("");
+  const [playingIdx, setPlayingIdx] = useState<number | null>(null);
   const aliveRef = useRef(true);
   const fetchedRef = useRef(false); // StrictMode の二重マウントで prep を二重フェッチしない
 
@@ -22,6 +25,7 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
     }
     return () => {
       aliveRef.current = false;
+      stopPlayback();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -41,12 +45,25 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
     }
   }
 
+  async function playChunk(i: number, text: string) {
+    setPlayErr("");
+    setPlayingIdx(i);
+    try {
+      await playTtsCached(text);
+    } catch (err) {
+      if (!aliveRef.current) return;
+      setPlayErr(err instanceof Error ? err.message : String(err));
+    } finally {
+      if (aliveRef.current) setPlayingIdx(null);
+    }
+  }
+
   const chunks = prep?.chunks.filter((c) => typeof c.en === "string" && c.en) ?? [];
 
   return (
     <div>
       <p style={{ color: "#666" }}>
-        声に出して読みましょう（各フレーズ2回ずつ）。このあとの 4/3/2 で実際に使います。
+        声に出して読みましょう（各フレーズ2回ずつ）。🔊でお手本を聞けます。このあとの 4/3/2 で実際に使います。
       </p>
       {state === "loading" && <p>コーチが表現チャンクを用意しています…</p>}
       {state === "error" && (
@@ -72,12 +89,21 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
             <ul>
               {chunks.map((c, i) => (
                 <li key={i} style={{ marginBottom: "0.4rem" }}>
+                  <button
+                    onClick={() => playChunk(i, c.en)}
+                    disabled={playingIdx !== null}
+                    style={{ marginRight: "0.5rem", cursor: "pointer" }}
+                    aria-label={`「${c.en}」を再生`}
+                  >
+                    {playingIdx === i ? "…" : "🔊"}
+                  </button>
                   <strong>{c.en}</strong>
-                  {c.ja && <div style={{ color: "#666" }}>{c.ja}</div>}
+                  {c.ja && <div style={{ color: "#666", marginLeft: "2.2rem" }}>{c.ja}</div>}
                 </li>
               ))}
             </ul>
           )}
+          {playErr && <p style={{ color: "crimson" }}>{playErr}</p>}
           {prep.outline.length > 0 && (
             <div>
               <h4>今日の話の骨組み</h4>
