@@ -1,0 +1,2702 @@
+[
+  {
+    "no": 1,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "daily",
+    "en": "I usually skip breakfast and just grab coffee on my way out.",
+    "ja": "普段は朝ごはんを抜いて、出がけにコーヒーだけ買っていくんだ。",
+    "note": "習慣は現在形で表す。頻度副詞 usually は一般動詞の前に置く"
+  },
+  {
+    "no": 2,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "daily",
+    "en": "This curry tastes a bit spicy, doesn't it?",
+    "ja": "このカレー、ちょっと辛くない？",
+    "note": "taste など知覚の状態動詞は進行形にせず現在形で使う。付加疑問で同意を求める"
+  },
+  {
+    "no": 3,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "daily",
+    "en": "My eyesight is getting worse these days, honestly.",
+    "ja": "正直、最近だんだん目が悪くなってきてるんだよね。",
+    "note": "be getting + 比較級で「だんだん〜してきている」という進行中の変化を表す"
+  },
+  {
+    "no": 4,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "daily",
+    "en": "My son is always leaving his socks all over the floor.",
+    "ja": "うちの息子、いつも靴下をそこらじゅうに脱ぎっぱなしなんだよ。",
+    "note": "be always -ing で「いつも〜してばかり」という不満・あきれを表す"
+  },
+  {
+    "no": 5,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "business",
+    "en": "I'm working from home this week, so just message me anytime.",
+    "ja": "今週は在宅勤務だから、いつでもメッセージしてね。",
+    "note": "this week など期間限定の一時的な状況は現在進行形で表す"
+  },
+  {
+    "no": 6,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "business",
+    "en": "The weekly meeting starts at nine sharp, so don't be late.",
+    "ja": "週次ミーティングは9時ぴったりに始まるから、遅れないでね。",
+    "note": "時刻が決まったスケジュールは現在形で言う。at nine sharp =「9時きっかり」"
+  },
+  {
+    "no": 7,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "business",
+    "en": "I think we need one more week to finish the report.",
+    "ja": "報告書を仕上げるには、もう1週間必要だと思います。",
+    "note": "意見の think は状態動詞なので進行形にしない（I'm thinking は「検討中」の意味）"
+  },
+  {
+    "no": 8,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "business",
+    "en": "I'm meeting a new client on Thursday afternoon.",
+    "ja": "木曜の午後に新しいクライアントと会うことになってるんだ。",
+    "note": "確定した近い未来の予定は「現在進行形＋日時」で表せる"
+  },
+  {
+    "no": 9,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "it",
+    "en": "The deployment is still running, so don't merge anything yet.",
+    "ja": "デプロイがまだ走ってるから、まだ何もマージしないで。",
+    "note": "still + 現在進行形で「今まさに進行中」であることを強調する"
+  },
+  {
+    "no": 10,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "it",
+    "en": "This script checks disk usage every five minutes and sends alerts.",
+    "ja": "このスクリプトは5分ごとにディスク使用量をチェックしてアラートを送ります。",
+    "note": "自動処理など決まって繰り返される動作は every five minutes + 現在形で表す"
+  },
+  {
+    "no": 11,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "it",
+    "en": "Why is the staging server responding so slowly today?",
+    "ja": "なんで今日はステージングサーバーの応答がこんなに遅いんだろう？",
+    "note": "現在進行形の疑問文。today を添えて「普段と違う今の状態」を尋ねる"
+  },
+  {
+    "no": 12,
+    "category_no": 1,
+    "category": "現在形・現在進行形",
+    "domain": "it",
+    "en": "This laptop belongs to the security team, so don't touch it.",
+    "ja": "このノートPCはセキュリティチームのものだから、触らないでね。",
+    "note": "belong to は所有を表す状態動詞で進行形にしない"
+  },
+  {
+    "no": 13,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "daily",
+    "en": "I used to skip breakfast, but now I eat properly.",
+    "ja": "前は朝ごはんを抜いてたけど、今はちゃんと食べてるよ。",
+    "note": "used to+動詞の原形で「昔は〜していた（今は違う）」。but now で現在と対比。"
+  },
+  {
+    "no": 14,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "daily",
+    "en": "We'd go camping by the river every summer as kids.",
+    "ja": "子どもの頃は毎年夏、川にキャンプしに行ったもんだよ。",
+    "note": "回想の would（'d に縮約）。過去の反復行動を懐かしく語る。状態動詞には使えない。"
+  },
+  {
+    "no": 15,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "daily",
+    "en": "There used to be a great bakery on this corner.",
+    "ja": "この角には昔、すごくおいしいパン屋があったんだよ。",
+    "note": "There used to be 〜で「昔は〜があった（今はない）」という含み。"
+  },
+  {
+    "no": 16,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "daily",
+    "en": "Did you use to live near the station?",
+    "ja": "前は駅の近くに住んでたの？",
+    "note": "used to の疑問文は Did you use to 〜?。use に d が付かない点に注意。"
+  },
+  {
+    "no": 17,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "business",
+    "en": "I sent the revised proposal to the client two days ago.",
+    "ja": "2日前に修正版の提案書をクライアントに送りました。",
+    "note": "「〜前に」の ago は単純過去とセットで使う。現在完了とは併用しない。"
+  },
+  {
+    "no": 18,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "business",
+    "en": "I didn't use to enjoy giving presentations, honestly.",
+    "ja": "正直、昔はプレゼンするのが好きじゃなかったんですよね。",
+    "note": "used to の否定形は didn't use to。「以前は〜ではなかった」を表す。"
+  },
+  {
+    "no": 19,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "business",
+    "en": "Our old manager would always start meetings ten minutes late.",
+    "ja": "前のマネージャーは、いつも会議を10分遅れで始めてたなあ。",
+    "note": "would always+動詞で「決まって〜したものだ」。人の癖の回想によく使う。"
+  },
+  {
+    "no": 20,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "business",
+    "en": "When did you join the sales team?",
+    "ja": "営業チームにはいつ入ったんですか？",
+    "note": "When did you 〜? で過去の出来事の時点を尋ねる。雑談の定番。"
+  },
+  {
+    "no": 21,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "it",
+    "en": "The server went down twice last night during the release.",
+    "ja": "昨夜のリリース中にサーバーが2回落ちたんだ。",
+    "note": "went down は「（システムが）落ちた」。last night など過去の時点表現+単純過去。"
+  },
+  {
+    "no": 22,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "it",
+    "en": "Deployments used to take hours before we automated them.",
+    "ja": "自動化する前は、デプロイに何時間もかかってたんだよ。",
+    "note": "モノ主語+used to take で「昔は（時間が）かかっていた」。before 節で今と対比。"
+  },
+  {
+    "no": 23,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "it",
+    "en": "How long did it take to restore the database?",
+    "ja": "データベースの復旧、どれくらいかかったの？",
+    "note": "How long did it take to 〜? で過去の所要時間を尋ねる。"
+  },
+  {
+    "no": 24,
+    "category_no": 2,
+    "category": "過去形・used to",
+    "domain": "it",
+    "en": "I checked the logs, but I didn't find anything unusual.",
+    "ja": "ログは確認したけど、特におかしなものは見つからなかったよ。",
+    "note": "過去の否定は didn't+動詞の原形。didn't found としない。"
+  },
+  {
+    "no": 25,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "daily",
+    "en": "Have you ever tried Vietnamese food?",
+    "ja": "ベトナム料理って食べたことある？",
+    "note": "経験を尋ねる Have you ever + 過去分詞の定番フレーズ。"
+  },
+  {
+    "no": 26,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "daily",
+    "en": "I've been going to the gym since April.",
+    "ja": "4月からずっとジムに通ってるんだ。",
+    "note": "have been -ing + since で「〜からずっと続けている」習慣の継続。"
+  },
+  {
+    "no": 27,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "daily",
+    "en": "We've just gotten back from our trip to Okinawa.",
+    "ja": "沖縄旅行から帰ってきたばかりなんだ。",
+    "note": "have just + 過去分詞で「〜したばかり」の完了を表す。"
+  },
+  {
+    "no": 28,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "daily",
+    "en": "That's the best ramen I've ever had.",
+    "ja": "こんなにうまいラーメン、初めて食べたよ。",
+    "note": "最上級 + I've ever + 過去分詞で「今までで一番〜」の経験表現。"
+  },
+  {
+    "no": 29,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "business",
+    "en": "I've been to the Osaka office twice this year.",
+    "ja": "今年はもう2回、大阪オフィスに行ってるよ。",
+    "note": "経験の have been to に回数（twice）を添える形。gone との違いに注意。"
+  },
+  {
+    "no": 30,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "business",
+    "en": "I've already sent you the updated agenda.",
+    "ja": "更新版のアジェンダはもう送ってあります。",
+    "note": "have already + 過去分詞で「もう〜済み」と完了を報告する言い方。"
+  },
+  {
+    "no": 31,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "business",
+    "en": "How long have you worked at this company?",
+    "ja": "この会社で働いてどのくらいになるんですか？",
+    "note": "How long have you + 過去分詞で継続の期間を尋ねる疑問文。"
+  },
+  {
+    "no": 32,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "business",
+    "en": "I've been meaning to ask you about next week's schedule.",
+    "ja": "来週のスケジュールのこと、ずっと聞こうと思ってたんです。",
+    "note": "I've been meaning to 〜「ずっと〜しようと思ってた」の会話定番。"
+  },
+  {
+    "no": 33,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "it",
+    "en": "The deployment has been running for over an hour.",
+    "ja": "デプロイがもう1時間以上走りっぱなしなんだ。",
+    "note": "have been -ing + for で動作が続いている時間の長さを表す継続。"
+  },
+  {
+    "no": 34,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "it",
+    "en": "We haven't fixed the login bug yet.",
+    "ja": "ログインのバグ、まだ直せてないんだ。",
+    "note": "haven't + 過去分詞 + yet で「まだ〜していない」未完了を伝える。"
+  },
+  {
+    "no": 35,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "it",
+    "en": "This is the first time I've seen this error.",
+    "ja": "このエラーを見るのは初めてだな。",
+    "note": "This is the first time I've + 過去分詞「〜するのは初めて」の型。"
+  },
+  {
+    "no": 36,
+    "category_no": 3,
+    "category": "現在完了・完了進行",
+    "domain": "it",
+    "en": "The API has been down since this morning.",
+    "ja": "今朝からずっとAPIが落ちてるんです。",
+    "note": "has been + 状態 + since で「落ちたまま」の状態の継続を表す。"
+  },
+  {
+    "no": 37,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "daily",
+    "en": "You know what, I'll just get the same as you.",
+    "ja": "やっぱり、私もあなたと同じものにするよ。",
+    "note": "その場で決めたことはwill。事前に決めていた予定のbe going toとの違いに注意"
+  },
+  {
+    "no": 38,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "daily",
+    "en": "Take an umbrella — it's going to rain this afternoon.",
+    "ja": "傘を持って行きなよ。午後は雨になりそうだから。",
+    "note": "目の前の兆候・根拠にもとづく予測はbe going to"
+  },
+  {
+    "no": 39,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "daily",
+    "en": "Are you doing anything for the holidays this year?",
+    "ja": "今年の年末年始は何か予定ある？",
+    "note": "相手の決まった予定を尋ねるときは現在進行形。近い未来の定番の聞き方"
+  },
+  {
+    "no": 40,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "daily",
+    "en": "Don't call me at seven — we'll be having dinner then.",
+    "ja": "7時には電話しないでね。ちょうど夕食の最中だから。",
+    "note": "未来のある時点で進行中の動作はwill be -ing"
+  },
+  {
+    "no": 41,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "business",
+    "en": "I'll get back to you with the figures by Friday.",
+    "ja": "金曜日までに数字をまとめてご連絡します。",
+    "note": "その場でする約束・申し出はwill。get back to youは折り返し連絡の定番"
+  },
+  {
+    "no": 42,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "business",
+    "en": "We're going to open a second office in Fukuoka next year.",
+    "ja": "来年、福岡に2つ目のオフィスを開く予定なんです。",
+    "note": "前から決めている計画・意図はbe going to"
+  },
+  {
+    "no": 43,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "business",
+    "en": "I'm meeting the new client at ten, so let's talk after lunch.",
+    "ja": "10時に新しいクライアントと会うので、話は昼食後にしましょう。",
+    "note": "日時が確定したアポイントは現在進行形で表す"
+  },
+  {
+    "no": 44,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "business",
+    "en": "Will you be joining the team event next month?",
+    "ja": "来月のチームイベントには参加されますか？",
+    "note": "Will you be -ing?は相手の予定を押しつけずに尋ねる丁寧な聞き方"
+  },
+  {
+    "no": 45,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "it",
+    "en": "This backup isn't going to finish before the maintenance window ends.",
+    "ja": "このバックアップ、メンテナンス時間内には終わりそうにないですね。",
+    "note": "isn't going toで「〜しそうにない」という見込みの否定を表す"
+  },
+  {
+    "no": 46,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "it",
+    "en": "I think this refactor will make the code much easier to maintain.",
+    "ja": "このリファクタリングで、コードはずっと保守しやすくなると思いますよ。",
+    "note": "I think ... willで個人の意見・見通しとしての予測を述べる"
+  },
+  {
+    "no": 47,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "it",
+    "en": "We're rolling out the security patch to all servers on Thursday night.",
+    "ja": "木曜の夜に全サーバーへセキュリティパッチを展開する予定です。",
+    "note": "日時の決まった作業予定は現在進行形。roll outは展開・リリースの定番動詞"
+  },
+  {
+    "no": 48,
+    "category_no": 4,
+    "category": "未来表現",
+    "domain": "it",
+    "en": "I'll be monitoring the logs all night after tonight's deployment.",
+    "ja": "今夜のデプロイ後は、一晩中ログを監視していますので。",
+    "note": "will be -ingで一定時間続く未来の作業を表す"
+  },
+  {
+    "no": 49,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "daily",
+    "en": "You must be exhausted after such a long trip.",
+    "ja": "あんな長旅のあとだもん、くたくたでしょ。",
+    "note": "must be + 形容詞で「きっと〜に違いない」。根拠のある強い推量。"
+  },
+  {
+    "no": 50,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "daily",
+    "en": "There might be a nice café near the station.",
+    "ja": "駅の近くに、いい感じのカフェがあるかもよ。",
+    "note": "There might be 〜で「〜があるかもよ」と控えめに存在の可能性を言う。"
+  },
+  {
+    "no": 51,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "daily",
+    "en": "That can't be the right price — it's way too cheap.",
+    "ja": "その値段はおかしいって。いくらなんでも安すぎる。",
+    "note": "can't be は「〜のはずがない」。must be の逆の強い否定推量。"
+  },
+  {
+    "no": 52,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "daily",
+    "en": "Traffic can be really bad around here on weekends.",
+    "ja": "この辺、週末は渋滞がひどいことがあるんだよね。",
+    "note": "can be は「〜なことがある」という一般的な傾向。目の前の個別の推量には使わない。"
+  },
+  {
+    "no": 53,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "business",
+    "en": "She could be in a meeting right now.",
+    "ja": "彼女、今は会議中かもしれませんね。",
+    "note": "could be は今のことへの控えめな推量。過去の意味ではない点に注意。"
+  },
+  {
+    "no": 54,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "business",
+    "en": "This might not be the best time to ask him.",
+    "ja": "今は彼に頼むタイミングじゃないかもしれないね。",
+    "note": "might not be で「〜ではないかも」とやんわり否定。婉曲な断りにも使える。"
+  },
+  {
+    "no": 55,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "business",
+    "en": "They must be discussing the budget; the meeting is running long.",
+    "ja": "会議が長引いてるし、きっと予算の話をしてるんだろう。",
+    "note": "must be + 〜ing で「今〜しているに違いない」と進行中の行動を推量。"
+  },
+  {
+    "no": 56,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "business",
+    "en": "I may be a little late for tomorrow's call.",
+    "ja": "明日の電話会議、少し遅れるかもしれません。",
+    "note": "I may be late は自分の遅れる可能性を丁寧に前もって伝える定番表現。"
+  },
+  {
+    "no": 57,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "it",
+    "en": "Could it be a permissions issue on the server?",
+    "ja": "サーバー側の権限まわりの問題ってことはないかな？",
+    "note": "Could it be 〜? で「〜ってことはあり得る？」と控えめに原因を尋ねる。"
+  },
+  {
+    "no": 58,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "it",
+    "en": "The bug must be somewhere in the payment logic.",
+    "ja": "バグはきっと決済処理のどこかにあるはずだ。",
+    "note": "must be + 場所で「きっと〜にあるはずだ」と所在を強く推量。"
+  },
+  {
+    "no": 59,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "it",
+    "en": "The logs may not be telling us the whole story.",
+    "ja": "ログだけでは全部はわからないかもしれないよ。",
+    "note": "may not be + 〜ing で「〜していないかもしれない」と柔らかい否定推量。"
+  },
+  {
+    "no": 60,
+    "category_no": 5,
+    "category": "助動詞: 可能性・推量",
+    "domain": "it",
+    "en": "This could be why the deployment keeps failing.",
+    "ja": "デプロイが失敗し続けるのは、これが原因かもしれない。",
+    "note": "could be why 〜で「それが〜の理由かも」と原因を控えめに推量。"
+  },
+  {
+    "no": 61,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "daily",
+    "en": "We'd better book the restaurant before it fills up.",
+    "ja": "席が埋まる前にレストランを予約したほうがいいよ。",
+    "note": "had better は「しないとまずい」の忠告。should より切迫感が強い"
+  },
+  {
+    "no": 62,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "daily",
+    "en": "You don't have to finish everything on your plate.",
+    "ja": "お皿のもの、全部食べなくてもいいんだよ。",
+    "note": "don't have to は「〜しなくてよい」（不要）。mustn't（禁止）と混同しない"
+  },
+  {
+    "no": 63,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "daily",
+    "en": "I must remember to call Mom on her birthday.",
+    "ja": "母さんの誕生日に電話するの、忘れないようにしなきゃ。",
+    "note": "must は話し手自身が感じる義務。自分への言い聞かせによく使う"
+  },
+  {
+    "no": 64,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "daily",
+    "en": "You shouldn't drink coffee this late in the evening.",
+    "ja": "こんな夜遅くにコーヒーは飲まないほうがいいよ。",
+    "note": "shouldn't は柔らかい助言「〜しないほうがいい」。禁止ほど強くない"
+  },
+  {
+    "no": 65,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "business",
+    "en": "I have to leave early today for a client visit.",
+    "ja": "今日は客先訪問があるので早めに出ないといけないんです。",
+    "note": "have to は外的事情による義務。会話では must より頻出"
+  },
+  {
+    "no": 66,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "business",
+    "en": "We mustn't mention the price until the contract's signed.",
+    "ja": "契約が済むまで価格の話は絶対にしてはだめですよ。",
+    "note": "mustn't は禁止「〜してはいけない」。don't have to（不要）との違いが要点"
+  },
+  {
+    "no": 67,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "business",
+    "en": "Should I copy the whole team on this email?",
+    "ja": "このメール、チーム全員をCCに入れたほうがいいですか？",
+    "note": "Should I ...? は相手に助言・判断を仰ぐ疑問文の定番形"
+  },
+  {
+    "no": 68,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "business",
+    "en": "We'll have to push the deadline back a week.",
+    "ja": "締め切りを1週間延ばさざるを得ませんね。",
+    "note": "will have to で未来の義務。must に未来形はないので have to で代用する"
+  },
+  {
+    "no": 69,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "it",
+    "en": "We need to patch this server before the weekend.",
+    "ja": "週末までにこのサーバーにパッチを当てる必要があります。",
+    "note": "need to は必要性を淡々と伝える形。実務の指示・依頼の定番"
+  },
+  {
+    "no": 70,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "it",
+    "en": "You don't need to restart the app after this change.",
+    "ja": "この変更のあとはアプリを再起動しなくて大丈夫です。",
+    "note": "don't need to は「〜する必要はない」。don't have to とほぼ同義の不要表現"
+  },
+  {
+    "no": 71,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "it",
+    "en": "You'd better not deploy anything on a Friday afternoon.",
+    "ja": "金曜の午後には何もデプロイしないほうが身のためだよ。",
+    "note": "had better not は警告的な「〜しないほうがいい」。not の位置に注意"
+  },
+  {
+    "no": 72,
+    "category_no": 6,
+    "category": "助動詞: 義務・助言",
+    "domain": "it",
+    "en": "We had to roll back the release last night.",
+    "ja": "昨夜はリリースをロールバックせざるを得ませんでした。",
+    "note": "had to は過去の義務。must の過去は had to で表す"
+  },
+  {
+    "no": 73,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "daily",
+    "en": "This jam is made with strawberries from my mom's garden.",
+    "ja": "このジャム、母の庭のイチゴで作ってるんだよ。",
+    "note": "プロセス説明の現在形受動態 be made with。作り手は言わずに製法を説明する形"
+  },
+  {
+    "no": 74,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "daily",
+    "en": "We got caught in the rain on the way home.",
+    "ja": "帰り道で雨に降られちゃったよ。",
+    "note": "get + 過去分詞で不意の出来事・被害を表す。be より「〜される羽目になった」感が出る"
+  },
+  {
+    "no": 75,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "daily",
+    "en": "My package still hasn't been delivered, and it's been a week.",
+    "ja": "荷物がまだ届かないんだよね。もう1週間になるのに。",
+    "note": "現在完了受動態の否定 hasn't been done。「まだ〜されていない」不満の定番表現"
+  },
+  {
+    "no": 76,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "daily",
+    "en": "The road was being repaired, so we took a different route.",
+    "ja": "道路が工事中だったから、別の道で行ったんだ。",
+    "note": "過去進行形の受動態 was being done。「〜されている最中だった」状況説明に使う"
+  },
+  {
+    "no": 77,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "business",
+    "en": "The meeting was moved to Thursday, just so you know.",
+    "ja": "会議、木曜に変更になったから一応伝えておくね。",
+    "note": "過去形受動態で行為者を伏せる。誰が動かしたかは言わずに事実だけ伝える"
+  },
+  {
+    "no": 78,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "business",
+    "en": "The final schedule will be shared with everyone by Friday.",
+    "ja": "最終スケジュールは金曜までに全員に共有されるよ。",
+    "note": "未来の受動態 will be + 過去分詞。今後の予定・段取りの伝達に使う"
+  },
+  {
+    "no": 79,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "business",
+    "en": "These invoices have to be approved by the end of the day.",
+    "ja": "この請求書、今日中に承認してもらわないといけないんだ。",
+    "note": "have to be + 過去分詞。「〜されなければならない」義務の受動態"
+  },
+  {
+    "no": 80,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "business",
+    "en": "Did you hear she got promoted to team lead?",
+    "ja": "彼女、チームリーダーに昇進したって聞いた？",
+    "note": "人事の出来事は get promoted / get hired が口語で自然。be promoted より会話向き"
+  },
+  {
+    "no": 81,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "it",
+    "en": "You can't log in right now because the system is being updated.",
+    "ja": "今はログインできないよ。システムを更新中だから。",
+    "note": "現在進行形の受動態 be being done。「今まさに〜されている」作業中の状態を表す"
+  },
+  {
+    "no": 82,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "it",
+    "en": "This bug needs to be fixed before we release on Friday.",
+    "ja": "このバグ、金曜のリリース前に直さないとね。",
+    "note": "need to be + 過去分詞。「〜される必要がある」をやわらかく言う受動態"
+  },
+  {
+    "no": 83,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "it",
+    "en": "This setting can be changed without restarting the whole server.",
+    "ja": "この設定はサーバーを再起動しなくても変えられるよ。",
+    "note": "can be + 過去分詞。「〜できる・〜され得る」可能を表す受動態"
+  },
+  {
+    "no": 84,
+    "category_no": 7,
+    "category": "受動態",
+    "domain": "it",
+    "en": "When was this dependency last updated?",
+    "ja": "この依存ライブラリ、最後に更新されたのいつ？",
+    "note": "疑問詞 + 受動態の疑問文。When was it done? の語順に慣れる"
+  },
+  {
+    "no": 85,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "daily",
+    "en": "To save money, I usually bring lunch from home.",
+    "ja": "節約のために、普段はお弁当を持って行ってるんだ。",
+    "note": "目的のto不定詞を文頭に置く形。カンマで区切って主文につなげる"
+  },
+  {
+    "no": 86,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "daily",
+    "en": "I've decided to start jogging every morning before work.",
+    "ja": "毎朝仕事の前にジョギングを始めることにしたんだ。",
+    "note": "decide to do「〜することに決めた」。決意・予定を表すto不定詞"
+  },
+  {
+    "no": 87,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "daily",
+    "en": "Can you remind me to buy eggs on the way home?",
+    "ja": "帰りに卵を買うの、思い出させてくれる？",
+    "note": "remind 人 to do「人に〜するよう念押しする」。依頼のto不定詞"
+  },
+  {
+    "no": 88,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "daily",
+    "en": "I'm too full to eat dessert, but thanks anyway.",
+    "ja": "お腹いっぱいでデザートは無理。でもありがとう。",
+    "note": "too+形容詞+to do「〜すぎて…できない」。否定語なしで不可能を表す"
+  },
+  {
+    "no": 89,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "business",
+    "en": "I'm calling to confirm our meeting on Thursday afternoon.",
+    "ja": "木曜午後の打ち合わせの確認でお電話しました。",
+    "note": "I'm calling to do「〜の件で電話しています」。電話の用件を伝える定番表現"
+  },
+  {
+    "no": 90,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "business",
+    "en": "Could you ask him to join the call at three?",
+    "ja": "3時の電話会議に参加するよう彼に伝えてもらえますか？",
+    "note": "ask 人 to do「人に〜するよう頼む」。依頼を第三者に伝える形"
+  },
+  {
+    "no": 91,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "business",
+    "en": "We hope to finalize the budget by the end of the month.",
+    "ja": "月末までには予算を確定させたいと考えています。",
+    "note": "hope to do「〜したいと思っている」。予定・見込みを控えめに伝える"
+  },
+  {
+    "no": 92,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "business",
+    "en": "Do we have enough time to go over the agenda?",
+    "ja": "議題を全部確認する時間、足りますか？",
+    "note": "enough+名詞+to do「〜するのに十分な…」。enoughは名詞の前に置く"
+  },
+  {
+    "no": 93,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "it",
+    "en": "The log file is too big for my editor to open.",
+    "ja": "そのログファイル、大きすぎてエディタで開けないよ。",
+    "note": "too ... for A to do。for で「誰が/何ができないか」の動作主を示す"
+  },
+  {
+    "no": 94,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "it",
+    "en": "Is the staging server stable enough to run the tests?",
+    "ja": "ステージングサーバー、テストを回せるくらい安定してる？",
+    "note": "形容詞+enough to do「〜できるほど十分…」。enoughは形容詞の後ろ"
+  },
+  {
+    "no": 95,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "it",
+    "en": "I need you to review my pull request before the release.",
+    "ja": "リリース前にプルリクをレビューしてほしいんだ。",
+    "note": "need 人 to do「人に〜してもらう必要がある」。askより強めの依頼"
+  },
+  {
+    "no": 96,
+    "category_no": 8,
+    "category": "不定詞",
+    "domain": "it",
+    "en": "We're planning to upgrade the database during tonight's maintenance window.",
+    "ja": "今夜のメンテナンス時間帯にデータベースをアップグレードする予定です。",
+    "note": "be planning to do「〜する予定だ」。進行形で準備中の計画を表す"
+  },
+  {
+    "no": 97,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "daily",
+    "en": "I really enjoy cooking big breakfasts on Sundays.",
+    "ja": "日曜にがっつり朝ごはんを作るのがすごく楽しいんだ。",
+    "note": "好みを表す enjoy doing。enjoy to do は不可"
+  },
+  {
+    "no": 98,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "daily",
+    "en": "I don't feel like going out in this rain.",
+    "ja": "この雨だと出かける気になれないな。",
+    "note": "feel like doing で「〜する気分だ」。like の後は動名詞"
+  },
+  {
+    "no": 99,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "daily",
+    "en": "I'm looking forward to visiting Kyoto with my family.",
+    "ja": "家族で京都に行くのが楽しみなんだ。",
+    "note": "look forward to doing。この to は前置詞なので動名詞が続く"
+  },
+  {
+    "no": 100,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "daily",
+    "en": "I gave up drinking coffee after dinner so I can sleep better.",
+    "ja": "よく眠れるように、夕食後のコーヒーはやめたんだ。",
+    "note": "give up doing で「〜をやめる」。句動詞の後も動名詞"
+  },
+  {
+    "no": 101,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "business",
+    "en": "I suggest moving our weekly meeting to Thursday.",
+    "ja": "毎週の定例会議を木曜に動かすのはどうでしょう。",
+    "note": "提案の suggest doing。suggest to do とは言えない"
+  },
+  {
+    "no": 102,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "business",
+    "en": "Would you mind checking these numbers before the call?",
+    "ja": "電話会議の前にこの数字を確認してもらえますか？",
+    "note": "依頼の Would you mind doing? 丁寧に頼む定番表現"
+  },
+  {
+    "no": 103,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "business",
+    "en": "Thanks for helping me with the presentation yesterday.",
+    "ja": "昨日はプレゼンを手伝ってくれてありがとう。",
+    "note": "Thanks for doing。前置詞 for の後は動名詞"
+  },
+  {
+    "no": 104,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "business",
+    "en": "I remember sending you that file last Friday.",
+    "ja": "先週の金曜にそのファイルを送ったのは覚えていますよ。",
+    "note": "remember doing は「したことを覚えている」。remember to do（忘れずに〜する）と区別"
+  },
+  {
+    "no": 105,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "it",
+    "en": "We should stop using that old library soon.",
+    "ja": "あの古いライブラリを使うのは、そろそろやめたほうがいいですね。",
+    "note": "stop doing は「〜するのをやめる」。stop to do（〜するために立ち止まる）と区別"
+  },
+  {
+    "no": 106,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "it",
+    "en": "Please avoid pushing directly to the main branch.",
+    "ja": "mainブランチへの直接プッシュは避けてください。",
+    "note": "avoid doing で「〜するのを避ける」。avoid to do は不可"
+  },
+  {
+    "no": 107,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "it",
+    "en": "Never deploy anything without running the tests first.",
+    "ja": "テストを実行せずにデプロイするのは絶対にやめてね。",
+    "note": "without doing で「〜せずに」。前置詞の後は動名詞"
+  },
+  {
+    "no": 108,
+    "category_no": 9,
+    "category": "動名詞",
+    "domain": "it",
+    "en": "The server keeps crashing after every deployment.",
+    "ja": "デプロイのたびにサーバーが落ち続けているんです。",
+    "note": "keep doing で「〜し続ける」。動作の継続・反復を表す"
+  },
+  {
+    "no": 109,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "daily",
+    "en": "The kids playing in the yard are my nephews.",
+    "ja": "庭で遊んでる子たち、うちの甥っ子たちなんだ。",
+    "note": "現在分詞の後置修飾。playing in the yard が名詞を後ろから説明する"
+  },
+  {
+    "no": 110,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "daily",
+    "en": "I'm really excited about our trip next month.",
+    "ja": "来月の旅行、ほんとに楽しみなんだ。",
+    "note": "感情の-ed。感じる側の人が主語なら excited（exciting は物事側）"
+  },
+  {
+    "no": 111,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "daily",
+    "en": "My dad fell asleep watching TV again last night.",
+    "ja": "父さん、昨日の夜またテレビを見ながら寝落ちしてたよ。",
+    "note": "文末の分詞で「〜しながら」。while を使わず付帯状況を表す"
+  },
+  {
+    "no": 112,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "daily",
+    "en": "I saw someone walking a huge dog this morning.",
+    "ja": "今朝、すごく大きな犬を散歩させてる人を見かけたよ。",
+    "note": "知覚動詞 see + 人 + -ing「人が〜しているのを見る」"
+  },
+  {
+    "no": 113,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "business",
+    "en": "We've got some exciting news about the new project.",
+    "ja": "新プロジェクトについて、ワクワクするお知らせがあります。",
+    "note": "感情の-ing。人をワクワクさせる物事の側には exciting を使う"
+  },
+  {
+    "no": 114,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "business",
+    "en": "Please check the attached file before tomorrow's meeting.",
+    "ja": "明日の会議までに添付ファイルに目を通しておいてください。",
+    "note": "名詞の前に置く過去分詞。attached file「添付されたファイル」"
+  },
+  {
+    "no": 115,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "business",
+    "en": "Looking at the calendar, Thursday works best for me.",
+    "ja": "カレンダーを見ると、木曜が一番都合よさそうです。",
+    "note": "文頭の軽い分詞構文 Looking at 〜「〜を見ると」。会話の定番前置き"
+  },
+  {
+    "no": 116,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "business",
+    "en": "Sorry to keep you waiting — my last call ran over.",
+    "ja": "お待たせしてすみません、前の電話が長引いてしまって。",
+    "note": "keep + 人 + waiting「人を待たせておく」。分詞が目的語の状態を表す"
+  },
+  {
+    "no": 117,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "it",
+    "en": "The bug reported yesterday has already been fixed.",
+    "ja": "昨日報告されたバグはもう修正済みです。",
+    "note": "過去分詞の後置修飾。reported yesterday「昨日報告された〜」"
+  },
+  {
+    "no": 118,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "it",
+    "en": "Honestly, the error messages in this tool are confusing.",
+    "ja": "正直、このツールのエラーメッセージは分かりにくいですね。",
+    "note": "感情の-ing。人を混乱させる側の物事は confusing（confused は人）"
+  },
+  {
+    "no": 119,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "it",
+    "en": "I left the tests running overnight on the build server.",
+    "ja": "ビルドサーバーでテストを一晩回しっぱなしにしておきました。",
+    "note": "leave + 目的語 + -ing「〜を…している状態のままにしておく」"
+  },
+  {
+    "no": 120,
+    "category_no": 10,
+    "category": "分詞・分詞構文",
+    "domain": "it",
+    "en": "Once deployed, the fix should stop those login errors.",
+    "ja": "デプロイされれば、あの修正でログインエラーは収まるはずです。",
+    "note": "Once + 過去分詞「いったん〜されたら」。接続詞を残した分詞構文"
+  },
+  {
+    "no": 121,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "daily",
+    "en": "I have a friend who bakes amazing bread every weekend.",
+    "ja": "週末になるとおいしいパンを焼く友達がいるんだ。",
+    "note": "人を後ろから説明する主格の who。a friend who 〜 の語順に慣れる"
+  },
+  {
+    "no": 122,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "daily",
+    "en": "This summer we're visiting Nagano, where my grandparents live.",
+    "ja": "今年の夏は、祖父母が住んでる長野に行くんだ。",
+    "note": "地名に補足を加える非制限用法の「, where」。「〜で、そこには…」の感覚"
+  },
+  {
+    "no": 123,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "daily",
+    "en": "My train was delayed an hour, which totally ruined my morning.",
+    "ja": "電車が1時間も遅れてさ、朝から散々だったよ。",
+    "note": "直前の文全体を受ける「, which」。会話で感想を一言足す定番"
+  },
+  {
+    "no": 124,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "daily",
+    "en": "The restaurant that we went to last night was really crowded.",
+    "ja": "昨日の夜行ったレストラン、すごく混んでたよ。",
+    "note": "前置詞を文末に残す会話形 that ... went to。to which は堅すぎる"
+  },
+  {
+    "no": 125,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "business",
+    "en": "I talked to a client whose office is moving to Osaka.",
+    "ja": "オフィスが大阪に移転するっていうクライアントと話したよ。",
+    "note": "所有を表す whose。人だけでなく会社・組織の所有にも使える"
+  },
+  {
+    "no": 126,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "business",
+    "en": "Our manager, who joined last month, wants to change the process.",
+    "ja": "先月入ったばかりのうちのマネージャーが、業務の進め方を変えたがってるんだ。",
+    "note": "コンマで挟んで補足する非制限用法の who。ここでは that に置き換え不可"
+  },
+  {
+    "no": 127,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "business",
+    "en": "Did you get the report that I sent you this morning?",
+    "ja": "今朝送ったレポート、受け取ってくれた？",
+    "note": "目的格の that。疑問文の中でもそのまま使える基本形"
+  },
+  {
+    "no": 128,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "business",
+    "en": "He's the guy who I used to work with in sales.",
+    "ja": "彼は昔、営業で一緒に働いてた人なんだ。",
+    "note": "人＋文末前置詞は who ... with が自然。whom は会話ではほぼ使わない"
+  },
+  {
+    "no": 129,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "it",
+    "en": "I'm looking for a library which handles authentication for us.",
+    "ja": "認証を代わりにやってくれるライブラリを探してるんだ。",
+    "note": "物を説明する主格の which。会話では that に置き換えても同じ意味"
+  },
+  {
+    "no": 130,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "it",
+    "en": "This is the file where we keep all the config settings.",
+    "ja": "これが設定を全部まとめてあるファイルだよ。",
+    "note": "where は物理的な場所以外（ファイル・データの置き場所）にも使える"
+  },
+  {
+    "no": 131,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "it",
+    "en": "The new API, which went live yesterday, is already getting traffic.",
+    "ja": "昨日公開した新しいAPI、もうアクセスが来てるよ。",
+    "note": "物に補足を加える非制限用法の「, which」。この用法で that は不可"
+  },
+  {
+    "no": 132,
+    "category_no": 11,
+    "category": "関係詞",
+    "domain": "it",
+    "en": "The bug you reported yesterday turned out to be a caching issue.",
+    "ja": "昨日報告してくれたバグ、キャッシュの問題だったよ。",
+    "note": "目的格の関係代名詞 that は会話では省略が普通（The bug (that) you reported）"
+  },
+  {
+    "no": 133,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "daily",
+    "en": "The movie wasn't as good as I expected.",
+    "ja": "その映画、思ってたほど面白くなかったよ。",
+    "note": "not as ... as で「〜ほど…ではない」。否定の同等比較の定番形"
+  },
+  {
+    "no": 134,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "daily",
+    "en": "That was the best curry I've ever made.",
+    "ja": "今まで作った中で一番おいしいカレーだったよ。",
+    "note": "最上級 + I've ever 過去分詞で「今までで一番〜」を表す"
+  },
+  {
+    "no": 135,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "daily",
+    "en": "It's getting harder and harder to find cheap flights.",
+    "ja": "安い航空券を見つけるのがどんどん難しくなってるね。",
+    "note": "比較級 and 比較級で「どんどん〜になる」という変化を表す"
+  },
+  {
+    "no": 136,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "daily",
+    "en": "This supermarket is twice as expensive as the one nearby.",
+    "ja": "このスーパー、近くの店の2倍値段が高いんだよね。",
+    "note": "twice as ... as で「〜の2倍…」。倍数表現の基本形"
+  },
+  {
+    "no": 137,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "business",
+    "en": "I'll get back to you as soon as I can.",
+    "ja": "できるだけ早く折り返しますね。",
+    "note": "as soon as I can で「できるだけ早く」。as soon as possible とも言える"
+  },
+  {
+    "no": 138,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "business",
+    "en": "This plan is less risky than the original one.",
+    "ja": "この案のほうが元の案よりリスクが低いです。",
+    "note": "less + 形容詞 + than で「〜より…でない」。程度を下げる比較"
+  },
+  {
+    "no": 139,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "business",
+    "en": "She's one of the most reliable people in our office.",
+    "ja": "彼女はうちのオフィスで一番頼りになる人の一人だよ。",
+    "note": "one of the + 最上級 + 複数名詞で「最も〜な…の一人」"
+  },
+  {
+    "no": 140,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "business",
+    "en": "The meeting was much shorter than usual today.",
+    "ja": "今日の会議、いつもよりだいぶ短かったね。",
+    "note": "much + 比較級で差の大きさを強調。「いつもより」は than usual"
+  },
+  {
+    "no": 141,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "it",
+    "en": "The simpler the code, the easier it is to maintain.",
+    "ja": "コードはシンプルなほどメンテしやすいよ。",
+    "note": "the 比較級, the 比較級で「〜すればするほど…」を表す"
+  },
+  {
+    "no": 142,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "it",
+    "en": "The new server is faster than the old one.",
+    "ja": "新しいサーバーは前のより速いよ。",
+    "note": "比較級 + than の基本形。one で名詞の繰り返しを避ける"
+  },
+  {
+    "no": 143,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "it",
+    "en": "We're handling three times as many requests as last year.",
+    "ja": "去年の3倍のリクエストをさばいてるんだ。",
+    "note": "three times as many + 名詞 + as で「〜の3倍の数の…」"
+  },
+  {
+    "no": 144,
+    "category_no": 12,
+    "category": "比較",
+    "domain": "it",
+    "en": "This is the slowest query in the whole system.",
+    "ja": "これ、システム全体で一番遅いクエリなんだ。",
+    "note": "the + 最上級 + in 範囲で「〜の中で一番…」を表す"
+  },
+  {
+    "no": 145,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "daily",
+    "en": "If I were you, I'd take the earlier train.",
+    "ja": "私だったら、1本早い電車に乗るけどな。",
+    "note": "アドバイスの定番 If I were you, I'd。was ではなく were を使う"
+  },
+  {
+    "no": 146,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "daily",
+    "en": "I wish our apartment had a little more storage space.",
+    "ja": "うちの部屋にもう少し収納があればなあ。",
+    "note": "I wish + 過去形で現在の願望。had で今の不満を表す"
+  },
+  {
+    "no": 147,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "daily",
+    "en": "I should have booked our flights way earlier.",
+    "ja": "飛行機、もっと早く予約しておけばよかった。",
+    "note": "should have done で過去の後悔。「〜すればよかった」"
+  },
+  {
+    "no": 148,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "daily",
+    "en": "If I'd checked the weather, we wouldn't have gotten soaked.",
+    "ja": "天気を確認していれば、びしょ濡れにならずに済んだのに。",
+    "note": "仮定法過去完了。If I'd done, wouldn't have done で過去の反実仮想"
+  },
+  {
+    "no": 149,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "business",
+    "en": "I wish the client would make up their mind.",
+    "ja": "クライアントには早く決めてほしいんだけどね。",
+    "note": "I wish + would で相手の行動への不満・要望を表す"
+  },
+  {
+    "no": 150,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "business",
+    "en": "Without your help, I would have missed the deadline.",
+    "ja": "あなたの助けがなかったら、締め切りに間に合わなかったよ。",
+    "note": "Without 〜 が if 節の代わり。would have done とセットで使う"
+  },
+  {
+    "no": 151,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "business",
+    "en": "We shouldn't have promised such a tight deadline.",
+    "ja": "あんなにきつい納期を約束すべきじゃなかったな。",
+    "note": "shouldn't have done で「〜すべきじゃなかった」という後悔"
+  },
+  {
+    "no": 152,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "business",
+    "en": "If we had more staff, we could take on bigger projects.",
+    "ja": "人手がもっとあれば、大きな案件も受けられるのに。",
+    "note": "仮定法過去。If + 過去形, could do で現在の非現実を表す"
+  },
+  {
+    "no": 153,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "it",
+    "en": "If we'd written tests, we wouldn't be debugging this now.",
+    "ja": "テストを書いていれば、今ごろこんなデバッグはしてないのに。",
+    "note": "混合仮定法。過去の条件 + 現在の結果 wouldn't be doing"
+  },
+  {
+    "no": 154,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "it",
+    "en": "I wish I'd backed up the database before the migration.",
+    "ja": "移行の前にデータベースをバックアップしておけばよかった。",
+    "note": "I wish I'd done（wish + 過去完了）で過去への後悔"
+  },
+  {
+    "no": 155,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "it",
+    "en": "If only I'd saved the logs before restarting the server.",
+    "ja": "サーバーを再起動する前にログを取っておけばなあ。",
+    "note": "If only + 過去完了で強い後悔。I wish より感情がこもる"
+  },
+  {
+    "no": 156,
+    "category_no": 13,
+    "category": "仮定法",
+    "domain": "it",
+    "en": "What would you do if the whole system went down?",
+    "ja": "もしシステム全体が落ちたら、どうする？",
+    "note": "仮定法過去の疑問文。What would you do if + 過去形"
+  },
+  {
+    "no": 157,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "daily",
+    "en": "Mom said she'd make pancakes for breakfast tomorrow.",
+    "ja": "お母さん、明日の朝はパンケーキ作るって言ってたよ。",
+    "note": "will→would の時制の一致。said she'd で「〜するって言ってた」"
+  },
+  {
+    "no": 158,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "daily",
+    "en": "The doctor told me to get more sleep.",
+    "ja": "医者にもっと寝るように言われたんだ。",
+    "note": "told +人+ to do で指示の伝達。tell は目的語に人が必須"
+  },
+  {
+    "no": 159,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "daily",
+    "en": "My sister asked me if I liked her new haircut.",
+    "ja": "新しい髪型どうかって、妹に聞かれたよ。",
+    "note": "asked +人+ if で Yes/No 疑問の伝達。like→liked と時制一致"
+  },
+  {
+    "no": 160,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "daily",
+    "en": "He asked where we were going for summer vacation.",
+    "ja": "夏休みはどこに行くのって彼に聞かれた。",
+    "note": "asked where +平叙文の語順。where were we と倒置しない点に注意"
+  },
+  {
+    "no": 161,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "business",
+    "en": "She said the meeting had started without me.",
+    "ja": "会議、私抜きでもう始まってたって彼女が言ってた。",
+    "note": "報告時より前の出来事は had +過去分詞。say は後ろに人を取らない"
+  },
+  {
+    "no": 162,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "business",
+    "en": "My boss told me that the deadline was next Friday.",
+    "ja": "上司から、締め切りは来週の金曜だと言われたよ。",
+    "note": "told me that で内容を伝達。is→was の時制の一致"
+  },
+  {
+    "no": 163,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "business",
+    "en": "The client asked us to resend the quote.",
+    "ja": "クライアントから見積もりを再送してほしいと頼まれた。",
+    "note": "asked +人+ to do で依頼の伝達。指示の tell より丁寧な響き"
+  },
+  {
+    "no": 164,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "business",
+    "en": "I asked her whether she could join tomorrow's call.",
+    "ja": "明日の電話会議に出られるか、彼女に聞いてみたよ。",
+    "note": "asked whether で疑問の伝達。can→could の時制の一致"
+  },
+  {
+    "no": 165,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "it",
+    "en": "The lead told us not to push directly to main.",
+    "ja": "リーダーから、main に直接プッシュしないように言われてる。",
+    "note": "told +人+ not to do で禁止の伝達。not は to の直前に置く"
+  },
+  {
+    "no": 166,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "it",
+    "en": "The tester said the app kept crashing on older phones.",
+    "ja": "古い機種だとアプリが落ち続けるって、テスターが言ってたよ。",
+    "note": "say は say (that) +文の形。keeps→kept の時制の一致"
+  },
+  {
+    "no": 167,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "it",
+    "en": "The docs say you need admin rights to install it.",
+    "ja": "ドキュメントには、インストールに管理者権限が要るって書いてあるよ。",
+    "note": "伝える動詞が現在形 (say) なら時制の一致は不要"
+  },
+  {
+    "no": 168,
+    "category_no": 14,
+    "category": "間接話法・時制の一致",
+    "domain": "it",
+    "en": "She asked me when the fix would go live.",
+    "ja": "修正はいつ本番に反映されるのって彼女に聞かれた。",
+    "note": "疑問詞 when + would で未来の予定を間接疑問に。語順は平叙文のまま"
+  },
+  {
+    "no": 169,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "daily",
+    "en": "Do you know where the nearest pharmacy is?",
+    "ja": "一番近い薬局がどこにあるか知ってますか？",
+    "note": "間接疑問の語順。where の後は the pharmacy is と主語+動詞の順になる"
+  },
+  {
+    "no": 170,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "daily",
+    "en": "You haven't seen my keys anywhere, have you?",
+    "ja": "私の鍵、どこかで見かけてないよね？",
+    "note": "否定文には肯定の付加疑問 have you。軽く確認するときの言い方"
+  },
+  {
+    "no": 171,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "daily",
+    "en": "Would you mind watering the plants while I'm away?",
+    "ja": "留守の間、植物に水をあげてもらえますか？",
+    "note": "Would you mind + 動詞ing で丁寧な依頼。引き受けるなら Not at all など"
+  },
+  {
+    "no": 172,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "daily",
+    "en": "Do you have any idea how much this jacket costs?",
+    "ja": "このジャケット、いくらするか分かる？",
+    "note": "Do you have any idea + 間接疑問。know より「見当つく？」という響き"
+  },
+  {
+    "no": 173,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "business",
+    "en": "Could you tell me when the meeting starts?",
+    "ja": "会議が何時に始まるか教えてもらえますか？",
+    "note": "Could you tell me + when 節。後半は the meeting starts と平叙文の語順"
+  },
+  {
+    "no": 174,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "business",
+    "en": "Would you mind if I left a little early today?",
+    "ja": "今日は少し早めに上がってもかまいませんか？",
+    "note": "Would you mind if I + 過去形で控えめに許可を求める言い方"
+  },
+  {
+    "no": 175,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "business",
+    "en": "I was wondering if you could review my draft.",
+    "ja": "下書きに目を通していただけないかと思いまして。",
+    "note": "I was wondering if you could... は遠回しで丁寧な依頼の定番表現"
+  },
+  {
+    "no": 176,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "business",
+    "en": "You sent the invoice yesterday, didn't you?",
+    "ja": "昨日、請求書は送りましたよね？",
+    "note": "肯定文には否定の付加疑問 didn't you。事実の確認に使う"
+  },
+  {
+    "no": 177,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "it",
+    "en": "Do you know why the server went down last night?",
+    "ja": "昨夜サーバーが落ちた原因、分かりますか？",
+    "note": "Do you know why + 主語 + 動詞。疑問文の語順（did the server...）にしない"
+  },
+  {
+    "no": 178,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "it",
+    "en": "Any idea who pushed this change to production?",
+    "ja": "この変更を本番にプッシュしたの、誰か分かる？",
+    "note": "(Do you have) any idea...? の省略形。会話で頻出のカジュアルな聞き方"
+  },
+  {
+    "no": 179,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "it",
+    "en": "Can you tell me whether the backup finished successfully?",
+    "ja": "バックアップが正常に終わったかどうか教えてもらえますか？",
+    "note": "whether は「〜かどうか」。間接疑問では if と同じように使える"
+  },
+  {
+    "no": 180,
+    "category_no": 15,
+    "category": "疑問文・間接疑問",
+    "domain": "it",
+    "en": "How long do you think the migration will take?",
+    "ja": "移行にはどれくらいかかると思いますか？",
+    "note": "do you think は疑問詞の直後に挿入。その後ろは平叙文の語順になる"
+  },
+  {
+    "no": 181,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "daily",
+    "en": "I don't really like spicy food, to be honest.",
+    "ja": "正直、辛いものはあまり好きじゃないんだ。",
+    "note": "don't really で「あまり〜ない」。really don't（本当に嫌い）との語順の違いに注意"
+  },
+  {
+    "no": 182,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "daily",
+    "en": "We hardly ever eat out on weekdays.",
+    "ja": "平日はほとんど外食しないんだよね。",
+    "note": "hardly ever = ほとんど〜しない。頻度を柔らかく否定する言い方"
+  },
+  {
+    "no": 183,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "daily",
+    "en": "We don't go to that restaurant anymore.",
+    "ja": "あのレストランにはもう行ってないんだ。",
+    "note": "not 〜 anymore = もう〜しない。会話では no longer より自然"
+  },
+  {
+    "no": 184,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "daily",
+    "en": "Not all the shops here open on Sundays.",
+    "ja": "この辺のお店が全部日曜にやってるわけじゃないよ。",
+    "note": "Not all 〜 の部分否定。「全部が〜なわけではない」で全否定と区別"
+  },
+  {
+    "no": 185,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "business",
+    "en": "That's not exactly what I meant in the meeting.",
+    "ja": "会議で言いたかったのは、それとはちょっと違うんです。",
+    "note": "not exactly で「ちょっと違う」。直接否定を避ける柔らかい訂正表現"
+  },
+  {
+    "no": 186,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "business",
+    "en": "A longer meeting isn't necessarily a better one.",
+    "ja": "会議は長いほうがいいとは限りませんよ。",
+    "note": "not necessarily = 必ずしも〜ではない。断定を避ける部分否定"
+  },
+  {
+    "no": 187,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "business",
+    "en": "We've hardly had any time to review the report.",
+    "ja": "報告書を見直す時間がほとんど取れていません。",
+    "note": "hardly any = ほとんど〜ない。量がゼロに近いことを柔らかく伝える"
+  },
+  {
+    "no": 188,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "business",
+    "en": "The client isn't always available on Friday afternoons.",
+    "ja": "あのクライアント、金曜の午後はいつもつかまるとは限らないよ。",
+    "note": "not always = いつも〜とは限らない部分否定。全否定の never と区別"
+  },
+  {
+    "no": 189,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "it",
+    "en": "That version of the library is no longer maintained.",
+    "ja": "そのバージョンのライブラリは、もうメンテナンスされていないよ。",
+    "note": "no longer = もはや〜ない。anymore よりややフォーマルな響き"
+  },
+  {
+    "no": 190,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "it",
+    "en": "The fix isn't quite ready for release yet.",
+    "ja": "その修正、リリースにはまだ完全には仕上がっていません。",
+    "note": "not quite = 完全には〜ない。あと一歩というニュアンスの柔らかい否定"
+  },
+  {
+    "no": 191,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "it",
+    "en": "I can hardly read these logs without filtering them.",
+    "ja": "このログ、フィルタしないとほとんど読めないよ。",
+    "note": "can hardly = ほとんど〜できない。hardly 自体が否定語なので not は不要"
+  },
+  {
+    "no": 192,
+    "category_no": 16,
+    "category": "否定表現",
+    "domain": "it",
+    "en": "Not every alert means we have a real incident.",
+    "ja": "アラートが全部、本当の障害というわけじゃないからね。",
+    "note": "Not every 〜 の部分否定。単数名詞を受けて「すべてが〜とは限らない」"
+  },
+  {
+    "no": 193,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "daily",
+    "en": "Although I was tired, I stayed up to watch the game.",
+    "ja": "疲れてたけど、夜更かしして試合を見ちゃったよ。",
+    "note": "文頭の Although 節で「〜だけど」。主節に but を重ねない点に注意"
+  },
+  {
+    "no": 194,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "daily",
+    "en": "Take some snacks in case the kids get hungry later.",
+    "ja": "あとで子どもたちがお腹をすかせるといけないから、お菓子を持って行って。",
+    "note": "in case ＋現在形で「〜するといけないから」。条件の if と違い「備え」を表す"
+  },
+  {
+    "no": 195,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "daily",
+    "en": "By the way, did you try that new bakery near the station?",
+    "ja": "そういえば、駅前の新しいパン屋さんはもう行ってみた？",
+    "note": "文頭の by the way で話題をふっと切り替える。雑談の定番の入り方"
+  },
+  {
+    "no": 196,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "daily",
+    "en": "I don't cook on weekends unless we have guests.",
+    "ja": "お客さんが来ない限り、週末は料理しないんだ。",
+    "note": "unless は「〜しない限り」。unless 節の中をさらに否定形にしないのがポイント"
+  },
+  {
+    "no": 197,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "business",
+    "en": "While I like your plan, I'm worried about the budget.",
+    "ja": "プラン自体はいいと思うんですが、予算が気になります。",
+    "note": "対比の while「〜ではあるが」。やわらかく反対意見を切り出す型。時間の while と区別"
+  },
+  {
+    "no": 198,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "business",
+    "en": "Anyway, let's get back to the schedule for next week.",
+    "ja": "それはさておき、来週のスケジュールの話に戻りましょう。",
+    "note": "文頭の anyway で脱線した話を本題に戻す。会議進行の定番フレーズ"
+  },
+  {
+    "no": 199,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "business",
+    "en": "Unless I hear back by noon, I'll book the meeting room.",
+    "ja": "お昼までに返事がなければ、会議室を予約してしまいますね。",
+    "note": "文頭の Unless 節＋未来の主節。条件節の中は will を使わず現在形"
+  },
+  {
+    "no": 200,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "business",
+    "en": "I saved a copy of the report, just in case.",
+    "ja": "念のため、報告書のコピーを保存しておきました。",
+    "note": "文末の just in case は「万一に備えて・念のため」の決まり文句。後ろに節は不要"
+  },
+  {
+    "no": 201,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "it",
+    "en": "The fix works, although we haven't tested every edge case yet.",
+    "ja": "修正は動いていますが、まだ全部のエッジケースは試せていません。",
+    "note": "文中の although で軽く但し書きを添える型。話し言葉では though にも置き換え可"
+  },
+  {
+    "no": 202,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "it",
+    "en": "Don't restart the server while the migration is running.",
+    "ja": "マイグレーションの実行中は、サーバーを再起動しないでください。",
+    "note": "時間の while「〜している間」。while ＋進行形が定番。対比の用法と区別"
+  },
+  {
+    "no": 203,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "it",
+    "en": "The staging server is down again, by the way.",
+    "ja": "ちなみに、ステージングサーバーがまた落ちてるよ。",
+    "note": "文末の by the way は「ちなみに」と情報をついでに付け足す用法"
+  },
+  {
+    "no": 204,
+    "category_no": 17,
+    "category": "接続詞・談話標識",
+    "domain": "it",
+    "en": "The tests failed, but we were planning to rewrite that module anyway.",
+    "ja": "テストは落ちたけど、どのみちあのモジュールは書き直す予定だったし。",
+    "note": "文末の anyway は「どのみち・いずれにせよ」。話題を戻す文頭用法と区別"
+  },
+  {
+    "no": 205,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "daily",
+    "en": "I ran out of coffee, so I'm heading to the store.",
+    "ja": "コーヒーを切らしちゃったから、ちょっと買いに行ってくるね。",
+    "note": "run out of = 〜を切らす・使い果たす。of までセットで覚える"
+  },
+  {
+    "no": 206,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "daily",
+    "en": "We always eat out on Friday nights.",
+    "ja": "うちは金曜の夜はいつも外食なんだ。",
+    "note": "特定の曜日の夜は on（on Friday nights）。単独の「夜に」= at night と区別"
+  },
+  {
+    "no": 207,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "daily",
+    "en": "Let's meet at the station entrance at noon.",
+    "ja": "お昼の12時に駅の入口で待ち合わせよう。",
+    "note": "ピンポイントの地点・時刻は at（at the entrance / at noon）"
+  },
+  {
+    "no": 208,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "daily",
+    "en": "I can't put up with this noise from upstairs anymore.",
+    "ja": "上の階の騒音、もう我慢の限界だよ。",
+    "note": "put up with = 我慢する。3語で1つの動詞として丸ごと覚える"
+  },
+  {
+    "no": 209,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "business",
+    "en": "Our next meeting is on Tuesday morning, right?",
+    "ja": "次の打ち合わせは火曜の午前でしたよね？",
+    "note": "曜日＋時間帯は on（on Tuesday morning）。in the morning と混同しない"
+  },
+  {
+    "no": 210,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "business",
+    "en": "She's in a meeting now, so can I take a message?",
+    "ja": "彼女はいま会議中なので、ご伝言をお預かりしましょうか？",
+    "note": "「会議中」は in a meeting。従事している状態を表す in"
+  },
+  {
+    "no": 211,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "business",
+    "en": "I'll deal with the client's complaint first thing tomorrow.",
+    "ja": "その顧客からのクレームには、明日一番で対応します。",
+    "note": "deal with = 〜に対処する。仕事の会話で最頻出の句動詞のひとつ"
+  },
+  {
+    "no": 212,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "business",
+    "en": "Sorry, I need to put off our call until Thursday.",
+    "ja": "すみません、打ち合わせを木曜に延期しないといけなくなりました。",
+    "note": "put off = 延期する。put off A until B の形で使う"
+  },
+  {
+    "no": 213,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "it",
+    "en": "We finally figured out why the server kept crashing.",
+    "ja": "サーバーが落ち続けていた原因がやっと分かったよ。",
+    "note": "figure out = 考えて原因・答えを突き止める。障害調査の定番表現"
+  },
+  {
+    "no": 214,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "it",
+    "en": "Can you set up a test environment by tomorrow?",
+    "ja": "明日までにテスト環境を作ってもらえる？",
+    "note": "set up = 構築・準備する。環境やアカウントを作るときの定番"
+  },
+  {
+    "no": 215,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "it",
+    "en": "All our backups are stored in the cloud now.",
+    "ja": "うちのバックアップは今は全部クラウドに保存してるよ。",
+    "note": "「クラウド上に」は in the cloud。on ではなく in を使う"
+  },
+  {
+    "no": 216,
+    "category_no": 18,
+    "category": "前置詞・句動詞",
+    "domain": "it",
+    "en": "We're rolling out the security patch at midnight tonight.",
+    "ja": "今夜0時にセキュリティパッチを展開する予定なんだ。",
+    "note": "roll out = 新機能や更新を展開・リリースする。IT現場の頻出句動詞"
+  },
+  {
+    "no": 217,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "daily",
+    "en": "Would you like some coffee before we head out?",
+    "ja": "出かける前にコーヒーでもどう？",
+    "note": "人に勧める疑問文では any ではなく some を使う。"
+  },
+  {
+    "no": 218,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "daily",
+    "en": "I usually skip breakfast on busy mornings.",
+    "ja": "忙しい朝はだいたい朝ごはんを抜いちゃうんだ。",
+    "note": "breakfast/lunch/dinner など食事名は無冠詞で使う。"
+  },
+  {
+    "no": 219,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "daily",
+    "en": "I bought a few snacks for the road trip.",
+    "ja": "ドライブ旅行用にお菓子をいくつか買っておいたよ。",
+    "note": "a few＋可算名詞は「少しはある」という肯定的なニュアンス。"
+  },
+  {
+    "no": 220,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "daily",
+    "en": "Relax, we've got plenty of time before our flight.",
+    "ja": "落ち着いて、フライトまで時間はたっぷりあるから。",
+    "note": "plenty of は「十分すぎるほどある」。可算・不可算どちらにも使える。"
+  },
+  {
+    "no": 221,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "business",
+    "en": "I don't have any meetings tomorrow, so anytime works for me.",
+    "ja": "明日は会議が一つもないから、何時でも大丈夫だよ。",
+    "note": "否定文では some ではなく any。not any で「ゼロ」を表す。"
+  },
+  {
+    "no": 222,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "business",
+    "en": "Very few people showed up for the briefing this morning.",
+    "ja": "今朝の説明会、来た人はほとんどいなかったよ。",
+    "note": "a のない few は「ほとんどない」という否定的ニュアンス。会話では very few とすると自然。a few との違いに注意。"
+  },
+  {
+    "no": 223,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "business",
+    "en": "Could you give me a little more time on the report?",
+    "ja": "レポートにもう少しだけ時間をもらえますか？",
+    "note": "a little＋不可算名詞で「少し」。more を添えると追加を頼む言い方になる。"
+  },
+  {
+    "no": 224,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "business",
+    "en": "We're looking for a new supplier for office equipment.",
+    "ja": "オフィス備品の新しい仕入れ先を探しているんです。",
+    "note": "初めて話題に出す不特定の一つには a を使う。"
+  },
+  {
+    "no": 225,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "it",
+    "en": "The server's down again, so let's check the logs first.",
+    "ja": "またサーバーが落ちてる。まずログを確認しよう。",
+    "note": "状況からお互いにどれか特定できるものには the を付ける。"
+  },
+  {
+    "no": 226,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "it",
+    "en": "Did you make any changes to the config yesterday?",
+    "ja": "昨日、設定ファイルに何か変更した？",
+    "note": "疑問文の any は「何か少しでも」。有無を尋ねるときの定番。"
+  },
+  {
+    "no": 227,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "it",
+    "en": "There's very little documentation for this legacy system.",
+    "ja": "このレガシーシステム、ドキュメントがほとんどないんだよね。",
+    "note": "a のない little は不可算名詞に付いて「ほとんどない」を表す。"
+  },
+  {
+    "no": 228,
+    "category_no": 19,
+    "category": "冠詞・数量表現",
+    "domain": "it",
+    "en": "Passwords should never be stored in plain text.",
+    "ja": "パスワードは絶対に平文で保存しちゃだめだよ。",
+    "note": "一般論を述べるときの複数名詞は無冠詞にする。"
+  },
+  {
+    "no": 229,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "daily",
+    "en": "It takes about an hour to get to the airport.",
+    "ja": "ここから空港までは1時間くらいかかるよ。",
+    "note": "所要時間の It takes + 時間 + to do。時間を主語にしない言い方に慣れる"
+  },
+  {
+    "no": 230,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "daily",
+    "en": "What I really need right now is a good night's sleep.",
+    "ja": "今いちばん必要なのは、ぐっすり眠ることなんだ。",
+    "note": "What ... is 〜 の擬似分裂文。「必要なのは〜だ」と要点を強調する"
+  },
+  {
+    "no": 231,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "daily",
+    "en": "It's worth trying that new bakery near the station.",
+    "ja": "駅の近くの新しいパン屋、試してみる価値あるよ。",
+    "note": "It's worth -ing「〜する価値がある」。worth の後は動名詞になる"
+  },
+  {
+    "no": 232,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "daily",
+    "en": "It turns out the store is closed on Mondays.",
+    "ja": "その店、月曜は休みだって分かったよ。",
+    "note": "It turns out (that)「〜だと判明した」。あとで分かった事実を伝える定番"
+  },
+  {
+    "no": 233,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "business",
+    "en": "It seems that the client wants to move the deadline.",
+    "ja": "クライアントは締め切りをずらしたいみたいですね。",
+    "note": "It seems that「〜のようだ」。断定を避けて柔らかく報告する言い方"
+  },
+  {
+    "no": 234,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "business",
+    "en": "What I mean is we should confirm the schedule first.",
+    "ja": "つまり、まずスケジュールを確認すべきということです。",
+    "note": "What I mean is「つまり〜」。自分の発言を言い直して強調する前置き"
+  },
+  {
+    "no": 235,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "business",
+    "en": "It was the budget, not the timeline, that worried everyone.",
+    "ja": "みんなが心配していたのはスケジュールではなく予算のほうでした。",
+    "note": "It was X that ... の強調構文。X の部分だけを際立たせて伝える"
+  },
+  {
+    "no": 236,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "business",
+    "en": "Never have I seen the team this motivated before.",
+    "ja": "チームがこんなにやる気になっているのは初めて見ました。",
+    "note": "否定語 Never を文頭に置く倒置。have I と疑問文の語順になる"
+  },
+  {
+    "no": 237,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "it",
+    "en": "It looks like the server went down around midnight.",
+    "ja": "サーバーは夜中の12時ごろに落ちたみたいだね。",
+    "note": "It looks like + 文「〜みたいだ」。状況証拠からの推測を述べる"
+  },
+  {
+    "no": 238,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "it",
+    "en": "It's hard to reproduce this bug on my machine.",
+    "ja": "このバグ、僕のマシンだとなかなか再現できないんだ。",
+    "note": "It's + 形容詞 + to do の形式主語構文。to 以下が本当の主語"
+  },
+  {
+    "no": 239,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "it",
+    "en": "It's clear that the last update caused the login errors.",
+    "ja": "この前のアップデートがログインエラーの原因なのは明らかだね。",
+    "note": "It's clear that「〜なのは明らかだ」。that 節を受ける形式主語の it"
+  },
+  {
+    "no": 240,
+    "category_no": 20,
+    "category": "it構文・強調・倒置",
+    "domain": "it",
+    "en": "It makes sense to back up the database first.",
+    "ja": "まずデータベースをバックアップしておくのが賢明だね。",
+    "note": "It makes sense to do「〜するのが理にかなっている」。提案に使える定番"
+  },
+  {
+    "no": 241,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "daily",
+    "en": "My mom always makes me text her when I'm coming home late.",
+    "ja": "帰りが遅くなるときは、いつも母に連絡させられるんだよね。",
+    "note": "強制のmake + 人 + 動詞の原形。toは付けないことに注意"
+  },
+  {
+    "no": 242,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "daily",
+    "en": "My dad finally let me borrow his car for the weekend.",
+    "ja": "父がやっと週末に車を貸してくれたよ。",
+    "note": "許可のlet + 人 + 動詞の原形。allow ~ to doとの形の違いに注意"
+  },
+  {
+    "no": 243,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "daily",
+    "en": "I'll get my brother to drive us to the airport tomorrow.",
+    "ja": "明日は兄に頼んで空港まで車で送ってもらうよ。",
+    "note": "依頼のget + 人 + to do。make/haveと違ってtoが必要"
+  },
+  {
+    "no": 244,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "daily",
+    "en": "I saw your sister jogging along the river this morning.",
+    "ja": "今朝、君のお姉さんが川沿いをジョギングしてるのを見かけたよ。",
+    "note": "知覚のsee + 人 + doing。進行中の動作を目撃したときの形"
+  },
+  {
+    "no": 245,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "business",
+    "en": "Let me know if you need anything before tomorrow's meeting.",
+    "ja": "明日の会議までに何か必要なものがあれば教えてください。",
+    "note": "定番表現let me know。let + 人 + 原形をそのまま使う頻出フレーズ"
+  },
+  {
+    "no": 246,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "business",
+    "en": "I'll have my assistant send you the updated schedule this afternoon.",
+    "ja": "今日の午後、アシスタントに最新のスケジュールを送らせますね。",
+    "note": "手配のhave + 人 + 動詞の原形。部下などに業務を任せる場面で使う"
+  },
+  {
+    "no": 247,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "business",
+    "en": "I heard the directors discussing the budget in the meeting room.",
+    "ja": "会議室で役員たちが予算について話しているのが聞こえたよ。",
+    "note": "hear + 人 + doing。話している最中の一部を耳にしたニュアンス"
+  },
+  {
+    "no": 248,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "business",
+    "en": "We were made to wait an hour before the interview started.",
+    "ja": "面接が始まるまで1時間も待たされたんだ。",
+    "note": "使役makeの受け身 be made to do。受け身になるとtoが復活する"
+  },
+  {
+    "no": 249,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "it",
+    "en": "Could you have someone restart the staging server for me?",
+    "ja": "誰かにステージングサーバーの再起動をお願いしてもらえますか？",
+    "note": "Could you have + 人 + 原形? 人を動かしてもらう依頼の定番形"
+  },
+  {
+    "no": 250,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "it",
+    "en": "I can't get the security team to approve this release.",
+    "ja": "セキュリティチームがどうしてもこのリリースを承認してくれないんだ。",
+    "note": "can't get + 人 + to do。説得してもやってもらえない場面の言い方"
+  },
+  {
+    "no": 251,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "it",
+    "en": "I saw the memory usage climbing right before the crash.",
+    "ja": "クラッシュの直前、メモリ使用量がどんどん上がっていくのが見えたんだ。",
+    "note": "see + 目的語 + doing。変化が進行している様子を目撃した表現"
+  },
+  {
+    "no": 252,
+    "category_no": 21,
+    "category": "使役・知覚動詞",
+    "domain": "it",
+    "en": "Did you hear the server fans spinning up during the load test?",
+    "ja": "負荷テスト中にサーバーのファンが唸り出したの、聞こえた？",
+    "note": "hear + 目的語 + doingの疑問文。疑問文でも語順は変わらない"
+  },
+  {
+    "no": 253,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "daily",
+    "en": "Could you grab some milk on your way home?",
+    "ja": "帰りに牛乳を買ってきてくれる？",
+    "note": "依頼のCould you。Can youより一段丁寧で、日常の頼み事の定番"
+  },
+  {
+    "no": 254,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "daily",
+    "en": "Do you mind if I open the window a little?",
+    "ja": "ちょっと窓を開けてもいい？",
+    "note": "許可を求めるDo you mind if I。OKの返事はNot at allなど否定形になる点に注意"
+  },
+  {
+    "no": 255,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "daily",
+    "en": "Why don't we try that new ramen place this weekend?",
+    "ja": "今週末、あの新しいラーメン屋に行ってみない？",
+    "note": "提案のWhy don't we。理由を聞く文ではなく「〜しようよ」と誘う言い方"
+  },
+  {
+    "no": 256,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "daily",
+    "en": "Let me carry that bag for you.",
+    "ja": "その荷物、持つよ。",
+    "note": "申し出のLet me+動詞原形。「私にやらせて」と自分から手を挙げる表現"
+  },
+  {
+    "no": 257,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "business",
+    "en": "Would you mind sending me the report by tomorrow morning?",
+    "ja": "明日の朝までにレポートを送っていただけますか。",
+    "note": "Would you mind+動名詞。Could youよりさらに丁寧な依頼の階段の一段上"
+  },
+  {
+    "no": 258,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "business",
+    "en": "Could I leave a bit early today for a dentist appointment?",
+    "ja": "歯医者の予約があるので、今日は少し早く上がってもいいですか。",
+    "note": "許可を求めるCould I。Can Iより控えめで職場でも使いやすい"
+  },
+  {
+    "no": 259,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "business",
+    "en": "How about moving the meeting to Thursday afternoon?",
+    "ja": "会議を木曜の午後にずらすのはどうでしょう。",
+    "note": "提案のHow about+動名詞。代案を軽く差し出すときに便利"
+  },
+  {
+    "no": 260,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "business",
+    "en": "I was wondering if you could review my draft before Friday.",
+    "ja": "金曜までに私の草案を見ていただけないでしょうか。",
+    "note": "I was wondering if you could。過去進行形で心理的な距離を置く、最も丁寧な部類の依頼表現"
+  },
+  {
+    "no": 261,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "it",
+    "en": "Would it be okay if I restarted the staging server now?",
+    "ja": "今ステージングサーバーを再起動しても大丈夫でしょうか。",
+    "note": "Would it be okay if+過去形。仮定法で当たりを柔らかくする許可伺い"
+  },
+  {
+    "no": 262,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "it",
+    "en": "Shall we go through the error logs together after lunch?",
+    "ja": "昼休みの後、一緒にエラーログを見ていきましょうか。",
+    "note": "提案のShall we。「一緒に〜しましょうか」とやや改まって誘う言い方"
+  },
+  {
+    "no": 263,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "it",
+    "en": "Can you take a quick look at my pull request?",
+    "ja": "私のプルリク、ちょっと見てもらえる？",
+    "note": "カジュアル依頼のCan you。丁寧度は低めで気心の知れた同僚向け"
+  },
+  {
+    "no": 264,
+    "category_no": 22,
+    "category": "機能: 依頼・許可・提案",
+    "domain": "it",
+    "en": "Do you think you could roll back the last release?",
+    "ja": "直前のリリース、ロールバックしてもらえそうですか。",
+    "note": "Do you think you could。疑問を重ねて依頼の圧をやわらげる間接表現"
+  },
+  {
+    "no": 265,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "daily",
+    "en": "In my opinion, homemade meals taste much better than takeout.",
+    "ja": "私の考えでは、手作りごはんの方がテイクアウトよりずっとおいしいよ。",
+    "note": "意見表明の定番 In my opinion。文頭に置いてカンマで区切る"
+  },
+  {
+    "no": 266,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "daily",
+    "en": "I see your point, but the beach gets too crowded in August.",
+    "ja": "言いたいことは分かるけど、8月のビーチは混みすぎだよ。",
+    "note": "I see your point, but で一度受け止めてから反論する型"
+  },
+  {
+    "no": 267,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "daily",
+    "en": "That makes sense. Walking to work would save us money.",
+    "ja": "なるほどね。歩いて通勤すれば節約になるもんね。",
+    "note": "相手の話に納得を示す That makes sense。makes の三単現に注意"
+  },
+  {
+    "no": 268,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "daily",
+    "en": "If you ask me, we eat out way too often.",
+    "ja": "言わせてもらえば、うちは外食しすぎだよ。",
+    "note": "率直な私見を切り出す If you ask me（言わせてもらえば）"
+  },
+  {
+    "no": 269,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "business",
+    "en": "Personally, I think Friday meetings should be shorter.",
+    "ja": "個人的には、金曜の会議はもっと短くていいと思います。",
+    "note": "Personally, I think で「あくまで個人的には」と意見を和らげる"
+  },
+  {
+    "no": 270,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "business",
+    "en": "You have a point, but the deadline is already tight.",
+    "ja": "一理あるけど、締め切りはもうかなり厳しいんだ。",
+    "note": "You have a point, but で一理認めつつ切り返す"
+  },
+  {
+    "no": 271,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "business",
+    "en": "I couldn't agree more with your plan for the new schedule.",
+    "ja": "新しいスケジュールのご提案、まったく同感です。",
+    "note": "強い同意 I couldn't agree more（これ以上ないほど賛成）"
+  },
+  {
+    "no": 272,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "business",
+    "en": "I'm not sure I agree with hiring another contractor right now.",
+    "ja": "今もう一人外部の人を入れるのは、ちょっとどうかなと思います。",
+    "note": "I'm not sure I agree with 〜 でやんわり反対する婉曲表現"
+  },
+  {
+    "no": 273,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "it",
+    "en": "From my point of view, we should fix the login bug first.",
+    "ja": "私としては、まずログインのバグを直すべきだと思う。",
+    "note": "自分の立場からの見方を示す From my point of view"
+  },
+  {
+    "no": 274,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "it",
+    "en": "That's a fair point, but more servers won't fix the memory leak.",
+    "ja": "それはもっともだけど、サーバーを増やしてもメモリリークは直らないよ。",
+    "note": "That's a fair point で相手を立ててから but で反論"
+  },
+  {
+    "no": 275,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "it",
+    "en": "I'm with you on moving the database to the cloud.",
+    "ja": "データベースをクラウドに移すのは賛成だよ。",
+    "note": "カジュアルな同意 I'm with you on 〜（その点は同感）"
+  },
+  {
+    "no": 276,
+    "category_no": 23,
+    "category": "機能: 意見・同意・反対",
+    "domain": "it",
+    "en": "To be honest, I don't think this framework fits our project.",
+    "ja": "正直、このフレームワークはうちのプロジェクトには合わないと思う。",
+    "note": "To be honest で率直に前置き。否定は I don't think 〜 の形にする"
+  },
+  {
+    "no": 277,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "daily",
+    "en": "Sorry, could you say that again? The music's really loud here.",
+    "ja": "すみません、もう一度言ってもらえますか？ここ、音楽がすごくうるさくて。",
+    "note": "聞き返しの定番 Sorry, could you say that again?。could で丁寧さを出す"
+  },
+  {
+    "no": 278,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "daily",
+    "en": "What do you mean by 'a light meal'? Just a salad?",
+    "ja": "「軽い食事」ってどういう意味？サラダだけってこと？",
+    "note": "意味を尋ねる What do you mean by...?。by の後に相手の言葉をそのまま置く"
+  },
+  {
+    "no": 279,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "daily",
+    "en": "Let me see... I think we went there last summer.",
+    "ja": "ええっと…去年の夏にそこへ行った気がする。",
+    "note": "時間稼ぎの Let me see...。考えながら話すときのつなぎ言葉"
+  },
+  {
+    "no": 280,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "daily",
+    "en": "Sorry, I didn't catch the name of the station.",
+    "ja": "すみません、駅の名前が聞き取れませんでした。",
+    "note": "聞き取れなかったときの I didn't catch...。hear より会話で自然"
+  },
+  {
+    "no": 281,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "business",
+    "en": "Could you go over that last point one more time?",
+    "ja": "最後のポイントをもう一度説明してもらえますか？",
+    "note": "説明の繰り返しを頼む go over。one more time で「もう一度」を明示"
+  },
+  {
+    "no": 282,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "business",
+    "en": "Sorry, I'm not sure I follow. Which report do you mean?",
+    "ja": "すみません、ちょっと話が見えていなくて。どの報告書のことですか？",
+    "note": "理解が追いつかないときの I'm not sure I follow。follow は「話を理解する」の意味"
+  },
+  {
+    "no": 283,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "business",
+    "en": "That's a good question. Let me think for a second.",
+    "ja": "いい質問ですね。少し考えさせてください。",
+    "note": "即答できないときの時間稼ぎ That's a good question + Let me think"
+  },
+  {
+    "no": 284,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "business",
+    "en": "So, if I understand correctly, the meeting moved to Friday?",
+    "ja": "つまり、私の理解が正しければ、会議は金曜に変わったんですね？",
+    "note": "理解確認の if I understand correctly。平叙文の語尾を上げて確認する"
+  },
+  {
+    "no": 285,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "it",
+    "en": "You're breaking up. Could you repeat the server name, please?",
+    "ja": "音声が途切れています。サーバー名をもう一度言ってもらえますか？",
+    "note": "通話が途切れるときの break up。オンライン会議での聞き返しで頻出"
+  },
+  {
+    "no": 286,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "it",
+    "en": "When you say 'rollback', do you mean the whole release?",
+    "ja": "「ロールバック」というのは、リリース全体を戻すという意味ですか？",
+    "note": "When you say X, do you mean Y? で相手の意図を具体化して確認"
+  },
+  {
+    "no": 287,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "it",
+    "en": "How can I put it... the bug only appears in production.",
+    "ja": "なんて言えばいいかな…そのバグは本番環境でしか出ないんです。",
+    "note": "言葉を探すときの How can I put it...。説明前の時間稼ぎ表現"
+  },
+  {
+    "no": 288,
+    "category_no": 24,
+    "category": "機能: 聞き返し・会話管理",
+    "domain": "it",
+    "en": "Just to confirm, you need the logs from last night, right?",
+    "ja": "確認ですが、必要なのは昨夜のログですよね？",
+    "note": "認識合わせの Just to confirm。文末の right? で軽く念押しする"
+  },
+  {
+    "no": 289,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "daily",
+    "en": "Our grocery bill has almost doubled since last year.",
+    "ja": "うちの食費、去年からほぼ倍になっちゃったよ。",
+    "note": "倍増の have almost doubled。増減は double を動詞で言える"
+  },
+  {
+    "no": 290,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "daily",
+    "en": "First you boil the noodles, then you add the sauce.",
+    "ja": "まず麺をゆでて、それからソースを絡めるんだよ。",
+    "note": "手順説明の First ..., then ...。順番を示す基本の型"
+  },
+  {
+    "no": 291,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "daily",
+    "en": "It takes about twenty minutes to walk to the station.",
+    "ja": "駅までは歩いて20分くらいかかるよ。",
+    "note": "所要時間の It takes about ~。概数は about を添える"
+  },
+  {
+    "no": 292,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "daily",
+    "en": "Three out of four people in my family wear glasses.",
+    "ja": "うちの家族、4人のうち3人がメガネかけてるんだ。",
+    "note": "割合の three out of four。「〜人中…人」は out of で表す"
+  },
+  {
+    "no": 293,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "business",
+    "en": "Sales went up by fifteen percent compared to last quarter.",
+    "ja": "売上は前の四半期と比べて15%伸びました。",
+    "note": "増加幅を表す by。went up by ~ percent の形"
+  },
+  {
+    "no": 294,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "business",
+    "en": "This chart shows how our costs have changed over time.",
+    "ja": "このグラフを見ると、コストの推移がわかります。",
+    "note": "図表説明の This chart shows how ~。後ろは間接疑問の語順"
+  },
+  {
+    "no": 295,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "business",
+    "en": "Roughly half of our clients renewed their contracts this year.",
+    "ja": "今年はクライアントのほぼ半数が契約を更新してくれました。",
+    "note": "概数の roughly half of ~。「約〜」は roughly で言える"
+  },
+  {
+    "no": 296,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "business",
+    "en": "Let me quickly walk you through the plan for the launch.",
+    "ja": "ローンチまでの計画をざっと順を追って説明しますね。",
+    "note": "手順をひと通り説明する walk you through ~"
+  },
+  {
+    "no": 297,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "it",
+    "en": "The error rate has been dropping steadily since the fix.",
+    "ja": "修正を入れてから、エラー率は着実に下がり続けています。",
+    "note": "傾向の has been dropping steadily。継続する変化は現在完了進行形"
+  },
+  {
+    "no": 298,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "it",
+    "en": "Response time dropped from three seconds to under one.",
+    "ja": "応答時間が3秒から1秒未満まで縮まりました。",
+    "note": "変化の幅は from A to B。dropped from ~ to ~ の形"
+  },
+  {
+    "no": 299,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "it",
+    "en": "Once you restart the server, the new settings take effect.",
+    "ja": "サーバーを再起動すれば、新しい設定が反映されます。",
+    "note": "手順・条件の Once you ~。「いったん〜したら」を表す"
+  },
+  {
+    "no": 300,
+    "category_no": 25,
+    "category": "機能: 描写・説明・数字",
+    "domain": "it",
+    "en": "The bug only happens when two people edit the same file.",
+    "ja": "そのバグは、2人が同じファイルを編集したときにだけ起きるんです。",
+    "note": "状況説明の only happens when ~。発生条件を when 節で示す"
+  }
+]
