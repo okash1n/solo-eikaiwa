@@ -132,11 +132,15 @@ async function handleModelTalk(req: Request, deps: RouteDeps): Promise<Response>
   if (!parsed.body.topicId?.trim()) return json({ error: "topicId is required" }, 400);
   const talk = await deps.modelTalk(parsed.body.topicId);
   if (!talk) return json({ error: "unknown topicId" }, 404);
-  deps.libraryStore.saveModelTalk({
-    topicId: parsed.body.topicId,
-    topicTitle: talk.topicTitle ?? "",
-    text: talk.text,
-  });
+  try {
+    deps.libraryStore.saveModelTalk({
+      topicId: parsed.body.topicId,
+      topicTitle: talk.topicTitle ?? "",
+      text: talk.text,
+    });
+  } catch (err) {
+    console.warn("[library] saveModelTalk failed, continuing:", String(err));
+  }
   return json({ text: talk.text });
 }
 

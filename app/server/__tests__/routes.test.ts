@@ -676,4 +676,24 @@ describe("library", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ entries: [entry] });
   });
+
+  test("saveModelTalk が例外を投げても POST /api/coach/model-talk は200で {text} を返す", async () => {
+    const { deps } = makeTestDeps({
+      libraryStore: {
+        saveModelTalk: () => {
+          throw new Error("disk full");
+        },
+        listModelTalks: () => [],
+      },
+    });
+    const res = await makeFetchHandler(deps)(
+      new Request("http://x/api/coach/model-talk", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ topicId: "known-topic" }),
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ text: "model talk" });
+  });
 });
