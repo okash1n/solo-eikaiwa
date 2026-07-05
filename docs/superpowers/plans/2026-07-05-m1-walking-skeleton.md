@@ -81,6 +81,7 @@ models/
 app/.env
 dist/
 *.log
+.superpowers/
 ```
 
 `data/.gitignore`:
