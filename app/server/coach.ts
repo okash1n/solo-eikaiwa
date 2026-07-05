@@ -29,7 +29,8 @@ const AE_SYSTEM = `You are an English error-correction coach for a Japanese IT p
 You receive the transcript of the learner's spoken monologue (round 1 of a 4/3/2 fluency task).
 Pick the 3-5 most impactful language problems (grammar, word choice, unnatural phrasing). Ignore filler words and small slips.
 Reply with STRICT JSON only — no markdown fences, no commentary — exactly this shape:
-{"items":[{"quote":"<the learner's exact words>","issue":"<short English label>","better":"<corrected natural version>","why_ja":"<1〜2文の簡潔な日本語解説>"}],"praise":"<one short encouraging sentence in English>"}`;
+{"items":[{"quote":"<the learner's exact words>","issue":"<short English label>","better":"<corrected natural version>","why_ja":"<1〜2文の簡潔な日本語解説>"}],"praise":"<one short encouraging sentence in English>"}
+Do not use any tools — reply directly with text only.`;
 
 export async function generateAeFeedback(
   args: { transcript: string; topicTitle: string },
@@ -45,7 +46,8 @@ export async function generateAeFeedback(
 
 const MODEL_TALK_SYSTEM = `You produce a model monologue for an English learner (CEFR B1) to shadow.
 Rules: 120-150 words, spoken register, first person, plain high-frequency vocabulary, short sentences.
-No headings, no lists — just the monologue text.`;
+No headings, no lists — just the monologue text.
+Do not use any tools — reply directly with text only.`;
 
 export async function generateModelTalk(
   args: { topicTitle: string; hints: string[] },
@@ -60,7 +62,8 @@ const REFLECTION_SYSTEM = `You review one day of an English learner's speaking p
 You receive the learner's utterances from today's session log.
 Reply with STRICT JSON only — no markdown fences — exactly this shape:
 {"goodPhrases":["<up to 3 phrases the learner used well>"],"fixes":[{"original":"<learner's words>","better":"<natural version>"}],"noteForTomorrow_ja":"<明日に向けた1〜2文の日本語メモ>"}
-Keep fixes to the 3 most useful items.`;
+Keep fixes to the 3 most useful items.
+Do not use any tools — reply directly with text only.`;
 
 export async function generateReflection(
   args: { events: SessionEvent[] },
@@ -86,7 +89,8 @@ Rules:
 - 6-8 chunks. Each must be something the learner can say aloud as-is and reuse in similar talks
   (e.g. "The main problem we had was ...", "What worked well was ...", "Let me give you an example.").
 - Prefer sentence starters and connectors over topic-specific full sentences.
-- outline: 3-4 bullets forming a simple talk skeleton (opening → 1-2 points → wrap-up), tied to the given hints.`;
+- outline: 3-4 bullets forming a simple talk skeleton (opening → 1-2 points → wrap-up), tied to the given hints.
+Do not use any tools — reply directly with text only.`;
 
 export async function generatePrepPack(
   args: { topicTitle: string; hints: string[] },
@@ -118,5 +122,6 @@ Rules:
 - Keep every reply SHORT: 2-4 sentences, then ask ONE question or make ONE request.
 - Use plain, high-frequency English (B1 level). No rare idioms.
 - Do NOT correct the learner's errors explicitly; respond naturally.
-- Never switch to Japanese.`;
+- Never switch to Japanese.
+- Do not use any tools — reply directly with text only.`;
 }

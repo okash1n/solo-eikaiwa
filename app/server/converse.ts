@@ -7,7 +7,8 @@ export const PARTNER_SYSTEM_PROMPT = `You are an English conversation partner fo
 - Keep every reply SHORT: 2-4 sentences, then ask ONE follow-up question.
 - Use plain, high-frequency English (B1 level). No rare idioms.
 - Do NOT correct errors explicitly in this mode; just respond naturally (recast briefly only when meaning is unclear).
-- Never switch to Japanese.`;
+- Never switch to Japanese.
+- Do not use any tools — reply directly with text only.`;
 
 export type ClaudeRunner = (
   prompt: string,
@@ -24,7 +25,13 @@ export function makeClaudeRunner(queryFn: typeof query): ClaudeRunner {
       options: {
         systemPrompt: opts?.systemPrompt ?? PARTNER_SYSTEM_PROMPT,
         model: "sonnet",
-        allowedTools: [],
+        // `allowedTools` only controls auto-allow/permission-prompt behavior; per the SDK's own
+        // sdk.d.ts docs it does NOT restrict which tools the model can see ("To restrict which
+        // tools are available, use the `tools` option instead."). An empty allowedTools array
+        // still leaves every built-in tool in the model's context, so it could still emit a
+        // tool_use and burn our single maxTurns budget → error_max_turns. `tools: []` is the
+        // option sdk.d.ts documents as "Disable all built-in tools", which is what we want here.
+        tools: [],
         maxTurns: 1,
         ...(resumeId ? { resume: resumeId } : {}),
       },

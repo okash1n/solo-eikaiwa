@@ -138,7 +138,7 @@ describe("makeClaudeRunner: SDK呼び出し引数のパススルー", () => {
     expect(calls[0].options).toMatchObject({
       systemPrompt: PARTNER_SYSTEM_PROMPT,
       model: "sonnet",
-      allowedTools: [],
+      tools: [],
       maxTurns: 1,
     });
   });
