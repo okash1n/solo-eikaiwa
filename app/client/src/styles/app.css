@@ -137,11 +137,13 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 .calendar-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-3); }
 .calendar-head h3 { font-size: var(--fs-md); margin: 0; }
 /* GitHub風: 列=週(8本)・各列は上から月→日の7日 */
-.cal { display: flex; gap: 5px; }
-.cal-weekdays { display: flex; flex-direction: column; gap: 5px; margin-right: var(--sp-1); }
+.cal { display: flex; gap: 5px; padding-right: 3px; }
+.cal-weekdays { display: flex; flex-direction: column; gap: 5px; margin-right: var(--sp-1); padding-top: 16px; }
 .cal-weekdays span { height: 18px; line-height: 18px; font-size: 10px; color: var(--text-muted); }
-.cal-week { display: flex; flex-direction: column; gap: 5px; }
-.cal-week-label { height: 14px; line-height: 14px; font-size: 10px; color: var(--text-muted); white-space: nowrap; width: max-content; margin-left: auto; }
+.cal-week { display: flex; flex-direction: column; gap: 5px; padding-top: 16px; position: relative; }
+/* ラベルは絶対配置にして列幅(18px)に影響させない */
+.cal-week-label { position: absolute; top: 0; left: 0; height: 14px; line-height: 14px; font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+.cal-week-label.is-last { left: auto; right: 0; }
 .day { width: 18px; height: 18px; border-radius: 5px; background: var(--border); }
 .day.is-done { background: var(--accent); }
 .day.is-today { outline: 2px solid var(--accent); outline-offset: 1px; }
