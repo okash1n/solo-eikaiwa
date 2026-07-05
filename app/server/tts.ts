@@ -45,7 +45,11 @@ async function synthesizeSay(text: string, spawn: SpawnFn): Promise<Uint8Array> 
   try {
     const aiff = path.join(work, "out.aiff");
     const mp3 = path.join(work, "out.mp3");
-    const s = await spawn(["say", "-v", "Samantha", "-o", aiff, text]);
+    const textFile = path.join(work, "text.txt");
+    // text は argv に直接渡さない（"-" 始まりの文字列が say のフラグとして
+    // 解釈される argv injection を防ぐため、ファイル経由で渡す）
+    await Bun.write(textFile, text);
+    const s = await spawn(["say", "-v", "Samantha", "-o", aiff, "-f", textFile]);
     if (s.exitCode !== 0) throw new Error(`say failed: ${s.stderr}`);
     const f = await spawn(["ffmpeg", "-i", aiff, mp3, "-y"]);
     if (f.exitCode !== 0) throw new Error(`ffmpeg failed: ${f.stderr}`);
@@ -61,16 +65,31 @@ export async function synthesize(
   const voice = opts.voice ?? DEFAULT_VOICE;
   const apiKey = opts.apiKey ?? Bun.env.OPENAI_API_KEY;
   const cacheDir = opts.cacheDir ?? TTS_CACHE_DIR;
-  mkdirSync(cacheDir, { recursive: true });
 
   if (apiKey) {
     const cachePath = path.join(cacheDir, `${cacheKeyFor(TTS_MODEL, voice, text)}.mp3`);
-    if (existsSync(cachePath)) {
-      return { audio: new Uint8Array(await Bun.file(cachePath).arrayBuffer()), mime: "audio/mpeg", engine: "openai" };
+    try {
+      mkdirSync(cacheDir, { recursive: true });
+      if (existsSync(cachePath)) {
+        return { audio: new Uint8Array(await Bun.file(cachePath).arrayBuffer()), mime: "audio/mpeg", engine: "openai" };
+      }
+    } catch (err) {
+      // キャッシュ用ディレクトリの準備失敗もベストエフォート扱い（合成自体は継続）
+      console.warn(`tts: cache dir prep failed for ${cacheDir}: ${String(err)}`);
     }
-    const audio = await synthesizeOpenAI(text, voice, apiKey, opts.fetchFn ?? fetch);
-    await Bun.write(cachePath, audio);
-    return { audio, mime: "audio/mpeg", engine: "openai" };
+    try {
+      const audio = await synthesizeOpenAI(text, voice, apiKey, opts.fetchFn ?? fetch);
+      try {
+        await Bun.write(cachePath, audio);
+      } catch (err) {
+        // キャッシュ書き込みの失敗はセッションを落とさない（ベストエフォート）
+        console.warn(`tts: cache write failed for ${cachePath}: ${String(err)}`);
+      }
+      return { audio, mime: "audio/mpeg", engine: "openai" };
+    } catch (err) {
+      // spec §4.5: TTS API 障害 → macOS say にフォールバックしてセッション継続
+      console.warn(`tts: OpenAI synthesis failed, falling back to say: ${String(err)}`);
+    }
   }
 
   const audio = await synthesizeSay(text, opts.spawnFn ?? realSpawn);
