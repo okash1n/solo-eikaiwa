@@ -7,6 +7,7 @@ type Status = "idle" | "recording" | "transcribing" | "thinking" | "speaking" | 
 
 export function App() {
   const [health, setHealth] = useState<Health | null>(null);
+  const [serverDown, setServerDown] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [errorMsg, setErrorMsg] = useState("");
@@ -14,7 +15,9 @@ export function App() {
   const recorderRef = useRef(new Recorder());
 
   useEffect(() => {
-    getHealth().then(setHealth).catch(() => setHealth(null));
+    getHealth()
+      .then((h) => { setHealth(h); setServerDown(false); })
+      .catch(() => { setHealth(null); setServerDown(true); });
     sessionStart();
     return () => { if (sessionIdRef.current) sessionEnd(sessionIdRef.current); };
   }, []);
@@ -65,12 +68,17 @@ export function App() {
   return (
     <main style={{ maxWidth: 640, margin: "2rem auto", fontFamily: "system-ui", padding: "0 1rem" }}>
       <h1 style={{ fontSize: "1.2rem" }}>learn-english — M1 walking skeleton</h1>
-      {health && !health.ok && (
+      {serverDown && (
+        <p style={{ color: "crimson" }}>
+          APIサーバに接続できません — `cd app && bun run dev` で起動してください
+        </p>
+      )}
+      {!serverDown && health && !health.ok && (
         <p style={{ color: "crimson" }}>
           依存が不足しています: {JSON.stringify(health)} — `scripts/setup.sh` を実行してください
         </p>
       )}
-      {health && health.ok && !health.ttsKey && (
+      {!serverDown && health && health.ok && !health.ttsKey && (
         <p style={{ color: "darkorange" }}>OPENAI_API_KEY 未設定のため TTS は say フォールバックです</p>
       )}
       <div style={{ margin: "1rem 0" }}>

@@ -29,7 +29,12 @@ export class Recorder {
 export async function playBlob(blob: Blob): Promise<void> {
   const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
-  await audio.play();
-  await new Promise<void>((resolve) => { audio.onended = () => resolve(); });
+  await new Promise<void>((resolve, reject) => {
+    audio.onended = () => resolve();
+    // デコード失敗等で onended が発火しない場合に "speaking" のまま固まらないよう、
+    // reject して呼び出し側（App.tsxの既存catch）にエラーを伝搬させ復帰させる
+    audio.onerror = () => { URL.revokeObjectURL(url); reject(new Error("audio playback failed")); };
+    audio.play().catch((err) => { URL.revokeObjectURL(url); reject(err instanceof Error ? err : new Error(String(err))); });
+  });
   URL.revokeObjectURL(url);
 }
