@@ -3,6 +3,8 @@ id: casual-interview
 kind: scenario
 title: "Casual interview with an engineering candidate"
 title_ja: "エンジニア候補者とのカジュアル面談（会社側）"
+domain: it
+level: [3, 5]
 ---
 Roleplay setup:
 - You represent your company; the AI plays the candidate

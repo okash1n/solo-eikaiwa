@@ -3,6 +3,8 @@ id: recent-article
 kind: topic
 title: "A technical article or news I read recently"
 title_ja: "最近読んだ技術記事・ニュース"
+domain: it
+level: [3, 5]
 ---
 Talk about:
 - What the article said, in your own words — 記事の内容を自分の言葉で

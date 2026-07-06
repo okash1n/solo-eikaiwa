@@ -3,6 +3,8 @@ id: ai-data-governance
 kind: topic
 title: "Data governance in the AI era"
 title_ja: "AI時代のデータガバナンス"
+domain: it
+level: [4, 6]
 ---
 Talk about:
 - Which data is safe to give to AI tools, and which is not — AIツールに渡してよいデータ・だめなデータ

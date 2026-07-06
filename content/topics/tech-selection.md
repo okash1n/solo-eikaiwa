@@ -3,6 +3,8 @@ id: tech-selection
 kind: topic
 title: "How I choose tools and technologies"
 title_ja: "技術・ツール選定の考え方"
+domain: it
+level: [3, 6]
 ---
 Talk about:
 - Your criteria: cost, security, lock-in, team fit? — 選定基準: コスト・セキュリティ・ロックイン・チーム適合？

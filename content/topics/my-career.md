@@ -3,6 +3,8 @@ id: my-career
 kind: topic
 title: "My career so far and where I am going"
 title_ja: "これまでのキャリアとこれから"
+domain: it
+level: [2, 5]
 ---
 Talk about:
 - The short version of your career story — キャリアの要約版

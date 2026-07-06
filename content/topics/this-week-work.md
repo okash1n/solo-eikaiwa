@@ -3,6 +3,8 @@ id: this-week-work
 kind: topic
 title: "What I worked on this week"
 title_ja: "今週やった仕事"
+domain: it
+level: [1, 4]
 ---
 Talk about:
 - The main thing you worked on and its goal — 今週のメインの仕事とそのゴール

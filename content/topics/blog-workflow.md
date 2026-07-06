@@ -3,6 +3,8 @@ id: blog-workflow
 kind: topic
 title: "How I write and review technical blog posts"
 title_ja: "技術ブログの執筆・レビューの進め方"
+domain: it
+level: [3, 5]
 ---
 Talk about:
 - Your writing pipeline from idea to published post — ネタ出しから公開までの執筆パイプライン

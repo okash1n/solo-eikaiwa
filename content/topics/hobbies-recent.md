@@ -3,6 +3,8 @@ id: hobbies-recent
 kind: topic
 title: "What you're into lately"
 title_ja: "最近ハマっていること"
+domain: daily
+level: [1, 4]
 ---
 Talk about:
 - Something you got into recently and how it started — 最近ハマったこととそのきっかけ

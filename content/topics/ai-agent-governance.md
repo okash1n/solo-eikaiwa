@@ -3,6 +3,8 @@ id: ai-agent-governance
 kind: topic
 title: "Governing AI agents at work"
 title_ja: "業務におけるAIエージェントのガバナンス"
+domain: it
+level: [4, 6]
 ---
 Talk about:
 - What AI agents do in your company today — 今、社内でAIエージェントが何をしているか

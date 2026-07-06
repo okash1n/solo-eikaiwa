@@ -3,6 +3,8 @@ id: abac-okta
 kind: topic
 title: "Designing attribute-based access control with Okta"
 title_ja: "OktaでのABACアクセス制御の設計"
+domain: it
+level: [4, 6]
 ---
 Talk about:
 - What problem does ABAC solve that role-based access control cannot? — RBACで解決できない、ABACが解く問題は？

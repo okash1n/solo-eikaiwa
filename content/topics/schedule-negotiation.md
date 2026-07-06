@@ -3,6 +3,8 @@ id: schedule-negotiation
 kind: topic
 title: "Deadlines and scheduling"
 title_ja: "締切と日程調整"
+domain: business
+level: [2, 5]
 ---
 Talk about:
 - A deadline you had to push back and why — 延ばしてもらった締切とその理由

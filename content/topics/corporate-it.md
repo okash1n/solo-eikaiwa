@@ -3,6 +3,8 @@ id: corporate-it
 kind: topic
 title: "What a modern corporate IT team does"
 title_ja: "モダンな情シスの仕事とは"
+domain: it
+level: [2, 4]
 ---
 Talk about:
 - How you explain your job to someone outside IT — IT外の人に自分の仕事をどう説明するか

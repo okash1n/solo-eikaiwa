@@ -3,6 +3,8 @@ id: zero-trust
 kind: topic
 title: "What zero trust means in practice"
 title_ja: "実務におけるゼロトラスト"
+domain: it
+level: [4, 6]
 ---
 Talk about:
 - Your one-sentence definition of zero trust — ゼロトラストの一文定義

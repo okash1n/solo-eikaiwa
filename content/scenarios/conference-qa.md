@@ -3,6 +3,8 @@ id: conference-qa
 kind: scenario
 title: "Q&A after your conference talk"
 title_ja: "カンファレンス登壇後のQ&A"
+domain: it
+level: [4, 6]
 ---
 Roleplay setup:
 - You just gave a talk (pick a topic from your articles)

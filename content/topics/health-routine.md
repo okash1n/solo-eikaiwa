@@ -3,6 +3,8 @@ id: health-routine
 kind: topic
 title: "Health and daily routine"
 title_ja: "健康と生活リズム"
+domain: daily
+level: [2, 4]
 ---
 Talk about:
 - Your typical morning routine — 朝のルーティン

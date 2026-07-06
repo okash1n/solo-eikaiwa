@@ -3,6 +3,8 @@ id: incident-response
 kind: topic
 title: "Handling a security or IT incident"
 title_ja: "セキュリティ/ITインシデント対応"
+domain: it
+level: [4, 6]
 ---
 Talk about:
 - Walk through an incident timeline: detect, triage, contain, review — 検知→トリアージ→封じ込め→振り返りの時系列

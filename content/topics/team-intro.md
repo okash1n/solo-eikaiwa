@@ -3,6 +3,8 @@ id: team-intro
 kind: topic
 title: "Introducing your team and company"
 title_ja: "チーム・会社の紹介"
+domain: business
+level: [2, 4]
 ---
 Talk about:
 - What your company does in one simple sentence — 会社のやっていることを一文で

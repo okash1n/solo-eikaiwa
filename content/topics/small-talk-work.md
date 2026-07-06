@@ -3,6 +3,8 @@ id: small-talk-work
 kind: topic
 title: "Small talk before a meeting"
 title_ja: "会議前のスモールトーク"
+domain: business
+level: [1, 3]
 ---
 Talk about:
 - How your week has been going — 今週の調子

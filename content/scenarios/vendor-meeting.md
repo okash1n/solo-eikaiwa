@@ -3,6 +3,8 @@ id: vendor-meeting
 kind: scenario
 title: "Regular meeting with a SaaS vendor"
 title_ja: "SaaSベンダーとの定例ミーティング"
+domain: it
+level: [3, 5]
 ---
 Roleplay setup:
 - You are the customer-side IT lead

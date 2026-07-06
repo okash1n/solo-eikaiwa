@@ -3,6 +3,8 @@ id: recruiting
 kind: topic
 title: "Recruiting engineers: what actually works"
 title_ja: "エンジニア採用で実際に効くこと"
+domain: it
+level: [3, 5]
 ---
 Talk about:
 - What you look for when you read a candidate profile — 候補者プロフィールのどこを見るか

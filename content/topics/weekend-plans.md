@@ -3,6 +3,8 @@ id: weekend-plans
 kind: topic
 title: "Your weekend"
 title_ja: "週末の過ごし方"
+domain: daily
+level: [1, 3]
 ---
 Talk about:
 - What you did last weekend — 先週末にやったこと

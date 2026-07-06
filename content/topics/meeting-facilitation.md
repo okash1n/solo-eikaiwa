@@ -3,6 +3,8 @@ id: meeting-facilitation
 kind: topic
 title: "Running a good meeting"
 title_ja: "会議をうまく回す"
+domain: business
+level: [3, 6]
 ---
 Talk about:
 - How you open a meeting and share the goal — 会議の始め方と目的の共有

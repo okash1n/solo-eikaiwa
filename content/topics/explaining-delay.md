@@ -3,6 +3,8 @@ id: explaining-delay
 kind: topic
 title: "Reporting a problem or delay"
 title_ja: "問題・遅延の報告"
+domain: business
+level: [3, 5]
 ---
 Talk about:
 - A time something went late and how you told people — 遅れが出たときの伝え方の実例
