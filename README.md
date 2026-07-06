@@ -133,19 +133,24 @@ Talk about:
 - English hint — 日本語の補足
 ```
 
-暗記例文（`content/sentences/sentences300.json`）も同じ発想で差し替え・追記できます（`no` の一意性だけ保つこと）。編集・追加した文の音声は次のコマンドで再生成できます（要 OPENAI_API_KEY・既存分はスキップされる冪等動作）:
+暗記例文（`content/sentences/sentences300.json`）も同じ発想で差し替え・追記できます（`no` の一意性だけ保つこと）。
+
+自分で書く代わりに、練習の実力データから教材を自動生成することもできます（要 Claude Code ログイン・完全オリジナル生成。書き込み前に検証され、不正な生成物はリポジトリに書き込まれません）:
 
 ```bash
-cd app && bun ../scripts/generate-sentence-audio.ts
+bun scripts/generate-content.ts sentences --dry   # 何が追加されるかのプレビュー（書き込みなし）
+bun scripts/generate-content.ts sentences         # 例文練習の自己評価から苦手カテゴリを選び、例文を4文ずつ追記
+bun scripts/generate-content.ts topics            # 現在のレベルに合ったお題2本+ロールプレイシナリオ1本を追加
 ```
 
-実力データに合わせて教材を増やすこともできます（要 Claude Code ログイン・完全オリジナル生成）:
+**編集・生成したあとの反映のさせ方**（ここだけ覚えれば大丈夫です）:
 
-```bash
-bun scripts/generate-content.ts sentences --dry   # SRSの苦手カテゴリ×4文をプレビュー
-bun scripts/generate-content.ts sentences         # 例文に追記（音声は上の差分生成コマンドで）
-bun scripts/generate-content.ts topics            # 現在レベル向けのお題2本+シナリオ1本を追加
-```
+| 何を変えた | やること |
+|---|---|
+| お題・シナリオ（`content/topics/`・`content/scenarios/`） | 何もしなくてOK（次のメニューから自動で反映） |
+| 暗記例文（手編集・`generate-content.ts sentences`） | ① 音声を差分生成: `cd app && bun ../scripts/generate-sentence-audio.ts`（要 OPENAI_API_KEY・生成済みはスキップ） ② サーバを再起動（例文は起動時に読み込むため。常駐なら `./scripts/status-daemon.sh` で確認して `launchctl kickstart`、開発なら `bun run dev` を再起動） |
+
+音声を生成しない場合も動きます（その文だけ macOS `say` の声になります）。新しい例文の「もっと詳しく」解説は、初回に押したときに生成されて以降はキャッシュされます。
 
 ## テスト
 
