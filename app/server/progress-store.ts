@@ -20,6 +20,8 @@ export type ProgressStore = {
   blockStart(kind: string, today?: string): { attemptId: number };
   /** accept/decline は提案が無ければ null。set は不正レベルで null */
   levelAction(action: "accept" | "decline" | "set", level?: number, today?: string): ProgressSummary | null;
+  /** プレースメント確定によるレベル設定（level_events kind: placement-set）。同一レベルは no-op */
+  placementSet(level: number, today?: string): ProgressSummary | null;
 };
 
 /** XP上限（kind別）。placement は固定値10のみ許容 */
@@ -153,6 +155,19 @@ export function makeProgressStore(db: Database): ProgressStore {
       [nowTs(), ymd, kind, from, to, rationale == null ? null : JSON.stringify(rationale)]);
   }
 
+  /** set系の共通処理。eventKind だけが異なる（manual-set / placement-set） */
+  function setLevelTo(level: number | undefined, eventKind: "manual-set" | "placement-set", today: string): ProgressSummary | null {
+    const row = ensureRow();
+    if (level === undefined || !Number.isInteger(level) || level < 1 || level > 999) return null;
+    // 同一レベルへの set は no-op（xp_into_level を維持し、level_events も記録しない）
+    if (level === row.level) return summarize(row, today);
+    recordLevelEvent(eventKind, row.level, level, null, today);
+    row.level = level;
+    row.xp_into_level = 0;
+    save(row);
+    return summarize(row, today);
+  }
+
   return {
     getLevel() {
       return ensureRow().level;
@@ -195,17 +210,8 @@ export function makeProgressStore(db: Database): ProgressStore {
     },
 
     levelAction(action, level, today = localYmd()) {
+      if (action === "set") return setLevelTo(level, "manual-set", today);
       const row = ensureRow();
-      if (action === "set") {
-        if (level === undefined || !Number.isInteger(level) || level < 1 || level > 999) return null;
-        // 同一レベルへの set は no-op（xp_into_level を維持し、level_events も記録しない）
-        if (level === row.level) return summarize(row, today);
-        recordLevelEvent("manual-set", row.level, level, null, today);
-        row.level = level;
-        row.xp_into_level = 0;
-        save(row);
-        return summarize(row, today);
-      }
       const proposal = computeProposal(row, today);
       if (!proposal) return null;
       if (action === "decline") {
@@ -225,6 +231,10 @@ export function makeProgressStore(db: Database): ProgressStore {
       recordLevelEvent(proposal.kind === "up" ? "accept-up" : "accept-down", fromLevel, row.level, proposal.rationale, today);
       save(row);
       return summarize(row, today);
+    },
+
+    placementSet(level, today = localYmd()) {
+      return setLevelTo(level, "placement-set", today);
     },
   };
 }

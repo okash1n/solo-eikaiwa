@@ -59,6 +59,11 @@ export function openDb(dbPath: string = DEFAULT_DB_PATH): Database {
     ts TEXT NOT NULL, ymd TEXT NOT NULL, kind TEXT NOT NULL,
     completed INTEGER NOT NULL DEFAULT 0
   )`);
+  db.run(`CREATE TABLE IF NOT EXISTS placement_results (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts TEXT NOT NULL, stage INTEGER NOT NULL, start_level INTEGER NOT NULL,
+    rationale TEXT NOT NULL, metrics TEXT NOT NULL
+  )`);
   return db;
 }
 

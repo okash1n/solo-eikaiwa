@@ -12,6 +12,7 @@ import type { Settings } from "./settings";
 import type { LibraryStore } from "./db";
 import type { Grade, SentenceStore } from "./sentences";
 import type { ProgressStore, XpKind } from "./progress-store";
+import { PLACEMENT_TASKS, type PlacementEvaluation, type PlacementStore, type PlacementSubmission } from "./placement";
 
 /**
  * HTTP ハンドラが依存する副作用を注入可能にする境界。
@@ -46,6 +47,10 @@ export type RouteDeps = {
   progressStore: ProgressStore;
   /** 明示的なレベル変更（accept/set）後に当日の通しメニューキャッシュを無効化する（decline では呼ばない） */
   invalidateMenuCache: () => void;
+  /** プレースメント測定結果の保存と最新取得（実体は placement.ts、テストはフェイク） */
+  placementStore: PlacementStore;
+  /** 3タスクの評価。LLM出力が不正なら null（ルートは502で再試行を促す） */
+  evaluatePlacement: (subs: PlacementSubmission[]) => Promise<PlacementEvaluation | null>;
 };
 
 function json(data: unknown, status = 200): Response {
@@ -258,6 +263,71 @@ async function handleProgressLevel(req: Request, deps: RouteDeps): Promise<Respo
   return json(s);
 }
 
+async function handlePlacementSubmit(req: Request, deps: RouteDeps): Promise<Response> {
+  const parsed = await parseJsonBody<{ tasks?: unknown }>(req);
+  if (!parsed.ok) return parsed.response;
+  const tasks = parsed.body.tasks;
+  if (!Array.isArray(tasks) || tasks.length !== PLACEMENT_TASKS.length) {
+    return json({ error: `tasks must be an array of ${PLACEMENT_TASKS.length} submissions` }, 400);
+  }
+  const subs: PlacementSubmission[] = [];
+  for (const raw of tasks as Array<Record<string, unknown>>) {
+    const def = PLACEMENT_TASKS.find((d) => d.id === raw?.taskId);
+    if (!def) return json({ error: "unknown taskId" }, 400);
+    if (subs.some((s) => s.taskId === def.id)) return json({ error: "duplicate taskId" }, 400);
+    if (typeof raw.transcript !== "string" || !raw.transcript.trim()) {
+      return json({ error: "transcript is required for every task" }, 400);
+    }
+    if (typeof raw.durationSec !== "number" || raw.durationSec <= 0 || raw.durationSec > 600) {
+      return json({ error: "durationSec must be between 1 and 600" }, 400);
+    }
+    if (typeof raw.wordCount !== "number" || !Number.isInteger(raw.wordCount) || raw.wordCount < 0 || raw.wordCount > 2000) {
+      return json({ error: "wordCount must be an integer between 0 and 2000" }, 400);
+    }
+    subs.push({ taskId: def.id, transcript: raw.transcript, durationSec: raw.durationSec, wordCount: raw.wordCount });
+  }
+  const ev = await deps.evaluatePlacement(subs);
+  if (!ev) return json({ error: "evaluation failed — please try submitting again" }, 502);
+  deps.placementStore.save({
+    stage: ev.stage, startLevel: ev.startLevel, rationale: ev.rationaleJa,
+    metrics: subs.map((s) => ({
+      taskId: s.taskId, wordCount: s.wordCount, durationSec: s.durationSec,
+      density: s.durationSec > 0 ? s.wordCount / s.durationSec : 0,
+    })),
+  });
+  // 測定完了XP（スペック§4.1: 10固定）。付与失敗で測定結果は失敗させない
+  try {
+    deps.progressStore.addXp("placement", 10, {});
+  } catch (err) {
+    console.warn("[placement] xp grant failed, continuing:", String(err));
+  }
+  return json({ stage: ev.stage, startLevel: ev.startLevel, rationale: ev.rationaleJa });
+}
+
+async function handlePlacementConfirm(req: Request, deps: RouteDeps): Promise<Response> {
+  const parsed = await parseJsonBody<{ accept?: unknown; level?: unknown }>(req);
+  if (!parsed.ok) return parsed.response;
+  const { accept, level } = parsed.body;
+  if (typeof accept !== "boolean") return json({ error: "accept must be a boolean" }, 400);
+  // 「今回は反映しない」— 測定履歴は submit 時点で保存済みなので何も変更しない（スペック§6.3）
+  if (!accept) return json(deps.progressStore.getSummary());
+  let target: number;
+  if (level !== undefined) {
+    if (typeof level !== "number") return json({ error: "level must be a number" }, 400);
+    target = level;
+  } else {
+    const latest = deps.placementStore.latest();
+    if (!latest) return json({ error: "no placement result to accept" }, 400);
+    target = latest.startLevel;
+  }
+  const previous = deps.progressStore.getLevel();
+  const s = deps.progressStore.placementSet(target);
+  if (!s) return json({ error: "level must be an integer between 1 and 999" }, 400);
+  // レベルが実際に変わったときだけ当日メニューを再構築する（manual-set と同じ規則）
+  if (previous !== target) deps.invalidateMenuCache();
+  return json(s);
+}
+
 function handleSentenceQueue(url: URL, deps: RouteDeps): Response {
   const raw = url.searchParams.get("new") ?? "10";
   const n = Number(raw);
@@ -304,6 +374,10 @@ export function makeFetchHandler(deps: RouteDeps): (req: Request) => Promise<Res
       if (req.method === "POST" && url.pathname === "/api/progress/xp") return await handleProgressXp(req, deps);
       if (req.method === "POST" && url.pathname === "/api/progress/block-start") return await handleProgressBlockStart(req, deps);
       if (req.method === "POST" && url.pathname === "/api/progress/level") return await handleProgressLevel(req, deps);
+      if (req.method === "GET" && url.pathname === "/api/placement/tasks") return json({ tasks: PLACEMENT_TASKS });
+      if (req.method === "POST" && url.pathname === "/api/placement/submit") return await handlePlacementSubmit(req, deps);
+      if (req.method === "POST" && url.pathname === "/api/placement/confirm") return await handlePlacementConfirm(req, deps);
+      if (req.method === "GET" && url.pathname === "/api/placement/latest") return json({ result: deps.placementStore.latest() });
       if (req.method === "GET" && url.pathname === "/api/library/model-talks")
         return json({ entries: deps.libraryStore.listModelTalks() });
       if (req.method === "GET" && url.pathname === "/api/settings") return json(deps.getSettings());

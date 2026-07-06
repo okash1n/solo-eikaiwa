@@ -255,3 +255,29 @@ describe("progress-store: levelAction", () => {
     expect(countAfter).toBe(countBefore); // level_events 行が増えない
   });
 });
+
+describe("progress-store: placementSet", () => {
+  test("レベルを変更し placement-set が level_events に記録される", () => {
+    const db = openDb(":memory:");
+    const store = makeProgressStore(db);
+    store.getSummary("2026-07-06"); // ensureRow（Lv13）
+    const s = store.placementSet(23, "2026-07-06");
+    expect(s!.level).toBe(23);
+    expect(s!.xpIntoLevel).toBe(0);
+    const ev = db.query<{ kind: string; from_level: number; to_level: number }, []>(
+      "SELECT kind, from_level, to_level FROM level_events ORDER BY id DESC LIMIT 1").get()!;
+    expect(ev).toEqual({ kind: "placement-set", from_level: 13, to_level: 23 });
+  });
+
+  test("同一レベルは no-op（xp_into_level 維持・イベント無し）/ 不正値は null", () => {
+    const db = openDb(":memory:");
+    const store = makeProgressStore(db);
+    store.addXp("block", 6, {}, "2026-07-06"); // xpIntoLevel=6
+    const s = store.placementSet(13, "2026-07-06");
+    expect(s!.xpIntoLevel).toBe(6);
+    const count = db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM level_events").get()!;
+    expect(count.n).toBe(0);
+    expect(store.placementSet(0, "2026-07-06")).toBeNull();
+    expect(store.placementSet(2.5, "2026-07-06")).toBeNull();
+  });
+});

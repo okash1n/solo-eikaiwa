@@ -12,6 +12,7 @@ import { makeLibraryStore, openDb } from "./db";
 import { loadSentences, makeSentenceStore } from "./sentences";
 import { makeProgressStore } from "./progress-store";
 import { prepParams, stageOf } from "./progression";
+import { evaluatePlacement, makePlacementStore } from "./placement";
 
 ensureDirs();
 const PORT = 3111;
@@ -21,6 +22,7 @@ const db = openDb();
 const libraryStore = makeLibraryStore(db);
 const sentenceStore = makeSentenceStore(db, loadSentences());
 const progressStore = makeProgressStore(db);
+const placementStore = makePlacementStore(db);
 
 const realDeps: RouteDeps = {
   transcribe: transcribeAudio,
@@ -56,6 +58,8 @@ const realDeps: RouteDeps = {
   sentenceStore,
   progressStore,
   invalidateMenuCache: () => invalidateTodayMenuCache(),
+  placementStore,
+  evaluatePlacement: (subs) => evaluatePlacement(subs),
 };
 
 Bun.serve({
