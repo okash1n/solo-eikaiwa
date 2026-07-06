@@ -1,7 +1,7 @@
 import { PLACEMENT_TASKS, type PlacementEvaluation, type PlacementStore, type PlacementSubmission } from "../placement";
 import type { ProgressStore } from "../progress-store";
 import { PLACEMENT_XP } from "../progression";
-import { json, parseJsonBody, exact, type RouteEntry } from "./http";
+import { json, parseJsonBody, exact, bestEffort, type RouteEntry } from "./http";
 
 export type PlacementRoutesDeps = {
   /** 3タスクの評価。LLM出力が不正なら null（ルートは502で再試行を促す） */
@@ -46,11 +46,8 @@ async function handlePlacementSubmit(req: Request, deps: PlacementRoutesDeps): P
     })),
   });
   // 測定完了XP（スペック§4.1: 10固定）。付与失敗で測定結果は失敗させない
-  try {
-    deps.progressStore.addXp("placement", PLACEMENT_XP, {});
-  } catch (err) {
-    console.warn("[placement] xp grant failed, continuing:", String(err));
-  }
+  bestEffort("[placement] xp grant failed, continuing:", () =>
+    deps.progressStore.addXp("placement", PLACEMENT_XP, {}));
   return json({ stage: ev.stage, startLevel: ev.startLevel, rationale: ev.rationaleJa });
 }
 

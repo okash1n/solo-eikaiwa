@@ -70,6 +70,14 @@ describe("content-gen / validateNewSentences", () => {
     expect(validateNewSentences([{ domain: "casual", en: "x", ja: "y", note: "" }], EXISTING, 1, "現在形")).toBeNull();
     expect(validateNewSentences([{ domain: "daily", en: "  ", ja: "y", note: "" }], EXISTING, 1, "現在形")).toBeNull();
   });
+
+  test("空の ja は候補全体を不採用にする（en 空拒否と同じ扱い）", () => {
+    const existing = [
+      { no: 1, category_no: 1, category: "現在形", domain: "daily", en: "I work here.", ja: "ここで働いています", note: "" },
+    ] as Sentence[];
+    const cands = [{ domain: "daily", en: "I test this daily.", ja: "   ", note: "現在形" }];
+    expect(validateNewSentences(cands, existing, 1, "現在形")).toBeNull();
+  });
 });
 
 describe("content-gen / contentToMarkdown", () => {

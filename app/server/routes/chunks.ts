@@ -2,7 +2,7 @@ import type { ChunkStore, CollectCandidate } from "../chunks";
 import type { Grade } from "../sentences";
 import type { ProgressStore } from "../progress-store";
 import { xpForGrade } from "../progression";
-import { json, parseJsonBody, exact, prefix, type RouteEntry } from "./http";
+import { json, parseJsonBody, exact, prefix, bestEffort, type RouteEntry } from "./http";
 
 export type ChunkRoutesDeps = {
   chunkStore: ChunkStore;
@@ -32,11 +32,8 @@ async function handleChunkGrade(req: Request, deps: ChunkRoutesDeps): Promise<Re
   const r = deps.chunkStore.grade(id, grade as Grade);
   if (!r) return json({ error: `unknown chunk id: ${id}` }, 400);
   // 例文と同じ努力XP（good=2 / soso=1 / bad=1）。付与失敗で採点は失敗させない
-  try {
-    deps.progressStore.addXp("srs-grade", xpForGrade(grade as Grade), { chunkId: id });
-  } catch (err) {
-    console.warn("[progress] srs-grade xp (chunk) failed, continuing:", String(err));
-  }
+  bestEffort("[progress] srs-grade xp (chunk) failed, continuing:", () =>
+    deps.progressStore.addXp("srs-grade", xpForGrade(grade as Grade), { chunkId: id }));
   return json(r);
 }
 

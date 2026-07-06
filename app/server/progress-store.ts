@@ -3,7 +3,7 @@ import { insertReturningId } from "./db-util";
 import {
   BOUNDARY_LEVELS, DEFAULT_LEVEL, demotionTargetLevel, needXp, stageOf, PLACEMENT_XP,
 } from "./progression";
-import { addDaysYmd, localYmd } from "./sentences";
+import { addDaysYmd, localYmd } from "./dates";
 
 export type XpKind = "block" | "srs-grade" | "placement";
 export type UpRationale = { xpReached: true; practicedDays14: number; completionRate: number };

@@ -34,6 +34,8 @@ export function validateNewSentences(
     if (!(DOMAINS as readonly string[]).includes(c.domain)) return null;
     const en = c.en.trim();
     if (!en || en.length > 200) return null;
+    const ja = c.ja.trim();
+    if (!ja) return null;
     const norm = normalizeEn(en);
     if (!norm || norms.has(norm)) return null;
     norms.add(norm);
@@ -41,7 +43,7 @@ export function validateNewSentences(
     out.push({
       no, category_no: categoryNo, category,
       domain: c.domain as Sentence["domain"],
-      en, ja: c.ja.trim(), note: c.note.trim(),
+      en, ja, note: c.note.trim(),
     });
   }
   return out;

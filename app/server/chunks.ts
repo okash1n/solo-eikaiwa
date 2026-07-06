@@ -1,5 +1,6 @@
 import type { Database } from "bun:sqlite";
-import { addDaysYmd, localYmd, srsTransition, type Grade, type SrsState } from "./sentences";
+import { srsTransition, type Grade, type SrsState } from "./sentences";
+import { addDaysYmd, localYmd } from "./dates";
 
 export type CollectSource = "ae" | "reflection";
 

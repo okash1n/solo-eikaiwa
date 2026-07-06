@@ -3,7 +3,8 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { openDb } from "../db";
-import { addDaysYmd, loadSentences, localYmd, makeSentenceStore, type Sentence } from "../sentences";
+import { loadSentences, makeSentenceStore, type Sentence } from "../sentences";
+import { addDaysYmd, localYmd } from "../dates";
 
 const FIVE: Sentence[] = [1, 2, 3, 4, 5].map((n) => ({
   no: n,

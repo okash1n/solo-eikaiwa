@@ -2,8 +2,6 @@ import type { Database } from "bun:sqlite";
 import { existsSync, readFileSync } from "node:fs";
 import { addDaysYmd, localYmd } from "./dates";
 import { EXPLANATIONS_FILE, SENTENCES_FILE } from "./paths";
-// 既存 import 元（chunks.ts / progress-store.ts / テスト）を壊さないための re-export
-export { addDaysYmd, localYmd } from "./dates";
 
 export type Sentence = {
   no: number;

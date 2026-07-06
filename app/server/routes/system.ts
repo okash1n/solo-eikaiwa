@@ -7,7 +7,7 @@ import { transcribeAudio } from "../stt";
 import { synthesize } from "../tts";
 import { checkHealth } from "../health";
 import { computeUtteranceMetrics, type UtteranceMetrics } from "../metrics";
-import { json, parseJsonBody, exact, type RouteEntry } from "./http";
+import { json, parseJsonBody, exact, bestEffort, type RouteEntry } from "./http";
 
 export type SystemRoutesDeps = {
   health: () => ReturnType<typeof checkHealth>;
@@ -30,15 +30,13 @@ async function handleStt(req: Request, deps: SystemRoutesDeps): Promise<Response
   const { text, segments } = await deps.transcribe(file);
   // メトリクスは補助情報 — 計算・記録の失敗で文字起こし自体を失敗させない
   let metrics: UtteranceMetrics | undefined;
-  try {
-    metrics = computeUtteranceMetrics(segments);
+  bestEffort("[metrics] compute/record failed, continuing:", () => {
+    const m = computeUtteranceMetrics(segments);
     appendEvent(deps.logFile(), {
-      ts: new Date().toISOString(), type: "stt_result", sessionId: "stt", text, meta: { metrics },
+      ts: new Date().toISOString(), type: "stt_result", sessionId: "stt", text, meta: { metrics: m },
     });
-  } catch (err) {
-    metrics = undefined;
-    console.warn("[metrics] compute/record failed, continuing:", String(err));
-  }
+    metrics = m;
+  });
   return json(metrics ? { text, metrics } : { text });
 }
 

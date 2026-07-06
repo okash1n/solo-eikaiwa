@@ -1,4 +1,4 @@
-import { json, parseJsonBody, exact, type RouteEntry } from "./http";
+import { json, parseJsonBody, exact, bestEffort, type RouteEntry } from "./http";
 import { xpForGrade } from "../progression";
 import type { Grade, SentenceStore } from "../sentences";
 import type { Chunk, ChunkStore } from "../chunks";
@@ -23,13 +23,11 @@ function handleSentenceQueue(url: URL, deps: SentenceRoutesDeps): Response {
   const sentences = deps.sentenceStore.queue(n).map((s) => ({ kind: "sentence" as const, ...s }));
   // 期限到来チャンクは復習例文より先頭。読み取り失敗時は例文キューだけで継続
   let chunks: Array<{ kind: "chunk" } & Omit<Chunk, "created" | "source">> = [];
-  try {
+  bestEffort("[chunks] dueChunks failed, continuing with sentences only:", () => {
     chunks = deps.chunkStore.dueChunks().map((c) => ({
       kind: "chunk" as const, id: c.id, promptText: c.promptText, en: c.en, note: c.note, srs: c.srs,
     }));
-  } catch (err) {
-    console.warn("[chunks] dueChunks failed, continuing with sentences only:", String(err));
-  }
+  });
   return json({ queue: [...chunks, ...sentences] });
 }
 
@@ -44,11 +42,8 @@ async function handleSentenceGrade(req: Request, deps: SentenceRoutesDeps): Prom
   const r = deps.sentenceStore.grade(no, grade as Grade);
   if (!r) return json({ error: `unknown sentence no: ${no}` }, 400);
   // 自己評価1枚ごとの努力XP（good=2 / soso=1 / bad=1）。付与失敗で採点自体は失敗させない
-  try {
-    deps.progressStore.addXp("srs-grade", xpForGrade(grade as Grade), { no });
-  } catch (err) {
-    console.warn("[progress] srs-grade xp failed, continuing:", String(err));
-  }
+  bestEffort("[progress] srs-grade xp failed, continuing:", () =>
+    deps.progressStore.addXp("srs-grade", xpForGrade(grade as Grade), { no }));
   return json(r);
 }
 
@@ -63,11 +58,8 @@ async function handleSentenceExplain(req: Request, deps: SentenceRoutesDeps): Pr
   if (!sentence) return json({ error: `unknown sentence no: ${no}` }, 400);
   const generated = await deps.explainSentence(sentence);
   // キャッシュ書き込み失敗は解説の返却を妨げない
-  try {
-    deps.sentenceStore.saveExplanation(no, generated.text);
-  } catch (err) {
-    console.warn("[sentences] explanation cache write failed, continuing:", String(err));
-  }
+  bestEffort("[sentences] explanation cache write failed, continuing:", () =>
+    deps.sentenceStore.saveExplanation(no, generated.text));
   return json({ no, text: generated.text });
 }
 
