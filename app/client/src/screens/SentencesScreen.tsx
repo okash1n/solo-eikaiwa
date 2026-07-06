@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  fetchSentenceExplanation, fetchSentenceQueue, fetchSentences, gradeSentence, playTtsCached,
-  type SentenceItem,
+  deleteChunk, fetchChunks, fetchSentenceExplanation, fetchSentenceQueue, fetchSentences, gradeChunk, gradeSentence, playTtsCached,
+  type ChunkListItem, type QueueItem, type SentenceItem,
 } from "../api";
 import { stopPlayback } from "../audio";
 import { clozeText } from "../cloze";
@@ -34,7 +34,7 @@ function saveHideNote(v: boolean): void {
 function PracticeTab({ lang, hideNote }: { lang: Lang; hideNote: boolean }) {
   const t = STR[lang].sentences;
   const [state, setState] = useState<LoadState>("loading");
-  const [queue, setQueue] = useState<SentenceItem[]>([]);
+  const [queue, setQueue] = useState<QueueItem[]>([]);
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState<Phase>("prompt");
   const [gradedCount, setGradedCount] = useState(0);
@@ -107,7 +107,8 @@ function PracticeTab({ lang, hideNote }: { lang: Lang; hideNote: boolean }) {
     setBusy(true);
     setErrorMsg("");
     try {
-      await gradeSentence(current.no, g);
+      if (current.kind === "chunk") await gradeChunk(current.id, g);
+      else await gradeSentence(current.no, g);
       if (!aliveRef.current) return;
       stopPlayback();
       setGradedCount((n) => n + 1);
@@ -141,12 +142,19 @@ function PracticeTab({ lang, hideNote }: { lang: Lang; hideNote: boolean }) {
     <div className="stack">
       <p className="text-sm text-muted">{t.remaining(queue.length - idx, gradedCount)}</p>
       <Card>
-        <p className="sentence-ja">{current.ja}</p>
+        {current.kind === "chunk" ? (
+          <>
+            <p className="text-sm text-muted">{t.chunkLabel}</p>
+            <p className="sentence-ja">{current.promptText}</p>
+          </>
+        ) : (
+          <p className="sentence-ja">{current.ja}</p>
+        )}
         {/* ヒント非表示中でも答え合わせ時は表示する（隠す意味があるのは想起の前だけ） */}
-        {(!hideNote || phase === "answer") && <p className="text-sm text-muted">{current.note}</p>}
+        {(!hideNote || phase === "answer") && current.note && <p className="text-sm text-muted">{current.note}</p>}
         {phase === "prompt" && (
           <>
-            <p className="text-muted">{t.sayItFirst}</p>
+            <p className="text-muted">{current.kind === "chunk" ? t.chunkSayIt : t.sayItFirst}</p>
             <div className="round-actions">
               <Button variant="secondary" onClick={() => setPhase("cloze")}>{t.showCloze}</Button>
               <Button variant="primary" size="lg" onClick={reveal}>{t.showAnswer}</Button>
@@ -155,7 +163,9 @@ function PracticeTab({ lang, hideNote }: { lang: Lang; hideNote: boolean }) {
         )}
         {phase === "cloze" && (
           <>
-            <p className="sentence-cloze">{clozeText(current.en, current.no)}</p>
+            <p className="sentence-cloze">
+              {clozeText(current.en, current.kind === "chunk" ? current.id + 100000 : current.no)}
+            </p>
             <p className="text-muted">{t.clozeHint}</p>
             <div className="round-actions">
               <Button variant="primary" size="lg" onClick={reveal}>{t.showAnswer}</Button>
@@ -169,7 +179,8 @@ function PracticeTab({ lang, hideNote }: { lang: Lang; hideNote: boolean }) {
               <Button variant="ghost" onClick={() => playTtsCached(current.en).catch(() => {})} ariaLabel={t.playAgain}>
                 {t.playAgain}
               </Button>
-              {explain === null && (
+              {/* 解説は固定300文専用 — チャンクは AE フィードバック由来の note を既に持つ */}
+              {current.kind === "sentence" && explain === null && (
                 <Button
                   variant="ghost"
                   onClick={async () => {
@@ -186,8 +197,8 @@ function PracticeTab({ lang, hideNote }: { lang: Lang; hideNote: boolean }) {
                 </Button>
               )}
             </div>
-            {explain === "loading" && <p className="text-sm text-muted">{t.explainLoading}</p>}
-            {explain !== null && explain !== "loading" && (
+            {current.kind === "sentence" && explain === "loading" && <p className="text-sm text-muted">{t.explainLoading}</p>}
+            {current.kind === "sentence" && explain !== null && explain !== "loading" && (
               <p className="sentence-explain text-sm">{explain}</p>
             )}
             <div className="grade-row">
@@ -210,6 +221,9 @@ function BrowseTab({ lang }: { lang: Lang }) {
   const [items, setItems] = useState<SentenceItem[]>([]);
   const [filter, setFilter] = useState<"all" | SentenceItem["domain"]>("all");
   const [playingNo, setPlayingNo] = useState<number | null>(null);
+  const [chunks, setChunks] = useState<ChunkListItem[]>([]);
+  const [playingChunkId, setPlayingChunkId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const aliveRef = useRef(true);
   const fetchedRef = useRef(false);
@@ -234,6 +248,13 @@ function BrowseTab({ lang }: { lang: Lang }) {
       const all = await fetchSentences();
       if (!aliveRef.current) return;
       setItems(all);
+      try {
+        const cs = await fetchChunks();
+        if (!aliveRef.current) return;
+        setChunks(cs);
+      } catch {
+        // チャンクは補助セクション — 取得失敗でも例文一覧は表示する
+      }
       setState("ready");
     } catch (err) {
       if (!aliveRef.current) return;
@@ -251,6 +272,36 @@ function BrowseTab({ lang }: { lang: Lang }) {
       setErrorMsg(err instanceof Error ? err.message : String(err));
     } finally {
       if (aliveRef.current) setPlayingNo(null);
+    }
+  }
+
+  async function playChunk(c: ChunkListItem) {
+    setPlayingChunkId(c.id);
+    try {
+      await playTtsCached(c.en);
+    } catch (err) {
+      if (!aliveRef.current) return;
+      setErrorMsg(err instanceof Error ? err.message : String(err));
+    } finally {
+      if (aliveRef.current) setPlayingChunkId(null);
+    }
+  }
+
+  /** 削除は2タップ式: 1タップ目でボタンが「削除する?」に変わり、2タップ目で確定 */
+  async function onDeleteChunk(id: number) {
+    if (deletingId !== id) {
+      setDeletingId(id);
+      return;
+    }
+    try {
+      await deleteChunk(id);
+      if (!aliveRef.current) return;
+      setChunks((cs) => cs.filter((c) => c.id !== id));
+    } catch (err) {
+      if (!aliveRef.current) return;
+      setErrorMsg(err instanceof Error ? err.message : String(err));
+    } finally {
+      if (aliveRef.current) setDeletingId(null);
     }
   }
 
@@ -275,6 +326,31 @@ function BrowseTab({ lang }: { lang: Lang }) {
         ))}
       </div>
       {errorMsg && <Banner kind="error">{errorMsg}</Banner>}
+      {chunks.length > 0 && (
+        <Card header={t.myChunks}>
+          {chunks.map((c) => (
+            <div key={c.id} className="sentence-row">
+              <Button
+                variant="ghost"
+                onClick={() => playChunk(c)}
+                disabled={playingNo !== null || playingChunkId !== null}
+                ariaLabel={t.playChunkAria(c.id)}
+              >
+                {playingChunkId === c.id ? "🔊" : "▶"}
+              </Button>
+              <div className="sentence-body">
+                <span className="sentence-en">{c.en}</span>
+                <span className="sentence-ja-sub">{c.promptText}</span>
+                {c.note && <span className="text-sm text-muted">{c.note}</span>}
+              </div>
+              <span className="sentence-srs text-sm text-muted">{`st${c.srs.stage} ・ ${c.srs.due.slice(5)}`}</span>
+              <Button variant={deletingId === c.id ? "danger" : "ghost"} onClick={() => onDeleteChunk(c.id)} ariaLabel={t.deleteAria(c.id)}>
+                {deletingId === c.id ? t.deleteConfirm : "🗑"}
+              </Button>
+            </div>
+          ))}
+        </Card>
+      )}
       {categories.map(([catNo, catName]) => (
         <Card key={catNo} header={`${catNo}. ${catName}`}>
           {shown.filter((s) => s.category_no === catNo).map((s) => (
@@ -282,7 +358,7 @@ function BrowseTab({ lang }: { lang: Lang }) {
               <Button
                 variant="ghost"
                 onClick={() => play(s)}
-                disabled={playingNo !== null}
+                disabled={playingNo !== null || playingChunkId !== null}
                 ariaLabel={t.playAria(s.no)}
               >
                 {playingNo === s.no ? "🔊" : "▶"}

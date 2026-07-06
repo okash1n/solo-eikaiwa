@@ -71,6 +71,12 @@ type Strings = {
     domain: { daily: string; business: string; it: string };
     srsNew: string;
     playAria: (no: number) => string;
+    chunkLabel: string;
+    chunkSayIt: string;
+    myChunks: string;
+    deleteConfirm: string;
+    deleteAria: (id: number) => string;
+    playChunkAria: (id: number) => string;
   };
 };
 
@@ -163,6 +169,12 @@ export const STR: Record<Lang, Strings> = {
       domain: { daily: "Daily", business: "Business", it: "IT" },
       srsNew: "New",
       playAria: (no) => `Play No.${no}`,
+      chunkLabel: "Your phrase",
+      chunkSayIt: "↑ Say a more natural version out loud",
+      myChunks: "My chunks — collected from your sessions",
+      deleteConfirm: "Delete?",
+      deleteAria: (id) => `Delete chunk ${id}`,
+      playChunkAria: (id) => `Play chunk ${id}`,
     },
   },
   ja: {
@@ -249,6 +261,12 @@ export const STR: Record<Lang, Strings> = {
       domain: { daily: "日常", business: "ビジネス", it: "IT" },
       srsNew: "未学習",
       playAria: (no) => `No.${no} を再生`,
+      chunkLabel: "あなたの表現",
+      chunkSayIt: "↑ より自然な言い方を声に出してみましょう",
+      myChunks: "マイチャンク — セッションから自動収集",
+      deleteConfirm: "削除する?",
+      deleteAria: (id) => `チャンク${id}を削除`,
+      playChunkAria: (id) => `チャンク${id}を再生`,
     },
   },
 };
