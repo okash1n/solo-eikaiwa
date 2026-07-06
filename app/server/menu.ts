@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { PROGRESS_DIR, SCENARIOS_DIR, TOPICS_DIR } from "./paths";
+import { DEFAULT_LEVEL, fttMiniRoundsSec, fttRoundsSec, prepParams, stageOf } from "./progression";
 
 export type BlockKind = "chunk-placeholder" | "warmup-reading" | "four-three-two" | "roleplay" | "shadowing" | "reflection";
 /** BlockKind の全メンバー列挙（単一ソース）。routes.ts のバリデーションなど値配列が必要な箇所から import する */
@@ -19,17 +20,8 @@ export type Menu = { minutes: number; date: string; blocks: MenuBlock[] };
 /** id → 使用日(YYYY-MM-DD)の配列。新しい日付が末尾、最大7件保持 */
 export type UsageMap = Record<string, string[]>;
 
-/** 4/3/2 ブロックのラウンド秒数。スキャフォールド較正値（流暢性が伸びたら [180,120,90] → [240,180,120] へ戻す） */
-export const FTT_ROUNDS_SEC: readonly number[] = [120, 90, 60];
-
-/** クイックドリル（4/3/2ミニ）のラウンド秒数。2ラウンドで反復メカニズムを保ちつつ短縮 */
-export const FTT_MINI_ROUNDS_SEC: readonly number[] = [120, 90];
-
 export type QuickKind = "warmup" | "ftt-mini" | "roleplay" | "shadowing";
 export const QUICK_KINDS: readonly QuickKind[] = ["warmup", "ftt-mini", "roleplay", "shadowing"];
-
-/** Phase B でレベル駆動になるまでの既定ステージ（スペック §3.2: デフォルト Lv13 = stage 2） */
-export const DEFAULT_STAGE = 2;
 
 /** rotation 永続化 v2。旧形式（UsageMap 直置き）は読み込み時に移行する */
 export type RotationState = {
@@ -118,6 +110,12 @@ export function pickNext(items: ContentItem[], usage: UsageMap, todayYmd: string
   })[0];
 }
 
+/** stage 適合プール（空なら全体にフォールバック） */
+export function filterInBand(items: ContentItem[], stage: number): ContentItem[] {
+  const inBand = items.filter((it) => it.level[0] <= stage && stage <= it.level[1]);
+  return inBand.length > 0 ? inBand : items;
+}
+
 /**
  * 帯域フィルタ → ドメインラウンドロビン → LRU の選択（スペック §7.3）。
  * stage 適合プール（空なら全体にフォールバック）から、前回ドメインの次を優先して
@@ -127,8 +125,7 @@ export function pickNextByDomain(
   items: ContentItem[], state: RotationState, todayYmd: string, stage: number, kind: "topic" | "scenario",
 ): ContentItem {
   if (items.length === 0) throw new Error("no content items available");
-  const inBand = items.filter((it) => it.level[0] <= stage && stage <= it.level[1]);
-  const pool = inBand.length > 0 ? inBand : items;
+  const pool = filterInBand(items, stage);
   const last = state.lastDomain[kind];
   const start = last === "" ? 0 : (DOMAINS.indexOf(last) + 1) % DOMAINS.length;
   for (let i = 0; i < DOMAINS.length; i++) {
@@ -163,6 +160,16 @@ function freshRotation(): RotationState {
   return { version: 2, usage: {}, lastDomain: { topic: "", scenario: "" } };
 }
 
+/** 値が string[] のエントリだけ残す（手動編集で混入した不正値で markUsed が落ちないように） */
+function sanitizeUsage(raw: unknown): UsageMap {
+  if (typeof raw !== "object" || raw === null) return {};
+  const out: UsageMap = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (Array.isArray(v) && v.every((d) => typeof d === "string")) out[k] = v as string[];
+  }
+  return out;
+}
+
 /** v2 を読む。旧形式（id→日付配列の直置き）は usage として移行。不明形状は初期状態 */
 function loadRotation(usageFile: string): RotationState {
   const raw = readJsonSafe<Record<string, unknown>>(usageFile);
@@ -172,13 +179,13 @@ function loadRotation(usageFile: string): RotationState {
     const valid = (v: unknown): v is Domain | "" => v === "" || (DOMAINS as readonly string[]).includes(v as string);
     return {
       version: 2,
-      usage: raw.usage as UsageMap,
+      usage: sanitizeUsage(raw.usage),
       lastDomain: { topic: valid(last.topic) ? last.topic : "", scenario: valid(last.scenario) ? last.scenario : "" },
     };
   }
   // 旧形式: すべての値が配列なら UsageMap とみなして移行
   if (Object.values(raw).every((v) => Array.isArray(v))) {
-    return { ...freshRotation(), usage: raw as UsageMap };
+    return { ...freshRotation(), usage: sanitizeUsage(raw) };
   }
   console.warn(`[menu] unknown rotation state shape, starting fresh: ${usageFile}`);
   return freshRotation();
@@ -201,7 +208,8 @@ export type MenuDeps = {
   usageFile?: string;
   menuCacheDir?: string;
   today?: () => Date;
-  stage?: number;
+  /** 利用者レベル（1〜）。省略時 DEFAULT_LEVEL。stage・4/3/2秒数・準備支援を駆動する */
+  level?: number;
 };
 
 export function buildTodayMenu(minutes: 60 | 30, deps: MenuDeps = {}): Menu {
@@ -211,15 +219,16 @@ export function buildTodayMenu(minutes: 60 | 30, deps: MenuDeps = {}): Menu {
   const menuCacheDir = deps.menuCacheDir ?? PROGRESS_DIR;
   const ymd = (deps.today ?? (() => new Date()))().toISOString().slice(0, 10);
 
-  // 同日・同構成なら同一メニューを返す（リロードでトピックが変わらない・使用記録が重ならない）
-  const cacheFile = path.join(menuCacheDir, `menu-${ymd}-${minutes}.json`);
+  const level = deps.level ?? DEFAULT_LEVEL;
+  const stage = stageOf(level);
+  // キャッシュキーに level を含める: レベル変更時は同日でも再構築（旧形式ファイル名は自然に無効化）
+  const cacheFile = path.join(menuCacheDir, `menu-${ymd}-${minutes}-lv${level}.json`);
   const cached = readJsonSafe<Menu>(cacheFile);
   if (cached) {
     if (isValidMenuShape(cached)) return cached;
     console.warn(`[menu] cached menu has unexpected shape, rebuilding: ${cacheFile}`);
   }
 
-  const stage = deps.stage ?? DEFAULT_STAGE;
   const state = loadRotation(usageFile);
   const topics = loadContent(topicsDir);
   const scenarios = loadContent(scenariosDir);
@@ -229,8 +238,7 @@ export function buildTodayMenu(minutes: 60 | 30, deps: MenuDeps = {}): Menu {
   // シャドーイング素材は「次にローテーションが選ぶトピック」のプレビュー。
   // 使用済みマーク・ドメインカーソルの前進はしない（帯域フィルタだけ適用）
   const others = topics.filter((t) => t.id !== mainTopic.id);
-  const othersInBand = others.filter((it) => it.level[0] <= stage && stage <= it.level[1]);
-  const shadowPool = othersInBand.length > 0 ? othersInBand : others;
+  const shadowPool = others.length > 0 ? filterInBand(others, stage) : others;
   const shadowTopic = shadowPool.length > 0 ? pickNext(shadowPool, state.usage, ymd) : mainTopic;
 
   markUsed(state.usage, mainTopic.id, ymd);
@@ -242,14 +250,14 @@ export function buildTodayMenu(minutes: 60 | 30, deps: MenuDeps = {}): Menu {
     minutes === 60
       ? [
           { id: "b1", kind: "warmup-reading", title: warmupTitle, minutes: 8, params: { topic: mainTopic } },
-          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, minutes: 16, params: { topic: mainTopic, roundsSec: [...FTT_ROUNDS_SEC] } },
+          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, minutes: 16, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk } },
           { id: "b3", kind: "roleplay", title: `実務ロールプレイ: ${scenario.title}`, minutes: 20, params: { scenario } },
           { id: "b4", kind: "shadowing", title: `シャドーイング: ${shadowTopic.title}`, minutes: 8, params: { topic: shadowTopic } },
           { id: "b5", kind: "reflection", title: "振り返り", minutes: 5, params: {} },
         ]
       : [
           { id: "b1", kind: "warmup-reading", title: warmupTitle, minutes: 6, params: { topic: mainTopic } },
-          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, minutes: 12, params: { topic: mainTopic, roundsSec: [...FTT_ROUNDS_SEC] } },
+          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, minutes: 12, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk } },
           { id: "b3", kind: "roleplay", title: `実務ロールプレイ: ${scenario.title}`, minutes: 10, params: { scenario } },
           { id: "b4", kind: "reflection", title: "振り返り", minutes: 2, params: {} },
         ];
@@ -270,7 +278,8 @@ export function buildQuickMenu(kind: QuickKind, deps: MenuDeps = {}): Menu {
   const scenariosDir = deps.scenariosDir ?? SCENARIOS_DIR;
   const usageFile = deps.usageFile ?? path.join(PROGRESS_DIR, "topic-usage.json");
   const ymd = (deps.today ?? (() => new Date()))().toISOString().slice(0, 10);
-  const stage = deps.stage ?? DEFAULT_STAGE;
+  const level = deps.level ?? DEFAULT_LEVEL;
+  const stage = stageOf(level);
   const state = loadRotation(usageFile);
 
   let block: MenuBlock;
@@ -286,7 +295,7 @@ export function buildQuickMenu(kind: QuickKind, deps: MenuDeps = {}): Menu {
     } else if (kind === "ftt-mini") {
       block = {
         id: "q1", kind: "four-three-two", title: `4/3/2ミニ: ${topic.title}`, minutes: 8,
-        params: { topic, roundsSec: [...FTT_MINI_ROUNDS_SEC] },
+        params: { topic, roundsSec: fttMiniRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk },
       };
     } else {
       block = { id: "q1", kind: "shadowing", title: `シャドーイング: ${topic.title}`, minutes: 5, params: { topic } };

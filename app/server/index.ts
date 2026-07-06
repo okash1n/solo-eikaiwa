@@ -11,6 +11,7 @@ import { makeFetchHandler, type RouteDeps } from "./routes";
 import { makeLibraryStore, openDb } from "./db";
 import { loadSentences, makeSentenceStore } from "./sentences";
 import { makeProgressStore } from "./progress-store";
+import { prepParams, stageOf } from "./progression";
 
 ensureDirs();
 const PORT = 3111;
@@ -28,7 +29,7 @@ const realDeps: RouteDeps = {
   health: () => checkHealth(),
   logFile: () => sessionLogPath(new Date()),
   recordingsDir: RECORDINGS_DIR,
-  buildMenu: (minutes) => buildTodayMenu(minutes),
+  buildMenu: (minutes) => buildTodayMenu(minutes, { level: progressStore.getLevel() }),
   aeFeedback: (args) => generateAeFeedback(args),
   modelTalk: async (topicId) => {
     const topic = loadContent(TOPICS_DIR).find((t) => t.id === topicId);
@@ -45,9 +46,10 @@ const realDeps: RouteDeps = {
   prepPack: async (topicId) => {
     const topic = loadContent(TOPICS_DIR).find((t) => t.id === topicId);
     if (!topic) return null;
-    return generatePrepPack({ topicTitle: topic.title, hints: topic.hints });
+    const p = prepParams(stageOf(progressStore.getLevel()));
+    return generatePrepPack({ topicTitle: topic.title, hints: topic.hints, chunkCount: p.chunkCount, hintLang: p.hintLang });
   },
-  buildQuick: (kind) => buildQuickMenu(kind),
+  buildQuick: (kind) => buildQuickMenu(kind, { level: progressStore.getLevel() }),
   practiceDays: () => listPracticeDays(),
   getSettings: () => readSettings(),
   saveSettings: (s) => writeSettings(s),

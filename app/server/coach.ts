@@ -82,11 +82,12 @@ export async function generateReflection(
 
 export type PrepPack = { chunks: Array<{ en: string; ja: string }>; outline: string[] };
 
-const PREP_SYSTEM = `You prepare a Japanese IT professional (CEFR A2-B1) for a short English monologue.
+function prepSystem(chunkCount: number): string {
+  return `You prepare a Japanese IT professional (CEFR A2-B1) for a short English monologue.
 You receive a topic and hint angles. Reply with STRICT JSON only — no markdown fences, no commentary — exactly this shape:
 {"chunks":[{"en":"<complete, speakable sentence, B1 level>","ja":"<自然な日本語訳>"}],"outline":["<short English bullet>"]}
 Rules:
-- 6-8 chunks. Each "en" MUST be a complete, speakable sentence of roughly 8-16 words that the learner can read aloud as-is.
+- Exactly ${chunkCount} chunks. Each "en" MUST be a complete, speakable sentence of roughly 8-16 words that the learner can read aloud as-is.
   No ellipses ("..."), no blanks, and no placeholders like [X] — always fill the slot with a concrete, topic-relevant
   example a B1-level IT professional could plausibly say, using the given topic and hints for the content
   (e.g. "The main problem we had was a slow database query.", "What worked well was splitting the task into smaller steps.").
@@ -95,13 +96,15 @@ Rules:
 - ja: the natural full-sentence Japanese translation of "en" (not a fragment).
 - outline: 3-4 bullets forming a simple talk skeleton (opening → 1-2 points → wrap-up), tied to the given hints.
 Do not use any tools — reply directly with text only.`;
+}
 
 export async function generatePrepPack(
-  args: { topicTitle: string; hints: string[] },
+  args: { topicTitle: string; hints: string[]; chunkCount?: number; hintLang?: "ja" | "en" },
   runner: ClaudeRunner = defaultRunner,
 ): Promise<PrepPack> {
+  const chunkCount = args.chunkCount ?? 6;
   const prompt = `Topic: ${args.topicTitle}\nHint angles:\n${args.hints.map((h) => `- ${h}`).join("\n")}`;
-  const { text } = await runner(prompt, undefined, { systemPrompt: PREP_SYSTEM });
+  const { text } = await runner(prompt, undefined, { systemPrompt: prepSystem(chunkCount) });
   const parsed = extractJson<PrepPack>(text);
   if (parsed && Array.isArray(parsed.chunks) && Array.isArray(parsed.outline)) {
     // Sanitize chunks: keep only items where both en and ja are strings
@@ -110,7 +113,11 @@ export async function generatePrepPack(
       .map((item) => ({ en: item.en, ja: item.ja }));
     // Sanitize outline: keep only string elements
     const sanitizedOutline = parsed.outline.filter((el) => typeof el === "string");
-    return { chunks: sanitizedChunks, outline: sanitizedOutline };
+    // hintLang "en"（stage4+）は日本語併記をやめる。LLM出力に頼らずサーバ側で決定的に空にする
+    const chunks = args.hintLang === "en"
+      ? sanitizedChunks.map((c) => ({ ...c, ja: "" }))
+      : sanitizedChunks;
+    return { chunks, outline: sanitizedOutline };
   }
   // パース失敗時のフォールバック: チャンクなし・素のテキストをアウトラインとして表示できる形
   return { chunks: [], outline: [text] };
