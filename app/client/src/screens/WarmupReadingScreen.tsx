@@ -7,6 +7,7 @@ import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { ChunkList } from "../ui/ChunkList";
 import { resolveSupport, useSupport } from "../support";
+import { clozeText } from "../cloze";
 
 /**
  * セッション冒頭の低負荷な音読ウォームアップ。今日のトピックの表現チャンクと骨組みを
@@ -16,6 +17,7 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
   const load = useLoad(() => fetchPrepPack(props.topic.id));
   const [playErr, setPlayErr] = useState("");
   const [playingIdx, setPlayingIdx] = useState<number | null>(null);
+  const [clozeStep, setClozeStep] = useState(false);
   const aliveRef = useRef(true);
 
   useEffect(() => {
@@ -65,6 +67,19 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
         <div className="stack">
           {chunks.length > 0 && <ChunkList chunks={chunks} playingIdx={playingIdx} onPlay={playChunk} showJa={showJa} />}
           {playErr && <Banner kind="error">{playErr}</Banner>}
+          {chunks.length > 0 && !clozeStep && (
+            <Button variant="secondary" onClick={() => setClozeStep(true)}>🔡 歯抜けで音読（2周目・任意）</Button>
+          )}
+          {clozeStep && (
+            <Card header="歯抜けで音読（任意）">
+              <p className="text-muted">今度は空欄を自分で埋めながら声に出しましょう。答えは上の一覧で確認できます。</p>
+              <ul className="chunk-list no-audio">
+                {chunks.map((c, i) => (
+                  <li key={i}><span className="chunk-en">{clozeText(c.en, i + 1)}</span></li>
+                ))}
+              </ul>
+            </Card>
+          )}
           {prep.outline.length > 0 && (
             <Card header="今日の話の骨組み">
               <ol>
