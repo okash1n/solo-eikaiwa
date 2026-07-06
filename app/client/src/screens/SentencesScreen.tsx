@@ -10,17 +10,13 @@ import { useLoad } from "../useLoad";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { localYmd } from "../dates";
 
 const NEW_PER_DAY = 10;
 const HIDE_NOTE_KEY = "sentences.hideNote";
 
 type Tab = "practice" | "browse";
 type Phase = "prompt" | "cloze" | "answer";
-
-function localYmd(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
 
 function loadHideNote(): boolean {
   return localStorage.getItem(HIDE_NOTE_KEY) === "1";

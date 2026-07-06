@@ -6,6 +6,7 @@ import {
 import { STR, type Lang } from "../i18n";
 import { Button } from "../ui/Button";
 import { type MenuSource } from "./SessionRunner";
+import { localYmd } from "../dates";
 
 export type StartSelection =
   | { type: "session"; source: MenuSource }
@@ -27,12 +28,6 @@ const WEEKDAY_LETTERS: Record<Lang, string[]> = {
   en: ["M", "T", "W", "T", "F", "S", "S"],
   ja: ["月", "火", "水", "木", "金", "土", "日"],
 };
-
-/** ローカル日付の YYYY-MM-DD（カレンダー表示用） */
-function localYmd(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
 
 /**
  * 練習日カレンダー（GitHub風: 列=週・行=曜日、横幅に入るだけ週列を表示）。

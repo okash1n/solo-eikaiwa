@@ -13,6 +13,7 @@ import { SessionRunner, type MenuSource } from "./screens/SessionRunner";
 import { StartScreen, type StartSelection } from "./screens/StartScreen";
 import { Banner } from "./ui/Banner";
 import { Button } from "./ui/Button";
+import { localYmd } from "./dates";
 
 type Mode = { kind: "start" } | { kind: "free" } | { kind: "session"; source: MenuSource } | { kind: "library" } | { kind: "sentences" } | { kind: "placement" } | { kind: "progress" };
 
@@ -153,9 +154,7 @@ function PracticeStat({ lang }: { lang: Lang }) {
   const now = new Date();
   const weekAgo = new Date(now);
   weekAgo.setDate(weekAgo.getDate() - 6);
-  const p = (n: number) => String(n).padStart(2, "0");
-  const ymd = (d: Date) => `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-  const thisWeek = days.filter((d) => d >= ymd(weekAgo) && d <= ymd(now)).length;
+  const thisWeek = days.filter((d) => d >= localYmd(weekAgo) && d <= localYmd(now)).length;
 
   async function saveLevel() {
     const n = Number(editValue);
