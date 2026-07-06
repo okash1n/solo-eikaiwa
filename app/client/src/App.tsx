@@ -47,6 +47,7 @@ export function App() {
     { key: "home", icon: "🏠", label: "ホーム", active: mode.kind === "start", go: () => setMode({ kind: "start" }) },
     { key: "free", icon: "💬", label: "自由会話", active: mode.kind === "free", go: () => setMode({ kind: "free" }) },
     { key: "library", icon: "📚", label: "ライブラリ", active: mode.kind === "library", go: () => setMode({ kind: "library" }) },
+    { key: "sentences", icon: "📖", label: "暗記例文300", active: mode.kind === "sentences", go: () => setMode({ kind: "sentences" }) },
   ];
 
   return (
@@ -65,13 +66,6 @@ export function App() {
           <Button variant="secondary" onClick={() => setMode({ kind: "start" })}>← メニューに戻る</Button>
         )}
         <div className="sidebar-spacer" />
-        <button
-          className={`side-item${mode.kind === "sentences" ? " is-active" : ""}`}
-          onClick={() => setMode({ kind: "sentences" })}
-        >
-          <span className="side-icon" aria-hidden="true">📖</span>
-          暗記例文300
-        </button>
         <PracticeStat />
       </aside>
       <main className="app">
