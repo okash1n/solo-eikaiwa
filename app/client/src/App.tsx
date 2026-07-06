@@ -50,6 +50,7 @@ export function App() {
   function onSelect(sel: StartSelection) {
     if (sel.type === "free") setMode({ kind: "free" });
     else if (sel.type === "library") setMode({ kind: "library" });
+    else if (sel.type === "placement") setMode({ kind: "placement" });
     else if (sel.type === "daily") setMode({ kind: "session", source: { type: "daily", minutes: sel.minutes } });
     else setMode({ kind: "session", source: { type: "quick", drill: sel.drill } });
   }

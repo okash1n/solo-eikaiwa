@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  fetchPracticeDays, fetchProgressSummary, progressLevelAction,
-  type LevelProposal, type ProgressSummary, type QuickDrillKind,
+  fetchPlacementLatest, fetchPracticeDays, fetchProgressSummary, progressLevelAction,
+  type LevelProposal, type PlacementLatest, type ProgressSummary, type QuickDrillKind,
 } from "../api";
 import { STR, type Lang } from "../i18n";
 import { Button } from "../ui/Button";
@@ -10,7 +10,8 @@ export type StartSelection =
   | { type: "quick"; drill: QuickDrillKind }
   | { type: "daily"; minutes: 60 | 30 }
   | { type: "free" }
-  | { type: "library" };
+  | { type: "library" }
+  | { type: "placement" };
 
 const QUICK_DRILLS: Array<{ drill: QuickDrillKind; icon: string; tile: string }> = [
   { drill: "warmup", icon: "🔊", tile: "c-green" },
@@ -111,9 +112,11 @@ function PracticeCalendar({ days, lang }: { days: string[]; lang: Lang }) {
 
 export function StartScreen(props: { onSelect: (sel: StartSelection) => void; lang: Lang }) {
   const t = STR[props.lang];
+  const tp = STR[props.lang].placement;
   const [days, setDays] = useState<string[]>([]);
   const [summary, setSummary] = useState<ProgressSummary | null>(null);
   const [proposalError, setProposalError] = useState(false);
+  const [placementLatest, setPlacementLatest] = useState<PlacementLatest | "unloaded">("unloaded");
   const aliveRef = useRef(true);
   const fetchedRef = useRef(false);
 
@@ -124,9 +127,18 @@ export function StartScreen(props: { onSelect: (sel: StartSelection) => void; la
       // カレンダーは補助情報 — 取得失敗でスタート画面を壊さない
       fetchPracticeDays().then((d) => { if (aliveRef.current) setDays(d); }).catch(() => {});
       fetchProgressSummary().then((s) => { if (aliveRef.current) setSummary(s); }).catch(() => {});
+      fetchPlacementLatest().then((r) => { if (aliveRef.current) setPlacementLatest(r); }).catch(() => {});
     }
     return () => { aliveRef.current = false; };
   }, []);
+
+  // プレースメント導線: 未測定→初回測定 / 前回から30日以上→月次測定 / それ以外は出さない（スペック§6.3, §9）
+  const placementCard: "new" | "monthly" | "none" = (() => {
+    if (placementLatest === "unloaded") return "none";
+    if (placementLatest === null) return "new";
+    const days = Math.floor((Date.now() - new Date(placementLatest.ts).getTime()) / 86400000);
+    return days >= 30 ? "monthly" : "none";
+  })();
 
   const today = new Date();
   const dateLabel = t.hero.date(today);
@@ -182,6 +194,17 @@ export function StartScreen(props: { onSelect: (sel: StartSelection) => void; la
           </button>
         </div>
       </div>
+
+      {placementCard !== "none" && (
+        <button className="drill-card" onClick={() => props.onSelect({ type: "placement" })}>
+          <span className="drill-icon c-purple" aria-hidden="true">📐</span>
+          <span className="drill-body">
+            <span className="drill-title">{placementCard === "new" ? tp.cardTitleNew : tp.cardTitleMonthly}</span>
+            <span className="drill-desc">{placementCard === "new" ? tp.cardBodyNew : tp.cardBodyMonthly}</span>
+          </span>
+          <span className="drill-arrow" aria-hidden="true">→</span>
+        </button>
+      )}
 
       {summary?.proposal && (
         <ProposalCard
