@@ -1,9 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { openDb } from "../db";
 import type { Sentence } from "../sentences";
-import {
-  categoryBadRates, generateMonthlyReport, makeAssembleMonthData, makeAssessmentStore,
-} from "../assessment";
+import { generateMonthlyReport, makeAssembleMonthData, makeAssessmentStore } from "../assessment";
+import { categoryBadRates } from "../srs-analytics";
 import type { ClaudeRunner } from "../converse";
 import type { MetricsSummary } from "../metrics-aggregate";
 

@@ -4,23 +4,12 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { normalizeEn } from "./chunks";
 import { extractJson } from "./coach";
-import { categoryBadRates, type CategoryRate } from "./assessment";
 import type { ClaudeRunner } from "./converse";
 import { loadContent } from "./content";
 import { loadSentences, type Sentence } from "./sentences";
+import { categoryBadRates, pickWorstCategories } from "./srs-analytics";
 
 const ORIGINALITY = "All output must be completely original — do not copy or adapt sentences from existing textbooks or courses.";
-
-/**
- * CLI(sentences): 生成対象カテゴリの選定。評価5文以上・bad率>0 のうち bad率降順（同率は reviewed降順）でワースト3。
- * categoryBadRates() は既にこの順で返すが、入力順序に依存しないようここでも明示的にソートする。
- */
-export function pickWorstCategories(rates: CategoryRate[], minReviewed = 5, top = 3): CategoryRate[] {
-  return rates
-    .filter((r) => r.reviewed >= minReviewed && r.badRate > 0)
-    .sort((a, b) => b.badRate - a.badRate || b.reviewed - a.reviewed)
-    .slice(0, top);
-}
 
 export type NewSentenceCandidate = { domain: string; en: string; ja: string; note: string };
 const DOMAINS = ["daily", "business", "it"] as const;

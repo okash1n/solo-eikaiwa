@@ -5,12 +5,12 @@ import path from "node:path";
 import { openDb } from "../db";
 import { loadContent, parseContentFile } from "../content";
 import { loadSentences, type Sentence } from "../sentences";
-import type { CategoryRate } from "../assessment";
 import type { ClaudeRunner } from "../converse";
 import {
-  contentToMarkdown, genSentences, genTopics, pickWorstCategories,
+  contentToMarkdown, genSentences, genTopics,
   validateNewSentences, validateTopicCandidate,
 } from "../content-gen";
+import { pickWorstCategories, type CategoryRate } from "../srs-analytics";
 
 /** 呼び出し順にレスポンスを返す fake ClaudeRunner（実Claude呼び出し・実content/への書き込みは一切しない） */
 function makeRunner(responses: string[]): ClaudeRunner {
