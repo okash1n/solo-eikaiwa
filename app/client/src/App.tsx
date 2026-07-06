@@ -6,13 +6,14 @@ import {
 import { loadLang, saveLang, STR, type Lang } from "./i18n";
 import { FreeTalkScreen } from "./screens/FreeTalkScreen";
 import { LibraryScreen } from "./screens/LibraryScreen";
+import { PlacementScreen } from "./screens/PlacementScreen";
 import { SentencesScreen } from "./screens/SentencesScreen";
 import { SessionRunner, type MenuSource } from "./screens/SessionRunner";
 import { StartScreen, type StartSelection } from "./screens/StartScreen";
 import { Banner } from "./ui/Banner";
 import { Button } from "./ui/Button";
 
-type Mode = { kind: "start" } | { kind: "free" } | { kind: "session"; source: MenuSource } | { kind: "library" } | { kind: "sentences" };
+type Mode = { kind: "start" } | { kind: "free" } | { kind: "session"; source: MenuSource } | { kind: "library" } | { kind: "sentences" } | { kind: "placement" };
 
 export function App() {
   const [health, setHealth] = useState<Health | null>(null);
@@ -107,6 +108,7 @@ export function App() {
       )}
       {mode.kind === "library" && <LibraryScreen />}
       {mode.kind === "sentences" && <SentencesScreen />}
+      {mode.kind === "placement" && <PlacementScreen lang={lang} onExit={() => setMode({ kind: "start" })} />}
       </main>
     </div>
   );

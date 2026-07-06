@@ -37,6 +37,20 @@ type Strings = {
     acceptUp: string; acceptDown: string; decline: string;
     actionError: string;
   };
+  placement: {
+    cardTitleNew: string; cardBodyNew: string;
+    cardTitleMonthly: string; cardBodyMonthly: string;
+    introTitle: string; introBody: string; introStart: string;
+    taskLabel: (i: number, total: number) => string;
+    promptLabel: string;
+    recordStart: string; recordStop: string; transcribing: string;
+    yourAnswer: string; redo: string; next: string; submit: string;
+    submitting: string; submitError: string; retry: string;
+    resultTitle: string; resultStage: (stage: number) => string;
+    resultStartAt: (level: number) => string; chooseOwn: string; notNow: string;
+    chooseLabel: string; apply: string; confirmError: string;
+    xpNote: string;
+  };
 };
 
 const WEEKDAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -82,6 +96,29 @@ export const STR: Record<Lang, Strings> = {
       acceptUp: "Level up", acceptDown: "Move down", decline: "Not now",
       actionError: "Couldn't apply. Refreshed the latest state.",
     },
+    placement: {
+      cardTitleNew: "Find your level (10 min)",
+      cardBodyNew: "Three short speaking tasks set your starting level",
+      cardTitleMonthly: "Monthly level check",
+      cardBodyMonthly: "It's been a month — see how your speaking has moved",
+      introTitle: "Level check",
+      introBody: "You'll do three short speaking tasks: introduce yourself (1 min), explain a situation (1.5 min), and give an opinion (1 min). Record each one — the result only applies if you accept it.",
+      introStart: "Start task 1",
+      taskLabel: (i, total) => `Task ${i} of ${total}`,
+      promptLabel: "Your prompt",
+      recordStart: "🎙 Start speaking", recordStop: "⏹ Stop recording", transcribing: "📝 Transcribing…",
+      yourAnswer: "Your answer", redo: "Record again", next: "Next task →", submit: "Get my result →",
+      submitting: "Scoring your three tasks…",
+      submitError: "Scoring didn't come back cleanly. Your recordings are kept — just submit again.",
+      retry: "Submit again",
+      resultTitle: "Your result",
+      resultStage: (stage) => `Estimated stage: ${stage} of 6`,
+      resultStartAt: (level) => `Start at Lv ${level}`,
+      chooseOwn: "Choose my own level", notNow: "Not this time",
+      chooseLabel: "Level (1–999)", apply: "Apply",
+      confirmError: "Couldn't apply. Please try again.",
+      xpNote: "+10 XP for completing the check",
+    },
   },
   ja: {
     nav: { home: "ホーム", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300" },
@@ -120,6 +157,29 @@ export const STR: Record<Lang, Strings> = {
       fttAborts: (n) => `直近5回の4/3/2のうち${n}回が中断`,
       acceptUp: "レベルアップ", acceptDown: "レベルを下げる", decline: "今はしない",
       actionError: "適用できませんでした。最新の状態に更新しました",
+    },
+    placement: {
+      cardTitleNew: "レベル測定（10分）",
+      cardBodyNew: "3つの短いスピーキングで開始レベルを決めます",
+      cardTitleMonthly: "月次レベル測定",
+      cardBodyMonthly: "前回から1ヶ月 — 話す力の変化を見てみましょう",
+      introTitle: "レベル測定",
+      introBody: "3つの短いスピーキングを行います: 自己紹介（1分）→ 状況説明（1.5分）→ 意見（1分）。それぞれ録音してください。結果はあなたが承認したときだけ反映されます。",
+      introStart: "タスク1を始める",
+      taskLabel: (i, total) => `タスク ${i} / ${total}`,
+      promptLabel: "お題",
+      recordStart: "🎙 話し始める", recordStop: "⏹ 録音を止める", transcribing: "📝 文字起こし中…",
+      yourAnswer: "あなたの回答", redo: "録音し直す", next: "次のタスクへ →", submit: "結果を見る →",
+      submitting: "3つのタスクを採点しています…",
+      submitError: "採点結果をうまく受け取れませんでした。録音は保持されています — もう一度送信してください。",
+      retry: "もう一度送信",
+      resultTitle: "測定結果",
+      resultStage: (stage) => `推定ステージ: ${stage} / 6`,
+      resultStartAt: (level) => `Lv ${level} から始める`,
+      chooseOwn: "自分でレベルを選ぶ", notNow: "今回は反映しない",
+      chooseLabel: "レベル（1〜999）", apply: "適用",
+      confirmError: "適用できませんでした。もう一度お試しください",
+      xpNote: "測定完了で +10 XP",
     },
   },
 };
