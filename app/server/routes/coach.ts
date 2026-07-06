@@ -85,6 +85,10 @@ async function respondHashCached(
   const cached = cache.get(hash);
   if (cached !== null) return json({ text: cached });
   const generated = await generate(text);
+  // LLM が空文字を返した場合はキャッシュせず 502（空訳を永久キャッシュしない・再試行で回復可能に）
+  if (generated.text.trim().length === 0) {
+    return json({ error: "generation returned empty — please try again" }, 502);
+  }
   // キャッシュ書き込み失敗は返却を妨げない
   bestEffort(cacheWarnLabel, () => cache.save(hash, generated.text, new Date().toISOString()));
   return json({ text: generated.text });
@@ -102,6 +106,7 @@ async function handlePhraseHint(req: Request, deps: CoachRoutesDeps): Promise<Re
         .filter((h): h is { role: "you" | "ai"; text: string } =>
           !!h && typeof h === "object" && (h.role === "you" || h.role === "ai") && typeof h.text === "string")
         .slice(-6)
+        .map((h) => ({ role: h.role, text: h.text.slice(0, 500) }))
     : undefined;
   const result = await deps.phraseHint({ jaText, history: safeHistory });
   return json(result);

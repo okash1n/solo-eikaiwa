@@ -118,8 +118,8 @@ export async function generatePhraseHints(
   const parsed = extractJson<{ suggestions: PhraseHint[] }>(text);
   if (parsed && Array.isArray(parsed.suggestions)) {
     const suggestions = parsed.suggestions
-      .filter((s) => typeof s?.en === "string" && s.en && typeof s?.ja === "string")
-      .map((s) => ({ en: s.en, ja: s.ja }));
+      .filter((s) => typeof s?.en === "string" && s.en)
+      .map((s) => ({ en: s.en, ja: typeof s.ja === "string" ? s.ja : "" }));
     if (suggestions.length > 0) return { suggestions };
   }
   // パース失敗時のフォールバック: 素のテキストを1件に包んでUIに出せる形にする

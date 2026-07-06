@@ -138,7 +138,7 @@ export function FreeTalkScreen(props: { scenarioId?: string; onSessionId?: (id: 
         {hintError && (
           <p className="sentence-explain text-sm">
             {hintError}
-            <Button variant="ghost" onClick={requestHints}>再試行</Button>
+            <Button variant="ghost" onClick={requestHints} disabled={!hintInput.trim()}>再試行</Button>
           </p>
         )}
         {Array.isArray(hints) && (

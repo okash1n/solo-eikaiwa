@@ -147,6 +147,20 @@ describe("routes: モデルトーク解説", () => {
     }));
     expect(tooLong.status).toBe(400);
   });
+
+  test("POST /api/coach/talk-explain は空生成を 502 にしキャッシュしない", async () => {
+    let saved = 0;
+    const { deps } = makeTestDeps({
+      explainTalk: async () => ({ text: "   " }),
+      talkExplainCache: makeFakeTalkExplainCache({ get: () => null, save: () => { saved++; } }),
+    });
+    const res = await makeFetchHandler(deps)(new Request("http://x/api/coach/talk-explain", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: "Some talk text." }),
+    }));
+    expect(res.status).toBe(502);
+    expect(saved).toBe(0);
+  });
 });
 
 describe("routes: AI発話の訳（translate）", () => {
@@ -199,6 +213,20 @@ describe("routes: AI発話の訳（translate）", () => {
       method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: "a".repeat(3001) }),
     }));
     expect(tooLong.status).toBe(400);
+  });
+
+  test("POST /api/coach/translate は空生成を 502 にしキャッシュしない", async () => {
+    let saved = 0;
+    const { deps } = makeTestDeps({
+      translate: async () => ({ text: "" }),
+      translationCache: makeFakeTalkExplainCache({ get: () => null, save: () => { saved++; } }),
+    });
+    const res = await makeFetchHandler(deps)(new Request("http://x/api/coach/translate", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: "Any line." }),
+    }));
+    expect(res.status).toBe(502);
+    expect(saved).toBe(0);
   });
 });
 
@@ -272,5 +300,18 @@ describe("routes: 言い方ヒント（phrase-hint）", () => {
     }));
     expect(res.status).toBe(200);
     expect(receivedHistoryLen).toBe(2);
+  });
+
+  test("POST /api/coach/phrase-hint は history の各 text を500字に切り詰める", async () => {
+    let receivedLen = -1;
+    const { deps } = makeTestDeps({
+      phraseHint: async (args) => { receivedLen = args.history?.[0]?.text.length ?? -1; return { suggestions: [{ en: "ok", ja: "" }] }; },
+    });
+    const res = await makeFetchHandler(deps)(new Request("http://x/api/coach/phrase-hint", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jaText: "はい", history: [{ role: "ai", text: "a".repeat(1200) }] }),
+    }));
+    expect(res.status).toBe(200);
+    expect(receivedLen).toBe(500);
   });
 });

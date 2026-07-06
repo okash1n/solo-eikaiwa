@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
-  extractJson, generateAeFeedback, generateModelTalk, generatePhraseHints, generatePrepPack, generateReflection, roleplayPrompt,
+  extractJson, generateAeFeedback, generateModelTalk, generatePhraseHints, generatePrepPack, generateReflection, generateUtteranceTranslation, roleplayPrompt,
   type AeFeedback, type PrepPack,
 } from "../coach";
 import type { ClaudeRunner } from "../converse";
@@ -204,6 +204,29 @@ describe("generatePhraseHints", () => {
     const { runner } = runnerReturning(JSON.stringify(malformed));
     const result = await generatePhraseHints({ jaText: "はい" }, runner);
     expect(result.suggestions).toEqual([{ en: "Could you give me a moment?", ja: "少し時間をもらう言い方" }]);
+  });
+
+  test("ja 欠落・非文字列でも en が有効なら ja:'' で採用する", async () => {
+    const malformed = { suggestions: [
+      { en: "Give me a second." },       // ja missing
+      { en: "Let me think.", ja: 123 },   // ja not a string
+    ] };
+    const { runner } = runnerReturning(JSON.stringify(malformed));
+    const result = await generatePhraseHints({ jaText: "はい" }, runner);
+    expect(result.suggestions).toEqual([
+      { en: "Give me a second.", ja: "" },
+      { en: "Let me think.", ja: "" },
+    ]);
+  });
+});
+
+describe("generateUtteranceTranslation", () => {
+  test("本文がプロンプトに入り、翻訳用 systemPrompt でトリムした訳を返す", async () => {
+    const { runner, seen } = runnerReturning("  私はたいていコーヒーで一日を始めます。  ");
+    const result = await generateUtteranceTranslation({ text: "I usually start my day with coffee." }, runner);
+    expect(result.text).toBe("私はたいていコーヒーで一日を始めます。");
+    expect(seen[0].prompt).toBe("I usually start my day with coffee.");
+    expect(seen[0].systemPrompt).toContain("translate");
   });
 });
 
