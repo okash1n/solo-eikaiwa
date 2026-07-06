@@ -84,7 +84,8 @@ export function FreeTalkScreen(props: { scenarioId?: string; onSessionId?: (id: 
       const ja = await fetchUtteranceTranslation(text);
       if (aliveRef.current) setTranslations((m) => ({ ...m, [i]: ja }));
     } catch {
-      if (aliveRef.current) setTranslations((m) => ({ ...m, [i]: "訳を取得できませんでした。もう一度お試しください。" }));
+      // "loading" と同じセンチネル方式。エラー文言を訳として保存するとボタン再表示条件が永久に成立しなくなる
+      if (aliveRef.current) setTranslations((m) => ({ ...m, [i]: "error" }));
     }
   }
 
@@ -109,7 +110,13 @@ export function FreeTalkScreen(props: { scenarioId?: string; onSessionId?: (id: 
                   <Button variant="ghost" onClick={() => translateTurn(i, t.text)}>訳</Button>
                 )}
                 {translations[i] === "loading" && <p className="text-sm text-muted">訳しています…</p>}
-                {typeof translations[i] === "string" && translations[i] !== "loading" && (
+                {translations[i] === "error" && (
+                  <p className="text-sm text-muted">
+                    訳を取得できませんでした。
+                    <Button variant="ghost" onClick={() => translateTurn(i, t.text)}>再試行</Button>
+                  </p>
+                )}
+                {translations[i] !== undefined && translations[i] !== "loading" && translations[i] !== "error" && (
                   <p className="sentence-explain text-sm">{translations[i]}</p>
                 )}
               </div>
