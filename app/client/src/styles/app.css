@@ -177,7 +177,7 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 /* サイドバーシェル */
 .shell { display: flex; min-height: 100vh; }
 .sidebar {
-  width: 232px; flex: none; display: flex; flex-direction: column; gap: var(--sp-4);
+  width: 256px; flex: none; display: flex; flex-direction: column; gap: var(--sp-4);
   padding: var(--sp-5) var(--sp-4); border-right: 1px solid var(--border);
   background: var(--surface); position: sticky; top: 0; height: 100vh;
 }
@@ -197,6 +197,7 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
   flex: 1; font: inherit; font-size: var(--fs-sm); font-weight: 550; color: var(--text-muted);
   background: none; border: none; border-radius: calc(var(--radius-sm) - 2px);
   padding: var(--sp-1) var(--sp-2); cursor: pointer; transition: background var(--ease), color var(--ease);
+  white-space: nowrap; /* 特大サイズでもラベルを折り返さない */
 }
 .lang-toggle button:hover { color: var(--text); }
 .lang-toggle button.is-active { background: var(--accent-soft); color: var(--accent); font-weight: 650; }
