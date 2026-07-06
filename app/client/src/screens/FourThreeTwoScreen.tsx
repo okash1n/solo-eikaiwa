@@ -10,6 +10,7 @@ import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { ChunkList } from "../ui/ChunkList";
 import { TimerChip } from "../ui/TimerChip";
+import { getSupport, resolveSupport, useSupport } from "../support";
 
 /** メニュー params に roundsSec が無い場合（当日分の古いキャッシュ等）のフォールバック */
 const DEFAULT_ROUNDS_SEC = [120, 90, 60];
@@ -38,9 +39,14 @@ type PrepState = "loading" | "ready" | "error";
  */
 export function FourThreeTwoScreen(props: {
   topic: ContentItem; sessionId: string; blockId: string; roundsSec?: number[];
-  modelTalkMode?: "auto" | "button" | "none";
+  modelTalkMode?: "auto" | "button";
 }) {
-  const modelTalkMode = props.modelTalkMode ?? "auto";
+  const support = useSupport();
+  // モデルトーク自動再生の可否: 個別トグル → preset → メニューの stage 既定（auto か）で解決。
+  // 初期 modelState と一度きりの prefetch effect が参照するため、マウント時に固定する。
+  const [autoPlay] = useState(() =>
+    resolveSupport(getSupport().modelTalk, getSupport().preset, (props.modelTalkMode ?? "auto") === "auto"),
+  );
   const roundsSec =
     props.roundsSec && props.roundsSec.length >= 2 && props.roundsSec.every((s) => s > 0)
       ? props.roundsSec
@@ -59,7 +65,7 @@ export function FourThreeTwoScreen(props: {
   const [prepState, setPrepState] = useState<PrepState>("loading");
   const [prep, setPrep] = useState<PrepPack | null>(null);
   type ModelState = "idle" | "script" | "audio" | "ready" | "playing" | "error";
-  const [modelState, setModelState] = useState<ModelState>(modelTalkMode === "auto" ? "script" : "idle");
+  const [modelState, setModelState] = useState<ModelState>(autoPlay ? "script" : "idle");
   const [modelText, setModelText] = useState("");
   const [playingIdx, setPlayingIdx] = useState<number | null>(null);
   const prepFetchedRef = useRef(false); // StrictMode の二重マウントで prep を二重フェッチしない
@@ -81,7 +87,7 @@ export function FourThreeTwoScreen(props: {
       prepFetchedRef.current = true;
       loadPrep();
       prepTimer.start();
-      if (modelTalkMode === "auto") {
+      if (autoPlay) {
         prefetchModelTalkAudio(props.topic.id, (stage) => {
           if (aliveRef.current) setModelState(stage);
         })
@@ -269,10 +275,11 @@ export function FourThreeTwoScreen(props: {
         )}
         {prepState === "ready" && prep && (() => {
           const filteredChunks = prep.chunks.filter((c) => typeof c.en === "string" && c.en);
+          const showJa = resolveSupport(support.jaHint, support.preset, prep.hintDefault === "ja");
           return (
           <div className="stack">
             {filteredChunks.length > 0 && (
-              <ChunkList chunks={filteredChunks} playingIdx={playingIdx} onPlay={playChunk} />
+              <ChunkList chunks={filteredChunks} playingIdx={playingIdx} onPlay={playChunk} showJa={showJa} />
             )}
             {prep.outline.length > 0 && (
               <Card header="話の骨組み">
@@ -287,21 +294,19 @@ export function FourThreeTwoScreen(props: {
           );
         })()}
         <div className="start-row">
-          {modelTalkMode !== "none" && (
-            <Button onClick={playModelTalk} disabled={modelState === "script" || modelState === "audio" || modelState === "playing"}>
-              {modelState === "idle" && "🎧 モデルトークを聞く（任意）"}
-              {modelState === "script" && "✍ 原稿を作成中…"}
-              {modelState === "audio" && "🎙 音声を生成中…"}
-              {modelState === "ready" && "🎧 モデルトークを聞く（任意）"}
-              {modelState === "playing" && "🔊 再生中…"}
-              {modelState === "error" && "🎧 モデルトーク（再試行）"}
-            </Button>
-          )}
+          <Button onClick={playModelTalk} disabled={modelState === "script" || modelState === "audio" || modelState === "playing"}>
+            {modelState === "idle" && "🎧 モデルトークを聞く（任意）"}
+            {modelState === "script" && "✍ 原稿を作成中…"}
+            {modelState === "audio" && "🎙 音声を生成中…"}
+            {modelState === "ready" && "🎧 モデルトークを聞く（任意）"}
+            {modelState === "playing" && "🔊 再生中…"}
+            {modelState === "error" && "🎧 モデルトーク（再試行）"}
+          </Button>
           <Button variant="primary" onClick={() => startRound(0)}>
             Round 1 を始める（{minLabel(roundsSec[0])}）→
           </Button>
         </div>
-        {modelTalkMode !== "none" && modelText && (
+        {modelText && (
           <details open>
             <summary className="text-muted">モデルトーク本文</summary>
             <p className="reading-text">{modelText}</p>

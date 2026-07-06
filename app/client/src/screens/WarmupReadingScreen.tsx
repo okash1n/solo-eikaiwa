@@ -6,6 +6,7 @@ import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { ChunkList } from "../ui/ChunkList";
+import { resolveSupport, useSupport } from "../support";
 
 /**
  * セッション冒頭の低負荷な音読ウォームアップ。今日のトピックの表現チャンクと骨組みを
@@ -35,8 +36,11 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
     }
   }
 
+  const support = useSupport();
   const prep = load.state.status === "ready" ? load.state.data : null;
   const chunks = prep?.chunks.filter((c) => typeof c.en === "string" && c.en) ?? [];
+  // ja を表示するか: 個別トグル → preset → サーバの stage 既定（hintDefault）で解決
+  const showJa = prep ? resolveSupport(support.jaHint, support.preset, prep.hintDefault === "ja") : true;
 
   return (
     <div className="stack">
@@ -59,7 +63,7 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
       )}
       {load.state.status === "ready" && prep && (
         <div className="stack">
-          {chunks.length > 0 && <ChunkList chunks={chunks} playingIdx={playingIdx} onPlay={playChunk} />}
+          {chunks.length > 0 && <ChunkList chunks={chunks} playingIdx={playingIdx} onPlay={playChunk} showJa={showJa} />}
           {playErr && <Banner kind="error">{playErr}</Banner>}
           {prep.outline.length > 0 && (
             <Card header="今日の話の骨組み">
