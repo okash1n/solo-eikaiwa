@@ -6,7 +6,7 @@ import { transcribeAudio } from "./stt";
 import { synthesize } from "./tts";
 import { converseTurn } from "./converse";
 import { checkHealth } from "./health";
-import { QUICK_KINDS, type Menu, type QuickKind } from "./menu";
+import { BLOCK_KINDS, QUICK_KINDS, type Menu, type QuickKind } from "./menu";
 import type { AeFeedback, Reflection, PrepPack } from "./coach";
 import type { Settings } from "./settings";
 import type { LibraryStore } from "./db";
@@ -207,8 +207,6 @@ async function handleSessionEnd(req: Request, deps: RouteDeps): Promise<Response
 }
 
 const GRADES = ["good", "soso", "bad"] as const;
-
-const BLOCK_KINDS = ["chunk-placeholder", "warmup-reading", "four-three-two", "roleplay", "shadowing", "reflection"] as const;
 
 async function handleProgressXp(req: Request, deps: RouteDeps): Promise<Response> {
   const parsed = await parseJsonBody<{ kind?: unknown; amount?: unknown; attemptId?: unknown }>(req);

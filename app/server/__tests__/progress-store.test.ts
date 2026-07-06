@@ -129,6 +129,18 @@ describe("progress-store: 昇格提案（3条件すべて）", () => {
     expect(s.level).toBe(22); // 21へ昇格後、余剰30 ≥ need(21)=30 → 22
     expect(s.xpIntoLevel).toBe(0);
   });
+  test("回帰: accept-up のカスケード時、level_events の from は受諾前レベル（「最終-1」にならない）", () => {
+    const { db, store } = boundaryReady(); // level 20
+    for (const d of ["2026-06-30", "2026-07-01", "2026-07-02", "2026-07-03", "2026-07-05"]) seedBlockXpDay(db, d);
+    for (let i = 0; i < 10; i++) seedAttempt(db, "2026-07-05", "warmup-reading", 1);
+    store.addXp("block", 30, {}, T); // into=55（境界で停止中）
+    const s = store.levelAction("accept", undefined, T)!;
+    expect(s.level).toBe(22); // カスケードで 20 → 21 → 22
+    const row = db.query<{ kind: string; from_level: number; to_level: number }, []>(
+      "SELECT kind, from_level, to_level FROM level_events WHERE kind = 'accept-up' ORDER BY id DESC LIMIT 1").get()!;
+    expect(row.from_level).toBe(20); // 受諾前レベル（誤実装では 22-1=21 になっていた）
+    expect(row.to_level).toBe(22);
+  });
 });
 
 describe("progress-store: 降格提案", () => {
@@ -155,6 +167,13 @@ describe("progress-store: 降格提案", () => {
     expect(p.kind).toBe("down");
     expect((p.rationale as { fttAborts: number }).fttAborts).toBe(3);
   });
+  test("回帰: 生涯3回の試行（全中断）だけでは提案しない（仕様は直近5回中3回以上）", () => {
+    const { db, store } = freshStore();
+    store.levelAction("set", 23, T);
+    // 完了率条件を踏まないよう7日窓の外に置く。試行が3件しかない（5件窓が埋まっていない）
+    for (const c of [0, 0, 0] as const) seedAttempt(db, "2026-06-20", "four-three-two", c);
+    expect(store.getSummary(T).proposal).toBeNull();
+  });
   test("stage1 では降格提案しない", () => {
     const { db, store } = freshStore();
     store.levelAction("set", 5, T);
@@ -170,6 +189,17 @@ describe("progress-store: 降格提案", () => {
     expect(s.level).toBe(20);
     expect(s.xp).toBe(10); // 累積XPは不変
     expect(s.xpIntoLevel).toBe(0);
+  });
+  test("回帰: accept-down の level_events は from=受諾前レベル・to=降格先（from==toにならない）", () => {
+    const { db, store } = freshStore();
+    store.levelAction("set", 23, T);
+    for (let i = 0; i < 5; i++) seedAttempt(db, "2026-07-04", "roleplay", 0);
+    const s = store.levelAction("accept", undefined, T)!;
+    expect(s.level).toBe(20);
+    const row = db.query<{ kind: string; from_level: number; to_level: number }, []>(
+      "SELECT kind, from_level, to_level FROM level_events WHERE kind = 'accept-down' ORDER BY id DESC LIMIT 1").get()!;
+    expect(row.from_level).toBe(23);
+    expect(row.to_level).toBe(20);
   });
   test("降格条件と昇格条件が同時成立したら降格を優先", () => {
     const { db, store } = freshStore();

@@ -3,6 +3,10 @@ import path from "node:path";
 import { PROGRESS_DIR, SCENARIOS_DIR, TOPICS_DIR } from "./paths";
 
 export type BlockKind = "chunk-placeholder" | "warmup-reading" | "four-three-two" | "roleplay" | "shadowing" | "reflection";
+/** BlockKind の全メンバー列挙（単一ソース）。routes.ts のバリデーションなど値配列が必要な箇所から import する */
+export const BLOCK_KINDS = [
+  "chunk-placeholder", "warmup-reading", "four-three-two", "roleplay", "shadowing", "reflection",
+] as const satisfies readonly BlockKind[];
 export type Domain = "daily" | "business" | "it";
 /** ドメインの巡回順（ラウンドロビンはこの順で次を探す） */
 export const DOMAINS: readonly Domain[] = ["daily", "business", "it"];

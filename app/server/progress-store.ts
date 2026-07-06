@@ -110,7 +110,9 @@ export function makeProgressStore(db: Database): ProgressStore {
       const week = completionRate7d(today);
       const ftt = fttAbortsLast5();
       const lowCompletion = week.count >= DEMOTE_MIN_ATTEMPTS && week.rate !== null && week.rate < DEMOTE_MAX_COMPLETION;
-      const manyAborts = ftt.count >= DEMOTE_FTT_ABORTS && ftt.aborts >= DEMOTE_FTT_ABORTS;
+      // 仕様§5.2: 「直近5回中3回以上」中断。fttAbortsLast5 は直近5件までの窓なので、
+      // 窓が5件揃っていること（count>=5）を下限にする（count<=DEMOTE_FTT_ABORTSは常に真になり無意味だった）。
+      const manyAborts = ftt.count >= 5 && ftt.aborts >= DEMOTE_FTT_ABORTS;
       if (lowCompletion || manyAborts) {
         return {
           kind: "down",
@@ -201,6 +203,7 @@ export function makeProgressStore(db: Database): ProgressStore {
         return summarize(row, today);
       }
       // accept
+      const fromLevel = row.level; // 変異前に捕捉（up のカスケード / down のレベル上書きで壊れないように）
       if (proposal.kind === "up") {
         row.xp_into_level -= needXp(row.level);
         row.level += 1;
@@ -209,7 +212,7 @@ export function makeProgressStore(db: Database): ProgressStore {
         row.level = proposal.toLevel;
         row.xp_into_level = 0;
       }
-      recordLevelEvent(proposal.kind === "up" ? "accept-up" : "accept-down", proposal.kind === "up" ? row.level - 1 : row.level, row.level, proposal.rationale, today);
+      recordLevelEvent(proposal.kind === "up" ? "accept-up" : "accept-down", fromLevel, row.level, proposal.rationale, today);
       save(row);
       return summarize(row, today);
     },
