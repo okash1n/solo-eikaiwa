@@ -64,6 +64,11 @@ export function openDb(dbPath: string = DEFAULT_DB_PATH): Database {
     ts TEXT NOT NULL, stage INTEGER NOT NULL, start_level INTEGER NOT NULL,
     rationale TEXT NOT NULL, metrics TEXT NOT NULL
   )`);
+  db.run(`CREATE TABLE IF NOT EXISTS sentence_explanations (
+    no INTEGER PRIMARY KEY,
+    text TEXT NOT NULL,
+    created TEXT NOT NULL
+  )`);
   return db;
 }
 

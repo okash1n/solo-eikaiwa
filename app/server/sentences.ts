@@ -20,6 +20,11 @@ export type SentenceStore = {
   list(): SentenceWithSrs[];
   queue(newCount: number, today?: string): SentenceWithSrs[];
   grade(no: number, grade: Grade, today?: string): { no: number; stage: number; due: string } | null;
+  /** 例文の詳しい解説キャッシュ。未生成は null */
+  getExplanation(no: number): string | null;
+  saveExplanation(no: number, text: string, today?: string): void;
+  /** 解説生成の入力用。未知の no は undefined */
+  find(no: number): Sentence | undefined;
 };
 
 /** 固定間隔ラダー（index = stage）。検証済みリサーチ: 均等〜長め固定で十分、拡張間隔に実証優位なし */
@@ -117,6 +122,25 @@ export function makeSentenceStore(db: Database, sentences: Sentence[]): Sentence
         [no, newStage, due, grade],
       );
       return { no, stage: newStage, due };
+    },
+
+    getExplanation(no) {
+      const row = db.query<{ text: string }, [number]>(
+        "SELECT text FROM sentence_explanations WHERE no = ?",
+      ).get(no);
+      return row?.text ?? null;
+    },
+
+    saveExplanation(no, text, today = localYmd()) {
+      db.run(
+        `INSERT INTO sentence_explanations (no, text, created) VALUES (?, ?, ?)
+         ON CONFLICT(no) DO UPDATE SET text = excluded.text, created = excluded.created`,
+        [no, text, today],
+      );
+    },
+
+    find(no) {
+      return byNo.get(no);
     },
   };
 }

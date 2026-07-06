@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  fetchSentenceQueue, fetchSentences, gradeSentence, playTtsCached,
+  fetchSentenceExplanation, fetchSentenceQueue, fetchSentences, gradeSentence, playTtsCached,
   type SentenceItem,
 } from "../api";
 import { stopPlayback } from "../audio";
@@ -41,6 +41,8 @@ function PracticeTab({ lang, hideNote }: { lang: Lang; hideNote: boolean }) {
   const [dueTomorrow, setDueTomorrow] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  // 「もっと詳しく」: null=未取得, "loading"=生成中, それ以外=解説テキスト
+  const [explain, setExplain] = useState<string | null>(null);
   const aliveRef = useRef(true);
   const fetchedRef = useRef(false);
 
@@ -111,6 +113,7 @@ function PracticeTab({ lang, hideNote }: { lang: Lang; hideNote: boolean }) {
       setGradedCount((n) => n + 1);
       setIdx((i) => i + 1);
       setPhase("prompt");
+      setExplain(null);
     } catch (err) {
       if (!aliveRef.current) return;
       setErrorMsg(err instanceof Error ? err.message : String(err));
@@ -139,7 +142,8 @@ function PracticeTab({ lang, hideNote }: { lang: Lang; hideNote: boolean }) {
       <p className="text-sm text-muted">{t.remaining(queue.length - idx, gradedCount)}</p>
       <Card>
         <p className="sentence-ja">{current.ja}</p>
-        {!hideNote && <p className="text-sm text-muted">{current.note}</p>}
+        {/* ヒント非表示中でも答え合わせ時は表示する（隠す意味があるのは想起の前だけ） */}
+        {(!hideNote || phase === "answer") && <p className="text-sm text-muted">{current.note}</p>}
         {phase === "prompt" && (
           <>
             <p className="text-muted">{t.sayItFirst}</p>
@@ -165,7 +169,27 @@ function PracticeTab({ lang, hideNote }: { lang: Lang; hideNote: boolean }) {
               <Button variant="ghost" onClick={() => playTtsCached(current.en).catch(() => {})} ariaLabel={t.playAgain}>
                 {t.playAgain}
               </Button>
+              {explain === null && (
+                <Button
+                  variant="ghost"
+                  onClick={async () => {
+                    setExplain("loading");
+                    try {
+                      const text = await fetchSentenceExplanation(current.no);
+                      if (aliveRef.current) setExplain(text);
+                    } catch {
+                      if (aliveRef.current) setExplain(t.explainError);
+                    }
+                  }}
+                >
+                  {t.explainMore}
+                </Button>
+              )}
             </div>
+            {explain === "loading" && <p className="text-sm text-muted">{t.explainLoading}</p>}
+            {explain !== null && explain !== "loading" && (
+              <p className="sentence-explain text-sm">{explain}</p>
+            )}
             <div className="grade-row">
               <Button onClick={() => grade("good")} disabled={busy}>{t.gradeGood}</Button>
               <Button onClick={() => grade("soso")} disabled={busy}>{t.gradeSoso}</Button>

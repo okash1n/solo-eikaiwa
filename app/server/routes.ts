@@ -51,6 +51,8 @@ export type RouteDeps = {
   placementStore: PlacementStore;
   /** 3タスクの評価。LLM出力が不正なら null（ルートは502で再試行を促す） */
   evaluatePlacement: (subs: PlacementSubmission[]) => Promise<PlacementEvaluation | null>;
+  /** 例文の詳しい解説を生成（キャッシュは sentenceStore 側。実体は coach.ts、テストはフェイク） */
+  explainSentence: (s: { en: string; ja: string; note: string }) => Promise<{ text: string }>;
 };
 
 function json(data: unknown, status = 200): Response {
@@ -356,6 +358,25 @@ async function handleSentenceGrade(req: Request, deps: RouteDeps): Promise<Respo
   return json(r);
 }
 
+async function handleSentenceExplain(req: Request, deps: RouteDeps): Promise<Response> {
+  const parsed = await parseJsonBody<{ no?: unknown }>(req);
+  if (!parsed.ok) return parsed.response;
+  const { no } = parsed.body;
+  if (typeof no !== "number" || !Number.isInteger(no)) return json({ error: "no must be an integer" }, 400);
+  const cached = deps.sentenceStore.getExplanation(no);
+  if (cached !== null) return json({ no, text: cached });
+  const sentence = deps.sentenceStore.find(no);
+  if (!sentence) return json({ error: `unknown sentence no: ${no}` }, 400);
+  const generated = await deps.explainSentence(sentence);
+  // キャッシュ書き込み失敗は解説の返却を妨げない
+  try {
+    deps.sentenceStore.saveExplanation(no, generated.text);
+  } catch (err) {
+    console.warn("[sentences] explanation cache write failed, continuing:", String(err));
+  }
+  return json({ no, text: generated.text });
+}
+
 /** 現在の index.ts の全ルーティング・ハンドラをソケットを開かずにテストできる形に切り出したもの */
 export function makeFetchHandler(deps: RouteDeps): (req: Request) => Promise<Response> {
   return async function fetch(req: Request): Promise<Response> {
@@ -390,6 +411,7 @@ export function makeFetchHandler(deps: RouteDeps): (req: Request) => Promise<Res
       if (req.method === "GET" && url.pathname === "/api/sentences") return json({ sentences: deps.sentenceStore.list() });
       if (req.method === "GET" && url.pathname === "/api/sentences/queue") return handleSentenceQueue(url, deps);
       if (req.method === "POST" && url.pathname === "/api/sentences/grade") return await handleSentenceGrade(req, deps);
+      if (req.method === "POST" && url.pathname === "/api/sentences/explain") return await handleSentenceExplain(req, deps);
       return json({ error: "not found" }, 404);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

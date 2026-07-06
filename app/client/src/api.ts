@@ -348,6 +348,17 @@ export async function gradeSentence(no: number, grade: "good" | "soso" | "bad"):
   return res.json();
 }
 
+/** 例文の詳しい解説（サーバ側でキャッシュされ、2回目以降は即返る） */
+export async function fetchSentenceExplanation(no: number): Promise<string> {
+  const res = await fetch("/api/sentences/explain", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ no }),
+  });
+  if (!res.ok) throw new Error(`explain failed: ${await extractErrorMessage(res)}`);
+  return ((await res.json()) as { text: string }).text;
+}
+
 export type PlacementTaskDef = {
   id: string; durationSec: number; instructionEn: string; instructionJa: string; promptText: string;
 };

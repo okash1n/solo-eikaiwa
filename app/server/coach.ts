@@ -44,6 +44,25 @@ export async function generateAeFeedback(
   return { items: [{ quote: "", issue: "feedback", better: "", why_ja: text }], praise: "" };
 }
 
+const EXPLAIN_SYSTEM = `You are an English grammar coach for a Japanese learner (CEFR A2-B1).
+You receive one example sentence (with its Japanese translation and a one-line grammar note).
+Write a deeper explanation IN JAPANESE covering, in this order:
+1. なぜその形を使うのか（文法ポイントの核心を1〜2文で）
+2. 使い回し例: 同じ骨組みの別場面の英文を2つ、それぞれ日本語訳付きで
+3. よくある間違い: 日本人学習者がやりがちな誤り方を1つ、誤→正の形で
+Plain text only (no markdown, no headings). Keep it within 8 lines. Write English example sentences in English; everything else in Japanese.
+Do not use any tools — reply directly with text only.`;
+
+/** 例文の詳しい解説を生成する（プレーンテキスト・日本語）。routes 側でキャッシュされる */
+export async function generateSentenceExplanation(
+  args: { en: string; ja: string; note: string },
+  runner: ClaudeRunner = defaultRunner,
+): Promise<{ text: string }> {
+  const prompt = `Sentence: ${args.en}\nJapanese: ${args.ja}\nGrammar note: ${args.note}`;
+  const { text } = await runner(prompt, undefined, { systemPrompt: EXPLAIN_SYSTEM });
+  return { text: text.trim() };
+}
+
 const MODEL_TALK_SYSTEM = `You produce a model monologue for an English learner (CEFR B1) to shadow.
 Rules: 120-150 words, spoken register, first person, plain high-frequency vocabulary, short sentences.
 No headings, no lists — just the monologue text.

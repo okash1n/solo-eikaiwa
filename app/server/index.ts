@@ -4,7 +4,7 @@ import { synthesize } from "./tts";
 import { converseTurn } from "./converse";
 import { checkHealth } from "./health";
 import { buildQuickMenu, buildTodayMenu, invalidateTodayMenuCache, loadContent } from "./menu";
-import { generateAeFeedback, generateModelTalk, generatePrepPack, generateReflection, roleplayPrompt } from "./coach";
+import { generateAeFeedback, generateModelTalk, generatePrepPack, generateReflection, generateSentenceExplanation, roleplayPrompt } from "./coach";
 import { listPracticeDays, readEvents } from "./session-log";
 import { readSettings, writeSettings } from "./settings";
 import { makeFetchHandler, type RouteDeps } from "./routes";
@@ -60,6 +60,7 @@ const realDeps: RouteDeps = {
   invalidateMenuCache: () => invalidateTodayMenuCache(),
   placementStore,
   evaluatePlacement: (subs) => evaluatePlacement(subs),
+  explainSentence: (s) => generateSentenceExplanation(s),
 };
 
 Bun.serve({

@@ -62,6 +62,7 @@ type Strings = {
     showCloze: string; showAnswer: string;
     clozeHint: string;
     playAgain: string;
+    explainMore: string; explainLoading: string; explainError: string;
     gradeGood: string; gradeSoso: string; gradeBad: string;
     doneTitle: (n: number) => string;
     dueTomorrow: (n: number) => string;
@@ -151,6 +152,9 @@ export const STR: Record<Lang, Strings> = {
       showCloze: "Show gaps", showAnswer: "Show answer",
       clozeHint: "Fill the gaps out loud, then check the answer",
       playAgain: "🔊 Play again",
+      explainMore: "💡 Explain more",
+      explainLoading: "Writing a deeper explanation…",
+      explainError: "Couldn't load the explanation. Try again on the next card.",
       gradeGood: "✅ Got it", gradeSoso: "😕 Shaky", gradeBad: "❌ Didn't come out",
       doneTitle: (n) => `Done for today (${n} sentences)`,
       dueTomorrow: (n) => `Due tomorrow: ${n}. `,
@@ -234,6 +238,9 @@ export const STR: Record<Lang, Strings> = {
       showCloze: "歯抜けを見る", showAnswer: "答えを見る",
       clozeHint: "空欄を埋めながらもう一度声に出して、答え合わせへ",
       playAgain: "🔊 もう一度聞く",
+      explainMore: "💡 もっと詳しく",
+      explainLoading: "詳しい解説を書いています…",
+      explainError: "解説を取得できませんでした。次のカードで再度お試しください。",
       gradeGood: "✅ 言えた", gradeSoso: "😕 あいまい", gradeBad: "❌ 出てこない",
       doneTitle: (n) => `今日の分は完了です（${n}文）`,
       dueTomorrow: (n) => `明日の復習予定: ${n}文。`,

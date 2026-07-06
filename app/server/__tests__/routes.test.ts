@@ -76,6 +76,9 @@ function makeTestDeps(overrides: Partial<RouteDeps> = {}): {
       queue: (_newCount: number) => [FAKE_SENTENCE],
       grade: (no: number, _grade: "good" | "soso" | "bad") =>
         no === 1 ? { no: 1, stage: 1, due: "2026-07-09" } : null,
+      getExplanation: (_no: number) => null,
+      saveExplanation: (_no: number, _text: string) => {},
+      find: (no: number) => (no === 1 ? FAKE_SENTENCE : undefined),
     } as RouteDeps["sentenceStore"],
     progressStore: {
       getLevel: () => 13,
@@ -95,6 +98,7 @@ function makeTestDeps(overrides: Partial<RouteDeps> = {}): {
       latest: () => null,
     } as RouteDeps["placementStore"],
     evaluatePlacement: async () => ({ stage: 2, startLevel: 13, rationaleJa: "簡単な文は安定しています。" }),
+    explainSentence: async () => ({ text: "be getting + 比較級は進行中の変化を表します。" }),
     ...overrides,
   };
   return { deps, logFile, recordingsDir };
@@ -779,6 +783,68 @@ describe("sentences ルート", () => {
     const unknownNo = await handler(new Request("http://x/api/sentences/grade", {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ no: 999, grade: "good" }),
+    }));
+    expect(unknownNo.status).toBe(400);
+    expect((await unknownNo.json()).error).toContain("unknown");
+  });
+
+  test("POST /api/sentences/explain は生成して返しキャッシュに保存する", async () => {
+    const saved: Array<{ no: number; text: string }> = [];
+    let generateCalls = 0;
+    const { deps } = makeTestDeps({
+      sentenceStore: {
+        list: () => [FAKE_SENTENCE],
+        queue: () => [FAKE_SENTENCE],
+        grade: () => null,
+        getExplanation: () => null,
+        saveExplanation: (no: number, text: string) => { saved.push({ no, text }); },
+        find: (no: number) => (no === 1 ? FAKE_SENTENCE : undefined),
+      } as RouteDeps["sentenceStore"],
+      explainSentence: async () => { generateCalls++; return { text: "詳しい解説テキスト" }; },
+    });
+    const handler = makeFetchHandler(deps);
+    const res = await handler(new Request("http://x/api/sentences/explain", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ no: 1 }),
+    }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ no: 1, text: "詳しい解説テキスト" });
+    expect(generateCalls).toBe(1);
+    expect(saved).toEqual([{ no: 1, text: "詳しい解説テキスト" }]);
+  });
+
+  test("POST /api/sentences/explain はキャッシュ命中時に生成しない", async () => {
+    let generateCalls = 0;
+    const { deps } = makeTestDeps({
+      sentenceStore: {
+        list: () => [FAKE_SENTENCE],
+        queue: () => [FAKE_SENTENCE],
+        grade: () => null,
+        getExplanation: (no: number) => (no === 1 ? "キャッシュ済み解説" : null),
+        saveExplanation: () => { throw new Error("must not save on cache hit"); },
+        find: (no: number) => (no === 1 ? FAKE_SENTENCE : undefined),
+      } as RouteDeps["sentenceStore"],
+      explainSentence: async () => { generateCalls++; return { text: "x" }; },
+    });
+    const res = await makeFetchHandler(deps)(new Request("http://x/api/sentences/explain", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ no: 1 }),
+    }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ no: 1, text: "キャッシュ済み解説" });
+    expect(generateCalls).toBe(0);
+  });
+
+  test("POST /api/sentences/explain は不正・未知の no に 400", async () => {
+    const handler = makeFetchHandler(makeTestDeps().deps);
+    const badNo = await handler(new Request("http://x/api/sentences/explain", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ no: "1" }),
+    }));
+    expect(badNo.status).toBe(400);
+    const unknownNo = await handler(new Request("http://x/api/sentences/explain", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ no: 999 }),
     }));
     expect(unknownNo.status).toBe(400);
     expect((await unknownNo.json()).error).toContain("unknown");
