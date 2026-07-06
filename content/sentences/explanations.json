@@ -1,0 +1,1202 @@
+[
+  {
+    "no": 1,
+    "text": "「普段は〜している」という習慣は、今この瞬間の動作ではないので現在進行形ではなく現在形で表すのが英語の基本ルール。日本語から組み立てるときは、まず「これは自分のいつもの習慣だ」と判断して主語 I ＋ 現在形を選び、頻度副詞 usually を一般動詞 skip の直前に差し込む、という手順で考える。skip（抜く）や grab（さっと買う・つかむ）はカジュアルな日常会話の定番動詞で、on my way out（出がけに）とセットで覚えると使い勝手がよい。\n使い回し例:\nI usually check Slack first and reply to urgent messages.（普段はまずSlackを確認して、急ぎのメッセージだけ返信するんだ。）\nShe usually takes an earlier train and reads the news on her phone.（彼女は普段少し早い電車に乗って、スマホでニュースを読んでるよ。）\nよくある間違い:\n誤）I am usually skipping breakfast. → 正）I usually skip breakfast.\n習慣に進行形を使うと「最近だけ一時的にそうしている」という響きになるので、いつものことなら現在形を選ぶこと。"
+  },
+  {
+    "no": 2,
+    "text": "「〜な味がする」は、日本語では人が主語になりがちだが、英語では食べ物そのものを主語に据えて taste ＋ 形容詞で表すのがポイント。taste は「味がする」という状態を表す知覚動詞なので、今食べている最中でも進行形にせず現在形のまま使う、と判断してから、文末に doesn't it? の付加疑問を足して「〜だよね？」と同意を求める形に仕上げる。a bit（ちょっと）を挟むと表現がやわらぎ、感想を言い合う場面で使いやすくなる。\n使い回し例:\nThis soup smells really good, doesn't it?（このスープ、すごくいい匂いだよね？）\nThat plan sounds a bit risky, doesn't it?（その計画、ちょっとリスキーに聞こえない？）\nよくある間違い:\n誤）This curry is tasting a bit spicy. → 正）This curry tastes a bit spicy.\ntaste・smell・sound などの知覚動詞は、後ろに形容詞を直接つなげて現在形で使うのが原則と覚えておくこと。"
+  },
+  {
+    "no": 3,
+    "text": "「だんだん〜してきている」という進行中の変化は、be getting ＋ 比較級で表すのが決まり手。組み立てるときは、変化しているもの（ここでは my eyesight＝視力）を主語に据え、「変化は今も途中で続いている」と判断して現在進行形の get を選び、worse・better・slower などの比較級を続ける。these days（最近）は現在進行形と相性がよく、honestly（正直なところ）を文末に置くと本音を打ち明けるニュアンスが出る。\n使い回し例:\nThe days are getting longer little by little.（少しずつ日が長くなってきてるね。）\nOur build times are getting slower as the codebase grows.（コードベースが大きくなるにつれて、ビルドがだんだん遅くなってきている。）\nよくある間違い:\n誤）My eyesight becomes worse these days. → 正）My eyesight is getting worse these days.\n単純現在の become は一般論の説明に聞こえるので、「今まさに進んでいる変化」には進行形の get を使うこと。"
+  },
+  {
+    "no": 4,
+    "text": "単なる習慣なら現在形で言うところを、あえて be always -ing にすると「いつも〜してばかりで困る」という不満やあきれの感情が乗る。組み立てるときは、文句の対象（息子）を主語に据え、事実を淡々と述べたいのか感情を込めたいのかを先に決めて、感情を込めるなら is always leaving の形を選ぶ、という手順で考える。all over the floor（床のそこらじゅうに）のような場所表現を足すと、散らかりぶりが目に浮かぶ生きた愚痴になる。\n使い回し例:\nMy coworker is always leaving dirty cups in the office sink.（同僚がいつもオフィスの流しに汚れたカップを置きっぱなしなんだよ。）\nThis app is always asking me to update it.（このアプリ、いつもアップデートしろって言ってくるんだよね。）\nよくある間違い:\n誤）My son always is leaving his socks all over the floor. → 正）My son is always leaving his socks all over the floor.\nalways などの頻度副詞は be動詞の後ろ・-ing形の前に置くという語順を崩さないこと。"
+  },
+  {
+    "no": 5,
+    "text": "「今週は在宅勤務」のように、普段とは違う期間限定の状況は現在進行形で表す。組み立てるときは、まず「これはずっと続く働き方か、今週だけの一時的な状態か」を判断し、一時的なら I'm working ＋ this week の形を選ぶ、というのが思考の順番。後半は so（だから）でつないで just message me anytime（いつでも気軽にメッセージして）と相手への誘いを添えると、リモートワークの連絡調整でそのまま使える一文になる。\n使い回し例:\nI'm using a loaner laptop this week while mine gets repaired.（今週は自分のPCが修理中だから、代替機を使ってるんだ。）\nShe's covering for the team lead this month.（彼女は今月、チームリーダーの代理をしてるんだ。）\nよくある間違い:\n誤）I work from home this week. → 正）I'm working from home this week.\n現在形だと「在宅勤務が恒常的な働き方」に聞こえるので、期間限定なら進行形、毎日のことなら現在形と使い分けること。"
+  },
+  {
+    "no": 6,
+    "text": "時刻の決まったスケジュール（会議・電車・番組など）は、未来の話でも will を使わず現在形で言うのが自然。組み立てるときは、主語を「人」ではなくイベントそのもの（the weekly meeting）に据え、「時刻が固定された予定表の話だ」と判断して starts と現在形を選ぶ。at nine sharp の sharp は「きっかり・ぴったり」の意味で、時刻の直後に置くだけで使える便利な一語。後半の so don't be late のように、命令文を so でつなげて注意喚起する流れも定番。\n使い回し例:\nThe last train leaves at eleven forty, so let's wrap up soon.（終電は11時40分だから、そろそろ切り上げよう。）\nThe maintenance window starts at midnight tonight.（メンテナンス時間帯は今夜0時に始まります。）\nよくある間違い:\n誤）The weekly meeting starts from nine. → 正）The weekly meeting starts at nine.\n日本語の「9時から始まる」につられて from を使いがちだが、開始時刻を点で示すときは at を使うこと。"
+  },
+  {
+    "no": 7,
+    "text": "意見を述べる think は「〜と思っている」という頭の中の状態を表す状態動詞なので、進行形にせず I think のまま使う。日本語から組み立てるときは、まず「これは自分の意見表明だ」と判断して I think を文頭に置き、その後ろに意見の中身を we need ＋ 名詞（one more week）という平叙文の語順でそのままつなげる、という二段構えで考えるとよい。I think は断定を避けるクッションにもなり、ビジネスで反対意見や見積もりを伝えるときに角を立てない効果がある。\n使い回し例:\nI think we should test this on staging first.（まずステージング環境で試すべきだと思います。）\nI think this estimate is a little too optimistic.（この見積もりは少し楽観的すぎると思います。）\nよくある間違い:\n誤）I'm thinking we need one more week to finish the report. → 正）I think we need one more week to finish the report.\nI'm thinking about 〜 は「〜を検討している最中」という別の意味になるので、意見を言うだけなら現在形の I think を使うこと。"
+  },
+  {
+    "no": 8,
+    "text": "すでに約束が固まっていてカレンダーに入っているような近い未来の予定は、「現在進行形＋日時」で表すのが会話では最も自然。組み立てるときは、主語 I を立てたあと「これはその場の思いつきではなく確定済みのアレンジだ」と判断して、will meet ではなく I'm meeting を選び、on Thursday afternoon と日時を添えて未来だと分からせる、という手順で考える。meet a new client のように相手を目的語に直接続けられる点も押さえておきたい。\n使い回し例:\nWe're releasing the new version on Friday morning.（金曜の朝に新バージョンをリリースする予定なんだ。）\nI'm having lunch with my former boss next Tuesday.（来週の火曜に前の上司とランチすることになってるんだ。）\nよくある間違い:\n誤）I will meet a new client on Thursday afternoon. → 正）I'm meeting a new client on Thursday afternoon.\nwill はその場で決めた意志や単なる予測の響きになるため、手帳に書いてあるような確定予定には進行形を使うこと。"
+  },
+  {
+    "no": 9,
+    "text": "デプロイやビルドのような処理が「今まさに動いている途中」であることは現在進行形で表し、still を is と running の間に挟んで「まだ終わっていない」を強調する。組み立てるときは、主語を人ではなく処理そのもの（the deployment）に据え、完了していない進行中の状態だと判断して is still running を選び、so ＋ 否定の命令文で「だから〜しないで」と依頼につなげる、という理由→指示の流れで考える。文末の yet（まだ）が「あとでならOK」という含みを添えている。\n使い回し例:\nThe tests are still running, so let's wait a few more minutes.（テストがまだ走ってるから、もう数分待とう。）\nThe backup is still going, so don't shut down the server.（バックアップがまだ続いてるから、サーバーを落とさないで。）\nよくある間違い:\n誤）The deployment still runs, so don't merge anything yet. → 正）The deployment is still running, so don't merge anything yet.\n現在形の runs は習慣や仕様の説明に聞こえるので、「今この瞬間動いている」ことを伝えたいときは必ず進行形にすること。"
+  },
+  {
+    "no": 10,
+    "text": "スクリプトやジョブが決まった間隔で繰り返す動作は、システムの「仕様・性質」なので現在形で説明する。組み立てるときは、主語を人ではなくツールそのもの（this script）に据え、「これは今たまたま起きていることではなく毎回必ず起きる動作だ」と判断して現在形を選び、checks and sends のように動詞を and で並べて一連の処理を一文にまとめる。主語が三人称単数なので checks・sends に s が付く点、every five minutes（5分ごとに）という間隔表現とセットで使う点も押さえたい。\n使い回し例:\nThis job backs up the database every night at two.（このジョブは毎晩2時にデータベースをバックアップします。）\nThe sensor records the temperature every ten seconds and uploads the data.（このセンサーは10秒ごとに温度を記録してデータをアップロードします。）\nよくある間違い:\n誤）This script is checking disk usage every five minutes. → 正）This script checks disk usage every five minutes.\n進行形だと「今たまたま動いている最中」の意味になるので、仕様やドキュメントの説明では現在形＋三単現の s を使うこと。"
+  },
+  {
+    "no": 11,
+    "text": "「普段は問題ないのに今日はおかしい」という一時的な異常を尋ねるときは、現在進行形の疑問文に today を添えて「いつもと違う今の状態」であることを示す。組み立てるときは、主語を不調の対象（the staging server）に据え、恒常的な性質ではなく今起きている現象だと判断して進行形を選び、Why ＋ is ＋ 主語 ＋ -ing の語順に並べ替える、という手順で考える。so slowly（こんなに遅く）の so が「異常なほど」という驚きを乗せていて、障害調査の口火を切るひとことにちょうどよい。\n使い回し例:\nWhy is the app using so much memory right now?（なんで今アプリがこんなにメモリを食ってるんだろう？）\nWhy is the printer making that weird noise today?（なんで今日プリンターがあんな変な音を立ててるんだろう？）\nよくある間違い:\n誤）Why the staging server is responding so slowly today? → 正）Why is the staging server responding so slowly today?\n疑問詞の後は is を主語の前に出す語順の入れ替えが必須で、平叙文の語順のままにしないよう注意すること。"
+  },
+  {
+    "no": 12,
+    "text": "「このPCは〜のもの」という所有関係は、日本語の発想のまま「チームが持っている」と組み立てるのではなく、物（this laptop）を主語に据えて belong to ＋ 持ち主の形にするのがコツ。belong は「所属している」という変化しない状態を表す状態動詞なので、進行形にせず現在形のまま使う、と判断してから、so ＋ 否定の命令文で「だから触らないで」と理由付きの注意につなげる。機材・アカウント・リポジトリの持ち主を伝える場面で、IT の現場ではかなり出番が多い型。\n使い回し例:\nThis repository belongs to the platform team, so ask them before pushing.（このリポジトリはプラットフォームチームのものだから、プッシュする前に確認してね。）\nThat umbrella belongs to someone else, I think.（その傘、たぶん誰か別の人のだと思うよ。）\nよくある間違い:\n誤）This laptop is belonged to the security team. → 正）This laptop belongs to the security team.\nbelong は受け身にも進行形にもできない動詞なので、主語が物でもそのまま能動の現在形で使うこと。"
+  },
+  {
+    "no": 13,
+    "text": "used to+動詞の原形は「昔は〜していたが、今は違う」という過去の習慣を一言で伝える形。used to自体に「今はもうしていない」という含みがあり、but nowを続けると現在との対比がさらにはっきりする。\n日本語で「前は〜してた」と言いたくなったら、主語に自分(I)を据えて、動詞の前にused toを差し込むだけ、と考えると組み立てやすい。発音は「ユーストゥ」とひとかたまりで読む。\n使い回し例:\nI used to write everything in Java, but now I mostly use Go.（前は何でもJavaで書いてたけど、今はほとんどGoを使ってる。）\nShe used to take the train to work, but now she cycles.（彼女は前は電車通勤だったけど、今は自転車で通ってる。）\nよくある間違い:\n誤）I was used to skip breakfast. → 正）I used to skip breakfast.\nbe used to -ing（〜に慣れている）とは別物なので、「昔の習慣」を言うときはbeを入れず、後ろは動詞の原形にする。"
+  },
+  {
+    "no": 14,
+    "text": "「子どもの頃はよく〜したものだ」という懐かしい回想には、過去の反復動作を表すwouldを使う。会話ではWe wouldがWe'dに縮まるので、この弱い'dを聞き逃さないようにしたい。\n日本語の「〜したもんだよ」を英語にするときは、主語+would+動作動詞で骨組みを作り、every summerやas kidsのような時期・頻度の表現を後ろに添える、という順で考える。\n使い回し例:\nOn Fridays we'd stay late and play board games in the office.（金曜はよく遅くまで残って、オフィスでボードゲームをしたものだった。）\nMy grandfather would tell us the same story every New Year.（祖父は毎年お正月に同じ話をしてくれたものだ。）\nよくある間違い:\n誤）We would live near the sea when I was a child. → 正）We used to live near the sea when I was a child.\nliveやknowのような状態動詞に回想のwouldは使えないので、その場合はused toを選ぶ。"
+  },
+  {
+    "no": 15,
+    "text": "「昔ここに〜があった」という存在の話は、There is/are構文の過去版にあたるThere used to be 〜で言う。この形自体に「今はもうない」という含みがあるので、but it's gone nowなどと言い足さなくてもニュアンスは伝わる。\n日本語に主語がない「〜があった」型の文は、何を主語にするか悩まず、まずThereを文頭に置いてused to beを続ける、と決めておくと迷わない。\n使い回し例:\nThere used to be a staging server for this project, but it was shut down.（このプロジェクトには昔ステージングサーバーがあったんだけど、廃止されたんだ。）\nThere used to be a small ramen shop behind our office.（うちの会社の裏に昔、小さなラーメン屋があったんだよ。）\nよくある間違い:\n誤）It used to be a great bakery on this corner. → 正）There used to be a great bakery on this corner.\n「〜がある・あった」という存在はitではなくthereで始める。itだと「この場所自体が昔パン屋だった」という別の意味になってしまう。"
+  },
+  {
+    "no": 16,
+    "text": "used toの疑問文は、ふつうの過去の疑問文と同じくDidを文頭に出し、後ろを原形に戻してDid you use to 〜?とする。didがすでに過去を表しているので、useにdは付かない。\n「前は〜してたの？」と聞きたいときは、まずDid youで文を始めると決め、そのあとにuse to+動詞の原形を続ける、という手順で組み立てる。発音はused toと同じ「ユーストゥ」なので、差が出るのは書くときだけ。\n使い回し例:\nDid you use to work at a startup before this job?（この仕事の前はスタートアップで働いてたんですか？）\nDid you use to play any sports in college?（大学時代は何かスポーツをやってた？）\nよくある間違い:\n誤）Did you used to live near the station? → 正）Did you use to live near the station?\nネイティブでも書き間違えることがある綴りだが、標準的には「didの後ろは原形use」と覚えておく。"
+  },
+  {
+    "no": 17,
+    "text": "two days agoのように「今から〜前」と時点がはっきりしている報告は、単純過去(sent)で言い切る。agoは「現在から数えて〜前」を表す語で、期間を表す語句(two days)の後ろに付けて文末に置くのが基本。\n「2日前に送りました」を英語にするときは、動作主のIを主語に据え、動詞を過去形sentにして、最後にtwo days agoで時点を打つ、という順で組み立てる。\n使い回し例:\nWe released the new version three weeks ago.（3週間前に新バージョンをリリースしました。）\nI talked with the vendor about the license a few hours ago.（数時間前にライセンスの件でベンダーと話しました。）\nよくある間違い:\n誤）I have sent the proposal two days ago. → 正）I sent the proposal two days ago.\nagoやyesterdayのような過去の一時点を示す語は、現在完了(have sent)とは一緒に使えない。"
+  },
+  {
+    "no": 18,
+    "text": "used toの否定はdidn't use to+動詞の原形で、「以前は〜ではなかった（今は違う）」を表す。この文のように自分の変化を打ち明けると、「今は楽しめるようになった」という前向きな含みが自然に伝わり、ビジネスの雑談で好印象になる。\n「昔は好きじゃなかった」と言いたいときは、I didn't use toまでをひとかたまりの型として出し、そのあとに動詞を続ける、と考えるとすぐ口から出る。enjoyの後ろはgiving presentationsのように動名詞(-ing)が続く点もセットで押さえたい。\n使い回し例:\nI didn't use to like writing documentation, but now I see its value.（昔はドキュメントを書くのが好きじゃなかったけど、今はその価値がわかる。）\nHe didn't use to speak up much in meetings.（彼は以前、会議ではあまり発言しなかった。）\nよくある間違い:\n誤）I didn't used to enjoy giving presentations. → 正）I didn't use to enjoy giving presentations.\n疑問文のときと同じく、didn'tの後ろのuseは原形に戻す（発音は同じなので書くときに要注意）。"
+  },
+  {
+    "no": 19,
+    "text": "人の癖や決まった行動を懐かしく、ときに呆れ気味に語るときは、その人を主語に据えてwould always+動詞を使う。「決まって〜したものだ」という反復のニュアンスが出て、単なるalways+過去形よりも思い出話らしい響きになる。\n「前の上司はいつも〜してた」を英語にするなら、まずOur old managerと人を主語に立て、動詞の前にwould alwaysを差し込む、という手順で考える。alwaysの定位置は助動詞wouldの直後。\n使い回し例:\nMy first mentor would always review my code line by line.（最初のメンターは、いつも私のコードを1行ずつレビューしてくれたものだ。）\nThat client would always call us right before the weekend.（あのクライアントは、決まって週末の直前に電話してきたなあ。）\nよくある間違い:\n誤）Our old manager always would start meetings late. → 正）Our old manager would always start meetings late.\n頻度副詞alwaysはwouldの前ではなく直後に置く。現在の不満を言うbe always -ing（例文4）との使い分けも意識したい。"
+  },
+  {
+    "no": 20,
+    "text": "「いつ〜したの？」と過去の出来事の時点を尋ねるときは、When did you+動詞の原形が基本形。joinは「（組織に）加わる」という一瞬の出来事を表す動詞なので、入った時点を聞くこの形と相性が良い。\n組み立てるときは、聞きたいのが「過去の一時点」だと確認したら、迷わずWhen did youで文を始めて動詞の原形を続ける、と型で処理する。相手の経歴に興味を示す雑談の入り口として使い勝手が良い。\n使い回し例:\nWhen did you start learning English?（英語の勉強はいつ始めたんですか？）\nWhen did you move to Tokyo?（東京にはいつ引っ越してきたんですか？）\nよくある間違い:\n誤）When have you joined the sales team? → 正）When did you join the sales team?\nWhenは過去の一時点を尋ねる語なので現在完了とは併用できず、またjoinはjoin toではなく目的語を直接続ける。"
+  },
+  {
+    "no": 21,
+    "text": "システム障害の報告は、落ちた対象(The server)を主語に据えて、went down（落ちた）と単純過去で言い切るのが定石。last nightという過去の時点表現があるので、時制は迷わず過去形になる。\n語順は「主語+went down+回数(twice)+時点(last night)+状況(during the release)」で、動詞の後ろに情報を並べていくと考えると組み立てやすい。ちなみに現在の状態ならThe server is down（落ちている）と言う。\n使い回し例:\nThe payment API went down for about ten minutes this morning.（今朝、決済APIが10分ほど落ちた。）\nThe whole network went down right in the middle of the demo.（デモの真っ最中にネットワーク全体が落ちたんだ。）\nよくある間違い:\n誤）The server fell down twice last night. → 正）The server went down twice last night.\nfall downは人や物が物理的に倒れる場合の表現で、システムやサービスが「落ちる」はgo down（過去形went down）を使う。"
+  },
+  {
+    "no": 22,
+    "text": "「デプロイに何時間もかかっていた」は、人ではなく作業そのもの(Deployments)を主語に据え、「時間がかかる」のtakeと組み合わせるのが英語らしい発想。そこにused toを足すだけで「昔はそうだった（今は違う）」という改善の物語になる。\n日本語の「〜に時間がかかる」を訳すときは、まず「かかる対象」を主語に立ててtake+時間の骨組みを作る、と考えると自然な文になる。before we automated themの単純過去が、自動化の前後をくっきり対比させている。\n使い回し例:\nCode reviews used to take a whole day before we split PRs into smaller ones.（PRを小さく分ける前は、コードレビューに丸一日かかってたんだ。）\nBackups used to take all night on the old system.（旧システムでは、バックアップに一晩中かかってたよ。）\nよくある間違い:\n誤）Deployments used to spend hours. → 正）Deployments used to take hours.\nspendの主語は時間を使う「人」なので、モノや作業が主語のときはtakeを使う。"
+  },
+  {
+    "no": 23,
+    "text": "過去にかかった時間を尋ねるときは、仮主語itを立てたit takes+時間+to doの骨組みを疑問文にして、How long did it take to 〜?とする。時間がかかる文の主語は人ではなくitと決まっているのがポイント。\n「復旧にどれくらいかかった？」を組み立てるときは、How long did it takeまでを丸ごとひとつの型として出し、そのあとにto+聞きたい作業を続ける、と考える。誰の作業か言いたければtakeの後ろにyouなどを挟んでHow long did it take you to 〜?とできる。\n使い回し例:\nHow long did it take to set up the new environment?（新しい環境のセットアップ、どれくらいかかった？）\nHow long did it take you to get used to remote work?（リモートワークに慣れるまで、どれくらいかかりましたか？）\nよくある間違い:\n誤）How long time did it take to restore the database? → 正）How long did it take to restore the database?\nHow longだけで「どれくらいの時間」を表すので、timeを付け足さない。"
+  },
+  {
+    "no": 24,
+    "text": "過去にやったこと(checked)と、その結果できなかったこと(didn't find)をbutでつなぐ、障害調査の報告に頻出の形。否定文では「何も〜ない」をnot 〜 anythingで表し、didn'tの後ろの動詞は必ず原形に戻る。\n「確認したけど見つからなかった」を英語にするときは、肯定の過去形の節+but+didn't+原形の節という2つの部品を先に用意し、見つからなかった対象をanything unusualで表す、という順で組み立てる。\n使い回し例:\nI restarted the app, but it didn't solve the problem.（アプリを再起動したけど、問題は解決しなかった。）\nWe reviewed the config, but we didn't see anything wrong.（設定を見直したけど、おかしいところは見当たらなかった。）\nよくある間違い:\n誤）I didn't found anything unusual. → 正）I didn't find anything unusual.\ndidn'tがすでに過去を表すので後ろは原形にし、anything unusualのように-thing系の語では形容詞を後ろに置く点も合わせて覚えたい。"
+  },
+  {
+    "no": 25,
+    "text": "「〜したことある？」と、いつの話かを特定せずに経験の有無を尋ねる質問は Have you ever + 過去分詞で作る。\n日本語で「食べたことある？」と言いたいと気づいたら、過去形の Did you...? ではなく、まず Have you ever を口に出し、そこに tried などの過去分詞を続けるのが組み立ての手順。\n答えるときも Yes, I have. / No, never. と現在完了で返すとセットで覚えやすい。\n使い回し例:\nHave you ever used a standing desk?（スタンディングデスクを使ったことある？）\nHave you ever been to an onsen town?（温泉街に行ったことある？）\nよくある間違い:\n誤）Have you ever eat Vietnamese food? → 正）Have you ever eaten (tried) Vietnamese food?\nhave の後は必ず過去分詞。eat / ate / eaten の3つ目の形を使うことを意識する。"
+  },
+  {
+    "no": 26,
+    "text": "「4月からずっと通っている」のように、過去に始めて今も続けている習慣は have been -ing（現在完了進行形）+ since 起点で表す。\n組み立ての手順は、まず「今も続いているか？」を確認し、続いているなら現在形や過去形ではなく I've been -ing を選び、最後に since April と開始点を足す。\nsince の後には「4月」「先週」など始まった時点が来る。\n使い回し例:\nI've been learning Python since last fall.（去年の秋からずっとPythonを勉強してるんだ）\nHe's been living near the office since March.（彼は3月から会社の近くに住んでるよ）\nよくある間違い:\n誤）I'm going to the gym since April. → 正）I've been going to the gym since April.\n現在進行形は「今この瞬間」だけを表すので、since で期間を語るときは現在完了進行形にする。"
+  },
+  {
+    "no": 27,
+    "text": "「〜したばかり」は have just + 過去分詞。just を have と過去分詞の間に挟むだけで「ついさっき完了した」と伝わる。\n日本語の「帰ってきたばかり」を組み立てるときは、主語 We を立てて、「直後」のニュアンスは have just gotten という形そのものに担当させると考える。\ngotten はアメリカ英語の過去分詞で、イギリス英語では got を使う。get back from 〜 は「〜から戻る」の定番句動詞。\n使い回し例:\nI've just finished the report, so I need a coffee break.（ちょうどレポートを仕上げたところだから、コーヒー休憩したいな）\nShe's just left the office.（彼女はたった今オフィスを出たところだよ）\nよくある間違い:\n誤）We've gotten back from Okinawa just now. → 正）We got back from Okinawa just now.\njust now（たった今）は過去形と使う表現。現在完了と組み合わせるなら just を have の直後に置く。"
+  },
+  {
+    "no": 28,
+    "text": "「こんなにうまいラーメンは初めて」という日本語は、英語では「今まで食べた中で最高のラーメンだ」と発想を変えて、最上級 + I've ever + 過去分詞の型に流し込む。\n組み立ての手順は、まず That's the best ramen と最上級で言い切り、その後ろに I've ever had（今までに食べた中で）を付け足すイメージ。\never は「これまでのどの経験と比べても」という比較の範囲を作る働きをする。\n使い回し例:\nThat's the funniest movie I've ever seen.（あんなに面白い映画、初めて見たよ）\nThis is the cleanest code I've ever read.（こんなに読みやすいコードは初めてだ）\nよくある間違い:\n誤）That's the best ramen I've never had. → 正）That's the best ramen I've ever had.\n日本語の「一度もないくらい」につられて never を使うと「食べたことがない」という逆の意味になるので、この型では必ず ever。"
+  },
+  {
+    "no": 29,
+    "text": "「今年もう2回行っている」のように、現在までの訪問回数を伝えるときは have been to + 場所 + 回数。this year のようにまだ終わっていない期間なら現在完了が使える。\n組み立てるときは、行った日付を1つずつ思い出すのではなく「今年という枠の中で2回」とまとめて捉え、I've been to 〜 twice の型を選ぶのが手順。\ntwice は two times より自然な「2回」。once（1回）、three times（3回）と数えていく。\n使い回し例:\nI've been to that client's office three times this month.（今月あの客先には3回行ってるよ）\nWe've been to the new data center once.（新しいデータセンターには1回行ったことがある）\nよくある間違い:\n誤）I've gone to the Osaka office twice this year. → 正）I've been to the Osaka office twice this year.\nhave gone to は「行ってしまって今ここにいない」という意味になりがちなので、「行った経験・回数」は have been to で表す。"
+  },
+  {
+    "no": 30,
+    "text": "「もう送ってあります」のように、作業が完了済みでその結果が今も有効（相手の手元にある）と伝える報告は have already + 過去分詞。\n組み立ての手順は、主語 I を立てて「済んでいる状態を今伝えたい」と判断したら、過去形ではなく I've already sent を選ぶ。already は have と過去分詞の間が定位置。\nビジネスでは「対応済みです」という進捗報告にそのまま使える型。\n使い回し例:\nI've already booked a room for Friday's meeting.（金曜の会議室はもう押さえてあります）\nWe've already fixed that issue in the latest build.（その問題は最新ビルドで修正済みです）\nよくある間違い:\n誤）I've already sent you the agenda yesterday. → 正）I sent you the agenda yesterday.\nyesterday など具体的な時点を言うなら過去形。already の現在完了は「いつやったか」ではなく「済んでいる今の状態」を伝える形。"
+  },
+  {
+    "no": 31,
+    "text": "「働いてどのくらい？」は、今もその会社で働いている相手への質問なので、過去形ではなく現在完了 How long have you + 過去分詞で期間を尋ねる。\n組み立ての手順は、「今も続いていること」の長さを聞くと気づいたら How long を文頭に置き、have you worked と現在完了の疑問文の語順を続ける。\n答えは For five years.（5年です）や Since 2021.（2021年からです）のように for / since で返せる。\n使い回し例:\nHow long have you lived in Yokohama?（横浜に住んでどのくらいになるの？）\nHow long have you used this monitoring tool?（この監視ツールを使ってどのくらい？）\nよくある間違い:\n誤）How long do you work at this company? → 正）How long have you worked at this company?\n現在形で聞くと「普段1日に何時間働くのか」という別の質問に聞こえるので、勤続期間は必ず現在完了で。"
+  },
+  {
+    "no": 32,
+    "text": "I've been meaning to 〜 は「前からずっと〜しようと思っていた（そして今それを切り出す）」という会話の前置き。mean to do（〜するつもりだ）を現在完了進行形にして、意図が今まで続いてきたことを表す。\n日本語の「ずっと聞こうと思ってた」を組み立てるときは、「思っていた」を think ではなく mean to に置き換え、継続感を have been -ing に担当させるのが手順。\n話題を切り出すクッションとして、依頼や質問の直前に置くと自然。\n使い回し例:\nI've been meaning to try that new ramen place near the station.（駅前の新しいラーメン屋、ずっと行こうと思ってたんだ）\nI've been meaning to clean up this config file.（この設定ファイル、ずっと整理しようと思ってて）\nよくある間違い:\n誤）I've been thinking to ask you about the schedule. → 正）I've been meaning to ask you about the schedule.\nthink to do とは言えないので、think を使うなら I've been thinking of asking のように of + 動名詞にする。"
+  },
+  {
+    "no": 33,
+    "text": "「1時間以上走りっぱなし」のように、動作が今も続いていてその長さを強調したいときは has been -ing + for + 期間で表す。\n組み立ての手順は、the deployment というモノを主語に据え、「まだ終わっていない・続いている」と判断したら現在完了進行形を選び、長さを for over an hour（1時間超）で足す。\nover は「〜以上・〜を超えて」で、more than an hour と同じ意味。\n使い回し例:\nShe's been working on that bug for three days.（彼女はそのバグに3日間かかりきりなんだ）\nIt's been raining for two hours.（もう2時間降り続いてるよ）\nよくある間違い:\n誤）The deployment has been running since over an hour. → 正）The deployment has been running for over an hour.\n期間の長さ（1時間、3日）は for、始まった時点（今朝、4月）は since と使い分ける。"
+  },
+  {
+    "no": 34,
+    "text": "「まだ直せてない」のように、やるべきことが未完了で今も課題として残っている状態は haven't + 過去分詞 + yet で表す。\n組み立ての手順は、主語 We を立てて「過去にやらなかった」ではなく「現時点で未完了」と捉え、haven't fixed を選び、文末に yet（まだ）を置く。\nyet は否定文・疑問文の文末が定位置で、「これからやるつもりはある」という含みも伝わる。\n使い回し例:\nI haven't replied to the client's email yet.（クライアントのメールにまだ返信してないんだ）\nWe haven't decided on a release date yet.（リリース日はまだ決めてないよ）\nよくある間違い:\n誤）We don't fix the login bug yet. → 正）We haven't fixed the login bug yet.\n現在形の don't は「（習慣として）直さない」と聞こえてしまう。「まだ〜していない」は現在完了の否定とセットで覚える。"
+  },
+  {
+    "no": 35,
+    "text": "「〜するのは初めて」は This is the first time + 主語 + have + 過去分詞という決まった型で言う。今まさに目の前で起きていても、後半は現在完了になるのがポイント。\n組み立ての手順は、日本語の「初めて」を副詞で足そうとせず、まず This is the first time と枠を作り、その中に I've seen this error と経験を入れる。\nfirst を second や third に替えれば「これで2回目・3回目」も同じ型で言える。\n使い回し例:\nThis is the first time I've run this script in production.（このスクリプトを本番で動かすのは初めてだ）\nIt's the second time he's missed the daily standup this week.（彼が朝会を逃すの、今週これで2回目だよ）\nよくある間違い:\n誤）This is the first time I see this error. → 正）This is the first time I've seen this error.\n「今見ている」につられて現在形にしがちだが、the first time の後は現在完了が決まり。"
+  },
+  {
+    "no": 36,
+    "text": "「今朝からずっと落ちている」は、落ちた瞬間ではなく「落ちたままの状態が続いている」ことなので、has been + down（状態を表す形容詞）+ since 起点で表す。\n組み立ての手順は、the API を主語に据え、「今どういう状態が続いているか」を down という形容詞で決めてから、has been down + since this morning とつなぐ。\ndown は IT では「停止中・落ちている」の定番形容詞で、反対は up や back up（復旧して）。\n使い回し例:\nThe staging environment has been unstable since the last release.（前回のリリース以降、ステージング環境がずっと不安定なんだ）\nThe elevator has been out of service since Monday.（エレベーターは月曜からずっと使えないままだ）\nよくある間違い:\n誤）The API went down since this morning. → 正）The API has been down since this morning.\nwent down は「落ちた」という一瞬の出来事にしか使えない。since で継続を語るなら has been down と状態の形で言う。"
+  },
+  {
+    "no": 37,
+    "text": "食事の注文のように、話しているその瞬間に「じゃあこうする」と決めたことは will で表します。日本語の「やっぱり〜にするよ」を英語にするときは、まず主語 I を立てて、今この場で決めた合図として I'll を選ぶ、という順で組み立てます。You know what は「あのさ、やっぱり」と決断の前置きになる口語表現で、will と相性抜群です。\n使い回し例:\nIt's getting late — I'll just take a taxi home.（もう遅いし、タクシーで帰ることにするよ。）\nActually, I'll have the iced coffee instead.（やっぱりアイスコーヒーにします。）\nよくある間違い:\n誤）You know what, I'm going to get the same as you. → 正）You know what, I'll just get the same as you.\nbe going to は前から決めていた予定に聞こえるので、その場の思いつき・即決には will を使うのが自然です。"
+  },
+  {
+    "no": 38,
+    "text": "空が暗いなど、目の前に見えている兆候から「こうなりそうだ」と予測するときは be going to を使います。日本語の「雨になりそう」を英語にするときは、天気の話なので主語に it を置き、根拠ある予測だから is going to rain を選ぶ、と考えます。単なる勘ではなく「今見えているサイン」があるかどうかが be going to を選ぶ決め手です。\n使い回し例:\nLook at those clouds — it's going to snow tonight.（あの雲を見てよ。今夜は雪になりそうだね。）\nCareful, that pile of boxes is going to fall over.（気をつけて、その箱の山、倒れそうだよ。）\nよくある間違い:\n誤）Take an umbrella — it will rain this afternoon. → 正）Take an umbrella — it's going to rain this afternoon.\nwill でも文としては成立しますが、雲行きなど目に見える根拠がある予測は be going to のほうがずっと自然です。"
+  },
+  {
+    "no": 39,
+    "text": "相手がすでに決めているかもしれない予定を尋ねるときは、現在進行形の疑問文 Are you doing 〜? を使います。日本語の「予定ある？」を英語にするときは、まず相手 you を主語に置き、「決まった予定」の話だから未来でも進行形を選ぶ、と考えます。疑問文なので something ではなく anything を使う点もセットで覚えると便利です。\n使い回し例:\nAre you doing anything this weekend?（今週末、何か予定ある？）\nIs your team doing anything for the product launch?（リリースに合わせてチームで何かやるの？）\nよくある間違い:\n誤）Will you do anything for the holidays this year? → 正）Are you doing anything for the holidays this year?\nWill you do 〜? は「やるつもりはあるの？」と意志を問い詰めるように響くことがあり、決まった予定を軽く尋ねるなら進行形が自然です。"
+  },
+  {
+    "no": 40,
+    "text": "「未来のある時刻に、ちょうど〜している最中だ」と言いたいときは will be -ing（未来進行形）を使います。日本語の「7時は夕食の最中」を英語にするなら、まず7時という未来の一点を思い浮かべ、その瞬間に動作が進行中だから will be having dinner を選ぶ、という手順です。then（そのとき）を添えると「その時間帯はね」という感じが伝わります。\n使い回し例:\nDon't drop by at noon — I'll be taking an online class then.（お昼には来ないでね。その時間はオンライン授業中だから。）\nThis time tomorrow, we'll be driving to Nagano.（明日の今ごろは長野へ車で向かってる最中だね。）\nよくある間違い:\n誤）Don't call me at seven — we'll have dinner then. → 正）Don't call me at seven — we'll be having dinner then.\nwill have dinner だと「そのとき食べることにする」という決定に聞こえ、「食事の真っ最中」という進行のニュアンスが消えてしまいます。"
+  },
+  {
+    "no": 41,
+    "text": "「確認して折り返します」のように、その場で相手に約束・申し出をするときは will を使います。日本語の「ご連絡します」を英語にするときは、約束する自分 I を主語に据え、今この場の約束だから I'll を選び、期限は by Friday（金曜までに）で締める、と組み立てます。get back to you は「折り返し連絡する」のビジネス定番フレーズで、with 〜 で「何を持って戻るか」を足せます。\n使い回し例:\nI'll check with the vendor and get back to you tomorrow.（ベンダーに確認して、明日折り返しますね。）\nI'll send you the draft by the end of the day.（今日中にドラフトをお送りします。）\nよくある間違い:\n誤）I'll get back to you until Friday. → 正）I'll get back to you by Friday.\nuntil は「〜までずっと続く」、by は「〜までに完了する」なので、締め切り・期限には必ず by を使います。"
+  },
+  {
+    "no": 42,
+    "text": "「来年オフィスを開く」のように、話す前からすでに決めてある計画・意図は be going to で表します。日本語の「〜する予定なんです」を英語にするときは、計画の主体（ここでは会社の we）を主語に置き、前から温めてきた計画だから are going to open を選ぶ、と考えます。will との使い分けは「いつ決めたか」がポイントで、be going to は決定済みの中身を相手に披露する言い方です。\n使い回し例:\nWe're going to hire two more engineers this fall.（この秋、エンジニアをあと2人採用する予定です。）\nI'm going to take the certification exam in March.（3月にその資格試験を受けるつもりなんだ。）\nよくある間違い:\n誤）We decided it last year, so we will open a second office next year. → 正）We're going to open a second office next year.\nすでに決めてある計画に will を使うと、たった今決めたような響きになるので、決定済みの予定は be going to で伝えます。"
+  },
+  {
+    "no": 43,
+    "text": "「10時にクライアントと会う」のように、日時まで確定したアポイントは現在進行形で表すのが会話では最も自然です。日本語の「会うことになっている」を英語にするときは、自分 I を主語にして、カレンダーに書き込み済みの予定だから I'm meeting + 時刻、と組み立てます。will や be going to より「もう動かせない約束」という確定感が出るのがこの形の持ち味です。\n使い回し例:\nI'm seeing the dentist at four, so I'll leave a bit early today.（4時に歯医者の予約があるから、今日は少し早めに出ます。）\nWe're interviewing two candidates tomorrow morning.（明日の午前中に候補者2人と面接することになっています。）\nよくある間違い:\n誤）I will meet the new client at ten, so let's talk after lunch. → 正）I'm meeting the new client at ten, so let's talk after lunch.\n手帳に入っている確定済みのアポに will を使うと、その場で決めたように聞こえるので、決まった約束は現在進行形で伝えます。"
+  },
+  {
+    "no": 44,
+    "text": "Will you be -ing? は「もし予定が決まっていれば教えて」というトーンで、相手にプレッシャーをかけずに予定を尋ねる丁寧な形です。日本語の「参加されますか？」を英語にするときは、相手 you を主語にして、意志ではなく成り行きの予定を聞きたいから Will you join ではなく Will you be joining を選ぶ、と考えます。目上の人や取引先にも安心して使える聞き方です。\n使い回し例:\nWill you be attending the conference in Osaka next week?（来週の大阪のカンファレンスには参加されますか？）\nWill you be using the meeting room this afternoon?（今日の午後、会議室はお使いになりますか？）\nよくある間違い:\n誤）Will you join the team event next month? → 正）Will you be joining the team event next month?\nWill you + 動詞の原形は「〜してくれない？」という依頼・勧誘に聞こえやすいので、単に予定を確認したいときは Will you be -ing? を使います。"
+  },
+  {
+    "no": 45,
+    "text": "進み具合の遅さなど、今見えている状況から「〜しそうにない」と見込みを否定するときは isn't going to を使います。日本語の「終わりそうにない」を英語にするときは、バックアップというモノをそのまま主語に据えて、目の前の根拠に基づく予測だから isn't going to finish を選ぶ、と組み立てます。進捗バーの速度という「見えているサイン」があるので、will not より be going to の否定が合います。\n使い回し例:\nWe aren't going to make the last train if we leave now.（今出ても終電には間に合いそうにないね。）\nThis build isn't going to pass with all those failing tests.（あれだけテストが落ちてたら、このビルドは通りそうにないな。）\nよくある間違い:\n誤）This backup isn't going to finish before the maintenance window will end. → 正）This backup isn't going to finish before the maintenance window ends.\nbefore や when などの時間を表す節の中では、未来の内容でも will を入れず現在形（ends）を使います。"
+  },
+  {
+    "no": 46,
+    "text": "根拠を見せて断言するのではなく、自分の意見としての見通しを述べるときは I think + will の組み合わせが定番です。日本語の「〜になると思いますよ」を英語にするときは、まず I think を前置きにして、原因となるモノ（this refactor）を主語に据え、make + 目的語 + 形容詞「〜を…の状態にする」で結果を言う、と組み立てます。この無生物主語の形は「このリファクタリングのおかげで〜になる」を1文で言える便利な型です。\n使い回し例:\nI think this new tool will save us a lot of time.（この新しいツールで、かなり時間を節約できると思うよ。）\nI think the price change will confuse some of our users.（この価格変更で、戸惑うユーザーも出ると思います。）\nよくある間違い:\n誤）I think this refactor will make the code to be much easier to maintain. → 正）I think this refactor will make the code much easier to maintain.\nmake + 目的語 + 形容詞の間に to be は入れません。また否定するときは I think it won't 〜 より I don't think it will 〜 の語順が自然です。"
+  },
+  {
+    "no": 47,
+    "text": "チームで日時まで決めてある作業予定は、no 43 のアポイントと同じく現在進行形で伝えるのが自然です。日本語の「展開する予定です」を英語にするときは、作業主体の we を主語に置き、スケジュール確定済みの作業だから are rolling out + 日時、と組み立てます。roll out は「パッチや新機能を段階的に展開する」の定番動詞で、roll out A to B（AをBへ展開する）の形ごと覚えると実務でそのまま使えます。\n使い回し例:\nWe're releasing the new feature to beta users next Monday.（来週月曜に新機能をベータユーザーへ公開する予定です。）\nWe're migrating the database to the new cluster this weekend.（今週末にデータベースを新しいクラスターへ移行します。）\nよくある間違い:\n誤）We will roll out the security patch to all servers on Thursday night. → 正）We're rolling out the security patch to all servers on Thursday night.\n確定済みの作業連絡に will を使うと決定の重みが伝わりにくいので、日時の固まった予定は現在進行形でアナウンスします。"
+  },
+  {
+    "no": 48,
+    "text": "「一晩中ログを見ています」のように、未来の一定時間ずっと続く作業は will be -ing で表します。日本語の「監視していますので」を英語にするときは、担当者の自分 I を主語にして、点ではなく幅のある時間（all night）続く作業だから will be monitoring を選ぶ、と組み立てます。この形は「段取りとして淡々とやります」という響きがあり、相手を安心させる報告にも向いています。\n使い回し例:\nI'll be working from the Nagoya office all next week.（来週は一週間ずっと名古屋オフィスで勤務しています。）\nShe'll be running the workshop all afternoon, so please email her instead.（彼女は午後いっぱいワークショップを担当しているので、連絡はメールでお願いします。）\nよくある間違い:\n誤）I'll monitor the logs all night after tonight's deployment. → 正）I'll be monitoring the logs all night after tonight's deployment.\nI'll monitor だとその場で買って出た申し出に聞こえるので、決まっている継続作業の報告には will be -ing を使い、all night など時間の幅を添えます。"
+  },
+  {
+    "no": 49,
+    "text": "must be + 形容詞は「状況から考えて、きっと〜に違いない」という根拠のある強い推量。「長旅のあと」という確かな根拠があるからこそ must が選べます。\n日本語の「くたくたでしょ」を英語にするときは、まず相手の状態の話なので You を主語に据え、根拠つきの確信なので might ではなく must be を選ぶ、という順で組み立てます。\n使い回し例:\nYou must be hungry after skipping lunch.（お昼を抜いたんだから、お腹すいてるでしょ。）\nShe must be excited about her new job.（彼女、新しい仕事にきっとワクワクしてるよ。）\nよくある間違い:\n誤）You must exhausted after such a long trip. → 正）You must be exhausted after such a long trip.\n助動詞の直後は動詞の原形が必要なので、形容詞を続けるときは be を絶対に落とさないこと。"
+  },
+  {
+    "no": 50,
+    "text": "「〜がある」という存在は There is 構文で表し、「あるかもよ」と確信を下げたいときは is の位置に might be を差し込みます。might は may より一段控えめで、気軽な提案にちょうどいい強さです。\n日本語の「カフェがあるかも」を英語にするときは、新しく存在を伝える文なのでカフェを主語にせず、まず There を立てて There might be + 名詞の形を選びます。\n使い回し例:\nThere might be a parking lot behind the building.（建物の裏に駐車場があるかもよ。）\nThere might be an easier way to do this.（もっと簡単なやり方があるかもしれない。）\nよくある間違い:\n誤）It might be a nice café near the station. → 正）There might be a nice café near the station.\n「ある・いる」と存在を新しく伝えるときの主語は it ではなく there。it だと「それはカフェかもしれない」という別の意味になります。"
+  },
+  {
+    "no": 51,
+    "text": "can't be は「〜のはずがない」という強い否定の推量で、must be（〜に違いない）のちょうど裏返しです。「安すぎる」という根拠から可能性そのものを打ち消しています。\n日本語の「その値段はおかしい」を英語にするときは、目の前の対象 That を主語に据え、「あり得ない」という強い否定なので can't be を選ぶ、と考えます。\n使い回し例:\nThat can't be true — I saw him yesterday.（それはあり得ないよ。昨日彼に会ったもん。）\nThis can't be the final version; half the pages are blank.（これが最終版のはずがないよ。半分のページが白紙だし。）\nよくある間違い:\n誤）That must not be the right price. → 正）That can't be the right price.\nmust の否定 must not は「〜してはいけない」という禁止になるため、「〜のはずがない」という推量の否定は必ず can't で表します。"
+  },
+  {
+    "no": 52,
+    "text": "can be は「（いつもではないが）〜なことがある」という一般的な傾向を表します。今この瞬間の渋滞を推量しているのではなく、「この辺の週末」という繰り返される状況の性質を述べています。\n日本語の「渋滞がひどいことがある」を英語にするときは、話題の中心である渋滞（Traffic）を主語に据え、一般論なので might ではなく can be を選ぶ、と考えます。\n使い回し例:\nThis tool can be confusing for new users.（このツール、初めてのユーザーには分かりにくいことがある。）\nSummer in Tokyo can be brutally hot.（東京の夏はものすごく暑いことがある。）\nよくある間違い:\n誤）He can be in a meeting right now. → 正）He might be in a meeting right now.\ncan be は一般的な傾向の専用で、「今たぶん〜だろう」という目の前の個別の推量には might や could を使い分けます。"
+  },
+  {
+    "no": 53,
+    "text": "could be は「〜かもしれない」という控えめな今の推量で、can の過去形に見えますが過去の意味はありません。right now と一緒に使えることがその証拠です。\n日本語の「会議中かもしれません」を英語にするときは、推量の対象である彼女（She）を主語に据え、確信が低めなので must ではなく could be を選ぶ、と考えます。\n使い回し例:\nThe manager could be on his way to the office.（部長は今、オフィスに向かっている途中かもしれません。）\nYour package could be at the front desk.（お荷物は受付にあるかもしれませんよ。）\nよくある間違い:\n誤）She could be in a meeting an hour ago. → 正）She could have been in a meeting an hour ago.\ncould be はあくまで「今」の推量。過去について「〜だったかも」と言うときは could have been という別の形が必要です。"
+  },
+  {
+    "no": 54,
+    "text": "might not be は「〜ではないかもしれない」というやわらかい否定で、It's not a good time と言い切るより角が立ちません。英語では直接 No と言わずにこの形で遠回しに断ることがよくあります。\n日本語の「タイミングじゃないかも」を英語にするときは、今の状況を指す This を主語に据え、否定を和らげたいので isn't ではなく might not be を選ぶ、と考えます。\n使い回し例:\nThis might not be the best place to talk about it.（その話をするには、ここは向いてないかもね。）\nFriday might not be a good day for the release.（金曜はリリースに向かない日かもしれません。）\nよくある間違い:\n誤）This might be not the best time to ask him. → 正）This might not be the best time to ask him.\nnot は助動詞 might の直後に置くのがルールで、be の後ろに置くと不自然な語順になります。"
+  },
+  {
+    "no": 55,
+    "text": "must be + 動詞ing は「今まさに〜しているに違いない」と、進行中の行動を強く推量する形です。「会議が長引いている」という目に見える根拠とセットで使うと説得力が出ます。\n日本語の「予算の話をしてるんだろう」を英語にするときは、会議中の人たち（They）を主語に据え、進行中の推量なので must be + 〜ing を選ぶ、と考えます。\n使い回し例:\nHe must be working from home today; his desk is empty.（席が空いてるし、今日は在宅勤務してるんだろう。）\nThey must be testing the new feature; the staging server is busy.（ステージングサーバーが混んでるし、新機能をテストしてるに違いない。）\nよくある間違い:\n誤）They must discuss the budget now. → 正）They must be discussing the budget now.\nmust + 原形は「話し合わなければならない」という義務に聞こえるため、進行中の推量では be 〜ing を省略できません。"
+  },
+  {
+    "no": 56,
+    "text": "I may be 〜 は、自分の予定の不確かさを前もって丁寧に伝える定番の形です。may は might よりややフォーマル寄りで、ビジネスの連絡にちょうどよい丁寧さになります。\n日本語の「遅れるかもしれません」を英語にするときは、自分の話なので I を主語に据え、丁寧な事前連絡として may be late の形を選ぶ、と考えます。\n使い回し例:\nI may be out of the office next Friday.（来週の金曜は不在かもしれません。）\nI may be a few minutes late to the standup.（朝会に数分遅れるかもしれません。）\nよくある間違い:\n誤）I maybe late for tomorrow's call. → 正）I may be late for tomorrow's call.\n一語の maybe は「たぶん」という副詞で動詞の働きがないため、助動詞 may + 動詞 be の二語と混同しないこと。"
+  },
+  {
+    "no": 57,
+    "text": "Could it be 〜? は「〜ってことはあり得る？」と、原因の仮説を控えめに差し出す疑問文です。Is it 〜? と断定気味に聞くより押しつけがましくなく、デバッグ中の議論で相手の顔を立てながら案を出せます。\n日本語の「問題ってことはないかな？」を英語にするときは、仮の主語 it を立てて、疑問文なので助動詞 Could を文頭に出す語順で組み立てます。\n使い回し例:\nCould it be a caching problem on the client side?（クライアント側のキャッシュの問題ってことはない？）\nCould it be that the API key has expired?（APIキーの期限切れってことはあり得る？）\nよくある間違い:\n誤）It could be a permissions issue on the server? → 正）Could it be a permissions issue on the server?\n平叙文の語尾に ? を付けるだけの疑問文はくだけた口調に限られるので、丁寧に尋ねるときは Could を主語の前に出した語順にします。"
+  },
+  {
+    "no": 58,
+    "text": "must be + 場所の表現は「きっと〜にあるはずだ」と所在を強く推量する形で、消去法で範囲を絞り込んだ確信を伝えます。somewhere in 〜 を添えると「その中のどこか」という絞り込みの感覚が出て、デバッグの仮説共有にぴったりです。\n日本語の「バグはきっと〜にあるはず」を英語にするときは、探している対象 The bug を主語に据え、根拠のある確信なので must be + 場所を選ぶ、と考えます。\n使い回し例:\nThe typo must be somewhere in the config file.（タイポはきっと設定ファイルのどこかにあるはずだ。）\nMy keys must be somewhere in this bag.（鍵はきっとこのカバンのどこかにあるはず。）\nよくある間違い:\n誤）There must be the bug in the payment logic. → 正）The bug must be somewhere in the payment logic.\nThere 構文は新しい存在を伝える形なので、the が付いた特定済みのものの所在は、そのものを主語にして述べます。"
+  },
+  {
+    "no": 59,
+    "text": "may not be + 動詞ing は「〜していないかもしれない」というやわらかい否定の推量です。ログというモノを主語にして「ログが全部を語っていない」と表すのが英語らしい発想で、the whole story は「全体像・話の全部」という決まり文句です。\n日本語の「ログだけではわからないかも」を英語にするときは、人ではなく判断材料の The logs を主語に据え、断定を避けるので may not be 〜ing を選ぶ、と考えます。\n使い回し例:\nThe dashboard may not be showing the latest data.（ダッシュボードには最新のデータが出ていないかもしれない。）\nThis metric may not be measuring what we think it is.（この指標、こちらが思っているものを測れていないかもしれない。）\nよくある間違い:\n誤）The logs may not telling us the whole story. → 正）The logs may not be telling us the whole story.\n助動詞と進行形を組み合わせるときは be を省略できないので、may not be + 〜ing の三点セットで覚えます。"
+  },
+  {
+    "no": 60,
+    "text": "could be why 〜 は「これが〜の理由かもしれない」と、原因の仮説を控えめに示す形です。This is why 〜（これが理由だ）という断定を could で一段やわらげたもので、調査中の報告に使うと決めつけずに議論を進められます。\n日本語の「これが原因かも」を英語にするときは、見つけた手がかり This を主語に据え、断定を避けたいので could be を選び、その後ろに why + 主語 + 動詞で結果を続けます。\n使い回し例:\nThis could be why the tests fail only on Mondays.（テストが月曜だけ落ちるのは、これが原因かもしれない。）\nThat could be why she hasn't replied yet.（彼女からまだ返事がないのは、それが理由かも。）\nよくある間違い:\n誤）This could be why does the deployment keep failing. → 正）This could be why the deployment keeps failing.\nwhy の後ろは疑問文ではなく普通の語順（主語 + 動詞）で続けるのがルールで、does を入れる間接疑問の語順ミスは頻出です。"
+  },
+  {
+    "no": 61,
+    "text": "「予約しないと席がなくなる」という悪い結果が目前に迫っている場面なので、切迫した忠告を表す had better を使います。日本語の「〜したほうがいい」を見たら、軽い助言なら should、「しないとまずい」なら had better と選び分け、行動する人（ここでは自分たち＝We）を主語に据えて We'd better + 動詞の原形と組み立てます。\n使い回し例:\nWe'd better leave now before the traffic gets bad.（渋滞がひどくなる前に、もう出たほうがいいよ。）\nYou'd better save your work before the update starts.（アップデートが始まる前に作業を保存したほうがいいよ。）\nよくある間違い:\n誤）We had better to book the restaurant. → 正）We had better book the restaurant.\nhad better の直後は to なしの動詞の原形です。また had better は「さもないと困るぞ」という響きがあるため、目上の人への提案には should のほうが無難です。"
+  },
+  {
+    "no": 62,
+    "text": "「全部食べなくてもいい」は義務がないことを伝える場面なので don't have to を使います。日本語の「〜しなくてもいい」を英語にするときは、まず行動する本人（You）を主語に据え、それが「禁止」なのか「不要」なのかを見極めて、不要なら don't have to を選びます。\n使い回し例:\nYou don't have to reply to this message right away.（このメッセージにすぐ返信しなくてもいいよ。）\nYou don't have to wear a suit to the office on Fridays.（金曜日はスーツを着てこなくてもいいんだよ。）\nよくある間違い:\n誤）You mustn't finish everything on your plate. → 正）You don't have to finish everything on your plate.\nmustn't だと「食べてはいけない」という禁止になり、意味が正反対になります。「不要」か「禁止」かは日本語の段階で見極めるのがポイントです。"
+  },
+  {
+    "no": 63,
+    "text": "must は他人からの命令ではなく、話し手が自分の中で感じる義務を表すので、自分への言い聞かせにぴったりの形です。「忘れないように〜しなきゃ」と英語で言うときは、自分（I）を主語に据えて I must remember to + 動詞の原形と組み立て、「これからすることを忘れずにやる」は remember to do で表します。\n使い回し例:\nI must remember to back up my laptop tonight.（今夜ノートPCのバックアップを取るの、忘れないようにしなきゃ。）\nI must remember to submit my expense report by Friday.（金曜までに経費精算を出すのを忘れちゃだめだな。）\nよくある間違い:\n誤）I must remember calling Mom on her birthday. → 正）I must remember to call Mom on her birthday.\nremember doing は「（過去に）〜したことを覚えている」という意味で、これからの行動には remember to do を使います。"
+  },
+  {
+    "no": 64,
+    "text": "shouldn't は「やめたほうがいいよ」という柔らかい助言で、相手の行動を気づかって止める場面に合います。日本語の「〜しないほうがいい」を英語にするときは、助言する相手（You）を主語に据えて shouldn't + 動詞の原形を選び、禁止ほど強くしないのがコツです。this late は「こんなに遅く」という意味で、this が程度の強調に使われている点も便利な言い回しです。\n使い回し例:\nYou shouldn't look at your phone right before bed.（寝る直前にスマホは見ないほうがいいよ。）\nYou shouldn't skip lunch just because you're busy.（忙しいからって昼ごはんを抜かないほうがいいよ。）\nよくある間違い:\n誤）You mustn't drink coffee this late in the evening. → 正）You shouldn't drink coffee this late in the evening.\nmustn't は強い禁止なので、健康面の軽いアドバイスに使うと命令口調に聞こえます。助言の強さに合わせて助動詞を選びましょう。"
+  },
+  {
+    "no": 65,
+    "text": "have to は「客先訪問がある」といった外の事情から生じる義務を表し、日常会話では must よりずっとよく使われます。日本語の「〜しないといけない」を英語にするときは、義務の原因が自分の気持ちか外の事情かをまず判断し、外の事情なら自分（I）を主語に I have to + 原形とし、理由は for + 名詞で軽く添えます。\n使い回し例:\nI have to catch the last train, so I'll head out now.（終電に乗らないといけないので、そろそろ失礼します。）\nShe has to attend a training session this afternoon.（彼女は今日の午後、研修に出ないといけません。）\nよくある間違い:\n誤）I must to leave early today. → 正）I have to leave early today.\nmust の直後に to は付きません。must と have to が混ざった形になりやすいので注意し、主語が三人称単数なら has to になる点も忘れずに。"
+  },
+  {
+    "no": 66,
+    "text": "mustn't は「絶対にしてはいけない」という禁止で、don't have to（しなくてよい）とは意味がまったく違います。「〜してはだめ」と英語で言うときは、ルールを守る当事者（ここではチームの We）を主語に据え、禁止なのか不要なのかを判断して禁止なら mustn't を選びます。until the contract's signed の contract's は contract is の短縮で、until 節の中は未来のことでも現在形を使います。\n使い回し例:\nWe mustn't share this file outside the team.（このファイルをチームの外に共有しては絶対にだめです。）\nYou mustn't leave your laptop unlocked in a shared space.（共用スペースでPCをロックせずに放置してはいけませんよ。）\nよくある間違い:\n誤）We don't have to mention the price until the contract's signed. → 正）We mustn't mention the price until the contract's signed.\ndon't have to にすると「言わなくてもよい」となり、禁止の意味が消えてしまいます。until 節で will を使わない点もセットで覚えましょう。"
+  },
+  {
+    "no": 67,
+    "text": "Should I ...? は「〜したほうがいいですか」と相手の判断や助言を仰ぐ疑問文の定番で、自分の行動の是非を確認する場面に使います。日本語の「〜したほうがいいですか」を英語にするときは、行動する自分（I）を主語に置き、助動詞 should をそのまま文頭に出して Should I + 動詞の原形と組み立てます。copy 人 on メール は「人をメールのCCに入れる」というビジネスの定番表現です。\n使い回し例:\nShould I bring anything to the barbecue on Saturday?（土曜のバーベキュー、何か持って行ったほうがいい？）\nShould I wait for your feedback before updating the slides?（スライドを直す前に、フィードバックを待ったほうがいいですか？）\nよくある間違い:\n誤）Do I should copy the whole team on this email? → 正）Should I copy the whole team on this email?\n助動詞の疑問文は should 自体を文頭に出すだけで、do は不要です。一般動詞の疑問文の癖で Do を付けないよう注意しましょう。"
+  },
+  {
+    "no": 68,
+    "text": "must には未来形がないため、「これから〜せざるを得なくなる」という未来の義務は will have to で表します。日本語の「延ばさざるを得ない」を英語にするときは、決定の当事者であるチーム（We）を主語に据え、義務が未来に生じると考えて We'll have to + 動詞の原形と組み立てます。push ... back は「延期する」の句動詞で、a week は「1週間分」という延ばす幅を表します。\n使い回し例:\nWe'll have to hire more support staff next quarter.（来四半期はサポート担当を増やさざるを得ないでしょうね。）\nYou'll have to renew your passport before the trip.（旅行の前にパスポートを更新しないといけなくなるよ。）\nよくある間違い:\n誤）We will must push the deadline back a week. → 正）We'll have to push the deadline back a week.\nwill と must のような助動詞は2つ並べられません。未来の義務は必ず will have to の形にします。"
+  },
+  {
+    "no": 69,
+    "text": "need to は「この作業は必要だ」という事実を淡々と伝える形で、命令の響きが弱いため実務の指示や依頼に最適です。日本語の「〜する必要があります」を英語にするときは、チーム全体のタスクとして共有するなら We を主語に据え、We need to + 動詞の原形とし、期限は before や by で文末に添えます。patch は「パッチを当てる」という動詞としてそのまま使えます。\n使い回し例:\nWe need to update the SSL certificate by Friday.（金曜までにSSL証明書を更新する必要があります。）\nI need to check the logs before I close this ticket.（このチケットを閉じる前にログを確認する必要があります。）\nよくある間違い:\n誤）We need patch this server before the weekend. → 正）We need to patch this server before the weekend.\nふつうの文の need は一般動詞なので、後ろに to + 原形が必要です。can や must と同じ感覚で to を落とさないようにしましょう。"
+  },
+  {
+    "no": 70,
+    "text": "don't need to は「やらなくて大丈夫」と相手を安心させる表現で、リリースノートや変更案内で不要な手順を明示すると親切な英語になります。日本語の「〜しなくて大丈夫」を英語にするときは、操作する相手（You）を主語に据え、必要性がないことを伝える don't need to + 動詞の原形を選びます。意味は don't have to とほぼ同じで、どちらを使っても伝わります。\n使い回し例:\nYou don't need to create an account to try the demo.（デモを試すのにアカウントを作る必要はありません。）\nYou don't need to print the form; a digital copy is fine.（用紙を印刷する必要はありません。データのままで大丈夫です。）\nよくある間違い:\n誤）You needn't to restart the app after this change. → 正）You don't need to restart the app after this change.\n助動詞の needn't を使うなら to なし、一般動詞の don't need なら to ありです。2つの形を混ぜた needn't to にしないよう注意しましょう。"
+  },
+  {
+    "no": 71,
+    "text": "had better not は「やったら痛い目に遭うぞ」という警告のニュアンスを持つ「〜しないほうがいい」で、金曜デプロイの週末対応という悪い結果をにおわせて止める場面にぴったりです。相手の行動を警告して止めたいときは、その相手（You）を主語に据えて You'd better not + 動詞の原形と組み立て、not は better の直後に置きます。on a Friday afternoon の a は「どの週であれ金曜の午後というもの」という一般論のニュアンスを出します。\n使い回し例:\nYou'd better not skip the backup step this time.（今回はバックアップの手順を飛ばさないほうがいいよ。）\nWe'd better not change the config right before the demo.（デモの直前に設定をいじらないほうがいいね。）\nよくある間違い:\n誤）You had not better deploy anything on a Friday afternoon. → 正）You'd better not deploy anything on a Friday afternoon.\nnot は had の後ろではなく better の直後です。had better not は脅しに近い強さがあるので、目上の人には shouldn't が無難です。"
+  },
+  {
+    "no": 72,
+    "text": "must には過去形がないため、過去の義務は had to で表します。had to は「せざるを得なかった、そして実際にやった」という事実まで含むのがポイントです。日本語の「〜せざるを得ませんでした」を英語にするときは、対応した当事者（チームの We）を主語に据えて We had to + 動詞の原形と組み立て、last night のような時を表す語を文末に添えます。roll back は「（リリースや変更を）元に戻す」という句動詞です。\n使い回し例:\nI had to reset my password twice this morning.（今朝はパスワードを2回もリセットするはめになりました。）\nWe had to move the meeting because the room was taken.（会議室が埋まっていて、打ち合わせを動かさざるを得ませんでした。）\nよくある間違い:\n誤）We must roll back the release last night. → 正）We had to roll back the release last night.\nmust は last night のような過去を表す語と一緒に使えません。must have done は「〜したに違いない」という推量で、過去の義務ではない点にも注意しましょう。"
+  },
+  {
+    "no": 73,
+    "text": "「母の庭のイチゴで作ってる」と言いたいとき、作り手ではなく話題の中心である「このジャム」を主語に据え、be made with（材料）という現在形の受動態を選ぶのが英語の発想。\n組み立ての手順は、伝えたいモノを主語にする、製法の説明なので is made、材料には with を続ける、という流れ。\n材料の形が残るときは with、原料が別物に変化するときは from（Wine is made from grapes.）、素材そのものを言うなら of（a desk made of wood）と使い分ける。\n使い回し例:\nThis soup is made with vegetables from the local farmers' market.（このスープは地元の直売所の野菜で作られています。）\nOur internal tool is made with open-source libraries.（うちの社内ツールはオープンソースのライブラリで作られている。）\nよくある間違い:\n誤）This jam is made by strawberries. → 正）This jam is made with strawberries.\nby は「行為者（作った人）」を表すので、材料を言うときは with を使う。"
+  },
+  {
+    "no": 74,
+    "text": "「雨に降られた」のような不意の被害は、被害を受けた人を主語にして get + 過去分詞（get受動態）で表すと、日本語の「〜されちゃった」感がそのまま出せる。\n組み立てるときは、まず被害を受けた側の We を主語に据え、be ではなく出来事感の強い get を選び、got caught in the rain という決まり文句につなげる。\nbe caught でも文法的には正しいが、get のほうが「予定外の出来事に巻き込まれた」というニュアンスが強く、会話向き。\n使い回し例:\nI got stuck in traffic for almost two hours this morning.（今朝は2時間近く渋滞にはまっちゃったよ。）\nHe got locked out of his account after too many login attempts.（彼、ログインを失敗しすぎてアカウントがロックされちゃったんだ。）\nよくある間違い:\n誤）We were rained on the way home. → 正）We got caught in the rain on the way home.\n「雨に降られる」を直訳して rain を受動態にしない。rain は人を目的語に取れない自動詞なので、get caught in the rain の形ごと覚える。"
+  },
+  {
+    "no": 75,
+    "text": "「まだ届いていない」は、届けた人ではなく荷物を主語に据え、「過去から今まで一度も配達されていない」という未完了を現在完了の受動態 hasn't been delivered で表す。\n組み立ての手順は、My package を主語にし、今も続く未完了なので現在完了の hasn't、配達「される」側なので been delivered、と積み上げる。\nstill は「いまだに」の意味で hasn't の前に置き、yet よりも苛立ち・不満のニュアンスが強く出る。\n使い回し例:\nMy refund still hasn't been processed, and I applied three weeks ago.（返金がまだ処理されてないんだ。3週間前に申請したのに。）\nThe access request I submitted still hasn't been approved.（出しておいたアクセス申請、まだ承認されてないんだよね。）\nよくある間違い:\n誤）My package still hasn't delivered. → 正）My package still hasn't been delivered.\nbeen を落とすと「荷物が（何かを）配達していない」という能動の意味になってしまう。主語が「する側」か「される側」かを必ず確認する。"
+  },
+  {
+    "no": 76,
+    "text": "「工事中だった」は、道路を主語に据えて「その時まさに修理されている最中だった」という過去進行形の受動態 was being repaired で表す。\n組み立ては、状況説明の主役 The road を主語にし、過去のある時点で進行中なので was being、される側なので repaired、の順で考える。\nso で「だから別の道にした」と続ければ、理由から行動へつなぐ説明パターンとしてそのまま使える。\n使い回し例:\nThe elevator was being inspected, so we took the stairs.（エレベーターが点検中だったから、階段を使ったんだ。）\nThe database was being migrated, so all writes were temporarily blocked.（データベースが移行中だったので、書き込みは一時的に止めていました。）\nよくある間違い:\n誤）The road was repairing, so we took a different route. → 正）The road was being repaired, so we took a different route.\nwas repairing だと道路が何かを修理していることになる。「されている最中」は being + 過去分詞を抜かさない。"
+  },
+  {
+    "no": 77,
+    "text": "「会議が木曜に変更になった」は、誰が変更したかを言わずに済む受動態が便利で、会議を主語にして The meeting was moved と過去形の受動態で事実だけを伝える。\n組み立ては、話題の中心 The meeting を主語に据え、動かした人はぼかしたい（または重要でない）ので by 〜 を付けない受動態を選ぶ、という判断をする。\njust so you know は「一応知らせておくね」という情報共有の定番の一言で、文末に軽く添えられる。\n使い回し例:\nThe deadline was pushed back to next Monday, just so you know.（締め切り、来週月曜に延びたから一応伝えておくね。）\nThe launch was postponed until early next quarter.（ローンチは来四半期の初めに延期になったよ。）\nよくある間違い:\n誤）The meeting became Thursday. → 正）The meeting was moved to Thursday.\n日本語の「〜になった」を become で直訳しない。会議は誰かに「動かされた」ものなので、英語では受動態で表すのが自然。"
+  },
+  {
+    "no": 78,
+    "text": "「共有されるよ」と今後の段取りを伝えるときは、共有する担当者ではなく The final schedule を主語に据え、未来の受動態 will be + 過去分詞で表す。\n組み立ては、聞き手が知りたいモノ（スケジュール）を主語にし、未来なので will、される側なので be shared、相手は with everyone、期限は by Friday と付け足していく。\nshare A with B の with と、「〜までに」という期限の by の組み合わせは、業務連絡でそのまま多用できる。\n使い回し例:\nThe results will be announced at the next all-hands meeting.（結果は次の全体会議で発表されます。）\nYour new account will be created within one business day.（新しいアカウントは1営業日以内に作成されます。）\nよくある間違い:\n誤）The final schedule will share with everyone by Friday. → 正）The final schedule will be shared with everyone by Friday.\nwill の直後の be を落とすミスが多い。モノが主語なら will be + 過去分詞をワンセットで置く。"
+  },
+  {
+    "no": 79,
+    "text": "「承認してもらわないといけない」は、承認する人ではなく請求書側に注目し、These invoices を主語にして have to be + 過去分詞という義務の受動態で表す。\n組み立ては、処理されるモノを主語にし、義務なので have to、される側なので be approved、期限の by the end of the day を最後に置く、という順番。\nこの by は行為者の by ではなく「〜までに」という期限の by で、受動態の文に出てきても意味が違う点を意識しておきたい。\n使い回し例:\nThis form has to be submitted by noon tomorrow.（この申請書は明日の正午までに提出しないといけません。）\nAll code changes have to be reviewed before they go live.（コードの変更はすべて、本番反映の前にレビューされる必要があります。）\nよくある間違い:\n誤）These invoices have to approve by the end of the day. → 正）These invoices have to be approved by the end of the day.\n主語の invoices は承認「される」側。have to の後でも、受け身なら be を忘れずに入れる。"
+  },
+  {
+    "no": 80,
+    "text": "昇進・採用・異動などの人事イベントは、本人を主語に据えて get + 過去分詞で言うのが口語では自然で、she got promoted は「彼女が昇進した」という出来事を軽快に伝える。\n組み立ては、出来事の当人 she を主語にし、会話なので be より get を選び、promoted to + 役職名と続ける、という流れ。\nget の受動態は被害だけでなく、このように良い出来事の変化にも使えるのがポイント。\n使い回し例:\nI heard he got hired by a startup in Fukuoka.（彼、福岡のスタートアップに採用されたらしいよ。）\nShe got transferred to the Osaka office last month.（彼女は先月、大阪オフィスに異動になったんだ。）\nよくある間違い:\n誤）She promoted to team lead. → 正）She got promoted to team lead.\npromote は「昇進させる」という他動詞なので、能動のままだと彼女が誰かを昇進させた意味になる。本人を主語にするなら受動態が必要。"
+  },
+  {
+    "no": 81,
+    "text": "「システムを更新中だから」は、作業している人ではなくシステムを主語に据え、現在進行形の受動態 is being updated で「今まさに作業されている最中」を表す。\n組み立ては、状態を説明したいモノ the system を主語にし、今この瞬間の話なので is being、される側なので updated、と積んでいく。\nbecause で理由をつなげば、「今はできない＋その理由」という案内の定番パターンになる。\n使い回し例:\nThe meeting room is being cleaned, so let's wait in the lobby.（会議室が清掃中だから、ロビーで待ってよう。）\nThe staging environment is being rebuilt, so tests will fail for a while.（ステージング環境を再構築中なので、しばらくテストは失敗します。）\nよくある間違い:\n誤）The system is updated right now, so you can't log in. → 正）The system is being updated right now, so you can't log in.\nis updated だけだと「更新済みの状態」に聞こえてしまう。「作業の真っ最中」を言うなら being を抜かさない。"
+  },
+  {
+    "no": 82,
+    "text": "「直さないとね」と作業の必要性を言うとき、直す担当者を名指しせずに This bug を主語に据え、needs to be + 過去分詞という受動態にすると柔らかく伝わる。\n組み立ては、対処されるモノ（バグ）を主語にし、必要性なので needs to、される側なので be fixed、期限は before 節で添える、という手順。\nYou need to fix this bug. と人を主語にすると指示・命令に近くなるので、チームで角を立てたくない場面ではモノ主語の受動態が便利。\n使い回し例:\nThese logs need to be checked before we close the ticket.（チケットを閉じる前に、このログを確認しておく必要があるね。）\nThe contract needs to be signed by both sides first.（契約書はまず双方がサインする必要があります。）\nよくある間違い:\n誤）This bug needs to fix before the release. → 正）This bug needs to be fixed before the release.\nバグは「直す」側ではなく「直される」側。needs to の後の be を落とすと意味が逆になるので注意。"
+  },
+  {
+    "no": 83,
+    "text": "「再起動しなくても変えられる」は、変更する人が誰かは問題ではないので、This setting を主語に据えて可能を表す受動態 can be + 過去分詞で言う。\n組み立ては、可否を説明したいモノ（設定）を主語にし、可能なので can、される側なので be changed、条件は without + 動名詞で付け足す、という流れ。\nwithout restarting のように「〜せずに」を添えると、手順説明やドキュメントでそのまま使える形になる。\n使い回し例:\nThis password can be reset from the login page.（このパスワードはログインページからリセットできます。）\nThe layout can be adjusted without touching any code.（レイアウトはコードを触らずに調整できるよ。）\nよくある間違い:\n誤）This setting can change without restarting the server. → 正）This setting can be changed without restarting the server.\ncan change だと「設定がひとりでに変わることがある」ように聞こえてしまう。人が変更できることを言うなら can be changed にする。"
+  },
+  {
+    "no": 84,
+    "text": "「いつ更新されたの？」と時期を尋ねるときは、更新した人ではなく this dependency を主語に据え、疑問詞 When + was + 主語 + 過去分詞という受動態の疑問文にする。\n組み立ては、知りたい情報が「いつ」なので When を文頭に置き、過去の受動なので was、主語、そして last updated と並べる。\nlast（最後に）は be 動詞の後・過去分詞の前に置くのが自然で、When was 〜 last done? はメンテ状況の確認にそのまま使い回せる型。\n使い回し例:\nWhen was this document last reviewed?（このドキュメント、最後にレビューされたのはいつ？）\nWhen was the backup job last run?（バックアップジョブが最後に実行されたのはいつだっけ？）\nよくある間違い:\n誤）When did this dependency last updated? → 正）When was this dependency last updated?\n受動態の疑問文は did ではなく be 動詞で組む。did を使うなら能動にして When did you last update this dependency? と言い換える。"
+  },
+  {
+    "no": 85,
+    "text": "「何のためにするのか」という目的を先に示したいとき、To+動詞の原形を文頭に置き、カンマで区切ってから主文を続けます。目的を先に言うことで、聞き手は理由を頭に置いた状態で本題を聞けます。\n日本語の「節約のために〜してるんだ」を英語にするときは、まず目的の部分をTo save moneyと作り、その後に「普段していること」をI usually bring...と主語+動詞で続ける、という順で組み立てます。\n使い回し例:\nTo stay healthy, I take the stairs instead of the elevator.（健康のために、エレベーターじゃなくて階段を使ってるんだ。）\nTo avoid the morning rush, I leave home before seven.（朝のラッシュを避けるために、7時前に家を出てるよ。）\nよくある間違い:\n誤）For save money, I usually bring lunch from home. → 正）To save money, I usually bring lunch from home.\n「〜のために」をforと直訳しがちですが、forの直後に動詞の原形は置けません。動詞で目的を言うときはto+動詞の原形と覚えましょう。"
+  },
+  {
+    "no": 86,
+    "text": "decideのような「これから先の行動」を目的語にとる動詞には、to不定詞が続きます。さらにI've decided（現在完了）にすると「決めた結果が今も有効で、もうやる気でいる」ニュアンスが出ます。\n日本語の「〜することにした」を見たら、決めた本人Iを主語に据えて、decide to+動詞の原形という骨組みを選ぶ、と考えます。\n使い回し例:\nI've decided to take an online course in data analysis.（データ分析のオンライン講座を受けることにしたんだ。）\nWe've decided to move to a bigger apartment next spring.（来年の春、もっと広い部屋に引っ越すことに決めたんだ。）\nよくある間違い:\n誤）I've decided starting jogging every morning. → 正）I've decided to start jogging every morning.\ndecideの後ろに動名詞（-ing）は置けません。未来に向かう決意はto不定詞で表す、とセットで覚えましょう。"
+  },
+  {
+    "no": 87,
+    "text": "remind 人 to doは「人に、これからする行動を忘れないよう念押しする」形です。remindの直後に思い出させる相手（me）、その後にしてほしい行動をto不定詞で並べます。\n日本語では「卵を買うの」が先に来ますが、英語に組み立てるときはremind me（誰に）→ to buy eggs（何をするよう）の順に並べ直す、と考えるのがコツです。\n使い回し例:\nPlease remind me to submit the report by Friday.（金曜までにレポートを出すの、思い出させてね。）\nCan you remind him to bring his laptop tomorrow?（明日ノートPCを持ってくるよう、彼に念押ししてくれる？）\nよくある間違い:\n誤）Can you remind me buying eggs on the way home? → 正）Can you remind me to buy eggs on the way home?\nremind 人 の後ろは-ingではなくto+動詞の原形です。「これからやる行動」への念押しはtoで表すのがルールです。"
+  },
+  {
+    "no": 88,
+    "text": "too+形容詞+to doは、notやcan'tを使わずに「〜すぎて…できない」を表す形です。tooとtoの組み合わせ自体に「不可能」の意味が含まれているのがポイントです。\n日本語の「お腹いっぱいで無理」を英語にするときは、「できない」から発想せず、原因の状態（too full）+できない行動（to eat dessert）の順で組み立てる、と考えます。\n使い回し例:\nI'm too tired to cook tonight. Let's order something.（今夜は疲れすぎて料理は無理。何か頼もう。）\nIt's too late to call him now.（もう遅すぎて、今から彼に電話はできないね。）\nよくある間違い:\n誤）I'm too full that I can't eat dessert. → 正）I'm too full to eat dessert.\n「できない」を言いたくてcan'tやthat節を足しがちですが、too...to...だけで否定の意味が完成しているので、否定語を重ねないよう注意しましょう。"
+  },
+  {
+    "no": 89,
+    "text": "電話の冒頭で用件を伝えるときの定番がI'm calling to doです。今まさに電話をしている最中なので現在進行形I'm callingを使い、その目的をto不定詞で続けます。\n日本語の「〜の件でお電話しました」は過去形ですが、英語では通話中の今を基準に進行形を選び、用件はto confirm...のように目的のtoで付け足す、と組み立てます。\n使い回し例:\nI'm calling to reschedule my appointment for next week.（予約を来週に変更したくてお電話しました。）\nI'm emailing to follow up on yesterday's discussion.（昨日の議論のフォローアップでメールしております。）\nよくある間違い:\n誤）I called to confirm our meeting on Thursday afternoon.（通話中の一言目として）→ 正）I'm calling to confirm our meeting on Thursday afternoon.\n日本語の「お電話しました」につられて過去形にしないこと。話している最中の用件は進行形にするのが自然です。"
+  },
+  {
+    "no": 90,
+    "text": "ask 人 to doは「人に〜するよう頼む」の基本形で、頼む相手（him）をaskの直後に置き、してほしい行動をto不定詞で続けます。さらにCould you...?で文全体を包むと、第三者への伝言を丁寧に依頼できます。\n日本語の「彼に参加するよう伝えて」を英語にするときは、まず実際に動く人himをaskの後に据え、その人の行動をto joinで示す、という順で考えます。\n使い回し例:\nCould you ask her to check the schedule again?（スケジュールをもう一度確認するよう、彼女に頼んでもらえますか？）\nI'll ask the team to prepare a short demo.（チームに短いデモを用意するよう頼んでおきます。）\nよくある間違い:\n誤）Could you say him to join the call at three? → 正）Could you ask him to join the call at three?\n「言う」からsayを選びがちですが、sayはsay 人 to doの形を取れません。人に行動を頼むときはaskやtellを使いましょう。"
+  },
+  {
+    "no": 91,
+    "text": "hope to doは「実現を目指しているが、まだ確定ではない」というニュアンスの表現です。We will finalize...と言い切るより控えめで、社外への見込み共有でも角が立ちません。\n日本語の「〜したいと考えています」を見たら、会社・チームとしての話ならWeを主語に据えて、hope to+動詞の原形で骨組みを作り、期限はby（〜までに）で添える、と組み立てます。\n使い回し例:\nWe hope to release the new feature early next quarter.（来四半期の早い時期に新機能をリリースしたいと考えています。）\nI hope to hear from you by Friday.（金曜までにお返事をいただければと思います。）\nよくある間違い:\n誤）We hope finalizing the budget by the end of the month. → 正）We hope to finalize the budget by the end of the month.\nhopeの後ろに動名詞（-ing）は置けません。これからの見込みはhope to doか、hope (that)+主語+動詞の形で表します。"
+  },
+  {
+    "no": 92,
+    "text": "enough+名詞+to doは「〜するのに十分な…」を表し、to不定詞が名詞を後ろから説明します。ポイントはenoughの位置で、名詞（time）の前に置きます（形容詞のときは後ろに置くので逆になります）。\n日本語の「時間、足りますか」を英語にするときは、まずDo we have enough time?という骨組みを作り、何のための時間かをto go over the agendaと後ろに付け足す、と考えます。go overは「ひととおり確認する」という会議の定番表現です。\n使い回し例:\nDo we have enough people to cover the weekend shift?（週末のシフトを回せるだけの人数、いますか？）\nI don't have enough space to install the update.（アップデートを入れるだけの空き容量が足りないんだ。）\nよくある間違い:\n誤）Do we have time enough to go over the agenda? → 正）Do we have enough time to go over the agenda?\nenoughは名詞の前・形容詞の後ろ、と置く位置が変わる点に注意しましょう。"
+  },
+  {
+    "no": 93,
+    "text": "too...to doに動作主を足したいときは、for+動作主をtoの直前に挟みます。「開けない」のは私でもファイルでもなくエディタなので、for my editorで「できない主体」を明示するわけです。\n日本語の「エディタで開けない」から発想を変えて、問題の中心であるThe log fileを主語に据え、too big（原因）+ for my editor to open（動作主とできない動作）の順で組み立てる、と考えます。\n使い回し例:\nThe image is too large for the app to upload.（その画像は大きすぎて、アプリからアップロードできないよ。）\nThis task is too complex for one person to finish in a day.（このタスクは複雑すぎて、1人では1日で終えられない。）\nよくある間違い:\n誤）The log file is too big for my editor to open it. → 正）The log file is too big for my editor to open.\n文の主語The log fileがopenの目的語を兼ねているので、文末にitを重ねて置かないよう注意しましょう。"
+  },
+  {
+    "no": 94,
+    "text": "形容詞+enough to doは「〜できるくらい十分…」を表し、enoughは必ず形容詞の後ろに置きます（stable enough）。tooが「〜すぎて不可」なら、enoughは「基準を満たしているか」を表すので、作業前の条件確認の質問にぴったりの形です。\n日本語の「テストを回せるくらい安定してる？」は、まず主語（サーバー）+形容詞stableで状態を言い、enough to run the testsで基準を後ろに付け足す、という順で組み立てます。\n使い回し例:\nIs this Wi-Fi fast enough to join a video call?（このWi-Fi、ビデオ会議に入れるくらい速い？）\nThe fix looks simple enough to deploy today.（この修正なら今日デプロイできるくらいシンプルそうだね。）\nよくある間違い:\n誤）Is the staging server enough stable to run the tests? → 正）Is the staging server stable enough to run the tests?\n日本語の「十分安定」の語順のままenoughを前に置きがちですが、形容詞+enoughの順が正解です。"
+  },
+  {
+    "no": 95,
+    "text": "need 人 to doは「人に〜してもらう必要がある」で、askより切実さと必要性が強く、リリース前など締め切りが絡む場面に合います。needの直後に動く人（you）、その行動をto不定詞で続けます。\n日本語の「レビューしてほしい」には主語がありませんが、英語では必要としている自分Iを主語に、実際に動く相手youをneedの目的語に据える、という順で組み立てます。\n使い回し例:\nI need you to approve this request by noon.（昼までにこの申請を承認してほしいんだ。）\nWe need someone to take notes during the meeting.（会議中にメモを取ってくれる人が必要です。）\nよくある間違い:\n誤）I need you review my pull request before the release. → 正）I need you to review my pull request before the release.\nmakeやletのような使役動詞と違い、needではtoを省略できません。need 人 to doのtoを落とさないよう注意しましょう。"
+  },
+  {
+    "no": 96,
+    "text": "be planning to doは現在進行形で「計画がすでに動き出している予定」を表します。単にWe will upgrade...と言うより、準備が進んでいる既定の予定という響きになり、メンテナンス告知に向いています。\n日本語の「〜する予定です」を見たら、チームの予定ならWeを主語に据えてbe planning to+動詞の原形で骨組みを作り、時間帯はduring+名詞（during tonight's maintenance window）で添える、と組み立てます。\n使い回し例:\nWe're planning to migrate the service to a new cluster next month.（来月そのサービスを新しいクラスタに移行する予定です。）\nI'm planning to take a few days off after the release.（リリース後に何日か休みを取るつもりなんだ。）\nよくある間違い:\n誤）We're planning to upgrading the database tonight. → 正）We're planning to upgrade the database tonight.\nplanningの-ingにつられてtoの後まで-ingにしがちですが、toの後は必ず動詞の原形です。"
+  },
+  {
+    "no": 97,
+    "text": "enjoy は目的語に動名詞（-ing形）しか取れない動詞で、「〜するのを楽しむ」という行為そのものを名詞のかたまりにして enjoy の後ろに置く。日本語の「〜するのが楽しい」を英語にするときは、楽しんでいる本人 I を主語に据えて enjoy + doing の型を選び、「何をするのが楽しいか」を -ing 以下にまとめる、と考えると組み立てやすい。\nreally を enjoy の前に置くと「すごく楽しい」と気持ちの強さを自然に足せる。\n使い回し例:\nI really enjoy working with the new team.（新しいチームと働くのがすごく楽しいんだ。）\nMy wife enjoys taking photos of old buildings.（妻は古い建物の写真を撮るのが好きなんだよ。）\nよくある間違い:\n誤）I enjoy to cook big breakfasts on Sundays. → 正）I enjoy cooking big breakfasts on Sundays.\nenjoy・finish・mind などは to不定詞を続けられない「動名詞専用グループ」なので、want to や hope to と同じ感覚で to を付けないよう注意。"
+  },
+  {
+    "no": 98,
+    "text": "feel like doing は「〜する気分だ」、否定の don't feel like doing は「〜する気になれない」を表す。この like は「好き」の動詞ではなく前置詞なので、後ろの動詞は必ず動名詞になる。日本語の「出かける気になれない」は、気分を感じている自分 I を主語にして don't feel like + doing の型に流し込み、理由（in this rain）を後ろに添える、という手順で組み立てる。\n誘いを断るときや、軽く提案するときの疑問文 Do you feel like -ing? まで含めて会話で非常によく使う。\n使い回し例:\nI don't feel like cooking tonight, so let's just order pizza.（今夜は料理する気になれないから、ピザでも頼もうよ。）\nDo you feel like grabbing a coffee after the meeting?（会議のあと、コーヒーでも飲みに行かない？）\nよくある間違い:\n誤）I don't feel like to go out in this rain. → 正）I don't feel like going out in this rain.\nlike を見ると反射的に to do を続けたくなるが、feel like の like は前置詞なので -ing 一択と覚える。"
+  },
+  {
+    "no": 99,
+    "text": "look forward to は「〜を楽しみに待つ」という決まり文句で、この to は不定詞の to ではなく前置詞。だから後ろには名詞か動名詞が来る。「〜するのが楽しみ」と言いたいときは、楽しみにしている自分 I を主語に据え、I'm looking forward to まで一気に言い切ってから、楽しみな行為を -ing 形で続ける、と型ごと覚えるのが近道。\n進行形 I'm looking forward to は会話的で気持ちがこもり、現在形 I look forward to はメールの締めなどややフォーマルな響きになる。\n使い回し例:\nI'm looking forward to seeing you at the conference next week.（来週のカンファレンスでお会いできるのを楽しみにしています。）\nWe're all looking forward to trying the new office cafeteria.（みんな、新しい社員食堂に行くのを楽しみにしてるんだ。）\nよくある間違い:\n誤）I'm looking forward to visit Kyoto. → 正）I'm looking forward to visiting Kyoto.\nto の直後は原形という思い込みが一番の敵で、look forward to のほか be used to（〜に慣れている）の to も同じ前置詞なので -ing を続ける。"
+  },
+  {
+    "no": 100,
+    "text": "give up doing は「〜するのをやめる・断念する」で、give up のような句動詞（動詞＋upなどの小さい語）の直後に動詞を続けるときは動名詞にする。日本語の「夕食後のコーヒーはやめた」は、やめた本人 I を主語にして gave up + doing でやめた行為をかたまりにし、目的の「よく眠れるように」は so I can sleep better と後ろに足す、という順で組み立てる。\nダイエットや習慣の話で頻出の型で、やめた対象が名詞なら gave up coffee のように名詞を直接置いてもよい。\n使い回し例:\nI gave up checking my phone right before bed.（寝る直前にスマホを見るのはやめたんだ。）\nHe gave up trying to fix the old printer and bought a new one.（彼は古いプリンタを直すのを諦めて、新しいのを買ったよ。）\nよくある間違い:\n誤）I gave up to drink coffee after dinner. → 正）I gave up drinking coffee after dinner.\ngive up・put off・keep on など「動詞＋前置詞・副詞」のセットの後は、to不定詞ではなく必ず -ing と覚えておく。"
+  },
+  {
+    "no": 101,
+    "text": "suggest は目的語に動名詞を取る動詞で、suggest to do という形は存在しない。提案するときは「誰がやるか」をいったん脇に置き、提案内容の行為（moving our weekly meeting to Thursday）をまるごと動名詞のかたまりにして I suggest の後ろに置く、と考えると英語らしい形になる。\nHow about doing? より少しフォーマルで、会議やチャットでの提案にちょうどよい丁寧さがある。recommend も同じく doing を続けられる仲間。\n使い回し例:\nI suggest splitting this task into smaller tickets.（このタスクは小さいチケットに分けるのはどうでしょう。）\nShe suggested inviting the design team to the kickoff.（彼女はキックオフにデザインチームを呼んではどうかと提案したんだ。）\nよくある間違い:\n誤）I suggest to move our weekly meeting to Thursday. → 正）I suggest moving our weekly meeting to Thursday.\nsuggest 人 to do（×suggest you to move）も不可で、実行する人を明示したいなら I suggest that we move ... のように that 節を使う。"
+  },
+  {
+    "no": 102,
+    "text": "mind は「嫌がる・気にする」という動詞で、Would you mind doing? は直訳すると「〜するのは嫌ですか？」、そこから転じて相手に負担をかける依頼を丁寧にする定番表現になる。丁寧に頼みたいときは、頼む内容を命令文にするのではなく、相手 you を主語にした Would you mind + doing の型を選び、お願いしたい行為を -ing 以下に入れる、と考える。\nCould you ...? よりさらに柔らかく、社外の相手や忙しそうな相手への依頼に向く。\n使い回し例:\nWould you mind sharing your screen for a second?（ちょっと画面を共有してもらえますか？）\nWould you mind closing the window? It's getting cold in here.（窓を閉めてもらえますか？ここ、寒くなってきたので。）\nよくある間違い:\n誤）Would you mind to check these numbers? → 正）Would you mind checking these numbers?\n返事にも注意が必要で、引き受けるときは Not at all. や Sure, no problem. と答え、うっかり Yes. と言うと「嫌です」の意味になってしまう。"
+  },
+  {
+    "no": 103,
+    "text": "Thanks for doing は感謝の定番の型で、for は前置詞なので後ろの動詞は動名詞になる。お礼を言うときは、まず Thanks for（またはより丁寧な Thank you for）を先に出し、相手がしてくれた行為を -ing のかたまりで続ける、という順で組み立てると迷わない。help 人 with 物（〜のことで人を手伝う）の形もセットで覚えると応用が利く。\n昨日のことでも helping のままでよく、動名詞を過去形にする必要はない点がポイント。yesterday などの時の表現を文末に足せば過去の話だと十分伝わる。\n使い回し例:\nThanks for picking me up at the station.（駅まで迎えに来てくれてありがとう。）\nThank you for taking the time to review my code.（時間を取って私のコードをレビューしてくださり、ありがとうございます。）\nよくある間違い:\n誤）Thanks for help me with the presentation. → 正）Thanks for helping me with the presentation.\nfor の直後に動詞の原形を置くのは前置詞のルール違反で、Thanks for your help. のように名詞を置くか、-ing 形にするかの二択と覚える。"
+  },
+  {
+    "no": 104,
+    "text": "remember は後ろの形で意味が変わる動詞で、remember doing は「（過去に）したことを覚えている」、remember to do は「（これから）忘れずにする」。日本語から作るときは、まずその行為が済んだことか、これからのことかを判定し、「送った記憶がある」のように過去を振り返る内容なら remember + doing を選ぶ、という手順を踏む。\nこの文では last Friday という過去の時点があるので、記憶の対象が過去の行為だと形の上でも確認できる。ファイルの送付や設定変更など「やった・やってない」の確認がIT の現場では頻出。\n使い回し例:\nI remember meeting her at last year's tech conference.（去年のテックカンファレンスで彼女に会ったのは覚えてるよ。）\nDo you remember changing this setting last month?（先月この設定を変えたの、覚えてる？）\nよくある間違い:\n誤）I remember to send you that file last Friday. → 正）I remember sending you that file last Friday.\nto send にすると「これから忘れずに送る」という未来の話に変わってしまうので、過去の記憶は -ing、今後の用事は to不定詞と使い分ける。forget にも同じ区別がある。"
+  },
+  {
+    "no": 105,
+    "text": "stop doing は「〜するのをやめる」で、やめる対象の行為を動名詞にして stop の目的語に置く。一方 stop to do は「〜するために立ち止まる」という別の意味になる。「古いライブラリを使うのをやめる」と言いたいときは、やめる行為 using that old library をかたまりにして stop の直後に置く、と考えれば形は自動的に決まる。\nshould と soon を添えることで、「そろそろやめたほうがいい」という提案の柔らかさが出る。技術的負債の話をするときにそのまま使える型。\n使い回し例:\nYou should stop skipping lunch when you're busy.（忙しくても昼食を抜くのはやめたほうがいいよ。）\nWe stopped supporting the old API version last month.（先月、旧バージョンのAPIのサポートは終了したんだ。）\nよくある間違い:\n誤）We should stop to use that old library. → 正）We should stop using that old library.\nstop to use だと「そのライブラリを使うために作業の手を止める」という逆方向の意味になり得るので、「やめる」なら必ず -ing を続ける。"
+  },
+  {
+    "no": 106,
+    "text": "avoid は目的語に動名詞しか取れない動詞で、「〜するのを避ける」と言うときは避けたい行為を -ing のかたまりにして avoid の直後に置く。日本語の「〜しないでください」をそのまま Don't ... と命令にすると強すぎる場面で、Please avoid doing を選べば「避けてください」と依頼調に和らげられる、という発想の転換がこの文の肝。\nチーム向けのガイドラインやコードレビューのコメントなど、書き言葉でも使いやすい。\n使い回し例:\nAvoid deploying new features right before a long weekend.（連休の直前に新機能をデプロイするのは避けてね。）\nI avoid scheduling meetings early on Monday mornings.（月曜の朝イチに会議を入れるのは避けてるんだ。）\nよくある間違い:\n誤）Please avoid to push directly to the main branch. → 正）Please avoid pushing directly to the main branch.\navoid・enjoy・finish・mind・suggest は「動名詞専用の動詞グループ」としてまとめて覚えてしまうと、迷う時間がなくなる。"
+  },
+  {
+    "no": 107,
+    "text": "without doing は「〜せずに」を表し、without は前置詞なので後ろの動詞は動名詞になる。「テストを実行せずにデプロイするな」を英語にするときは、まず禁止したい動作 deploy を Never + 命令文で言い切り、「〜せずに」という条件を without + doing で後ろに付け足す、という二段構えで組み立てる。Never を文頭に置くと Don't より強い「絶対にするな」という警告になる。\nfirst を文末に添えると「まず先にテストを」という手順のニュアンスが出て、運用ルールの説明にぴったり。\n使い回し例:\nDon't change the config without telling the team.（チームに知らせずに設定を変更しないでね。）\nShe left the office without saying goodbye.（彼女は挨拶もせずにオフィスを出て行ったよ。）\nよくある間違い:\n誤）Never deploy anything without run the tests first. → 正）Never deploy anything without running the tests first.\nwithout 自体に「〜しないで」という否定の意味が含まれているので、without not doing のように否定を重ねたり、原形を置いたりしないこと。"
+  },
+  {
+    "no": 108,
+    "text": "keep doing は「〜し続ける・何度も〜する」で、単なる継続だけでなく「直らずに繰り返して困る」というニュアンスを出せるのがポイント。障害報告のような場面では、困っている自分ではなく現象を起こしているモノ（the server）を主語に据えて keeps + doing と言うと、状況説明として英語らしくまとまる。\nafter every deployment（デプロイのたびに）のような頻度の表現と組み合わせると、再現条件まで一文で伝えられる。\n使い回し例:\nMy laptop keeps freezing when I open too many tabs.（タブを開きすぎると、ノートPCが固まってばかりなんだ。）\nThe customer keeps asking for a bigger discount.（そのお客さん、何度も追加の値引きを求めてくるんだよね。）\nよくある間違い:\n誤）The server keeps to crash after every deployment. → 正）The server keeps crashing after every deployment.\nkeep to do という形はなく、また主語が三人称単数のときの keeps の s も落としやすいので、keeps -ing をワンセットで口に慣らしておく。"
+  },
+  {
+    "no": 109,
+    "text": "日本語では「庭で遊んでいる子たち」と前から修飾しますが、英語では分詞が場所などの語句を伴って2語以上になると、playing in the yard のように名詞の後ろに置いて説明します。\n組み立てるときは、まず主語の核 The kids を据え、直後に playing in the yard で「どの子たちか」を絞り込み、最後に文全体の動詞 are を置く、という順で考えます。\n使い回し例:\nThe woman talking to the manager is our new client.（マネージャーと話している女性が、うちの新しいクライアントです）\nThe process using the most memory is the backup script.（一番メモリを食っているプロセスはバックアップスクリプトです）\nよくある間違い:\n誤）The kids are playing in the yard are my nephews. → 正）The kids playing in the yard are my nephews.\n主語を説明する playing に be 動詞は付けません。動詞が2回出てきたら、修飾部分と文の本動詞が混ざっていないか確認しましょう。"
+  },
+  {
+    "no": 110,
+    "text": "excite はもともと「人をワクワクさせる」という動詞なので、気持ちを感じる側の人が主語のときは受け身の形 excited を使います。\n「楽しみだ」と言いたいときは、感じている自分 I を主語に据えて be excited about の形を選び、about の後ろに楽しみの対象（our trip）を置く、と考えます。\n使い回し例:\nShe's really excited about her first overseas assignment.（彼女、初めての海外赴任にすごくワクワクしてるよ）\nI'm excited about the new search feature we're releasing.（リリース予定の新しい検索機能が楽しみなんだ）\nよくある間違い:\n誤）I'm really exciting about our trip next month. → 正）I'm really excited about our trip next month.\nexciting にすると「自分が周りをワクワクさせる人だ」という意味になってしまいます。人の気持ちは -ed、原因になる物事は -ing、と主語で使い分けましょう。"
+  },
+  {
+    "no": 111,
+    "text": "「テレビを見ながら」のような同時進行の動作は、while he was watching TV と節で言わなくても、文末に watching TV と -ing を置くだけで表せます。\n組み立てるときは、まずメインの出来事 My dad fell asleep を主語と動詞で言い切り、そのとき同時にしていたことを -ing で後ろに足す、という2段構えで考えます。\n-ing の動作をしているのが文の主語（父）自身であることが成立の条件です。\n使い回し例:\nI burned the toast making coffee this morning.（今朝、コーヒーを入れながらトーストを焦がしちゃった）\nHe was answering emails waiting for the build to finish.（彼はビルドが終わるのを待ちながらメールを返してたよ）\nよくある間違い:\n誤）My dad fell asleep during watching TV. → 正）My dad fell asleep watching TV.\nduring の後ろには名詞しか置けません。「〜しながら」は -ing をそのまま続けるか、while watching TV のように while を使います。"
+  },
+  {
+    "no": 112,
+    "text": "「人が〜しているのを見た」は see + 人 + -ing の語順で、動作の途中の一場面を切り取って伝える形です。\n組み立てるときは、I saw（見かけた）→ someone（誰を）→ walking a huge dog（何をしているところか）の3ブロックを順に並べる、と考えます。\n原形を使う see someone walk だと「一部始終を見た」ニュアンスになるので、たまたま見かけた場面の描写には -ing が合います。\n使い回し例:\nI heard someone typing really fast in the next room.（隣の部屋で誰かがすごい速さでタイピングしてるのが聞こえた）\nWe watched the error count climbing on the dashboard.（ダッシュボードでエラー数が増えていくのを見てたんだ）\nよくある間違い:\n誤）I saw someone was walking a huge dog. → 正）I saw someone walking a huge dog.\nsaw の後ろに was を入れて文を重ねない点がポイントです。知覚動詞の後は「目的語 + -ing」を直接並べて場面を描写します。"
+  },
+  {
+    "no": 113,
+    "text": "exciting は「人をワクワクさせる」側の物事に付ける -ing 形で、ここではニュース自体が人を興奮させるので exciting news となります。\n「ワクワクするお知らせがあります」と言うときは、知らせを持っている自分たち We を主語に据え、We've got + exciting news という「持っている」型で組み立てると英語らしくなります。\n使い回し例:\nThat was a pretty boring meeting, wasn't it?（あの会議、かなり退屈だったよね？）\nThe load test gave us some surprising results.（負荷テストで驚くような結果がいくつか出たんだ）\nよくある間違い:\n誤）We've got some excited news about the new project. → 正）We've got some exciting news about the new project.\nexcited を物に付けると「ニュース自身がワクワクしている」ことになって不自然です。感情を引き起こす側の物事には必ず -ing を付けます。"
+  },
+  {
+    "no": 114,
+    "text": "attached のように過去分詞が1語だけなら、attached file「添付されたファイル」と名詞の前に置いて修飾できます。説明が2語以上に伸びる場合は名詞の後ろに回します。\n依頼文なので Please + 動詞で文を始め、目的語を the attached file という「過去分詞 + 名詞」のかたまりとして作る、と考えます。updated schedule や revised plan など、実務メールで頻出のパターンです。\n使い回し例:\nCould you review the updated document by noon?（更新版の資料を昼までに確認してもらえますか？）\nWe restored the deleted records from last night's backup.（削除されたレコードは昨夜のバックアップから復元しました）\nよくある間違い:\n誤）Please check the attaching file. → 正）Please check the attached file.\nファイルは「添付する」側ではなく「添付される」側なので過去分詞を使います。名詞との関係が「する」なら -ing、「される」なら -ed です。"
+  },
+  {
+    "no": 115,
+    "text": "Looking at 〜 を文頭に置くと、「〜を見ると・〜を見た感じでは」という軽い前置きになります。When I look at the calendar と節で言うより短く、会話やチャットでよく使われます。\n組み立てるときは、先に判断の根拠を Looking at the calendar, と分詞で示し、そのあとに結論の文 Thursday works best for me を続ける、という2段構成で考えます。分詞の意味上の主語は話し手自身です。\n使い回し例:\nLooking at the logs, the timeouts only happen around midnight.（ログを見ると、タイムアウトは深夜0時ごろにしか起きてないですね）\nJudging from the forecast, we should move the barbecue indoors.（予報から判断すると、バーベキューは屋内に変えたほうがよさそう）\nよくある間違い:\n誤）Look at the calendar, Thursday works best for me. → 正）Looking at the calendar, Thursday works best for me.\n動詞の原形で始めると「カレンダーを見ろ」という命令文になってしまいます。前置きとして添えるなら -ing で始めるのがポイントです。"
+  },
+  {
+    "no": 116,
+    "text": "keep + 人 + -ing は「人が〜している状態を保つ」という形で、keep you waiting なら「あなたを待っている状態のままにする」、つまり「待たせる」の意味になります。\n日本語の「待たせる」には make を当てたくなりますが、謝罪の定型 Sorry to + 動詞の原形で文を始め、その後ろに keep you waiting のかたまりを続ける、と組み立てるのが自然です。\n使い回し例:\nSorry to keep everyone waiting — the previous session ran long.（皆さんお待たせしてすみません、前のセッションが長引いてしまって）\nWe can't keep the client waiting for an answer much longer.（これ以上クライアントを回答待ちのままにはしておけないよ）\nよくある間違い:\n誤）Sorry for keep you waiting. → 正）Sorry to keep you waiting. / Sorry for keeping you waiting.\nto の後は動詞の原形、for の後は動名詞です。2つの型が混ざった for keep は誤りなので、どちらかの型に揃えましょう。"
+  },
+  {
+    "no": 117,
+    "text": "reported yesterday のように過去分詞が語句を伴うときは名詞の後ろに置き、「昨日報告されたバグ」と受け身の関係で名詞を絞り込みます。which was reported yesterday から which was を省いた形と考えると分かりやすいです。\n組み立てるときは、主語の核 The bug を先に据え、直後に reported yesterday で「どのバグか」を特定してから、述語 has already been fixed を続けます。\n使い回し例:\nThe changes requested by the client are almost done.（クライアントから依頼された変更はほぼ終わっています）\nThe photos taken at the farewell party were hilarious.（送別会で撮った写真、めちゃくちゃ面白かったよ）\nよくある間違い:\n誤）The bug reporting yesterday has already been fixed. → 正）The bug reported yesterday has already been fixed.\nバグは「報告する」側ではなく「報告される」側です。名詞と分詞の関係が受け身なら過去分詞、能動なら -ing を選びます。"
+  },
+  {
+    "no": 118,
+    "text": "confuse は「人を混乱させる」という動詞なので、混乱させる側の物事（エラーメッセージ）には -ing の confusing を使います。\n日本語の「分かりにくい」は人の感想ですが、英語では対象物 the error messages を主語に据えて are confusing と物の性質として言い切ると簡潔です。読んだ自分の側を主語にするなら I'm confused になります。\n使い回し例:\nThis part of the setup guide is a bit confusing.（セットアップガイドのこの部分、ちょっと分かりにくいね）\nThe new expense process was confusing for everyone at first.（新しい経費精算のフロー、最初はみんな戸惑ってたよ）\nよくある間違い:\n誤）I'm confusing about this error message. → 正）I'm confused by this error message.\nI'm confusing だと「私は人を混乱させる人間だ」という意味になってしまいます。感じる人は -ed、原因の物事は -ing と、主語に合わせて形を選びましょう。"
+  },
+  {
+    "no": 119,
+    "text": "leave + 目的語 + -ing は「〜が…している状態のままにして、その場を離れる・放っておく」という形で、left the tests running は「テストを走らせたまま帰った」ニュアンスです。\n組み立てるときは、自分の行為 I left をまず置き、対象 the tests、その状態 running overnight の順に並べます。意図的に状態を保つ keep と違い、leave には「手を離してそのままにする」感じがあります。\n使い回し例:\nI left the download running and went out for lunch.（ダウンロードを回したまま昼ごはんに出たよ）\nDon't leave the space heater running when you leave the office.（退社するときに電気ヒーターをつけっぱなしにしないでね）\nよくある間違い:\n誤）I left the tests run overnight. → 正）I left the tests running overnight.\nlet なら原形（let the tests run）ですが、leave は -ing を取ります。形も意味も似た let と leave を混同しないよう注意しましょう。"
+  },
+  {
+    "no": 120,
+    "text": "Once deployed は Once it is deployed の it is を省いた形で、「いったんデプロイされれば」をたった2語で言えます。主節の主語 the fix と省略された主語が同じだから成り立つ省略です。\n組み立てるときは、条件（デプロイ後）を Once + 過去分詞で先に短く示し、主節では the fix を主語に据えて should で見込みを述べる、という順で考えます。\n使い回し例:\nOnce approved, the budget will be shared with all the teams.（承認されれば、予算は全チームに共有されます）\nOnce installed, the agent starts collecting metrics automatically.（インストールすれば、エージェントは自動的にメトリクスの収集を始めます）\nよくある間違い:\n誤）Once deploying, the fix should stop those login errors. → 正）Once deployed, the fix should stop those login errors.\nfix は「デプロイする」側ではなく「される」側なので過去分詞です。Once の後の分詞は、主節の主語から見て受け身なら -ed、能動なら -ing を選びます。"
+  },
+  {
+    "no": 121,
+    "text": "日本語では「パンを焼く友達」と説明が名詞の前に来るが、英語では a friend を先に言い、who bakes ... と後ろから説明を足す。\n組み立てるときは、まず I have a friend と骨組みを言い切り、説明したい動作を who + 動詞で続けると考える。\nwho はそのまま節の中の主語になるので、動詞は bakes のように3単現の s が付く。\n使い回し例:\nI have a coworker who runs a small YouTube channel.（小さなYouTubeチャンネルをやってる同僚がいるんだ。）\nShe has a neighbor who fixes computers for free.（彼女には無料でパソコンを直してくれるお隣さんがいるんだ。）\nよくある間違い:\n誤）I have a friend who he bakes amazing bread. → 正）I have a friend who bakes amazing bread.\nwho 自体が主語の役割を果たすので、後ろに he などの代名詞を重ねて置かないこと。"
+  },
+  {
+    "no": 122,
+    "text": "長野のような固有名詞は世界に1つしかないので、絞り込みは不要で、コンマ付きの「, where」で補足を添える形になる。\n組み立て手順は、まず本題の we're visiting Nagano を言い切り、「そしてそこには〜」の気持ちで , where my grandparents live を続ける。\nwhere は「そこに・そこで」の意味を節の中に含んでいるので、live のあとに場所を言い直す必要はない。\n使い回し例:\nNext month I'm going to Fukuoka, where my best friend lives.（来月、親友が住んでる福岡に行くんだ。）\nWe stayed in Kanazawa, where we ate amazing seafood.（金沢に泊まって、そこで最高の海鮮を食べたよ。）\nよくある間違い:\n誤）We're visiting Nagano, where my grandparents live there. → 正）We're visiting Nagano, where my grandparents live.\nwhere がすでに「そこに」を含むため、文末に there を足すと意味が二重になる。"
+  },
+  {
+    "no": 123,
+    "text": "この「, which」は直前の名詞ではなく、「電車が1時間遅れた」という文全体の内容を受けている。\nまず起きた事実を1文で言い切り、それへの感想やコメントを , which + 動詞で後付けする、という2段構えで組み立てる。\n受けているのは出来事1つなので、which の後ろの動詞は which was annoying のように単数扱いになる。\n使い回し例:\nThe meeting ran two hours over, which made everyone tired.（会議が2時間も延びて、みんなぐったりだったよ。）\nHe replied in five minutes, which really surprised me.（彼が5分で返信をくれて、本当に驚いたよ。）\nよくある間違い:\n誤）My train was delayed an hour, that totally ruined my morning. → 正）My train was delayed an hour, which totally ruined my morning.\nコンマの後ろに that は置けないので、文全体を受けてコメントを足すときは必ず which を使う。"
+  },
+  {
+    "no": 124,
+    "text": "「昨日行ったレストラン」は、まず The restaurant を文の主語として先頭に置き、that we went to と後ろから説明する順で考える。\ngo to はひとまとまりの表現なので、関係詞節では to だけが文末に残る形になる。\nThe restaurant to which we went という形も文法的には正しいが、会話では堅すぎるので to を文末に残すのが自然。\n使い回し例:\nThe hotel that we stayed at had a great breakfast.（僕らが泊まったホテル、朝食が最高だったよ。）\nThe cafe that I told you about is closed on Mondays.（前に話したカフェ、月曜は休みなんだ。）\nよくある間違い:\n誤）The restaurant that we went last night was really crowded. → 正）The restaurant that we went to last night was really crowded.\n日本語の「行った店」には助詞が見えないので to を落としやすいが、go は to がないと目的地につながらない。"
+  },
+  {
+    "no": 125,
+    "text": "「クライアントのオフィス」という所有関係は、whose office のように whose + 名詞のセットで表す。\n組み立てるときは、まず I talked to a client と言い切り、そのクライアントの持ち物を whose office is moving と続ける手順で考える。\nwhose は人専用ではなく、会社・チーム・製品など組織や物の「〜の」にもそのまま使える。\n使い回し例:\nWe have a vendor whose support team replies within an hour.（サポートチームが1時間以内に返事をくれるベンダーと取引してるんだ。）\nI met an engineer whose team builds payment systems.（決済システムを作ってるチームのエンジニアに会ったよ。）\nよくある間違い:\n誤）I talked to a client who his office is moving to Osaka. → 正）I talked to a client whose office is moving to Osaka.\n「彼のオフィス」と考えて who + his と並べたくなるが、所有は whose の1語にまとめる。"
+  },
+  {
+    "no": 126,
+    "text": "「うちのマネージャー」は1人に特定できるので、絞り込みではなく補足として , who joined last month, をコンマで挟む。\nまず主文 Our manager wants to change the process を設計し、追加情報を主語の直後にコンマ2つで差し込むと考える。\nコンマなしにすると「先月入ったほうのマネージャー」と、複数いる中から選ぶ意味に変わってしまう。\n使い回し例:\nOur CEO, who started as an engineer, still writes code sometimes.（エンジニア出身のうちのCEOは、今でもたまにコードを書くんだ。）\nMy sister, who lives in Canada, is coming home this summer.（カナダに住んでる姉が、今年の夏帰ってくるんだ。）\nよくある間違い:\n誤）Our manager, that joined last month, wants to change the process. → 正）Our manager, who joined last month, wants to change the process.\nコンマ付きの補足用法に that は使えないので、人なら必ず who を選ぶ。"
+  },
+  {
+    "no": 127,
+    "text": "まず本題の疑問文 Did you get the report? を組み立て、どのレポートかを that I sent you this morning で後ろから特定する、という順で考える。\nthat は sent の目的語（目的格）なので、節の中は I sent you (the report) と普通の文の語順のままでよい。\n目的格の that は省略しても自然で、Did you get the report I sent you this morning? とも言える。\n使い回し例:\nDid you see the email that I forwarded to you yesterday?（昨日転送したメール、見てくれた？）\nHave you tried the tool that I recommended last week?（先週すすめたツール、もう試した？）\nよくある間違い:\n誤）Did you get the report that I sent it to you this morning? → 正）Did you get the report that I sent you this morning?\nthat がすでに sent の目的語になっているので、節の中に it を重ねて置かない。"
+  },
+  {
+    "no": 128,
+    "text": "まず He's the guy と人物を言い切り、そのあとに who I used to work with と説明を足す順で組み立てる。\nwork with の with は「誰と」を示す大事な部品なので、関係詞節でも文末にそのまま残す。\n目的格なので文法書のうえでは whom だが、会話では who を使うか、the guy I used to work with と関係詞ごと省略するのが普通。\n使い回し例:\nShe's the designer who I share an office with.（彼女は同じオフィスで働いてるデザイナーなんだ。）\nThat's the customer who I was on a call with this morning.（あれが今朝電話してたお客さんだよ。）\nよくある間違い:\n誤）He's the guy with who I used to work. → 正）He's the guy who I used to work with.\n前置詞を前に出すなら with whom という形になるが会話では堅すぎるので、with は文末に残すと覚える。"
+  },
+  {
+    "no": 129,
+    "text": "探している物 a library を先に言い、求める機能を which + 動詞で後ろから付け足す形。\n「認証をやってくれるライブラリ」は、日本語の語順を捨てて「ライブラリ → それが何をするか」の順に並べ替えるのが組み立てのコツ。\nwhich は節の中で主語の働きをするので、先行詞 a library が単数なら動詞は handles と3単現の s が付く。\n使い回し例:\nWe need a tool which checks our code style automatically.（コードスタイルを自動でチェックしてくれるツールが必要なんだ。）\nI found a plugin which backs up the database every night.（毎晩データベースをバックアップしてくれるプラグインを見つけたよ。）\nよくある間違い:\n誤）I'm looking for a library which handle authentication for us. → 正）I'm looking for a library which handles authentication for us.\nwhich の後ろの動詞は先行詞に合わせるので、単数名詞なら3単現の s を忘れない。"
+  },
+  {
+    "no": 130,
+    "text": "ファイルも「設定データの置き場所」と考えれば、場所扱いで where を使って説明できる。\n組み立てるときは、まず This is the file と言い、後ろに we keep all the config settings という欠けのない完全な文を where でつなぐと考える。\n後ろの文に名詞の欠けがあるなら that/which、完全な文が続くなら where、というのが選び分けの目安。\n使い回し例:\nThis is the folder where we store all the meeting notes.（これが議事録を全部保存してるフォルダだよ。）\nThat's the channel where we post release updates.（あそこがリリース情報を流してるチャンネルだよ。）\nよくある間違い:\n誤）This is the file which we keep all the config settings. → 正）This is the file where we keep all the config settings.\nwhich を使うなら the file which we keep the settings in のように前置詞が必要で、それがなければ where を選ぶ。"
+  },
+  {
+    "no": 131,
+    "text": "どのAPIか聞き手に分かっている前提なので、コンマで挟んだ , which went live yesterday, は絞り込みではなく補足。\nまず主文 The new API is already getting traffic を作り、主語の直後に補足をコンマ2つで差し込む、という手順で組み立てる。\n挿入が終わったら2つ目のコンマを打ち、主文の動詞 is に戻るのを忘れないこと。\n使い回し例:\nThe new dashboard, which launched last week, is getting good feedback.（先週リリースした新しいダッシュボード、評判いいよ。）\nOur main server, which we upgraded in May, has been very stable.（5月にアップグレードしたメインサーバー、ずっと安定してるよ。）\nよくある間違い:\n誤）The new API, that went live yesterday, is already getting traffic. → 正）The new API, which went live yesterday, is already getting traffic.\nコンマ付きの補足用法では that が使えず、物なら which、人なら who を使う。"
+  },
+  {
+    "no": 132,
+    "text": "省略されている that は reported の目的語（目的格）なので、会話では言わずに名詞のすぐ後ろへ主語+動詞を直結するのが普通。\n組み立てるときは、主語 The bug の直後に you reported yesterday を続け、そのあとに主文の動詞 turned out を置くと考える。\n聞き取りでも「名詞の直後に S+V が来たら関係詞の省略」と気づけると、文の切れ目が見えて理解が速くなる。\n使い回し例:\nThe feature you suggested last month is now in production.（先月提案してくれた機能、もう本番に入ってるよ。）\nThe error I saw this morning disappeared after a restart.（今朝見たエラー、再起動したら消えたよ。）\nよくある間違い:\n誤）The bug you reported it turned out to be a caching issue. → 正）The bug you reported turned out to be a caching issue.\n省略された that がすでに reported の目的語なので、節の中に it を足すと目的語が二重になる。"
+  },
+  {
+    "no": 133,
+    "text": "「思っていたほど〜ではなかった」と期待とのずれを伝えるときは、not as + 原級 + as の形が最適。比較級は使わず、good のような形容詞をそのままの形で as と as の間にはさむのがポイント。\n日本語から組み立てるときは、まず話題の中心（映画）を主語に据えて The movie wasn't as good as まで作り、最後に基準の「思っていた」を I expected で足す、という順で考える。\n使い回し例:\nThe new office isn't as far as I thought.（新しいオフィス、思ってたほど遠くないよ）\nThe exam wasn't as difficult as everyone said.（試験、みんなが言うほど難しくなかったよ）\nよくある間違い:\n誤）The movie wasn't as better as I expected. → 正）The movie wasn't as good as I expected.\nas ... as の間に入るのは必ず原級。「〜ほど」という日本語につられて比較級にしないこと。"
+  },
+  {
+    "no": 134,
+    "text": "「今まで〜した中で一番…」という経験ベースの最上級は、最上級 + 名詞 + I've ever + 過去分詞の型で表す。名詞の後ろには関係代名詞 that が省略されていて、the best curry (that) I've ever made という構造になっている。\n日本語では「今まで作った中で」が先に来るが、英語では That was the best curry と結論を先に言い切り、後から I've ever made で経験の範囲を足す順で組み立てる。\n使い回し例:\nThat's the most useful tool I've ever used.（今まで使った中で一番便利なツールだよ）\nThis is the longest meeting I've ever attended.（こんなに長い会議に出たのは初めてだよ）\nよくある間違い:\n誤）That was the best curry I've never made. → 正）That was the best curry I've ever made.\n日本語では「こんなカレーは作ったことがない」と否定で言うが、この型では ever を使う。never にすると文の意味が壊れるので注意。"
+  },
+  {
+    "no": 135,
+    "text": "「どんどん〜になっている」という進行中の変化は、比較級 and 比較級を進行形の be getting と組み合わせて表す。同じ比較級を and で重ねることで、変化が今も続いている感じが強調される。\n「安い航空券を見つけるのが」という長い主語は仮主語 It で受けて、It's getting harder and harder to find ... の順に組み立てると、頭でっかちにならず自然になる。\n使い回し例:\nOur codebase is getting bigger and bigger every month.（うちのコードベース、毎月どんどん大きくなってるよ）\nIt's getting more and more difficult to hire engineers.（エンジニアの採用がどんどん難しくなってるね）\nよくある間違い:\n誤）It's getting more and more hard to find cheap flights. → 正）It's getting harder and harder to find cheap flights.\nhard のような短い形容詞は -er 形を重ねる。more and more + 原級にできるのは difficult のような長い形容詞だけ。"
+  },
+  {
+    "no": 136,
+    "text": "「AはBの2倍〜だ」という倍数比較は、twice as + 原級 + as の型で表し、比較級は使わない。3倍以上は three times、four times と数字が変わるが、2倍だけは two times より twice が定番。\n日本語から作るときは、「高い」と言いたい側の店を主語に据えて is twice as expensive as まで組み、比較相手は supermarket を繰り返さずに the one nearby（近くのやつ）で受ける。\n使い回し例:\nThe new server has twice as much memory as the old one.（新しいサーバーは前のやつの2倍のメモリを積んでるんだ）\nThis café is twice as crowded as usual today.（今日このカフェ、いつもの2倍混んでるね）\nよくある間違い:\n誤）This supermarket is twice more expensive than the one nearby. → 正）This supermarket is twice as expensive as the one nearby.\n倍数は「倍数 + as 原級 as」の型に乗せるのが基本。more ... than と混ぜて使わないこと。"
+  },
+  {
+    "no": 137,
+    "text": "「できるだけ早く折り返します」という約束は、その場で決めた申し出を表す will と、「できるだけ早く」の as soon as I can の組み合わせで言う。as soon as possible（ASAP）と同じ意味だが、I can を使うと「自分にできる範囲で最速で」という誠実なニュアンスが出る。\n組み立てるときは、まず I'll get back to you（折り返します）という約束の骨組みを作り、その後ろに as soon as I can を足す順で考える。\n使い回し例:\nI'll review your pull request as soon as I can.（できるだけ早くプルリクを見ますね）\nPlease send me the file as soon as you can.（できるだけ早くファイルを送ってください）\nよくある間違い:\n誤）I'll get back to you as soon as the meeting will end. → 正）I'll get back to you as soon as the meeting ends.\nas soon as に続く時の節では、未来の内容でも will を使わず現在形で言うのがルール。"
+  },
+  {
+    "no": 138,
+    "text": "「〜より…でない」と程度が低いことを一言で言うときは、less + 形容詞 + than を使う。more の反対が less で、riskier のような比較級は作らず、原級 risky のまま置くのがポイント。\n日本語の「この案のほうがリスクが低い」は、推したい案 This plan を主語に据えて is less risky than と組み、plan の繰り返しは the original one の one で避ける、という順で組み立てる。\n使い回し例:\nThe new process is less complicated than the old one.（新しい手順は前のより複雑じゃないよ）\nThis approach is less expensive than rebuilding everything.（このやり方は全部作り直すより安上がりです）\nよくある間違い:\n誤）This plan is less riskier than the original one. → 正）This plan is less risky than the original one.\nless 自体に比較の意味があるので、後ろの形容詞は原級のまま。-er を重ねてはいけない。"
+  },
+  {
+    "no": 139,
+    "text": "「一番〜な人の一人」と、断定しすぎずに高く評価するときは one of the + 最上級 + 複数名詞の型を使う。一人の話をしていても、最上級の後ろの名詞は必ず複数形（people）になるのがこの型の核心。\n組み立てるときは、まず She's one of the と枠を作り、最上級 most reliable people を続けて、最後に範囲を in our office で示す、という順で考える。\n使い回し例:\nThis is one of the most common errors in our logs.（これ、うちのログで一番よく出るエラーの一つなんだ）\nHe's one of the busiest engineers on the team.（彼はチームで一番忙しいエンジニアの一人だよ）\nよくある間違い:\n誤）She's one of the most reliable person in our office. → 正）She's one of the most reliable people in our office.\none of の後ろは「複数の中の一つ」なので必ず複数名詞。「一人」という日本語につられて単数にしない。"
+  },
+  {
+    "no": 140,
+    "text": "比較級の差の大きさを強調したいときは、very ではなく much（または a lot、far）を比較級の前に置く。「いつもより」は than usual という決まり文句で、後ろに名詞を続けずこの2語で完結する。\n組み立てるときは、The meeting を主語に据えて was shorter という比較の骨組みを作り、差の大きさ much を比較級の前に、基準 than usual を後ろに足す順で考える。\n使い回し例:\nThe build finished much faster than usual today.（今日はビルドがいつもよりずっと速く終わったよ）\nTraffic was much heavier than usual this morning.（今朝は渋滞がいつもよりだいぶひどかったな）\nよくある間違い:\n誤）The meeting was very shorter than usual today. → 正）The meeting was much shorter than usual today.\nvery は原級専用で、比較級の強調には使えない。比較級には much / a lot / far と覚えておく。"
+  },
+  {
+    "no": 141,
+    "text": "「〜であるほど…だ」という比例関係は、The + 比較級, the + 比較級の型で表す。前半に条件、後半に結果を置き、どちらも比較級を文頭に引っ張り出すのが特徴。\n日本語から作るときは、条件側「コードがシンプルなほど」を The simpler the code、結果側「メンテしやすい」を the easier it is to maintain とし、条件から先に組み立てる。前半のように be 動詞（is）は省略されることも多い。\n使い回し例:\nThe earlier we start, the sooner we can finish.（早く始めるほど、早く終わらせられるよ）\nThe more logs you collect, the easier debugging becomes.（ログを多く集めるほど、デバッグは楽になるんだ）\nよくある間違い:\n誤）The simpler the code, the easier is it to maintain. → 正）The simpler the code, the easier it is to maintain.\n比較級を文頭に出した後は、主語 + 動詞の普通の語順に戻す。疑問文のように動詞を主語の前に出さない。"
+  },
+  {
+    "no": 142,
+    "text": "二つのものを直接比べる最も基本の型が、比較級 + than。fast のような短い形容詞は -er を付けて faster とし、比較相手を than の後ろに置く。\n組み立てるときは、話題の中心 The new server を主語に据えて is faster than まで作り、server の繰り返しを避けて the old one（古いほう）で受ける順で考える。この one は前に出た数えられる名詞の代役で、使えると英語がぐっと自然になる。\n使い回し例:\nThe new UI is cleaner than the old one.（新しいUIは前のよりすっきりしてるね）\nMy new laptop is much lighter than the one I had before.（新しいノートPC、前に使ってたのよりずっと軽いんだ）\nよくある間違い:\n誤）The new server is more faster than the old one. → 正）The new server is faster than the old one.\n-er と more の併用は不可。短い形容詞は -er、長い形容詞は more のどちらか一方だけを使う。"
+  },
+  {
+    "no": 143,
+    "text": "「〜の3倍の数の…」は、three times as many + 複数名詞 + as の型で表す。requests のような数えられる名詞には many、データ量やお金など数えられないものには much を使い分けるのがポイント。\n組み立てるときは、まず We're handling（今まさにさばいている＝現在進行形）という骨組みを作り、目的語の位置に three times as many requests as last year のかたまりを丸ごとはめ込む順で考える。\n使い回し例:\nThe new app has three times as many users as the old version.（新しいアプリには旧バージョンの3倍のユーザーがいるんだ）\nWe received twice as many applications as last year.（去年の2倍の応募が来たよ）\nよくある間違い:\n誤）We're handling three times as many requests than last year. → 正）We're handling three times as many requests as last year.\n前半で as many を使ったら、受けるのも than ではなく as。as ... as のペアを崩さないこと。"
+  },
+  {
+    "no": 144,
+    "text": "「〜の中で一番…」は、the + 最上級 + in + 範囲の型で表す。slow のような短い形容詞は the slowest、長い形容詞なら the most ... と形が変わり、最上級には原則 the を付ける。\n組み立てるときは、まず This is the slowest query と結論を言い切り、その後ろに範囲 in the whole system を足す順で考える。「システム全体の中で」の「の」に引きずられて of にしないことが大事。\n使い回し例:\nThis is the busiest time of the year for our team.（今がうちのチームにとって一年で一番忙しい時期なんだ）\nShe's the most experienced engineer in the company.（彼女は会社で一番経験豊富なエンジニアだよ）\nよくある間違い:\n誤）This is the slowest query of the whole system. → 正）This is the slowest query in the whole system.\n範囲が場所や集団のひとまとまりなら in を使う。of が使えるのは of all the queries のように複数のものを並べる場合。"
+  },
+  {
+    "no": 145,
+    "text": "現実には「私はあなたではない」ので、あり得ない仮定を表す仮定法過去（If + 過去形, would + 原形）を使う。日本語の「私だったら〜するけどな」は、まず If I were you で自分を相手の立場に置く枠を作り、主節は I を主語に I'd（I would）+ 動詞の原形で助言を続けると組み立てやすい。\n仮定法では主語が I でも be動詞は were を使うのが標準で、この形は押しつけがましくないアドバイスの定番。\n使い回し例:\nIf I were you, I'd ask the landlord to fix the leak right away.（私だったら、大家さんに水漏れをすぐ直してもらうよう頼むけどな。）\nIf I were you, I'd back up the files before updating the OS.（私なら、OSを更新する前にファイルをバックアップするな。）\nよくある間違い:\n誤）If I am you, I will take the earlier train. → 正）If I were you, I'd take the earlier train.\n実際に起こり得る条件文と違い「あり得ない仮定」なので、現在形や will をそのまま使わないこと。"
+  },
+  {
+    "no": 146,
+    "text": "「収納が少ない」という今の現実と反対の状況を願うので、I wish のあとの動詞は現在形ではなく過去形 had にする。日本語の「〜があればなあ」を英語にするときは、まず願っている自分を主語に I wish を置き、そのあとに理想の状態を丸ごと過去形の文で続けると組み立てやすい。\n形は過去形でも意味は「今」の話で、過去形にすることで現実との距離（実際はそうでない）を表している。\n使い回し例:\nI wish my laptop had a bigger screen.（このノートPC、画面がもう少し大きければなあ。）\nI wish we had more time to test this feature.（この機能をテストする時間がもっとあればなあ。）\nよくある間違い:\n誤）I wish our apartment has more storage space. → 正）I wish our apartment had more storage space.\nwish の後を現在形にしない。実現可能な望みを言う hope と違い、wish は現実と反対の願望なので時制を一段下げる。"
+  },
+  {
+    "no": 147,
+    "text": "過去に「しなかったこと」への後悔は should have + 過去分詞で表す。日本語で「〜しておけばよかった」と思ったら、後悔している本人 I を主語に据えて、should + have + 過去分詞の3点セット（ここでは should have booked）を組むのが手順。\nway earlier の way は「ずっと・はるかに」を表す口語の強調で、much earlier よりくだけた響きになる。\n使い回し例:\nI should have read the contract more carefully.（契約書をもっとちゃんと読んでおけばよかった。）\nWe should have tested this on the staging server first.（先にステージングサーバーでテストしておくべきだったね。）\nよくある間違い:\n誤）I should booked our flights earlier. → 正）I should have booked our flights earlier.\n会話では should've と縮まって have がほとんど聞こえないが、have を落とすと文として成立しないので、書くときは必ず入れる。"
+  },
+  {
+    "no": 148,
+    "text": "「天気を確認しなかった→濡れた」という過去の事実を逆転させて悔やむので、仮定法過去完了を使う。組み立ての手順は、まず実際にはしなかった行動を If I had（縮約 I'd）+ 過去分詞で条件節に置き、結果の節を would have + 過去分詞（否定なら wouldn't have）にすること。\n条件も結果も「過去より一段前」の形にそろえるのがこの文型の骨組みで、get soaked（びしょ濡れになる）のような get + 過去分詞も一緒に覚えると便利。\n使い回し例:\nIf I'd left home ten minutes earlier, I would have caught the last train.（10分早く家を出ていれば、終電に間に合ったのに。）\nIf we'd read the error message carefully, we would have found the cause much sooner.（エラーメッセージをちゃんと読んでいれば、もっと早く原因が見つかったのに。）\nよくある間違い:\n誤）If I checked the weather, we wouldn't get soaked. → 正）If I'd checked the weather, we wouldn't have gotten soaked.\nただの過去形+would だと「今・これから」の仮定になってしまう。終わった過去の話には had done / would have done を使う。"
+  },
+  {
+    "no": 149,
+    "text": "相手（クライアント）の行動が変わってほしいときは I wish + 主語 + would + 原形を使う。同じ I wish でも、146 のような過去形は「状態」への願望なのに対し、would は「相手がなかなかそうしてくれない」といういらだち・要望のニュアンスが乗る。\n組み立てるときは、不満の相手を wish の後の主語に据え、してほしい行動を would + 動詞の原形で続ける。make up one's mind は「決心する」の定番イディオム。\n使い回し例:\nI wish my neighbor would stop playing music late at night.（隣の人、夜中に音楽をかけるのをやめてくれないかなあ。）\nI wish the vendor would reply to our emails faster.（あのベンダー、もっと早くメールに返事をくれればいいのに。）\nよくある間違い:\n誤）I wish the client will make up their mind. → 正）I wish the client would make up their mind.\nwish の後に will は使えない。また I wish I would とは言えないので、自分のことなら I wish I could のように could を使う。"
+  },
+  {
+    "no": 150,
+    "text": "「〜がなかったら」は、if 節をわざわざ作らなくても Without + 名詞だけで条件を表せる。日本語の「あなたの助けがなかったら」を If you hadn't helped me と組むと長くなるので、まず Without your help を文頭に置き、主節を would have + 過去分詞にすれば過去の反実仮想が完成する、という手順が楽。\n実際には助けてもらって間に合ったという事実の裏返しなので、感謝を伝える言い方としても定番。\n使い回し例:\nWithout the map app, we would have gotten completely lost.（地図アプリがなかったら、完全に迷子になってたよ。）\nWithout your review comments, I would have shipped that bug.（あなたのレビューコメントがなかったら、あのバグをそのままリリースしてたよ。）\nよくある間違い:\n誤）Without your help, I would miss the deadline. → 正）Without your help, I would have missed the deadline.\nすでに終わった過去の話は would have done にする。would miss だと「これからの話」に聞こえてしまう。"
+  },
+  {
+    "no": 151,
+    "text": "147 の裏返しで、「してしまったこと」への後悔は shouldn't have + 過去分詞で表す。「〜すべきじゃなかった」と言いたいときは、その判断に責任を感じている側（ここではチーム全体の we）を主語に据えて、shouldn't have promised の形を組むのが手順。\nsuch a + 形容詞 + 名詞は「あんなに〜な…」という強調で、such a tight deadline のように a の位置が such の後ろに来る点も一緒に押さえたい。\n使い回し例:\nI shouldn't have stayed up so late last night.（昨日の夜、あんなに夜更かしすべきじゃなかったな。）\nWe shouldn't have skipped the code review.（コードレビューを飛ばすべきじゃなかったね。）\nよくある間違い:\n誤）We shouldn't promise such a tight deadline. → 正）We shouldn't have promised such a tight deadline.\nhave が抜けると「今後は約束すべきでない」という助言の文になってしまう。過去の後悔なら have + 過去分詞まで必ず言う。"
+  },
+  {
+    "no": 152,
+    "text": "「人手が足りない」という今の現実と反対の想像なので、仮定法過去（If + 過去形, could/would + 原形）を使う。組み立ての手順は、まず「もし〜なら」の部分を If + 主語 + 過去形（had）で作り、結果の節では would と could のどちらが合うか選ぶこと。ここでは「受けられるのに」という能力・可能性の話なので could が自然。\ntake on は仕事や責任を「引き受ける」という意味の頻出句動詞。\n使い回し例:\nIf we had a bigger budget, we could hire another engineer.（予算がもっとあれば、エンジニアをもう一人雇えるのに。）\nIf I had more free time, I could study English every day.（もっと自由な時間があれば、毎日英語を勉強できるのになあ。）\nよくある間違い:\n誤）If we have more staff, we can take on bigger projects. → 正）If we had more staff, we could take on bigger projects.\n現在形 + can だと「実際にあり得る条件」の話になる。今の現実と違う「たられば」は、過去形 + could/would に落として言う。"
+  },
+  {
+    "no": 153,
+    "text": "条件は過去（テストを書かなかった）なのに、結果は現在（今まさにデバッグ中）という組み合わせなので、混合仮定法を使う。組み立てるときは、まず過去の条件を If we had（we'd）+ 過去分詞で作り、結果の節は「今」の話だと気づいたら would have done ではなく would be + -ing にして now を添える、と節ごとに時間を分けて考えるのが手順。\n条件と結果で時間軸がずれる文は、それぞれ「いつの話か」を先に決めてから形を選ぶとミスが減る。\n使い回し例:\nIf I'd taken that job offer, I would be living in Tokyo now.（あのオファーを受けてたら、今ごろ東京に住んでるんだろうな。）\nIf we'd fixed the config last week, the alerts wouldn't be firing now.（先週設定を直してれば、今アラートは鳴っていないはずなのに。）\nよくある間違い:\n誤）If we'd written tests, we wouldn't have been debugging this now. → 正）If we'd written tests, we wouldn't be debugging this now.\nnow が付く「現在の結果」に would have を使わない。結果側がいつの話かで would do / would have done を切り替える。"
+  },
+  {
+    "no": 154,
+    "text": "過去に「しなかったこと」への後悔は I wish + 過去完了（had + 過去分詞、縮約で I'd）を使う。146 の I wish + 過去形が「今〜ならなあ」という現在向きの願望なのに対し、こちらは「あのとき〜しておけば」と過去に向かう点が違う。組み立ては、後悔している自分を主語に I wish を置き、実際にはしなかった行動を had backed up の形で続けるだけ。\n意味は should have done とほぼ同じで、I should have backed up ... に言い換えられる。\n使い回し例:\nI wish I'd taken more photos on that trip.（あの旅行でもっと写真を撮っておけばよかったな。）\nI wish we'd asked the client about the requirements earlier.（もっと早くクライアントに要件を確認しておけばよかった。）\nよくある間違い:\n誤）I wish I backed up the database before the migration. → 正）I wish I'd backed up the database before the migration.\nただの過去形だと「今の現実への願望」に読まれやすい。過去への後悔は had + 過去分詞までしっかり下げる。"
+  },
+  {
+    "no": 155,
+    "text": "If only + 過去完了は、I wish + 過去完了と同じ「過去への後悔」を、より強い感情を込めて言う形。ふつうの if 文と違って結果の節（would have ...）を言わずに if 節だけで文を終えられるので、「〜しておけばなあ…」という日本語の詠嘆にそのまま対応する。組み立ては、悔やんでいる行動を主語 + had（I'd）+ 過去分詞にして If only の後に置くだけ。\nため息まじりの独り言や、障害対応の振り返りでのぼやきにぴったりの型。\n使い回し例:\nIf only I'd checked the file size before sending it.（送る前にファイルサイズを確認しておけばなあ。）\nIf only we'd started the project a month earlier.（プロジェクトをあと1か月早く始めていればなあ。）\nよくある間違い:\n誤）If only I saved the logs before restarting the server. → 正）If only I'd saved the logs before restarting the server.\nIf only + ただの過去形は「今〜ならなあ」という現在の願望になる。過去の後悔なら had + 過去分詞にそろえる。"
+  },
+  {
+    "no": 156,
+    "text": "実際には起きていない事態を想像して相手の対応を聞くので、仮定法過去の疑問文を使う。組み立ての手順は、まず聞きたい結果側を疑問文の形にして What would you do を先に置き、その後ろに条件 if + 過去形（went down）をつなげること。過去形でも過去の話ではなく、「今もし起きたら」という現実からの距離感を出している。\ngo down はシステムやサーバーが「落ちる」の定番表現で、障害訓練や面接の想定質問でもよく使われる型。\n使い回し例:\nWhat would you do if you won the lottery?（もし宝くじが当たったら、どうする？）\nWhat would you say if the client asked for a big discount?（もしクライアントが大幅な値引きを求めてきたら、何て答える？）\nよくある間違い:\n誤）What will you do if the whole system goes down? → 正）What would you do if the whole system went down?\nwill + 現在形の形も文法的には存在するが、「実際に起こりそうな話」に変わってしまう。想像上のもしもとして聞くなら、would と過去形でトーンをそろえる。"
+  },
+  {
+    "no": 157,
+    "text": "誰かの発言を後から伝えるときは、伝える動詞 said が過去なので、発言の中の will も would に一段ずらします（時制の一致）。she'd は she would の縮約で、会話ではこの縮約形が自然です。\n日本語から組み立てるときは、まず「言った人（Mom）」を主語に据えて said を置き、発言内容の will を would に変えてそのまま続けます。tomorrow は発言時点から見てまだ未来なら、書き換えずに残せます。\n使い回し例:\nHe said he'd pick me up at the airport.（空港まで迎えに来るって彼が言ってたよ。）\nThe vendor said they'd send us the new pricing by Friday.（金曜までに新しい価格表を送るってベンダーが言ってました。）\nよくある間違い:\n誤）Mom said she will make pancakes tomorrow. → 正）Mom said she would make pancakes tomorrow.\n伝える動詞が過去形なら、中の will は would にずらすのが基本ルールです。"
+  },
+  {
+    "no": 158,
+    "text": "医者や上司からの指示は、セリフを引用せず told + 人 + to 不定詞の「誰が・誰に・何を」の3点セットで伝えるのが最も簡単です。\n日本語の「〜に…と言われた」は受け身ですが、英語では指示した人（The doctor）を主語に据えて能動態で組み立てると短く自然になります。tell は「誰に」を必ず取る動詞なので、told me の me を抜かせません。\n使い回し例:\nMy manager told me to take tomorrow off.（マネージャーに明日は休むように言われたよ。）\nThe landlord told us to sort the garbage properly.（大家さんに、ゴミをちゃんと分別するように言われたんだ。）\nよくある間違い:\n誤）The doctor said me to get more sleep. → 正）The doctor told me to get more sleep.\nsay は人を目的語に取れないので、「人に〜するよう言う」は必ず tell を使います。"
+  },
+  {
+    "no": 159,
+    "text": "「〜かどうか」と聞かれたことを伝えるには asked + 人 + if + 主語 + 動詞の形を使います。元の Do you like...? という疑問文を、if の後では普通の文の語順に戻し、asked に合わせて like→liked と過去にずらします。\n組み立てるときは、聞いた人（My sister）を主語に据えて asked me if まで先に言い、あとは平叙文をそのまま続けると迷いません。\n使い回し例:\nHe asked me if I had any plans for the weekend.（週末は何か予定あるのって彼に聞かれた。）\nA coworker asked me if I knew the guest wifi password.（同僚に、ゲスト用Wi-Fiのパスワードを知ってるか聞かれたよ。）\nよくある間違い:\n誤）My sister asked me did I like her new haircut. → 正）My sister asked me if I liked her new haircut.\n疑問文の語順（did I like）をそのまま埋め込まず、if でつないで語順を平叙文に戻すのがポイントです。"
+  },
+  {
+    "no": 160,
+    "text": "Where are you going? のような疑問詞付きの質問を伝えるときは、asked + 疑問詞 + 主語 + 動詞の順にします。疑問詞の後は倒置せず普通の文の語順に戻し、are→were と時制も一段過去にずらします。\n組み立ての手順は、質問した人（He）を主語に asked を置き、その後ろに where we were going という「小さな平叙文」をぶら下げるイメージです。\n使い回し例:\nShe asked what time the last train left.（終電が何時なのか、彼女が聞いてたよ。）\nThe interviewer asked why I wanted to change jobs.（面接官に、なぜ転職したいのか聞かれた。）\nよくある間違い:\n誤）He asked where were we going for summer vacation. → 正）He asked where we were going for summer vacation.\nbe動詞を主語の前に出す倒置は直接の疑問文だけで、間接疑問では必ず主語が先に来ます。"
+  },
+  {
+    "no": 161,
+    "text": "「彼女が言った時点」よりさらに前に起きたこと（会議の開始）は、had + 過去分詞（過去完了）で表して出来事の前後関係をはっきりさせます。\n組み立てるときは、報告した人（She）を主語に said を置き、発言内容の中で「すでに済んでいたこと」を had started と一段深い過去にします。また say は say (that) + 文の形で使い、直後に人を置けない点が tell との大きな違いです。\n使い回し例:\nHe said the last train had already left.（終電はもう出たあとだったって彼が言ってた。）\nThe client said they had already chosen another vendor.（もう別のベンダーに決めたって、クライアントが言ってたんだ。）\nよくある間違い:\n誤）She said me that the meeting had started. → 正）She told me that the meeting had started.\n「私に言った」と伝えたいなら tell、単に「言った」なら say で、said me という形は存在しません。"
+  },
+  {
+    "no": 162,
+    "text": "人から聞いた情報を報告する基本形が told + 人 + that 節です。told が過去なので中の is も was にずらしますが、締め切りが過ぎたという意味ではなく「聞いた時点の話」だと示しているだけです。\n日本語の「上司から言われた」という受け身は、英語では言った側（My boss）を主語に据えて My boss told me と能動態で組むのが自然な手順です。\n使い回し例:\nHR told me that Monday was a company holiday.（月曜は会社の休みだと人事から言われたよ。）\nHe told us that the budget was already approved.（予算はもう承認済みだと彼から聞きました。）\nよくある間違い:\n誤）My boss told that the deadline was next Friday. → 正）My boss told me that the deadline was next Friday.\ntell は「誰に」が必須の動詞なので、told の直後の人を入れ忘れないよう注意します。"
+  },
+  {
+    "no": 163,
+    "text": "「〜してほしいと頼まれた」は、頼んだ側（The client）を主語に据えて asked + 人 + to 不定詞で組むのが定石です。日本語は受け身でも、英語では能動態にしたほうが短く自然になります。\n同じ骨組みの told（指示）と比べると、asked は「お願い」の柔らかい響きがあり、客先とのやり取りの報告にちょうど合います。\n使い回し例:\nShe asked me to double-check the numbers before the meeting.（会議の前に数字を再確認してほしいと彼女に頼まれた。）\nThe customer asked us to extend the trial period by two weeks.（お客様からトライアル期間を2週間延ばしてほしいと頼まれました。）\nよくある間違い:\n誤）The client asked us that we resend the quote. → 正）The client asked us to resend the quote.\n依頼の内容は that 節ではなく to 不定詞で続けます。ask 人 to do をひとかたまりの型として覚えるのが近道です。"
+  },
+  {
+    "no": 164,
+    "text": "今度は自分が質問した側の報告です。asked + 人 + whether + 平叙文の語順で「〜かどうか聞いた」と伝え、asked に合わせて can も could にずらします。whether は if とほぼ同じ意味ですが、少しきちんとした響きがありビジネス向きです。\n組み立てるときは、自分（I）を主語に asked her まで置き、元の Can you join...? を whether she could join と普通の文の形に組み替えます。\n使い回し例:\nI asked him whether he had time for a quick review.（軽くレビューする時間があるか、彼に聞いてみたよ。）\nWe asked the vendor whether the price included support.（その金額にサポート費用が含まれるのか、ベンダーに確認しました。）\nよくある間違い:\n誤）I asked her whether she can join tomorrow's call. → 正）I asked her whether she could join tomorrow's call.\n主節が過去（asked）なら助動詞 can も could へ。まだ実現していない明日の予定でも時制はそろえます。"
+  },
+  {
+    "no": 165,
+    "text": "「〜するな」という指示の伝達は told + 人 + not to do の形です。not は to の直前に置くのがポイントで、直接の禁止文 Don't push をそのまま埋め込みません。\n「言われてる」という日本語は受け身ですが、指示した人（The lead）を主語に据えて能動態で組むとシンプルにまとまります。チーム内のルール共有でよく使う型です。\n使い回し例:\nThe security team told us not to put API keys in the chat.（チャットに API キーを貼らないように、セキュリティチームから言われてる。）\nMy dentist told me not to snack so much between meals.（歯医者に、間食をそんなにしないように言われたよ。）\nよくある間違い:\n誤）The lead told us don't push directly to main. → 正）The lead told us not to push directly to main.\nセリフの Don't をそのまま続けず、間接話法では not to + 動詞の形に変換します。"
+  },
+  {
+    "no": 166,
+    "text": "人の報告を伝える最も基本の形が said (that) + 文で、会話では that を省くのが普通です。伝達の said が過去なので、発言中の keeps も kept と一段過去にずらしますが、keep crashing（〜し続ける）というかたまり自体は崩れません。\n組み立てるときは、報告者（The tester）を主語に said を置き、元の発言 The app keeps crashing の時制だけ下げてそのまま続ければ完成です。\n使い回し例:\nHe said the new build worked fine on his machine.（新しいビルドは自分の環境では問題なく動くって彼が言ってたよ。）\nThe customer said the checkout page took forever to load.（決済ページの読み込みがすごく遅いって、お客さんが言ってた。）\nよくある間違い:\n誤）The tester said the app kept to crash on older phones. → 正）The tester said the app kept crashing on older phones.\nkeep の後は動名詞 -ing です。時制の一致で kept になっても、後ろの crashing は変わりません。"
+  },
+  {
+    "no": 167,
+    "text": "ドキュメントや掲示のように「今もそこに書いてある」情報は、伝える動詞を現在形 say にし、中身も現在形のまま述べます。過去の発言と違って情報が生きているので、時制の一致は起きません。\n組み立てるときは「〜に書いてある」を受け身で訳そうとせず、情報源（The docs）をそのまま主語に据えて say で言うのが英語流です。エラーメッセージ・メール・契約書など、モノが主語でも say が使えます。\n使い回し例:\nThe error message says the token has expired.（エラーメッセージには、トークンが期限切れって出てるよ。）\nThe sign says the elevator is out of service today.（今日はエレベーターが使えないって貼り紙に書いてある。）\nよくある間違い:\n誤）It is written in the docs that you need admin rights. → 正）The docs say you need admin rights.\nis written は通じますが硬い直訳調です。日常会話では文書自体を主語にして say と言うほうがずっと自然です。"
+  },
+  {
+    "no": 168,
+    "text": "When will the fix go live? という未来についての質問を伝える形です。asked me の後は疑問詞 when + 主語 + would + 動詞と平叙文の語順にし、will は asked に合わせて would にずらします。\n組み立てるときは、質問した人（She）を主語にして asked me when まで置き、続きを the fix would go live と普通の文の形で足します。リリース時期の確認など、IT の現場で毎週のように使える型です。\n使い回し例:\nHe asked me when the new feature would be ready.（新機能はいつ仕上がるのって彼に聞かれた。）\nThe client asked when we would send the final invoice.（最終の請求書はいつ送るのかと、クライアントに聞かれました。）\nよくある間違い:\n誤）She asked me when will the fix go live. → 正）She asked me when the fix would go live.\nwill のまま疑問文の語順で続けるのが最も多い誤りです。語順を戻すことと will→would の2点をセットで直します。"
+  },
+  {
+    "no": 169,
+    "text": "「薬局はどこ？」と直球で聞く代わりに、Do you know...? で包むと「知ってたら教えて」という柔らかい聞き方になります。ただし know の中に入った瞬間、疑問文は平叙文の語順に戻るのがポイントです。\n組み立ての手順は、まず「知ってますか」を Do you know で立て、その中身を where + 主語 + 動詞（the nearest pharmacy is）の順で続けます。be動詞が最後に来る形に慣れましょう。\n使い回し例:\nDo you know where the meeting room is?（会議室がどこにあるか知ってますか？）\nDo you know where I can buy a SIM card?（SIMカードをどこで買えるか知ってますか？）\nよくある間違い:\n誤）Do you know where is the nearest pharmacy? → 正）Do you know where the nearest pharmacy is?\nknow の後ろでは where is...? という疑問文の語順に戻さず、be動詞を節の最後に置くことを意識してください。"
+  },
+  {
+    "no": 170,
+    "text": "本体が否定文（You haven't seen...）のときは、末尾の付加疑問は肯定の have you? になります。「見てないよね？」と期待薄で軽く確認するときの定番の形です。\n組み立ての手順は、まず普通の否定文を完成させてから、その文で使った助動詞（haven't）の肯定形を主語とセットで末尾に付け足すだけです。否定文なので somewhere ではなく anywhere を使う点も合わせて覚えましょう。\n使い回し例:\nYou haven't heard from the client yet, have you?（クライアントからまだ連絡来てないよね？）\nYou didn't change the Wi-Fi password, did you?（Wi-Fiのパスワード変えてないよね？）\nよくある間違い:\n誤）You haven't seen my keys, haven't you? → 正）You haven't seen my keys, have you?\n本体と付加疑問の肯定・否定は必ず逆になるので、否定文には肯定形を付けると機械的に覚えてしまうのが安全です。"
+  },
+  {
+    "no": 171,
+    "text": "Would you mind + 動詞ing は「〜するのは嫌ですか？」が直訳で、そこから「差し支えなければ〜してもらえますか」という丁寧な依頼になります。mind（嫌がる）の目的語なので、後ろは to 不定詞ではなく動詞ingです。\n組み立ての手順は、頼みたい動作をまず動詞ing形にして、Would you mind の直後に置くだけです。引き受けるときの返事は「嫌じゃないですよ」の意味で Not at all や Sure, no problem となり、Yes とは言いません。\n使い回し例:\nWould you mind checking my pull request this afternoon?（今日の午後、私のプルリクを見てもらえますか？）\nWould you mind closing the window? It's a bit cold in here.（窓を閉めてもらえますか？ここ少し寒いので。）\nよくある間違い:\n誤）Would you mind to water the plants? → 正）Would you mind watering the plants?\nmind の後は必ず動詞ingにし、OKの返事で Yes と言うと「嫌です」の意味になる点にも注意してください。"
+  },
+  {
+    "no": 172,
+    "text": "Do you have any idea + 間接疑問は、Do you know より「見当つく？」という砕けた響きで、値段の高さに驚いているようなニュアンスも出せます。any idea の後ろは疑問文ではなく名詞のかたまりなので、how much this jacket costs と平叙文の語順になります。\n組み立ての手順は、聞きたい中身を先に「疑問詞 + 主語 + 動詞」の形で作り、それを Do you have any idea の後ろにそのまま付けます。\n使い回し例:\nDo you have any idea how long the flight takes?（フライトにどれくらいかかるか分かる？）\nDo you have any idea how many users we have now?（今ユーザーが何人いるか見当つく？）\nよくある間違い:\n誤）Do you have any idea how much does this jacket cost? → 正）Do you have any idea how much this jacket costs?\ndoes を節の中に残さず、その代わりに動詞へ三単現の s を付けて costs とするのを忘れないでください。"
+  },
+  {
+    "no": 173,
+    "text": "When does the meeting start? と直接聞くより、Could you tell me...? で包むほうがビジネスでは自然で丁寧です。tell me の中に入ると does は消えて、when the meeting starts という平叙文の語順になります。\n組み立ての手順は、まず「教えてもらえますか」を Could you tell me で立て、その後ろに「疑問詞 + 主語 + 動詞」の順で聞きたい内容を続けます。does が消えた分、動詞に s を付け直すのがコツです。\n使い回し例:\nCould you tell me where I should upload the files?（ファイルをどこにアップすればいいか教えてもらえますか？）\nCould you tell me how much the monthly plan costs?（月額プランがいくらか教えてもらえますか？）\nよくある間違い:\n誤）Could you tell me when does the meeting start? → 正）Could you tell me when the meeting starts?\ntell me の後ろに疑問文用の does を持ち込まないこと、これが間接疑問で最も多いミスです。"
+  },
+  {
+    "no": 174,
+    "text": "Would you mind if I + 過去形は、自分の行動の許可を控えめに求める言い方です。left と過去形なのは過去の話だからではなく、仮定法で「もし〜したとしたら」と現実から距離を置き、遠慮がちな響きを出すためです。\n組み立ての手順は、相手に頼むのではなく自分がしたいことを言うと決めたら、Would you mind if I を土台にして、したい動作を過去形で if 節に入れます。171 の「mind + 動詞ing（相手にしてもらう）」との使い分けがポイントです。\n使い回し例:\nWould you mind if I opened the window?（窓を開けてもかまいませんか？）\nWould you mind if I joined the meeting from home tomorrow?（明日は自宅から会議に参加してもかまいませんか？）\nよくある間違い:\n誤）Would you mind if I leave a little early today? → 正）Would you mind if I left a little early today?\nWould で始めたら if 節も過去形にそろえること、そして許可するときの返事は Not at all のような No 系になることに注意してください。"
+  },
+  {
+    "no": 175,
+    "text": "I was wondering if you could... は「〜していただけないかと思っていまして」という、英語で最も遠回しな依頼表現のひとつです。過去進行形 was wondering を使うことで「前からぼんやり考えていた」という体になり、今この場で要求している圧を消せます。\n組み立ての手順は、疑問文の形を使わないと決めるところから始まります。頼みたい内容を you could + 動詞の形にして if でつなぎ、全体を平叙文として言い切ります。\n使い回し例:\nI was wondering if you could share the meeting notes.（議事録を共有していただけないかと思いまして。）\nI was wondering if we could postpone the release by one day.（リリースを1日延ばせないかと思っているのですが。）\nよくある間違い:\n誤）I was wondering could you review my draft? → 正）I was wondering if you could review my draft.\nwondering の後は必ず if でつなぎ、疑問文の語順やクエスチョンマークを使わず文末はピリオドにします。"
+  },
+  {
+    "no": 176,
+    "text": "肯定文で言い切った内容を「〜ですよね？」と確認するときは、末尾に否定の付加疑問を付けます。本体の動詞が過去の一般動詞 sent なので、対応する助動詞は did となり、didn't you? が正解です。\n組み立ての手順は、まず確認したい事実を普通の肯定文で完成させ、その文の主語と時制を見て「助動詞の否定形 + 主語の代名詞」を機械的に末尾へ付けます。\n使い回し例:\nYou tested this on staging first, didn't you?（これ、先にステージングで試しましたよね？）\nShe joined the company last year, didn't she?（彼女は去年入社したんですよね？）\nよくある間違い:\n誤）You sent the invoice yesterday, isn't it? → 正）You sent the invoice yesterday, didn't you?\n付加疑問は isn't it の一択ではなく、本体の主語（you）と動詞の時制（sent → didn't）に合わせて毎回作り直す必要があります。"
+  },
+  {
+    "no": 177,
+    "text": "Why did the server go down? という直接の疑問文を Do you know の中に入れると、did が消えて動詞自体が過去形 went に戻ります。障害の原因究明のように相手が答えを知らないかもしれない場面では、この聞き方のほうが問い詰める感じがなく自然です。\n組み立ての手順は、まず Do you know を立て、原因を尋ねる部分を why + 主語 + 動詞の平叙文の順で続け、時制の情報は助動詞ではなく動詞そのものに乗せます。\n使い回し例:\nDo you know why the build failed this morning?（今朝ビルドが失敗した原因、分かりますか？）\nDo you know why the API is returning 500 errors?（APIが500エラーを返している理由、分かりますか？）\nよくある間違い:\n誤）Do you know why did the server go down? → 正）Do you know why the server went down?\ndid を節の中に残すと二重に過去を示すことになるので、did を消して動詞を went に変えるまでがセットです。"
+  },
+  {
+    "no": 178,
+    "text": "Any idea...? は Do you have any idea...? の文頭を落とした省略形で、チャットや口頭でとっさに聞くときに頻出するカジュアルな形です。さらにこの文では who が節の主語そのものなので、後ろは pushed と動詞をそのまま続けるだけで、語順の入れ替えは一切不要です。\n組み立ての手順は、聞きたいことを who + 動詞 + 目的語の形で作り、その頭に Any idea を付けるだけと考えると簡単です。\n使い回し例:\nAny idea when the fix will be deployed?（修正がいつデプロイされるか分かる？）\nAny idea what caused the memory leak?（メモリリークの原因、見当つく？）\nよくある間違い:\n誤）Any idea who did push this change? → 正）Any idea who pushed this change?\nwho や what が主語のときは do/did を入れる余地がなく、疑問詞の直後に動詞を置くのが正しい形です。"
+  },
+  {
+    "no": 179,
+    "text": "Did the backup finish? のような Yes/No で答える質問には疑問詞がないため、文に埋め込むときは whether（〜かどうか）でつなぎます。会話では if でも同じ意味になりますが、whether のほうが書き言葉でも安心して使える形です。\n組み立ての手順は、まず Yes/No 疑問文を the backup finished という平叙文の語順に直し、頭に whether を付けて Can you tell me の後ろに置きます。\n使い回し例:\nCan you tell me whether the new version supports SSO?（新バージョンがSSOに対応しているかどうか教えてもらえますか？）\nI'm not sure whether the test passed on CI.（CIでテストが通ったかどうか確信が持てません。）\nよくある間違い:\n誤）Can you tell me whether did the backup finish? → 正）Can you tell me whether the backup finished?\nwhether の後ろも他の間接疑問と同じく平叙文の語順にし、did は消して動詞を過去形にします。"
+  },
+  {
+    "no": 180,
+    "text": "「どう思う？」と意見を聞く疑問文では、do you think が疑問詞の直後に割り込むという独特の語順になります。答えが Yes/No ではなく「3日くらい」のような具体的な内容になる質問では、疑問詞を文頭に出すのがルールです。\n組み立ての手順は、まず一番知りたい疑問詞（How long）を文頭に置き、次に do you think を挟み、残りを the migration will take と平叙文の語順で続けます。\n使い回し例:\nHow much do you think this feature will cost?（この機能にどれくらい費用がかかると思いますか？）\nWhen do you think we can start the beta test?（ベータテストはいつ始められると思いますか？）\nよくある間違い:\n誤）Do you think how long the migration will take? → 正）How long do you think the migration will take?\nDo you think で文を始めると Yes/No を聞く形になってしまうので、具体的な答えが欲しいときは必ず疑問詞から始めてください。"
+  },
+  {
+    "no": 181,
+    "text": "「あまり好きじゃない」と言いたいときは、not と really の語順が決め手になる。don't really like の順にすると really が like を弱めて「そこまで好きではない」という控えめな否定になる。\n日本語から組み立てるときは、まず I don't like の否定文を作り、「あまり」の分だけ really を don't の直後に差し込む、と考えると迷わない。\n使い回し例:\nI don't really watch TV these days.（最近はあまりテレビを見ないんだ。）\nHe doesn't really enjoy long meetings.（彼は長い会議があまり好きじゃないんだ。）\nよくある間違い:\n誤）I really don't like spicy food. → 正）I don't really like spicy food.\nreally を don't の前に置くと「本気で嫌い」という強い否定に変わってしまうので、控えめに言いたいときは必ず don't really の順にする。"
+  },
+  {
+    "no": 182,
+    "text": "hardly ever は「ほとんど〜しない」を表す頻度のことばで、never（絶対しない）と sometimes（ときどきする）の間を埋めてくれる。文そのものは肯定文の形のままでよい。\n日本語から組み立てるときは、「ほとんど外食しない」でも否定文を作らず、まず We eat out という肯定文を用意して、頻度を表す hardly ever を一般動詞の前に差し込む、と考える。\n使い回し例:\nI hardly ever use the office printer.（会社のプリンター、ほとんど使わないんだ。）\nWe hardly ever get complaints about this feature.（この機能への苦情はほとんど来ないよ。）\nよくある間違い:\n誤）We almost don't eat out on weekdays. → 正）We hardly ever eat out on weekdays.\n「ほとんど〜しない」を almost + 否定文で直訳すると不自然になるので、hardly ever を使って肯定文の形で言うのがコツ。"
+  },
+  {
+    "no": 183,
+    "text": "not 〜 anymore は「以前はしていたが、今はもうしない」という習慣の変化を表す。会話では no longer よりずっと自然でカジュアルに響く。\n日本語から組み立てるときは、「もう行ってない」は今の習慣の話だと捉え、We don't go という現在形の否定文を作って文末に anymore を足すだけ、と考える。\n使い回し例:\nI don't drink coffee late at night anymore.（夜遅くのコーヒーはもうやめたんだ。）\nShe doesn't work in the Tokyo office anymore.（彼女はもう東京オフィスでは働いてないよ。）\nよくある間違い:\n誤）We didn't go to that restaurant anymore. → 正）We don't go to that restaurant anymore.\n「行かなくなった」という日本語につられて過去形にしがちだが、今の習慣を述べる文なので現在形の否定 + anymore で表す。"
+  },
+  {
+    "no": 184,
+    "text": "Not all 〜 は「全部が〜なわけではない」という部分否定で、「やっている店もあれば、やっていない店もある」という含みを文頭の Not all だけで伝えられる。\n日本語から組み立てるときは、「全部〜なわけじゃない」と感じたら動詞を否定するのではなく、主語の頭に Not all を付けて文の残りは肯定形のままにする、と考える。\n使い回し例:\nNot all my coworkers like working from home.（同僚みんなが在宅勤務を好きなわけじゃないんだ。）\nNot all the buses from here stop at the airport.（ここから出るバスが全部空港に停まるわけじゃないよ。）\nよくある間違い:\n誤）All the shops here don't open on Sundays. → 正）Not all the shops here open on Sundays.\nAll 〜 don't の形は「どの店も開かない」という全否定に取られやすいので、部分否定を言いたいときは必ず Not all を文頭に置く。"
+  },
+  {
+    "no": 185,
+    "text": "not exactly は「完全にそうではない＝ちょっと違う」という柔らかい訂正表現で、You're wrong のような直接否定を避けながら相手の理解をやんわり直せる。\n日本語から組み立てるときは、相手の発言を That で受けて主語に据え、That's not exactly のあとに「本当に言いたかったこと」を what I meant のような what 節で続ける、と考える。\n使い回し例:\nThat's not exactly what the client asked for.（それ、クライアントの要望とはちょっと違うんだよね。）\nThis is not exactly the schedule we agreed on.（これは合意したスケジュールと少し違いますね。）\nよくある間違い:\n誤）That's not exactly I meant. → 正）That's not exactly what I meant.\nexactly の後ろには「私が言いたかったこと」という名詞のかたまり（what 節）が必要なので、what を落とさないように注意。"
+  },
+  {
+    "no": 186,
+    "text": "not necessarily は「必ずしも〜とは限らない」という部分否定で、相手の意見を全否定せずに反論の余地を残せる大人の言い回し。会議で角を立てずに異論を出すのに向く。\n日本語から組み立てるときは、「長い会議＝いい会議とは限らない」なら A longer meeting を主語に据えて A isn't B の骨組みを作り、isn't の直後に necessarily を挟む、と考える。a better one の one は meeting の繰り返しを避ける代名詞。\n使い回し例:\nThe most expensive tool isn't necessarily the best one.（一番高いツールが一番いいとは限らないよ。）\nMore features aren't necessarily better for users.（機能が多いほどユーザーにとっていいとは限らない。）\nよくある間違い:\n誤）A longer meeting is never a better one. → 正）A longer meeting isn't necessarily a better one.\nnever を使うと「長い会議は絶対に良くない」という全否定になってしまうので、「限らない」のニュアンスには necessarily を選ぶ。"
+  },
+  {
+    "no": 187,
+    "text": "hardly any + 名詞は「ほとんど〜ない」と量がゼロ寸前であることを伝える形。no time（まったくない）ほど強くないので、実務の進捗報告で使いやすい。\n日本語から組み立てるときは、「時間がほとんど取れていない」ならまず We have time の骨組みを作り、time の前に hardly any を置き、「今までのところ」の意味を出すために現在完了の have had にする、と考える。\n使い回し例:\nI've had hardly any sleep this week.（今週はほとんど寝られてないんだ。）\nThere's hardly any disk space left on this server.（このサーバー、ディスク容量がほとんど残ってないよ。）\nよくある間違い:\n誤）We've hardly had no time to review the report. → 正）We've hardly had any time to review the report.\nhardly がすでに否定の働きをしているので、後ろに置くのは no ではなく any。no を重ねると二重否定になってしまう。"
+  },
+  {
+    "no": 188,
+    "text": "not always は「いつも〜とは限らない」という部分否定。isn't の後ろに always を置くことで、「つかまる時もあるが毎回ではない」という現実的な注意喚起になり、never（絶対つかまらない）とははっきり区別される。\n日本語から組み立てるときは、まず The client is available という肯定文を作り、be動詞を否定して isn't always available の語順に整える、と考える。\n使い回し例:\nThe support team isn't always quick to reply.（サポートの返信がいつも早いとは限らないよ。）\nThe test results aren't always accurate on the first run.（テスト結果、1回目からいつも正確とは限らないんだ。）\nよくある間違い:\n誤）The client always isn't available on Friday afternoons. → 正）The client isn't always available on Friday afternoons.\nnot が always より前に来て初めて「いつもとは限らない」の部分否定になるので、always を否定より前に出さない。"
+  },
+  {
+    "no": 189,
+    "text": "no longer は「以前はそうだったが、もはや〜ない」を表し、anymore よりフォーマルでドキュメントやアナウンス向き。be動詞や助動詞の直後に置くのが基本位置になる。\n日本語から組み立てるときは、「もうメンテされていない」ならライブラリ側を主語に据えて受動態 is maintained を作り、be動詞の直後に no longer を差し込む、と考える。no longer 自体が否定語なので not は足さない。\n使い回し例:\nThis API version is no longer supported.（このバージョンのAPIはもうサポートされていません。）\nHe no longer works for that vendor.（彼はもうあのベンダーにはいないよ。）\nよくある間違い:\n誤）That version of the library is already not maintained. → 正）That version of the library is no longer maintained.\n「もう〜ない」を already + not で直訳しがちだが、already は肯定文で使う語なので、否定の「もはや」は no longer か not 〜 anymore で表す。"
+  },
+  {
+    "no": 190,
+    "text": "not quite は「完全には〜ない」という控えめな否定で、9割方できているがあと一歩、というニュアンスを出せる。文末の yet が「これから仕上がる」という前向きな含みを添えるので、遅れの報告でも印象が柔らかい。\n日本語から組み立てるときは、成果物の The fix を主語に据えて isn't ready の否定文を作り、quite を isn't の直後、yet を文末に置く、と考える。\n使い回し例:\nThe new design isn't quite final yet.（新しいデザインはまだ完全には確定していません。）\nI'm not quite sure about the root cause yet.（根本原因はまだはっきりとは分かっていないんだ。）\nよくある間違い:\n誤）The fix quite isn't ready for release yet. → 正）The fix isn't quite ready for release yet.\nquite は not の後ろに置いて not quite のセットで使う。語順が逆だと意味が通じなくなるので、かたまりで覚える。"
+  },
+  {
+    "no": 191,
+    "text": "can hardly は「ほとんど〜できない」を表し、can't（まったくできない）の一歩手前の「かろうじて、なんとか」という感覚を出せる。hardly は can と動詞の間に置く。\n日本語から組み立てるときは、主語 I を立てて I can read the logs の骨組みを作り、can の直後に hardly を差し込み、「フィルタせずに」という条件を without + 動名詞で文末に足す、と考える。\n使い回し例:\nI can hardly hear you — the connection is really bad.（回線が悪くて、ほとんど聞こえないよ。）\nWe can hardly tell the difference between the two builds.（この2つのビルド、違いがほとんど分からないね。）\nよくある間違い:\n誤）I can't hardly read these logs without filtering them. → 正）I can hardly read these logs without filtering them.\nhardly 自体に否定の意味があるので、can't と重ねると二重否定になる。can は必ず肯定形のままにする。"
+  },
+  {
+    "no": 192,
+    "text": "Not every + 単数名詞は「すべてが〜というわけではない」という部分否定で、文頭で否定を済ませて動詞は肯定形のまま進める形。Not all + 複数形とほぼ同じ意味だが、every には1件1件を個別に見るニュアンスがあり、アラートのような個々の事象に合う。\n日本語から組み立てるときは、Not every alert をそのまま主語に据え、every に合わせて名詞は単数、動詞は三単現の means にする、と考える。\n使い回し例:\nNot every error message needs an immediate fix.（すべてのエラーメッセージにすぐ対応が必要なわけじゃない。）\nNot every customer reads the release notes.（リリースノートを読むお客さんばかりじゃないからね。）\nよくある間違い:\n誤）Not every alerts mean we have a real incident. → 正）Not every alert means we have a real incident.\nevery の後ろは必ず単数名詞で、動詞も三単現にする。「全部」という日本語の意味につられて複数形にしないこと。"
+  },
+  {
+    "no": 193,
+    "text": "「疲れてたけど〜した」のような譲歩は、Although＋主語＋動詞の節を文頭に置き、コンマの後の主節で本題を言う形が基本です。日本語から組み立てるときは、まず「けど」の中身（疲れていた）を Although I was tired とひとかたまりの節にし、実際にやったこと（夜更かしして見た）を主節に据える、という順で考えると迷いません。although は2つの文をつなぐ接続詞なので、これ1語で逆接が完成します。\n使い回し例:\nAlthough it was raining, we walked to the station.（雨が降ってたけど、駅まで歩いたよ。）\nAlthough the movie was long, nobody fell asleep.（映画は長かったけど、誰も寝なかったね。）\nよくある間違い:\n誤）Although I was tired, but I stayed up. → 正）Although I was tired, I stayed up.\n日本語の「〜だけど、でも〜」の感覚で although と but を両方入れると英語では二重になります。逆接の目印は1文に1つだけと覚えましょう。"
+  },
+  {
+    "no": 194,
+    "text": "in case＋現在形は「〜するといけないから（先に備えておく）」という意味で、if（起きたらやる）とは違い、起きる前にやっておく行動を促します。日本語から組み立てるときは、まず相手にしてほしい備えを命令文（Take some snacks）で言い切り、その理由になる心配事を in case の節で後ろに足す、という2段構えで考えます。in case の節は未来の話でも現在形（the kids get hungry）にするのがルールです。\n使い回し例:\nTake an umbrella in case it rains this afternoon.（午後に雨が降るといけないから、傘を持って行きなよ。）\nSave her number in case your phone battery dies.（スマホの電池が切れるといけないから、彼女の番号を保存しておいて。）\nよくある間違い:\n誤）Take some snacks in case the kids will get hungry. → 正）Take some snacks in case the kids get hungry.\nin case の中に will を入れないこと。if 節と同じで、未来のことでも現在形で表します。"
+  },
+  {
+    "no": 195,
+    "text": "by the way を文頭に置くと「そういえば」と、今の話題から別の軽い話へふっと切り替える合図になります。組み立ては簡単で、まず By the way, を置き、その後は聞きたいことを普通の疑問文（ここでは「もう試した？」なので過去形の Did you try...?）にするだけです。切り替え先はあくまで雑談レベルの軽い話題、というのがこの表現の持ち味です。\n使い回し例:\nBy the way, how was your trip to Kyoto?（そういえば、京都旅行はどうだった？）\nBy the way, are you free this Saturday?（そういえば、今週の土曜って空いてる？）\nよくある間違い:\n誤）By the way, let's discuss the main issue.（本題を by the way で切り出す） → 正）Anyway, let's discuss the main issue.\n日本語の「ところで」の感覚で本題に入ると不自然です。by the way は脇道への合図、本題への切り替えは anyway や now を使い分けましょう。"
+  },
+  {
+    "no": 196,
+    "text": "unless は「〜しない限り」＝ except if で、例外条件を1語で表せます。日本語から組み立てるときは、まず普段の習慣を否定文で言い切り（I don't cook on weekends）、例外になる場合を unless＋肯定の現在形（we have guests）で後ろに足す、と考えます。ポイントは、日本語の「来ない限り」の「ない」は unless 自体に含まれているので、節の中は肯定形のままにすることです。\n使い回し例:\nI don't answer work calls at night unless it's an emergency.（緊急でない限り、夜は仕事の電話に出ないんだ。）\nWe don't eat out unless it's someone's birthday.（誰かの誕生日でもない限り、外食はしないよ。）\nよくある間違い:\n誤）I don't cook on weekends unless we don't have guests. → 正）I don't cook on weekends unless we have guests.\nunless の節まで否定にすると二重否定になり、意味が逆転してしまいます。「unless の中は肯定形」とセットで覚えましょう。"
+  },
+  {
+    "no": 197,
+    "text": "対比の while は「〜ではあるが」という意味で、反対意見をやわらかく切り出すビジネスの定番型です。日本語の「プラン自体はいいんですが」のような前置きを While I like your plan と節にして先に置き、本当に言いたい懸念（主語は自分の気持ちなので I'm worried...）を主節に据える、という順で組み立てます。先に相手を認めてから懸念を言う語順そのものが、丁寧さを生む仕掛けです。時間の while（〜している間）とは別用法なので文脈で区別します。\n使い回し例:\nWhile I understand your concern, we can't move the deadline.（ご懸念はわかりますが、締め切りは動かせません。）\nWhile the design looks great, the page loads too slowly.（デザインは素晴らしいのですが、ページの読み込みが遅すぎます。）\nよくある間違い:\n誤）While I like your plan, but I'm worried about the budget. → 正）While I like your plan, I'm worried about the budget.\nalthough と同じく、while で始めた文の主節に but を重ねないこと。逆接は while だけで十分伝わります。"
+  },
+  {
+    "no": 198,
+    "text": "文頭の anyway は「それはさておき」と、脱線した話を切り上げて本題に戻す合図です。get back to 〜 が「〜（の話）に戻る」という決まった言い方なので、Anyway, let's get back to＋名詞、までを1つの型として覚えると会議でそのまま使えます。組み立てるときは、特定の誰かを主語に立てず Let's で全員を誘う形にすると、脱線した人を責めるニュアンスが出ません。\n使い回し例:\nAnyway, let's get back to the main agenda.（それはさておき、本題のアジェンダに戻りましょう。）\nAnyway, where were we before the phone call?（さてと、電話の前はどこまで話してましたっけ？）\nよくある間違い:\n誤）By the way, let's get back to the schedule. → 正）Anyway, let's get back to the schedule.\nby the way は話を脇道へそらす合図、anyway は本題へ戻す合図で、方向が正反対です。会議で混同すると進行が逆に見えるので注意しましょう。"
+  },
+  {
+    "no": 199,
+    "text": "文頭の Unless 節＋will の主節で、「返事がなければ〜します」という期限つきの宣言ができます。組み立てるときは、まず自分が取る行動（I'll book the meeting room）を先に決め、それを止められる唯一の条件を Unless I hear back by noon と前置きする、と考えると自然に作れます。条件節の中は未来の内容でも現在形（hear back）にし、will は主節にだけ置くのが鉄則です。hear back は「返事をもらう」の定番表現です。\n使い回し例:\nUnless anyone objects, I'll merge this pull request tomorrow morning.（誰も反対しなければ、明日の朝このプルリクをマージしますね。）\nUnless the client replies by Friday, I'll send a reminder.（金曜までにクライアントから返事がなければ、リマインドを送ります。）\nよくある間違い:\n誤）Unless I will hear back by noon, I'll book the room. → 正）Unless I hear back by noon, I'll book the room.\nif 節と同じで、unless 節の中に will を入れないこと。「条件節は現在形、結果の will は主節」と位置で覚えましょう。"
+  },
+  {
+    "no": 200,
+    "text": "文末の just in case は「万一に備えて・念のため」を表す決まり文句で、194 のように後ろへ節を続ける必要がありません。組み立てるときは、まず自分がやった備えの行動を過去形で言い切り（I saved a copy of the report）、最後にコンマを打って just in case を添えるだけ、と考えます。何に備えたのかをあえて言わずにぼかせるのがこの形の便利なところで、日本語の「念のため」とほぼ同じ感覚で使えます。\n使い回し例:\nI took a screenshot of the error message, just in case.（念のため、エラーメッセージのスクショを撮っておいたよ。）\nLet's leave ten minutes early, just in case.（万一に備えて、10分早く出よう。）\nよくある間違い:\n誤）I saved a copy of the report for just in case. → 正）I saved a copy of the report, just in case.\n「念のために」の「に」につられて for を足さないこと。just in case はコンマの後にそのまま置くだけで副詞の働きをします。"
+  },
+  {
+    "no": 201,
+    "text": "although を文の後半に置くと、先に結論を言い切ってから但し書きを添える形になり、進捗報告にとても向いています。組み立てるときは、報告の主役（The fix）を主語に据えて現在形で結論を言い切り、コンマ＋although の後に未完了の部分を現在完了の否定（haven't tested ... yet）で続ける、と考えます。文頭に置く 193 の型と違い「まず良い知らせ、次に注意点」の順になるのがポイントで、話し言葉では though に置き換えても同じ意味です。\n使い回し例:\nThe new feature is live, although we're still watching the error logs.（新機能はリリース済みですが、まだエラーログを監視中です。）\nThe build passes now, although one test is still flaky.（ビルドは通るようになりましたが、テストが1本まだ不安定です。）\nよくある間違い:\n誤）The fix works. Although, we haven't tested every edge case yet. → 正）The fix works, although we haven't tested every edge case yet.\nalthough は However のように単独で文頭に置いてコンマで区切る使い方ができません。必ず2つの節を1文の中でつなぐ形で使いましょう。"
+  },
+  {
+    "no": 202,
+    "text": "時間の while は「〜している間」で、while＋主語＋進行形（is running）が定番の組み合わせです。日本語から組み立てるときは、まず禁止したい操作を Don't＋動詞の否定命令文（Don't restart the server）にし、危険なタイミングを while the migration is running で指定する、という2段で考えます。命令文は主語を立てないので、チーム向けの周知やチャットにそのまま貼れる形になります。197 の対比用法（〜ではあるが）とは意味が別なので、後ろが進行形なら時間の用法と見分けられます。\n使い回し例:\nDon't close your laptop while the backup is running.（バックアップの実行中は、ノートPCを閉じないで。）\nPlease don't push to main while the release is in progress.（リリース作業中は、main にプッシュしないでください。）\nよくある間違い:\n誤）Don't restart the server during the migration is running. → 正）Don't restart the server while the migration is running.\nduring は前置詞なので後ろに置けるのは名詞だけです。主語＋動詞の文を続けたいときは接続詞の while を選びましょう。"
+  },
+  {
+    "no": 203,
+    "text": "by the way を文末に置くと「ちなみに」と、本筋とは関係ない情報をついでにそっと付け足す言い方になります。195 の文頭用法（話題の切り替え）より「おまけ感」が強いのが特徴です。組み立てるときは、伝えたい事実をまず普通の文として完成させ（The staging server is down again）、最後にコンマ＋by the way を添えるだけと考えます。is down はサーバーが落ちている状態を表す定番表現です。\n使い回し例:\nYour pull request got approved, by the way.（ちなみに、君のプルリク、承認されてたよ。）\nThe printer on the third floor is working again, by the way.（ちなみに、3階のプリンターはもう直ってるよ。）\nよくある間違い:\n誤）In addition, the staging server is down again. → 正）The staging server is down again, by the way.\nin addition は同じ話題に情報を積み上げる言い方なので、別件の付け足しに使うと不自然です。本筋と関係ない一言を足すなら by the way を選びましょう。"
+  },
+  {
+    "no": 204,
+    "text": "文末の anyway は「どのみち・いずれにせよ」という意味で、直前の悪い知らせが実は大した問題ではない理由を添える働きをします。198 の文頭用法（話を本題に戻す）とは別物です。組み立てるときは、まず起きた事実を言い切り（The tests failed）、but でつないで「もともとの予定」を過去進行形 were planning to で述べ、最後に anyway を置く、という流れで考えます。過去進行形にすると「前からそのつもりだった」というニュアンスがきれいに出ます。\n使い回し例:\nMy umbrella broke, but I was going to buy a new one anyway.（傘が壊れたけど、どのみち新しいのを買うつもりだったし。）\nThe meeting got canceled, but I had nothing to report anyway.（会議は中止になったけど、どのみち報告することもなかったしね。）\nよくある間違い:\n誤）The tests failed, but anyway we were planning to rewrite that module. → 正）The tests failed, but we were planning to rewrite that module anyway.\n「どのみち」の意味で使うなら anyway は文末に置きます。文頭や文中に動かすと「まあいいや、次いこう」という話題転換の合図に聞こえてしまうので、位置に注意しましょう。"
+  },
+  {
+    "no": 205,
+    "text": "「コーヒーを切らした」のように在庫や残量が尽きたことを言うときは run out of が定番です。日本語では「コーヒーがなくなった」とモノを主語にしがちですが、英語では「私が使い果たした」と発想を変えて I を主語に据え、I ran out of coffee と組み立てます。\nrun out だけでも「尽きる」の意味になりますが、その場合は The coffee ran out のようにモノが主語になり、of を付けたときだけ後ろに「切らしたもの」を置けます。\n使い回し例:\nWe're running out of disk space on that server.（あのサーバー、ディスク容量がもうすぐ足りなくなるよ。）\nMy phone ran out of battery on the way home.（帰り道でスマホの充電が切れちゃった。）\nよくある間違い:\n誤）My coffee ran out of. → 正）I ran out of coffee.\nof は前置詞なので必ず後ろに名詞が必要で、of で文を終えることはできません。"
+  },
+  {
+    "no": 206,
+    "text": "「金曜の夜はいつも」のような毎週の習慣は、現在形＋always で表すのが基本です。日本語の「うちは外食なんだ」から英語にするときは、we を主語に据えて習慣を表す現在形を選び、eat out（外食する）に on Friday nights を添えます。\nFriday nights と複数形にすると「毎週の金曜の夜」という繰り返しのニュアンスが出ます。night 単独なら at night ですが、曜日が付くと on が優先されるのがポイントです。\n使い回し例:\nI go to the gym on Monday mornings.（月曜の朝はジムに行くことにしてるんだ。）\nShe works from home on Wednesday afternoons.（彼女は水曜の午後は在宅勤務なんだ。）\nよくある間違い:\n誤）We always eat out at Friday nights. → 正）We always eat out on Friday nights.\nat night のイメージのまま at を使いがちですが、曜日とセットになった時間帯は必ず on です。"
+  },
+  {
+    "no": 207,
+    "text": "待ち合わせの提案は Let's meet を骨組みにして、場所と時刻を前置詞句で後ろに足していきます。日本語から組み立てるときは「会おう＝Let's meet」をまず決め、地図上の一点である入口には at、時計の一点である正午にも at を選びます。\nat は「点」のイメージで、駅全体のような広がりなら in the station、入口というピンポイントなら at the entrance と使い分けます。\n使い回し例:\nLet's meet at the main gate at five.（5時に正門で待ち合わせよう。）\nI'll wait for you at the ticket machines at nine thirty.（9時半に券売機のところで待ってるね。）\nよくある間違い:\n誤）Let's meet at the station entrance in noon. → 正）Let's meet at the station entrance at noon.\nin the morning につられて in にしがちですが、noon・midnight・時刻はすべて「点」なので at を使います。"
+  },
+  {
+    "no": 208,
+    "text": "「我慢する」は put up with の3語でひとつの動詞として使います。日本語の「もう我慢の限界」は、英語では「これ以上我慢できない」と言い換えて、I can't ... anymore の枠に put up with をはめるのが組み立ての手順です。\ntolerate や stand も同じ意味ですが、会話では put up with が一番自然で、後ろには我慢する対象の名詞をそのまま置きます。\n使い回し例:\nI can't put up with these slow build times anymore.（このビルドの遅さ、もう我慢できないよ。）\nHow do you put up with so many meetings every day?（毎日あんなに会議ばかりで、よく我慢できるね。）\nよくある間違い:\n誤）I can't put up this noise anymore. → 正）I can't put up with this noise anymore.\nwith を落とすと「〜を掲示する・建てる」という別の意味の put up になるので、3語セットを崩さないことが大切です。"
+  },
+  {
+    "no": 209,
+    "text": "「〜でしたよね？」という確認は、疑問文にせず平叙文の最後に right? を付けるのが会話の定番です。日本語から組み立てるときは「次の打ち合わせ」を主語に据えて Our next meeting is ... とまず事実を言い切り、語尾に right? を足します。\n時間の表現は「火曜＋午前」のように曜日と時間帯がセットになったら on Tuesday morning と on を使い、in the morning にあった the は消えます。\n使い回し例:\nThe deployment is on Friday afternoon, right?（デプロイは金曜の午後でしたよね？）\nHer flight gets in on Sunday evening, right?（彼女のフライトは日曜の夕方着でしたよね？）\nよくある間違い:\n誤）Our next meeting is in Tuesday morning. → 正）Our next meeting is on Tuesday morning.\n「午前中＝in the morning」の丸暗記のまま使うと間違えるので、曜日が付いたら on に切り替わると覚えましょう。"
+  },
+  {
+    "no": 210,
+    "text": "「会議中」は、会議という状況の「中にいる」と捉えて in a meeting と言います。日本語の「会議中なので」から組み立てるときは、she を主語に She's in a meeting と状態を先に伝え、電話対応の決まり文句 Can I take a message? を so でつなぎます。\nこの in は場所ではなく「〜に従事している状態」を表し、in a call（通話中）、in an interview（面接中）など仕事の場面で広く使い回せます。\n使い回し例:\nHe's in an interview until three, so he can't answer the phone.（彼は3時まで面接中なので電話に出られません。）\nI was in a call when you messaged me.（メッセージをくれたとき、ちょうど通話中だったんだ。）\nよくある間違い:\n誤）She's on a meeting now. → 正）She's in a meeting now.\non the phone や on a call につられて on にしがちですが、meeting は in とセットで覚えましょう。"
+  },
+  {
+    "no": 211,
+    "text": "「対応します」という申し出は、I will（I'll）で自分の意志を示すのが基本です。日本語から組み立てるときは、対応する自分を主語に据えて I'll deal with ... とし、クレームなどの対象を with の後ろに置きます。\ndeal with は問題・苦情・厄介な相手などを「処理する・さばく」ときの万能句動詞で、first thing tomorrow（明日一番で）のような時間表現と相性が良いです。\n使い回し例:\nI'll deal with the failed tests after lunch.（落ちてるテストには昼休みの後で対応するよ。）\nOur support team deals with most customer questions.（お客様からの質問はほとんどサポートチームが対応しています。）\nよくある間違い:\n誤）I'll deal the client's complaint first thing tomorrow. → 正）I'll deal with the client's complaint first thing tomorrow.\ndeal 単独だと「配る・取引する」という別の意味になるので、「対処する」は必ず deal with のセットで使います。"
+  },
+  {
+    "no": 212,
+    "text": "予定の延期を伝えるときは put off A until B（AをBまで延期する）の型が便利です。日本語の「延期しないといけなくなりました」からは、まず謝罪の Sorry を置き、自分を主語に I need to put off ... と組み立てて、新しい日程を until で示します。\npostpone も同じ意味ですが、日常の会話やチャットでは put off の方がやわらかく自然に聞こえます。\n使い回し例:\nCan we put off the release until next week?（リリースを来週に延期できますか？）\nThey put off the decision until the next budget meeting.（彼らはその決定を次の予算会議まで先送りにした。）\nよくある間違い:\n誤）Sorry, I need to put off it until Thursday. → 正）Sorry, I need to put it off until Thursday.\nput off のような分離できる句動詞では、it などの代名詞は必ず put と off の間に挟みます。"
+  },
+  {
+    "no": 213,
+    "text": "「原因が分かった」は、頭を使って調べた末に答えへたどり着いたなら figure out がぴったりです。日本語では「原因が」を主語にしたくなりますが、英語では突き止めた側の we を主語に据えて、figured out の後ろに why で始まるかたまり（間接疑問）を続けます。\nkept crashing の keep ＋ -ing は「何度も〜し続ける」で、繰り返し起きる障害の説明に便利です。\n使い回し例:\nI finally figured out how to use the new build tool.（新しいビルドツールの使い方がやっと分かったよ。）\nWe still haven't figured out what caused the data loss.（データ消失の原因はまだ突き止められていないんだ。）\nよくある間違い:\n誤）We figured out why did the server keep crashing. → 正）We figured out why the server kept crashing.\nfigure out の後の why 以下は疑問文ではないので、did を入れず「主語＋動詞」の普通の語順に戻します。"
+  },
+  {
+    "no": 214,
+    "text": "環境やアカウントを「作る・用意する」は set up が定番で、依頼なら Can you ...? の枠にはめます。日本語の「作ってもらえる？」からは、相手への依頼と判断して Can you を選び、set up＋目的語、最後に期限の by tomorrow を置く、という順で組み立てます。\nmake や create でも通じますが、機材・環境・アカウントなどを「使える状態に整える」ニュアンスは set up が一番自然です。\n使い回し例:\nI'll set up a new repository for the project this afternoon.（今日の午後、プロジェクト用の新しいリポジトリを作っておくね。）\nCould you set up an account for the new team member?（新しいメンバーのアカウントを作成してもらえますか？）\nよくある間違い:\n誤）Can you set up a test environment until tomorrow? → 正）Can you set up a test environment by tomorrow?\nby は「その時までに完了」、until は「その時までずっと継続」なので、締め切りには必ず by を使います。"
+  },
+  {
+    "no": 215,
+    "text": "「クラウドに保存してある」は、保存されているデータの側を主語にして受け身（are stored）で言うのが自然です。日本語の「保存してるよ」につられて we を主語にしても通じますが、話題の中心が backups なら All our backups are stored ... と組み立てます。\n場所は in the cloud が決まった言い方で、クラウドを大きな入れ物と見立てた in を使い、the も必ず付けます。\n使い回し例:\nWe keep all our design files in the cloud.（デザインファイルは全部クラウドに置いてるんだ。）\nThe photos on my phone are backed up in the cloud automatically.（スマホの写真は自動でクラウドにバックアップされるよ。）\nよくある間違い:\n誤）All our backups are stored on the cloud. → 正）All our backups are stored in the cloud.\non the server や on GitHub と同じ感覚で on にしがちですが、cloud は「中にしまう」イメージの in と覚えましょう。"
+  },
+  {
+    "no": 216,
+    "text": "すでに段取りが決まっている近い予定は、現在進行形（We're rolling out ...）で表すのが英語らしい言い方です。日本語の「展開する予定なんだ」からは、未来でも will ではなく「もう決まっている予定」と捉えて be ＋ -ing を選び、時刻の at midnight を最後に置きます。\nroll out は新機能や更新を「順次広げていく」ニュアンスの句動詞で、release より段階的な展開を感じさせる IT 現場の定番です。\n使い回し例:\nWe're rolling out the new UI to 10 percent of users first.（新しいUIはまずユーザーの10%に展開するんだ。）\nThe vendor rolled out a major update last month.（そのベンダーは先月、大型アップデートを配信した。）\nよくある間違い:\n誤）We're rolling out the security patch in midnight tonight. → 正）We're rolling out the security patch at midnight tonight.\nmidnight は noon と同じくピンポイントの時刻なので、in the night のような感覚で in を使わず at を使います。"
+  },
+  {
+    "no": 217,
+    "text": "相手に何かを勧めるときは、疑問文でも any ではなく some を使う。「はい」と受け取ってもらうことを期待して差し出す場面では、肯定文と同じ some が自然になるからだ。\n日本語の「コーヒーでもどう？」から組み立てるときは、勧める相手 you を軸に Would you like 〜? の型を選び、その後ろに some＋名詞を置く、という手順で考える。coffee は不可算名詞だが some はそのまま付けられる。\n使い回し例:\nWould you like some help with those bags?（その荷物、手伝おうか？）\nWould you like some more tea?（お茶のおかわりはいかが？）\nよくある間違い:\n誤）Would you like any coffee before we head out? → 正）Would you like some coffee before we head out?\n「疑問文は any」と機械的に覚えていると勧誘の場面で any を使いがちだが、any だと在庫を事務的に確認するような響きになり、勧める温かみが消えてしまう。"
+  },
+  {
+    "no": 218,
+    "text": "breakfast / lunch / dinner などの食事名は、特定の一皿ではなく「朝食をとる」という習慣的な行為に近い扱いなので、原則として冠詞を付けずに裸で使う。\n日本語から組み立てるときは、毎朝の習慣なので現在形を選び、I を主語に skip＋無冠詞の breakfast をそのまま続ける、と考える。have lunch、after dinner のように「動詞や前置詞＋無冠詞の食事名」のセットで覚えると応用が利く。\n使い回し例:\nWhat are you making for dinner tonight?（今夜の夕飯は何を作るの？）\nI always have breakfast before my morning run.（朝のランニングの前には必ず朝食をとるんだ）\nよくある間違い:\n誤）I usually skip the breakfast on busy mornings. → 正）I usually skip breakfast on busy mornings.\nただし a quick breakfast（軽い朝食）のように形容詞で具体的な一回の食事を描写するときは冠詞が戻るので、無冠詞は「食事名を裸で使うとき」の原則と覚えておく。"
+  },
+  {
+    "no": 219,
+    "text": "a few＋可算名詞の複数形は「少しはある」という前向きなニュアンスで、ここでは「ちゃんといくつか買っておいたよ」という準備万端の気持ちを表す。a のない few（ほとんどない）とは意味が逆になるのがポイント。\n日本語の「お菓子をいくつか買った」から組み立てるときは、まず snacks を数えられる名詞として複数形にし、その量を肯定的に言いたいので a few を前に置く、という手順で考える。\n使い回し例:\nI have a few questions about the new schedule.（新しいスケジュールについて少し質問があるんだ）\nWe still have a few tickets left for the show.(そのショーのチケット、まだ何枚か残ってるよ）\nよくある間違い:\n誤）I bought few snacks for the road trip.（「いくつか買った」のつもり）→ 正）I bought a few snacks for the road trip.\na を落とすと「ほとんど買わなかった」という不満げな逆の意味に取られるので、肯定的な「少しある」には必ず a を付ける。"
+  },
+  {
+    "no": 220,
+    "text": "plenty of は「十分すぎるほどたっぷりある」という余裕を伝える数量表現で、enough（足りている）よりも安心感が強い。だから焦る相手を Relax となだめる場面にぴったり合う。\n日本語の「時間はたっぷりある」から組み立てるときは、「ある」を所有として発想して we've got（= we have）を選び、量の表現として plenty of time を目的語に置く、という手順で考える。time は不可算だが、plenty of は可算・不可算の両方に使えるので迷わなくてよい。\n使い回し例:\nThere are plenty of cafes around the station.（駅の周りにはカフェがたくさんあるよ）\nWe still have plenty of storage left on the server.（サーバーの容量はまだ十分残ってるよ）\nよくある間違い:\n誤）We've got plenty time before our flight. → 正）We've got plenty of time before our flight.\nplenty は単独では名詞を修飾できず、必ず of が必要。また time は不可算なので times と複数形にしない点にも注意。"
+  },
+  {
+    "no": 221,
+    "text": "「一つも〜ない」というゼロの状態は、not＋any＋複数名詞で表す。don't have any meetings で「会議がまったくない」と数量ゼロを明言する形だ。\n日本語の「会議が一つもない」から組み立てるときは、自分 I を主語に据えて否定の don't have を選び、目的語に any meetings を置く、という手順で考える。後半の anytime works for me も any の仲間で、「どの時間でも OK」と選択肢を全開にする言い方として便利。\n使い回し例:\nI don't have any plans this weekend.（今週末は予定が何もないんだ）\nWe didn't get any complaints from users last month.（先月はユーザーからの苦情は一件もなかったよ）\nよくある間違い:\n誤）I don't have some meetings tomorrow. → 正）I don't have any meetings tomorrow.\n肯定文の some をそのまま否定文に持ち込むと不自然になる。「ゼロ」を言いたいときは not any か、I have no meetings のように no を使う。"
+  },
+  {
+    "no": 222,
+    "text": "a のない few は「ほとんどない」という否定的な評価を表し、very few とするとその少なさがさらに強調されて会話でも自然になる。文の形自体は肯定文のままなのが英語らしいところだ。\n日本語の「来た人はほとんどいなかった」から組み立てるときは、「来なかった」と否定文にするのではなく、「来た少数の人々」very few people を主語に据えて肯定文 showed up で組む、と発想を切り替えるのが手順のコツ。\n使い回し例:\nVery few users have tried the new feature so far.（今のところ、新機能を試したユーザーはほとんどいないんだ）\nVery few students asked questions after the lecture.（講義のあとに質問した学生はほとんどいなかった）\nよくある間違い:\n誤）A few people showed up for the briefing.（「ほとんど来なかった」のつもり）→ 正）Very few people showed up for the briefing.\na が付くと「何人かはちゃんと来た」という肯定的な意味に変わってしまう。a の有無で評価が正反対になるペアとして覚えておく。"
+  },
+  {
+    "no": 223,
+    "text": "a little＋不可算名詞は「少しの〜」という肯定的な量を表し、間に more を挟んだ a little more time で「今あるものに加えてもう少しの時間」という追加の依頼になる。time は数えられないので a little を選ぶのが核心。\n日本語の「もう少しだけ時間をもらえますか」から組み立てるときは、丁寧な依頼なので Could you give me 〜? の型を選び、目的語を a little more＋不可算名詞で組む、という手順で考える。on the report は「レポートの件で」と話題を添える前置詞。\n使い回し例:\nCan I get a little more milk for my coffee?（コーヒーに入れるミルク、もう少しもらえる？）\nWe need a little more information before we decide.（決める前にもう少し情報が必要です）\nよくある間違い:\n誤）Could you give me a few more time on the report? → 正）Could you give me a little more time on the report?\ntime は不可算なので a few は付けられない。数えられる名詞には a few、数えられない名詞には a little と、名詞の種類で機械的に使い分ける。"
+  },
+  {
+    "no": 224,
+    "text": "初めて話題に出す不特定の一つには a を付ける。まだどの業者か決まっておらず、聞き手も特定できないから a new supplier となる。もし特定の一社に決まっていれば the に変わる。\n日本語の「新しい仕入れ先を探している」から組み立てるときは、探している真っ最中なので現在進行形 we're looking for を選び、目的語は不特定の一社だから a new supplier とする、という手順で考える。なお office equipment（備品）は不可算名詞なので無冠詞のままでよい。\n使い回し例:\nI'm looking for a good dentist near my office.（職場の近くでいい歯医者さんを探してるんだ）\nWe need a bigger room for next week's workshop.（来週のワークショップにはもっと広い部屋が必要です）\nよくある間違い:\n誤）We're looking for new supplier. → 正）We're looking for a new supplier.\n日本語に冠詞がないため、単数の可算名詞を裸のまま使いがち。単数可算名詞には必ず a / an / the などの目印が要る一方、equipment のような不可算名詞に an を付けるのも誤りなので対で覚える。"
+  },
+  {
+    "no": 225,
+    "text": "話の流れや状況から「どれのことか」お互いに特定できる名詞には the を付ける。チームで運用しているあのサーバー、そのサーバーのあのログ、と双方の頭に同じものが浮かぶから the server、the logs になる。\n日本語の「またサーバーが落ちてる」から組み立てるときは、話題のサーバーを主語に据えて the server とし、状態は be down（落ちている）で表す、という手順で考える。The server's の 's は所有格ではなく is の短縮である点も見逃さないようにしたい。\n使い回し例:\nThe printer on the second floor is out of paper again.（2階のプリンター、また用紙切れだよ）\nThe elevator is out of service, so let's take the stairs.（エレベーターが止まってるから、階段で行こう）\nよくある間違い:\n誤）Server is down again. → 正）The server is down again.\n日本語の感覚で冠詞ごと省略しがちだが、単数可算名詞を裸で主語にはできない。お互いに分かる「あの〜」には必ず the を付ける。"
+  },
+  {
+    "no": 226,
+    "text": "あったかどうか分からないことをゼロベースで尋ねる疑問文では any を使う。any changes は「どんな小さな変更でも、少しでもあれば」というニュアンスで、障害調査の聞き取りにぴったりの形だ。逆に some を使うと「変更したんでしょ？」と Yes を想定した含みになる。\n日本語の「何か変更した？」から組み立てるときは、過去の行為の有無を聞くので Did you＋動詞の原形の型を選び、目的語を any changes と複数形で置く、という手順で考える。「〜に変更を加える」は make changes to 〜 という決まった組み合わせで覚える。\n使い回し例:\nDo you have any questions about the new workflow?（新しい業務フローについて何か質問ある？）\nDid you see any error messages on the screen?（画面に何かエラーメッセージは出てた？）\nよくある間違い:\n誤）Did you make any change to the config yesterday? → 正）Did you make any changes to the config yesterday?\n有無を尋ねる any の後ろは、数えられる名詞なら複数形にするのが基本。単数のままだと不自然に響くことが多い。"
+  },
+  {
+    "no": 227,
+    "text": "a のない little は不可算名詞に付いて「ほとんどない」という不満・嘆きを表す。very little とするとその乏しさが強調され、レガシーシステムへのぼやきとして自然な響きになる。a little（少しはある）とは評価が正反対だ。\n日本語の「ドキュメントがほとんどない」から組み立てるときは、存在の話なので There is 構文を選び、不可算名詞 documentation に very little を付ける、という手順で考える。documentation は不可算なので、量がゼロに近くても There's と単数扱いのままでよい。\n使い回し例:\nThere's very little space left on this disk.（このディスク、空きがほとんど残ってないんだ）\nWe had very little information in the first hour of the outage.（障害発生から最初の1時間は、情報がほとんどなかった）\nよくある間違い:\n誤）There are few documentations for this legacy system. → 正）There's very little documentation for this legacy system.\ndocumentation は不可算名詞なので複数形にできず、可算名詞用の few も使えない。「可算なら few、不可算なら little」と名詞の種類から選ぶ。"
+  },
+  {
+    "no": 228,
+    "text": "「パスワードというものは総じて」という一般論を述べるときは、無冠詞の複数形（bare plural）を主語にする。the を付けないことで、特定のパスワードではなく種類全体についてのルールだと伝わる。\n日本語の「パスワードは絶対に平文で保存しちゃだめ」から組み立てるときは、パスワード全般を主語 Passwords に据え、保存「される」側なので受動態を選んで should never be stored とする、という手順で考える。in plain text（平文で）の text も不可算で無冠詞のままだ。\n使い回し例:\nAccess keys should always be rotated regularly.（アクセスキーは必ず定期的にローテーションすべきだよ）\nBackups should be tested before you actually need them.（バックアップは実際に必要になる前にテストしておくべきだ）\nよくある間違い:\n誤）The passwords should never be stored in plain text.（一般論のつもり）→ 正）Passwords should never be stored in plain text.\nthe を付けると「特定のあのパスワード群」の話に聞こえてしまう。セキュリティポリシーのような一般的なルールは無冠詞複数で言い切るのが自然。"
+  },
+  {
+    "no": 229,
+    "text": "日本語では「空港まで1時間かかる」と主語を意識しないが、英語では所要時間専用の主語として it を立て、It takes + 時間 + to do の型に流し込む。\n組み立てるときは「何がかかるのか」と主語を探すのをやめ、まず It takes と言い切ってから時間を入れ、何をするのにかかるのかを to 以下で説明する、という順番で考える。\n使い回し例:\nIt takes about ten minutes to restart all the services.（サービスを全部再起動するのに10分くらいかかります。）\nIt took two days to get a reply from the vendor.（ベンダーから返事が来るまで2日かかったよ。）\nよくある間違い:\n誤）It takes about an hour until the airport. → 正）It takes about an hour to get to the airport.\n「空港まで」につられて until で終わらせず、get to のような動作の動詞を to 不定詞の形で必ず入れる。"
+  },
+  {
+    "no": 230,
+    "text": "What I need のような「what のかたまり」を主語にすると、is の後ろに来る答えに聞き手の注意を集められる。普通に I need sleep と言うより「必要なのはまさにこれ」という強調が出るのが擬似分裂文の効果。\n日本語の「〜なのは…だ」の順序をそのまま活かし、まず What I really need（必要なもの）というかたまりを主語として作り、be 動詞のあとに答えを置く、と考えると組み立てやすい。\n使い回し例:\nWhat we need first is a clear list of requirements.（まず必要なのは、はっきりした要件の一覧です。）\nWhat I liked most about the trip was the local food.（旅行でいちばんよかったのは地元の料理だったな。）\nよくある間違い:\n誤）What I really need right now is sleep well. → 正）What I really need right now is a good night's sleep.\nis の後ろには名詞か to 不定詞を置く。動詞をそのまま続けると文が壊れる。"
+  },
+  {
+    "no": 231,
+    "text": "「試す価値がある」は It's worth -ing という決まった型で言う。worth は前置詞に近い働きをする語なので、後ろには名詞か動名詞しか置けない。\n日本語では「あのパン屋は」と対象から考え始めがちだが、英語ではまず It's worth と評価を言い切り、勧めたい動作を -ing 形で続ける、と決めておくと迷わない。\n使い回し例:\nIt's worth asking the support team before you give up.（あきらめる前にサポートに聞いてみる価値はあるよ。）\nIt's worth checking the logs one more time.（もう一回ログを見てみる価値はあるね。）\nよくある間違い:\n誤）It's worth to try that new bakery. → 正）It's worth trying that new bakery.\nworth の直後を to 不定詞にするのが定番ミス。worth と来たら機械的に -ing と覚えてしまうのが安全。"
+  },
+  {
+    "no": 232,
+    "text": "It turns out (that) は「ふたを開けてみたら〜だった」と、あとから判明した少し意外な事実を伝える前置き。判明した中身が今も変わらない事実なら、the store is closed のように現在形のままでよい。\n「分かった」を I understood などと直訳せず、判明した事実をまず普通の文で作り、その頭に It turns out をかぶせる、という手順で組み立てる。\n使い回し例:\nIt turns out the meeting was moved to next week.（会議、来週に変更になってたことが分かったよ。）\nIt turned out the error was just a typo in the config file.（エラーの原因は設定ファイルの単なる打ち間違いだと判明したんだ。）\nよくある間違い:\n誤）It is turned out that the store is closed on Mondays. → 正）It turns out that the store is closed on Mondays.\nturn out は自分で「判明する」という動きを表す自動詞なので、受け身の be turned out にはしない。"
+  },
+  {
+    "no": 233,
+    "text": "It seems that は、確信までは持てない情報を「〜のようです」と柔らかく報告する型。断定調の The client wants ... と比べ、これが伝聞や推測であることを一言で示せるので、ビジネスの報告と相性がよい。\n主語を何にするか悩む前に、まず It seems that を置き、その後ろに報告したい内容を普通の文の形でそのまま続ける、と考えると速く組み立てられる。\n使い回し例:\nIt seems that the new tool is faster than the old one.（新しいツールのほうが前のより速いみたいですね。）\nIt seems that we misunderstood the requirements.（どうやら私たちが要件を誤解していたようです。）\nよくある間違い:\n誤）The client seems that he wants to move the deadline. → 正）The client seems to want to move the deadline.\n人を主語にしたら seem to do の形に変える。「人 + seems that」の形では直結できない。"
+  },
+  {
+    "no": 234,
+    "text": "What I mean is は、直前の自分の発言を「つまりこういうことです」と言い直して要点を押し出す前置き。What I mean（私が言いたいこと）というかたまりを主語にする点で、擬似分裂文の会話向け応用になっている。\n話が伝わっていないと感じたら、まず What I mean is とだけ言って考える時間を作り、その後ろに言いたい結論を文の形でそのまま置く、という手順で使う。\n使い回し例:\nWhat I'm saying is the current plan has too many risks.（要するに、今の計画はリスクが多すぎるということです。）\nWhat I meant was we should test it on a smaller scale first.（私が言いたかったのは、まず小さい規模で試すべきだということでした。）\nよくある間違い:\n誤）I mean is we should confirm the schedule first. → 正）What I mean is we should confirm the schedule first.\nwhat を落とすと主語のかたまりが作れず is が宙に浮く。もっとカジュアルに言うなら is を使わず I mean, we should ... とする。"
+  },
+  {
+    "no": 235,
+    "text": "It was X that ... の強調構文は、文の中の一要素だけにスポットライトを当てる形。not the timeline を挟むことで「そっちではなくこっち」という対比まで一文で表せる。\n組み立てるときは、先に伝えたい対比のポイント（the budget）を決めて It was と that の間に挟み、元の文の残り（worried everyone）をそのまま that の後ろに回す、と考える。\n使い回し例:\nIt was the network, not the database, that caused the outage.（障害の原因はデータベースじゃなくてネットワークのほうだったんだ。）\nIt was Ken that suggested this tool in the first place.（そもそもこのツールを提案したのはケンだったんですよ。）\nよくある間違い:\n誤）It was the budget that everyone worried. → 正）It was the budget that everyone worried about.\nthat の後ろは、元の文から強調したい語を抜いただけの形を保つ。worry about のような前置詞を落とさない。"
+  },
+  {
+    "no": 236,
+    "text": "Never を文頭に出すと「こんなことは一度もない」という驚きが強調され、そのしるしとして主語と助動詞がひっくり返る倒置が起きる。書き言葉だけでなく、感情を込めた一言としてスピーチや会話でも使える。\nいきなり倒置で作ろうとせず、まず普通の文 I have never seen ... を組み立て、Never を先頭に出したら have I と疑問文の語順に直す、という2段階で考えるとミスが減る。\n使い回し例:\nNever have I seen so many errors in one log file.（1つのログファイルでこんなに大量のエラーを見たのは初めてだよ。）\nRarely do we get feedback this positive from users.（ユーザーからこんなに好意的な反応をもらえることはめったにありません。）\nよくある間違い:\n誤）Never I have seen the team this motivated. → 正）Never have I seen the team this motivated.\n否定語を文頭に置いたら語順は必ず疑問文型にする。倒置に自信がないときは I have never seen の普通の語順で言えばよい。"
+  },
+  {
+    "no": 237,
+    "text": "It looks like + 文 は、ログや監視画面など目に見える手がかりから「どうやら〜みたいだ」と推測を述べる型。It seems that より見た目・状況証拠に寄った、口語的で軽い言い方になる。\n主語に迷ったら、まず It looks like を置き、そのあとに推測の中身（the server went down）を普通の文の語順でそのまま続ける、という手順で組み立てる。\n使い回し例:\nIt looks like someone changed the firewall settings.（誰かがファイアウォールの設定を変えたみたいだね。）\nIt looks like the disk is almost full on that server.（あのサーバー、ディスクがほぼいっぱいみたいだよ。）\nよくある間違い:\n誤）It looks like that the server went down around midnight. → 正）It looks like the server went down around midnight.\nlike の直後に that を付けるのが定番ミス。that を使いたいなら It seems that の形に切り替える。"
+  },
+  {
+    "no": 238,
+    "text": "「このバグを再現するのは難しい」の「〜するのは」を主語として長く組むと英語では頭でっかちになるため、形式主語 it を先に立てて評価（hard）を言い、本当の主語である動作を to 以下へ後回しにする。\n組み立てるときは、まず It's hard と感想を言い切ってしまい、そのあとで「何がそうなのか」を to do で足す、という順番で考えると口から出やすい。\n使い回し例:\nIt's easy to miss this option in the settings screen.（設定画面のこのオプション、見落としやすいんだよね。）\nIt's difficult to estimate the cost without more details.（詳細がもっとないと、コストの見積もりは難しいです。）\nよくある間違い:\n誤）This bug is hard to reproduce it on my machine. → 正）This bug is hard to reproduce on my machine.\nバグ自体を主語にする形も正しいが、その場合は再現する対象がすでに主語なので、to 以下で it をもう一度繰り返さない。"
+  },
+  {
+    "no": 239,
+    "text": "英語は「〜ということ」という長い that 節を主語の位置に置くのを嫌うので、代わりに形式主語 it を立て、判断（clear）を先に言ってから中身を that 節で続ける。no.238 の to 不定詞版と対になる、that 節版の形式主語構文と考えるとよい。\n組み立てるときは、まず It's clear と自分の判断を言い切り、根拠となる事実を that の後ろに普通の文の語順でそのまま置く、という手順で考える。\n使い回し例:\nIt's obvious that we need more test coverage.（テストカバレッジがもっと必要なのは明らかです。）\nIt's strange that only one user is seeing this error.（このエラーが1人のユーザーにしか出ないのは変だね。）\nよくある間違い:\n誤）That the last update caused the login errors is clear. → 正）It's clear that the last update caused the login errors.\nthat 節を文頭の主語にするのは文法的には可能でも硬くて不自然。会話では必ず it で文を始める。"
+  },
+  {
+    "no": 240,
+    "text": "It makes sense to do は「〜するのが理にかなっている」と、理由のある提案を押しつけがましくなく伝える型。You should ... と人を主語にして迫るより、判断そのものを it に語らせるぶん柔らかく聞こえる。\n組み立てるときは、It makes sense という決まり文句をまず固定し、勧めたい行動を to 以下に置くだけ、と考えればよい。\n使い回し例:\nIt makes sense to test this on staging before production.（本番の前にステージングで試すのが理にかなってるね。）\nIt makes sense to automate this weekly report.（この週次レポート、自動化するのが賢いよ。）\nよくある間違い:\n誤）It is make sense to back up the database first. → 正）It makes sense to back up the database first.\nmake sense はひとまとまりの動詞なので be 動詞と組み合わせない。主語が it なので三単現の makes にするのも忘れない。"
+  },
+  {
+    "no": 241,
+    "text": "日本語の「連絡させられる」は受け身ですが、英語ではまず「させる側」の母を主語に据えて makes me text と能動の形で組み立てるのが近道です。make + 人 + 動詞の原形は「相手に選択の余地を与えず〜させる」という強制の使役で、親・上司・規則など逆らいにくい相手が主語になることが多い形です。同じ使役でも have（当然の役割として任せる）や get（頼んで動いてもらう）より圧力が強く、「嫌でもやらされる」ニュアンスが出ます。\n使い回し例:\nOur teacher makes us turn off our phones during class.（先生は授業中、私たちに携帯の電源を切らせる。）\nMy manager made me redo the whole report.（上司にレポートを丸ごとやり直させられた。）\nよくある間違い:\n誤）My mom always makes me to text her. → 正）My mom always makes me text her.\nwant me to do などの形につられて to を入れがちですが、make の後ろは必ず to なしの原形です。"
+  },
+  {
+    "no": 242,
+    "text": "let + 人 + 動詞の原形は「相手がしたいことを止めずにさせてあげる」許可の使役です。日本語の「貸してくれた」から発想するときは、貸したい自分ではなく許可を出した父を主語に据えて、let me borrow（借りるのを許した）と組み立てます。ほぼ同じ意味の allow は allow me to borrow と to が必要で、let は to を取らない点が最大の違いです。さらに let は受け身にできないので、「許された」と言いたいときは I was allowed to borrow ~ と allow 側に切り替えます。\n使い回し例:\nMy manager let me leave early yesterday.（昨日、上司が早退させてくれた。）\nThey don't let us install unapproved apps on our work laptops.（会社のPCには未承認のアプリを入れさせてもらえない。）\nよくある間違い:\n誤）My dad let me to borrow his car. → 正）My dad let me borrow his car.\nallow ~ to do と混同して to を入れやすいので、let の後ろは常に原形と覚えてください。"
+  },
+  {
+    "no": 243,
+    "text": "get + 人 + to do は「頼んだり説得したりして、相手に〜してもらう」形です。日本語の「兄に送ってもらう」から作るときは、してもらう側の自分 I を主語に置き、動いてくれる人を get の目的語にして to drive とつなげます。make（強制）や have（当然の手配）と違って、get には「働きかけてOKを取り付ける」というひと手間のニュアンスがあり、家族や友人への気軽な頼み事にぴったりです。使役動詞の中で get だけが to を必要とする点が形の上での最重要ポイントです。\n使い回し例:\nI got my friend to check my English résumé.（友達に頼んで英語の履歴書をチェックしてもらった。）\nCan you get someone to look at this bug today?(今日中に誰かにこのバグを見てもらえるよう頼んでくれる？)\nよくある間違い:\n誤）I'll get my brother drive us to the airport. → 正）I'll get my brother to drive us to the airport.\nmake や have の感覚のまま原形を続けると誤りで、get のときだけは to を忘れないでください。"
+  },
+  {
+    "no": 244,
+    "text": "see + 人 + doing は「動作の最中の一場面を目撃した」ことを表す知覚動詞の形です。日本語の「〜してるのを見かけた」から作るときは、見た側の自分 I を主語にして、見えた人を目的語、見えた動作を doing で直接ぶら下げます。同じ see でも原形（see her jog）にすると「走り始めから終わりまで一部始終を見た」意味になり、doing は「途中をちらっと見た」ニュアンスなので、「見かけた」には doing が合います。\n使い回し例:\nI saw him waiting for the bus in the rain.（彼が雨の中でバスを待っているのを見たよ。）\nWe saw some kids playing soccer in the park.（公園で子どもたちがサッカーをしているのを見た。）\nよくある間違い:\n誤）I saw your sister was jogging along the river.（その場で見かけた場面で） → 正）I saw your sister jogging along the river.\nsee の後ろに that 節（that は省略可）を続けると「〜だと気づいた・分かった」という事実の把握の意味に変わるので、目撃した場面そのものを伝えるときは「目的語 + doing」のセットで表します。"
+  },
+  {
+    "no": 245,
+    "text": "let me know は「私に知らせることを許して → 知らせてね」という発想の定番フレーズで、let + 人 + 原形がそのまま固まった形です。「教えてください」と言いたいとき、直訳で teach を選ばず、連絡・情報共有なら let me know、と型ごと選ぶのが組み立てのコツです。後ろには if（もし〜なら）、when(〜したら)、what/which などの疑問詞節を自由につなげられるので、ビジネスメールやチャットの締めの一文として非常に使い回しが利きます。\n使い回し例:\nLet me know when you're done with the review.（レビューが終わったら知らせてください。）\nPlease let me know if the schedule changes.（予定が変わったら教えてください。）\nよくある間違い:\n誤）Please teach me if you need anything. → 正）Please let me know if you need anything.\nteach は勉強や技術を教える場面の単語で、予定や状況を知らせてほしいときは let me know を選びます。"
+  },
+  {
+    "no": 246,
+    "text": "have + 人 + 動詞の原形は「それが仕事・役割である人に、当然の流れとしてやってもらう」手配の使役です。日本語の「アシスタントに送らせます」から作るときは、実際に送る人ではなく、手配する自分 I を主語に据えて I'll have + 人 + 原形と組み立てます。make のような強制の圧はなく、get のような説得のニュアンスもない、業務指示のいちばん中立的な言い方なので、上司が部下や業者に何かを頼む場面の定番です。\n使い回し例:\nI'll have the team review your proposal by Friday.（金曜までにチームにご提案を確認させます。）\nShe had her staff prepare the meeting room.（彼女はスタッフに会議室を準備させた。）\nよくある間違い:\n誤）I'll have my assistant to send you the schedule. → 正）I'll have my assistant send you the schedule.\nhave も make と同じく to なしの原形が続く仲間で、to が要るのは get だけです。"
+  },
+  {
+    "no": 247,
+    "text": "hear + 人 + doing は「進行中の話や音の一部が耳に入った」ことを表す形です。日本語の「話しているのが聞こえた」から作るときは、聞いた自分 I を主語にして、音の主（the directors）を目的語、聞こえた動作を doing で続けます。ポイントは that 節との意味の違いで、I heard (that) the directors were discussing ~ とすると「〜しているらしいと人づてに聞いた」という伝聞になり、実際にその場で耳にした臨場感は目的語 + doing の形でしか出せません。\n使い回し例:\nI heard someone typing in the next room late at night.（夜遅く、隣の部屋で誰かがタイピングしているのが聞こえた。）\nShe heard her phone buzzing during the presentation.（プレゼン中に自分のスマホが振動しているのが聞こえた。）\nよくある間違い:\n誤）I heard that the directors were discussing the budget in the meeting room.（実際に耳にした場面で） → 正）I heard the directors discussing the budget in the meeting room.\nthat 節にすると「そういう話を聞いた」という噂の意味に変わるので、自分の耳で聞いた場面では doing を使います。"
+  },
+  {
+    "no": 248,
+    "text": "「待たされた」のように使役 make を受け身で言うときは、させられた側の we を主語に据えて be made to do と組み立てます。能動では My mom makes me text のように to なしだったのに、受け身になると made to wait と to が復活するのが最大の注意点です。この形は make だけの特徴で、let は受け身にできず be allowed to do に言い換え、have や get の使役もふつう受け身にしません。不満や被害の気持ちを込めて「〜させられた」と言う場面で威力を発揮する形です。\n使い回し例:\nI was made to rewrite the report three times.（レポートを3回も書き直させられた。）\nNew employees are made to take a security training in their first week.（新入社員は最初の週にセキュリティ研修を受けさせられる。）\nよくある間違い:\n誤）We were made wait an hour before the interview. → 正）We were made to wait an hour before the interview.\n能動の make me wait のリズムに引きずられて to を落としやすいので、受け身では必ず to を入れます。"
+  },
+  {
+    "no": 249,
+    "text": "Could you have + 人 + 原形? は「あなたの権限で誰かを動かしてもらえますか」という間接的な依頼の定番です。実際に再起動する人が目の前の相手ではないとき、頼む相手 you を主語にした丁寧な疑問文 Could you に、手配の have + 人 + 原形をそのまま載せて組み立てます。目的語を someone にすると「誰がやるかはお任せします」という柔らかさが出て、チーム間の依頼で角が立ちません。文末の for me は「私のために」と依頼のトーンをさらに和らげる添え物です。\n使い回し例:\nCould you have someone update the documentation?（どなたかにドキュメントの更新をお願いしてもらえますか？）\nCan you have your team double-check the logs?（チームの方にログの再確認をしてもらえますか？）\nよくある間違い:\n誤）Could you have someone to restart the staging server? → 正）Could you have someone restart the staging server?\n疑問文になっても have + 人 + 原形の骨組みは変わらず、to は入れません。"
+  },
+  {
+    "no": 250,
+    "text": "can't get + 人 + to do は「働きかけているのに、どうしても〜してもらえない」という苛立ちや行き詰まりを表す形です。承認しないセキュリティチームを主語にせず、説得している自分 I を主語に据えて can't get + 相手 + to do と組み立てるのがポイントで、「自分は動いているのに結果が出ない」ニュアンスが乗ります。get はもともと「説得してやってもらう」使役なので、can't と組むと「説得が実らない」という意味に自然になります。単に The team won't approve と言うより、こちらの努力まで伝わる言い方です。\n使い回し例:\nI can't get my manager to agree to the new tool.（上司がどうしても新しいツールに賛成してくれない。）\nWe finally got the client to sign off on the design.（ようやくクライアントにデザインを承認してもらえた。）\nよくある間違い:\n誤）I can't get the security team approve this release. → 正）I can't get the security team to approve this release.\nmake や have と同じ感覚で原形を続けるのは誤りで、get の後ろだけは to do が必要です。"
+  },
+  {
+    "no": 251,
+    "text": "see + 目的語 + doing の目的語は人だけでなく、メモリ使用量のような「物・数値」でも使えます。日本語の「上がっていくのが見えた」から作るときは、観察していた自分 I を主語に、変化し続ける対象を目的語に置き、その変化を doing で表します。doing にすることで「グラフが刻々と動いている最中を目で追っていた」臨場感が出るので、climbing（上昇）、dropping（下降）、spiking（急騰）などと組み合わせれば、障害報告やインシデントの振り返りでそのまま使える便利な型です。\n使い回し例:\nWe saw the error rate spiking right after the deploy.（デプロイ直後にエラー率が跳ね上がっていくのが見えた。）\nI saw the download speed dropping during the backup.（バックアップ中にダウンロード速度が落ちていくのが見えた。）\nよくある間違い:\n誤）I saw the memory usage to climb right before the crash. → 正）I saw the memory usage climbing right before the crash.\n知覚動詞の後ろに to 不定詞は置けず、原形か doing の二択で、進行中の変化なら doing を選びます。"
+  },
+  {
+    "no": 252,
+    "text": "hear + 目的語 + doing は疑問文になっても骨組みが崩れず、文頭に Did you を足すだけで「〜しているのが聞こえた？」と尋ねられます。日本語の「聞こえた？」から作るときは、尋ねたい相手 you を主語に、音源（the server fans）を目的語、音の様子を doing で並べる、という平叙文と同じ手順で組み立ててから疑問文にひっくり返すのがコツです。spin up は「（ファンやサーバーが）回転数を上げて動き出す」の意味で、doing にすることで唸り出す最中の音を共有するニュアンスが出ます。\n使い回し例:\nDid you hear the alarm going off this morning?（今朝アラームが鳴っていたの、聞こえた？）\nDid you see anyone using the test account last night?（昨夜、誰かがテストアカウントを使っているのを見た？）\nよくある間違い:\n誤）Did you hear that the server fans spinning up? → 正）Did you hear the server fans spinning up?\nthat を入れるなら were spinning と完全な文が必要になるので、耳にした場面をそのまま伝えるなら目的語 + doing だけで続けます。"
+  },
+  {
+    "no": 253,
+    "text": "「〜してくれる？」と人に頼むときの基本形が Could you + 動詞の原形。could は can の過去形だが過去の意味はなく、現実から一歩引いた響きが頼み方を柔らかくする。\n日本語では「買ってきてくれる？」と主語を言わないが、英語では動作をする相手 you を主語に据えて Could you ...? の疑問文を選ぶのが組み立ての第一歩。\n使い回し例:\nCould you pick up the kids on your way back?（帰りがけに子どもたちを迎えに行ってくれる？）\nCould you save me a seat near the window?（窓際の席、取っておいてくれる？）\nよくある間違い:\n誤）Please buy some milk on your way home. → 正）Could you grab some milk on your way home?\nPlease + 命令文は丁寧に見えて実は指示の響きが強く、対等な相手への頼み事は疑問文の Could you のほうが自然。"
+  },
+  {
+    "no": 254,
+    "text": "Do you mind if I ...? は直訳すると「私が〜したらあなたは嫌ですか」。mind は「嫌がる・気にする」という動詞で、相手の気持ちを尋ねる形にすることで許可の伺いになる。\nこれから動くのは自分なので、if 節の主語は I に据えて現在形の動詞を続ける、と考えると組み立てやすい。\n使い回し例:\nDo you mind if I sit next to you?（隣に座ってもいい？）\nDo you mind if I eat the last slice of pizza?（最後のピザ、食べちゃってもいい？）\nよくある間違い:\n誤）（快く許可するつもりで）Yes, of course. → 正）Of course not. Go ahead.\n質問の中身は「嫌ですか」なので、Yes と答えると「嫌です」と断る意味になってしまう点に注意。"
+  },
+  {
+    "no": 255,
+    "text": "Why don't we ...? は形の上では「なぜ私たちは〜しないの？」という疑問文だが、実際は理由を尋ねる文ではなく「〜しようよ」という気軽な誘い。\n相手も自分も一緒にやる誘いなので主語は we を選び、Why don't we の後に動詞の原形を続ける、と考えて組み立てる。\n使い回し例:\nWhy don't we split a dessert?（デザート、半分こしない？）\nWhy don't we walk to the next station instead?（代わりに次の駅まで歩いちゃわない？）\nよくある間違い:\n誤）Why we don't try that new place? → 正）Why don't we try that new place?\n疑問文なので don't は主語 we の前に置く。また Why don't you 〜? にすると相手への助言「〜したら？」になり、意味が変わる。"
+  },
+  {
+    "no": 256,
+    "text": "Let me + 動詞の原形は「私に〜させて」、つまり自分から進んで手を貸す申し出の形。let は「〜させてあげる」という使役動詞で、相手に許可をもらう体裁を取ることで押しつけがましさが消える。\n日本語の「持つよ」を英語にするときは、主語のない命令文 Let me carry で切り出す形を選ぶ、と考えると自然な申し出になる。\n使い回し例:\nLet me get the door for you.（ドア、開けるよ。）\nLet me check the map before we turn.（曲がる前に地図を確認させて。）\nよくある間違い:\n誤）Let me to carry that bag. → 正）Let me carry that bag.\nlet は使役動詞なので後ろは to 不定詞ではなく動詞の原形。make や have も同じく to を取らないとセットで覚えておく。"
+  },
+  {
+    "no": 257,
+    "text": "Would you mind ...? は「〜していただけますか」と Could you より一段丁寧な依頼。mind の後ろは動名詞（-ing）で、してほしい動作を続ける。\n相手に動いてもらう依頼なら Would you mind + -ing、自分がする許可なら Do you mind if I、とまず誰が動くかで形を選ぶのがポイント。\n使い回し例:\nWould you mind sharing your screen for a moment?（少し画面を共有していただけますか。）\nWould you mind holding the elevator?（エレベーター、押さえておいていただけますか。）\nよくある間違い:\n誤）Would you mind to send me the report? → 正）Would you mind sending me the report?\nmind の後ろは to 不定詞ではなく必ず動名詞。承諾の返事が Not at all など否定形になる点も併せて押さえたい。"
+  },
+  {
+    "no": 258,
+    "text": "Could I ...? は自分の行動について相手の許可を求める形。Can I より控えめで職場でも角が立たず、for + 名詞（for a dentist appointment）で理由を軽く添えると許可が通りやすい。\n日本語では「早く上がってもいいですか」と主語が消えるが、動くのは自分なので主語 I を立てて Could I + 動詞の原形を選ぶ、と考える。\n使い回し例:\nCould I take next Friday off?(来週の金曜、休みをいただいてもいいですか。）\nCould I use this meeting room for an hour?（この会議室を1時間使ってもいいですか。）\nよくある間違い:\n誤）Could you leave a bit early today?（自分が早退したい場面で）→ 正）Could I leave a bit early today?\nyou を主語にすると「あなたが早退してくれますか」という依頼になってしまう。許可は Could I、依頼は Could you と主語で区別する。"
+  },
+  {
+    "no": 259,
+    "text": "How about ...? は「〜はどうですか」と代案を軽く差し出す提案の形。about は前置詞なので、後ろには名詞か動名詞（-ing）が来る。\n「会議をずらすのはどう？」と動作を提案するときは、文を丸ごと作らず moving the meeting という -ing のかたまりを How about に乗せる、と考えて組み立てる。\n使い回し例:\nHow about asking the security team first?（先にセキュリティチームに聞いてみるのはどう？）\nHow about having the retrospective online this time?（今回はふりかえりをオンラインでやるのはどう？）\nよくある間違い:\n誤）How about to move the meeting to Thursday? → 正）How about moving the meeting to Thursday?\n前置詞 about の直後に to 不定詞は置けない。What about -ing? もほぼ同じ意味の提案として使える。"
+  },
+  {
+    "no": 260,
+    "text": "I was wondering if you could ... は依頼表現の中でも最上級に丁寧な形。「〜していただけないかと思っていまして」と、今のお願いをわざと過去進行形でぼかすことで心理的な距離を作り、相手に断る余地を残す。\n頼みにくい大きめのお願いは、主語を相手ではなく自分（I）にして、要求の本体を if you could ... の中に埋め込む、と考えて組み立てる。\n使い回し例:\nI was wondering if you could introduce me to your vendor.（御社のベンダーをご紹介いただけないかと思いまして。）\nI was wondering if I could reschedule our one-on-one.（1on1 の日程を変更させていただけないかと思いまして。）\nよくある間違い:\n誤）I was wondering if you can review my draft. → 正）I was wondering if you could review my draft.\nwas wondering に合わせて if 節も could にそろえるのが丁寧さの要。can にすると距離感が崩れてちぐはぐに聞こえる。"
+  },
+  {
+    "no": 261,
+    "text": "Would it be okay if I + 過去形は、影響の大きい行動の前に使う柔らかい許可伺い。if 節の restarted は過去の話ではなく仮定法で、「もし仮に〜したら」と現実から一歩引くことで押しつけがましさを消す。\n「〜しても大丈夫ですか」は状況を指す it を主語に Would it be okay で始め、自分の行動を if I + 過去形で続ける、と考えて組み立てる。\n使い回し例:\nWould it be okay if I merged this branch today?（今日このブランチをマージしても大丈夫でしょうか。）\nWould it be okay if I skipped tomorrow's standup?（明日の朝会を欠席しても大丈夫でしょうか。）\nよくある間違い:\n誤）Would it be okay if I restart the server now? → 正）Would it be okay if I restarted the server now?\n主節の would に合わせて if 節も過去形にそろえる。現在形で言うなら Is it okay if I restart ...? とセットを崩さないこと。"
+  },
+  {
+    "no": 262,
+    "text": "Shall we ...? は「（一緒に）〜しましょうか」と、少し改まって相手を誘う提案の形。Let's より相手の意向を確認する響きがあり、仕事の場面で切り出しに使いやすい。\n自分と相手が一緒にやることを提案するので主語は we に据え、Shall we の後に動詞の原形を続ける、と考えて組み立てる。\n使い回し例:\nShall we start with the test results?（テスト結果から見ていきましょうか。）\nShall we take a short break before the next topic?（次の議題の前に少し休憩しましょうか。）\nよくある間違い:\n誤）Will we go through the error logs together? → 正）Shall we go through the error logs together?\nWill we ...? は単なる予定の確認に聞こえて誘いにならない。自分ひとりでやる申し出なら Shall I ...? と主語を切り替える。"
+  },
+  {
+    "no": 263,
+    "text": "Can you ...? は丁寧さ低めのカジュアルな依頼で、気心の知れた同僚への声かけにちょうどいい。take a quick look の quick で「すぐ済むよ」と相手の負担が軽いことを伝えると、さらに頼みやすくなる。\n軽い頼み事は相手 you を主語に Can you + 動詞の原形とし、面倒でないことを quick や just で添える、と考えて組み立てる。\n使い回し例:\nCan you check this error message real quick?（このエラー、ちょっとだけ見てくれる？）\nCan you send me the link to that dashboard?（あのダッシュボードのリンク、送ってくれる？）\nよくある間違い:\n誤）Can you look my pull request quickly? → 正）Can you take a quick look at my pull request?\nlook は自動詞なので目的語を直接続けられず、look at か take a look at の形にする。初対面や目上の相手には Could you 以上に丁寧度を上げること。"
+  },
+  {
+    "no": 264,
+    "text": "Do you think you could ...? は「〜してもらえそうですか」と、依頼を相手への意見聞きの形に包んで圧を弱める間接表現。ロールバックのような負担が大きく頼みにくい内容に向く。\n頼みにくい内容ほど、まず Do you think で「あなたはどう思う？」の枠を作り、その中に you could + 動詞の原形の依頼文を入れ子にする、と考えて組み立てる。\n使い回し例:\nDo you think you could finish the review by tomorrow?（明日までにレビューを終えられそうですか。）\nDo you think you could cover my on-call shift this weekend?（今週末のオンコール、代わってもらえそうですか。）\nよくある間違い:\n誤）Do you think could you roll back the last release? → 正）Do you think you could roll back the last release?\n疑問の語順は文頭の Do you think で使い切っているので、続く部分は主語 + 動詞の平叙文の語順に戻すのがルール。"
+  },
+  {
+    "no": 265,
+    "text": "「手作りの方がおいしい」は事実ではなく好みの問題なので、In my opinion を文頭に置いて「ここからは私の意見です」と最初に宣言してから本文を続けます。\n日本語から組み立てるときは、意見の目印（In my opinion,）を先に置く→比較したいもの homemade meals を主語に据える→ taste + 比較級 better の順で考え、差の大きさは much で強調します。\n使い回し例:\nIn my opinion, remote work makes our team more productive.（私の考えでは、リモートワークの方がチームの生産性は上がるよ。）\nIn my opinion, this dashboard is too complicated for new users.（私の考えでは、このダッシュボードは新規ユーザーには複雑すぎるよ。）\nよくある間違い:\n誤）In my opinion, I think homemade meals taste better. → 正）In my opinion, homemade meals taste better.\nIn my opinion と I think はどちらも「意見の目印」なので、二つ重ねると冗長になります。どちらか一方だけ使いましょう。"
+  },
+  {
+    "no": 266,
+    "text": "反対意見をいきなりぶつけると角が立つので、まず I see your point（言いたいことは分かる）で相手を受け止め、but の後に自分の主張を続ける二段構えの型です。\n日本語から組み立てるときは、「クッション → but → 反論」という順番を先に決め、反論部分は the beach を主語にした普通の文（gets too crowded で「混みすぎる状態になる」）を作ります。\n使い回し例:\nI see your point, but rewriting the whole module would take weeks.（言いたいことは分かるけど、モジュール全体の書き直しは何週間もかかるよ。）\nI see your point, but we can't skip the security review.（言いたいことは分かるけど、セキュリティレビューは飛ばせないよ。）\nよくある間違い:\n誤）This beach is too beautiful in summer!（ほめ言葉のつもり） → 正）This beach is really beautiful in summer!\ntoo は「度を越えていて困る」というマイナス評価を含むので、単に「とても」とほめたいときは really や very を使いましょう。"
+  },
+  {
+    "no": 267,
+    "text": "相手の発言に納得したことを伝える返し方で、直前の発言全体を That の一語で受けて makes sense（筋が通る）と返します。\n日本語から組み立てるときは、まず相手の発言を指す That を主語に据えて That makes sense. で文を一度切り、続けて納得した理由を自分の文として足します。二文目の Walking to work は動名詞の主語で、would は「もしそうすれば」という仮定の柔らかさを添えています。\n使い回し例:\nThat makes sense. Caching the results would reduce the server load.（なるほどね。結果をキャッシュすればサーバーの負荷が減るもんね。）\nThat makes sense. Testing on real devices would catch more bugs.（なるほど。実機でテストすればもっとバグが見つかるもんね。）\nよくある間違い:\n誤）That's make sense. → 正）That makes sense.\nThat's（= That is）と動詞 make を同時に使うと動詞が二重になってしまいます。「主語 That + 三単現の makes」とセットで覚えましょう。"
+  },
+  {
+    "no": 268,
+    "text": "If you ask me（言わせてもらえば）は、少し踏み込んだ本音や苦言を切り出す前置きで、実際には聞かれていない場面でこそ使う表現です。\n日本語から組み立てるときは、まず前置きの If you ask me をカンマ付きで置き、中身は we を主語にした現在形の文で普段の習慣（eat out）を述べる二段構成にします。way too often の way は too をさらに強めるくだけた強調で、「あまりにも〜すぎ」という呆れ感が出ます。\n使い回し例:\nIf you ask me, we spend way too much time in meetings.（言わせてもらえば、うちは会議に時間を使いすぎだよ。）\nIf you ask me, the new office layout is a waste of space.（言わせてもらえば、新しいオフィスのレイアウトはスペースの無駄だね。）\nよくある間違い:\n誤）If you ask to me, we eat out too often. → 正）If you ask me, we eat out too often.\nask は「ask + 人」と直接目的語をとる動詞なので、日本語の「私に聞く」につられて to を入れないよう注意しましょう。"
+  },
+  {
+    "no": 269,
+    "text": "職場で提案するとき、Personally, I think を頭に付けると「会社の総意ではなく、あくまで私個人の意見」という枠が先に伝わり、反対されても角が立ちません。\n日本語から組み立てるときは、Personally をカンマで区切って文頭に置き、I think のあとに主張を続け、動詞は命令調の must ではなく提案の should を選びます。should be shorter と比較級にすることで「今より短く」という現状との比較も同時に表せます。\n使い回し例:\nPersonally, I think we should keep the old logo.（個人的には、ロゴは今のままでいいと思います。）\nPersonally, I think the release can wait until next week.（個人的には、リリースは来週まで待てると思います。）\nよくある間違い:\n誤）Friday meetings should be more shorter. → 正）Friday meetings should be shorter.\nshort のような短い形容詞は -er を付けるだけで比較級になるので、more を重ねてはいけません。"
+  },
+  {
+    "no": 270,
+    "text": "相手の主張を全否定せず「一理ある」と部分的に認めてから切り返す型です。You have a point の a point は「一つのもっともな点」という意味で、全面同意ではなく部分同意を表します。\n日本語から組み立てるときは、まず相手 You を主語に You have a point と認め、but の後には反論の根拠になる事実（the deadline is already tight）をシンプルな現在形で置きます。\n使い回し例:\nYou have a point, but our budget is already stretched.（一理あるけど、予算はもうぎりぎりなんだ。）\nYou have a point, but users rarely read the manual.（一理あるけど、ユーザーはめったにマニュアルを読まないんだよ。）\nよくある間違い:\n誤）You have point, but the deadline is tight. → 正）You have a point, but the deadline is tight.\npoint は数えられる名詞なので冠詞 a が必須です。a が落ちると不自然に聞こえるので、have a point をひとかたまりで覚えましょう。"
+  },
+  {
+    "no": 271,
+    "text": "I couldn't agree more は直訳すると「これ以上賛成しようとしてもできないだろう」、つまり「賛成の度合いがすでに最大」という強い同意です。couldn't という否定形なのに意味は最大級の肯定になる点がポイントです。\n日本語から組み立てるときは、「大賛成」と思ったら自分 I を主語にこの決まり文句をそのまま出し、何に賛成なのかは with 〜 で後ろに足します。\n使い回し例:\nI couldn't agree more with your idea of automating the tests.（テストを自動化するという案、まったく同感だよ。）\nI couldn't agree more — code reviews save us time in the long run.（まったく同感。コードレビューは長い目で見れば時間の節約になるからね。）\nよくある間違い:\n誤）I couldn't agree more your plan. → 正）I couldn't agree more with your plan.\nagree は「agree with + 人・案」の形をとる自動詞なので、賛成する対象の前の with を落とさないようにしましょう。"
+  },
+  {
+    "no": 272,
+    "text": "はっきり I disagree と言うと強すぎる場面で、「賛成かどうか確信が持てない」という形に変えて反対を和らげる、英語らしい婉曲表現です。\n日本語から組み立てるときは、まず I'm not sure で「確信がない」と切り出し、その後ろに I agree with + 反対したい内容を続けます。ここでは with の後が hiring another contractor という動名詞句で、「雇うこと」という行為そのものに賛成しかねる、と対象を明確にしています。\n使い回し例:\nI'm not sure I agree with releasing on a Friday.（金曜にリリースするのは、ちょっとどうかなと思う。）\nI'm not sure I agree with making the API public yet.（APIをもう公開してしまうのは、どうかなと思います。）\nよくある間違い:\n誤）I'm not sure to agree with the plan. → 正）I'm not sure I agree with the plan.\nsure の後ろに to 不定詞は続けられません。I'm not sure (that) + 文、の形にします（that は省略できます）。"
+  },
+  {
+    "no": 273,
+    "text": "From my point of view は「私の視点から見ると」で、エンジニアとして・担当者としてなど、自分の立場を踏まえた意見だと示せます。In my opinion より「立場ゆえにこう見える」というニュアンスが強い表現です。\n日本語から組み立てるときは、前置きの From my point of view をカンマで区切って置き、主張は we を主語に should + 動詞で述べ、優先順位は文末の first で表します。\n使い回し例:\nFrom my point of view, security matters more than new features.（私としては、新機能よりセキュリティのほうが大事だと思う。）\nFrom my point of view, we should test on mobile first.（私から見ると、まずモバイルでテストすべきだね。）\nよくある間違い:\n誤）In my point of view, we should fix the bug first. → 正）From my point of view, we should fix the bug first.\n前置詞の組み合わせは in my opinion / from my point of view とペアで固定です。in と from を入れ替えないよう注意しましょう。"
+  },
+  {
+    "no": 274,
+    "text": "That's a fair point（それはもっともな指摘だ）で相手の意見の妥当性をまず認め、but で技術的な反論に移る型です。\n日本語から組み立てるときは、「サーバーを増やしても直らない」の「増やす対策」そのものを more servers というモノ主語に据え、won't fix（直せないだろう）と未来の否定で効果がないことを予測として述べます。日本語の「〜しても…ない」を even if 節にせず、モノ主語 + won't で短く言えるのがこの形の便利なところです。\n使い回し例:\nThat's a fair point, but a faster CPU won't solve the network delay.（それはもっともだけど、CPUを速くしてもネットワークの遅延は解決しないよ。）\nThat's a fair point, but more meetings won't speed up the review.（もっともな指摘だけど、会議を増やしてもレビューは速くならないよ。）\nよくある間違い:\n誤）..., but more servers don't fix the memory leak. → 正）..., but more servers won't fix the memory leak.\n「これからやっても効果がない」という未来の予測は won't で表します。現在形だと一般論の説明のように聞こえてしまいます。"
+  },
+  {
+    "no": 275,
+    "text": "I'm with you on 〜 は「その点ではあなたと同じ側にいる」というカジュアルな同意表現で、on 以下で「どの論点に賛成か」をはっきり示せるのが特長です。全部に賛成でなくても「この点は賛成」という部分的な同意にも使えます。\n日本語から組み立てるときは、まず自分 I を主語に I'm with you と立場を宣言し、賛成する内容は on + 動名詞句（moving the database ...）で後ろに足します。\n使い回し例:\nI'm with you on keeping the design simple.（デザインをシンプルに保つのは賛成だよ。）\nI'm with you on hiring more testers next quarter.（来期テスターを増やすのは同感だね。）\nよくある間違い:\n誤）I'm with you on move the database to the cloud. → 正）I'm with you on moving the database to the cloud.\non は前置詞なので、直後に動詞を置くときは必ず -ing 形（動名詞）にします。"
+  },
+  {
+    "no": 276,
+    "text": "To be honest は「これから言いにくい本音を言います」という予告のクッションで、否定的な意見の前に置くと相手への衝撃を和らげられます。\n日本語の「合わないと思う」につられて think の中身を否定したくなりますが、英語では I don't think + 肯定文と、think の側を先に否定する方が自然で柔らかく聞こえます。日本語から組み立てるときは、To be honest → I don't think → this framework を主語にした肯定文（fits our project）の順で並べます。\n使い回し例:\nTo be honest, I don't think we can meet the July deadline.（正直、7月の締め切りには間に合わないと思う。）\nTo be honest, I don't think the new tool saves us any time.（正直、あの新しいツールで時間の節約になるとは思えないな。）\nよくある間違い:\n誤）I think this framework doesn't fit our project. → 正）I don't think this framework fits our project.\n文法的な誤りではありませんが、that 節の中を否定すると直接的できつく響きます。否定は think に付ける形を基本にしましょう。"
+  },
+  {
+    "no": 277,
+    "text": "聞き返しの最重要フレーズ。Could you...? は Can you...? より一歩丁寧で、初対面や店員・同僚など相手を選ばず使えます。日本語から組み立てるときは「もう一度言う」動作をするのは相手なので、you を主語に据えて Could you say that again? とし、that で相手の直前の発言全体を受けます。\n後半のように聞こえなかった理由（音楽がうるさい）を一言添えると、相手の話し方のせいにしない感じの良い聞き返しになります。\n使い回し例:\nSorry, could you say that again? The announcement was really loud.（すみません、もう一度言ってもらえますか？アナウンスがすごくうるさくて。）\nSorry, could you say your room number again? I want to write it down.（すみません、部屋番号をもう一度言ってもらえますか？メモしたいので。）\nよくある間違い:\n誤）Sorry, could you say again? → 正）Sorry, could you say that again?\nsay は目的語が必要な動詞なので、that や it を抜かさないことに注意。"
+  },
+  {
+    "no": 278,
+    "text": "相手の言葉の意味を確かめる定番が What do you mean by...? です。単語の辞書的な意味ではなく「あなたはその言葉で何を指しているのか」を聞く形なので、主語は必ず you、動詞は mean、by の後ろに相手の言った言葉をそのまま引用して置く、という手順で組み立てます。\nこの文のように Just a salad? と自分の解釈を続けて示すと、相手は Yes / No で答えられて確認が速く済みます。\n使い回し例:\nWhat do you mean by 'flexible hours'? Can I start at ten?（「柔軟な勤務時間」ってどういう意味ですか？10時に始めてもいいってこと？）\nWhat do you mean by 'a small change'? One file, or the whole module?（「小さな変更」ってどういう意味？1ファイルだけ、それともモジュール全体？）\nよくある間違い:\n誤）What means 'a light meal'? → 正）What do you mean by 'a light meal'?\nwhat を主語にした What means...? は語順の誤り。言葉自体を主語にするなら What does 'a light meal' mean? と does が必要な点に注意。"
+  },
+  {
+    "no": 279,
+    "text": "すぐに答えが出ないとき、黙り込む代わりに Let me see... と声に出して考える時間を確保する表現です。Let me + 動詞の原形は「私に〜させて」という形で、ここでは「ちょっと考えさせて」の働きをします。日本語の「ええっと」を直訳しようとせず、この決まり文句をそのまま口から出すのが組み立てのコツです。\n続く本題では I think を添えて「たぶん」と断定を弱めており、記憶があいまいなときに自然な流れになります。\n使い回し例:\nLet me see... I think the password is in the shared folder.（ええっと…パスワードは共有フォルダにあったと思う。）\nLet me see... we last met at the conference in March, right?（ええっと…最後に会ったのは3月のカンファレンスだったよね？）\nよくある間違い:\n誤）Etto... we went there last summer. → 正）Let me see... I think we went there last summer.\n日本語の「えっと」「あの」をそのまま挟むと相手には雑音にしか聞こえないので、英語のつなぎ言葉に置き換える練習をしておくことに注意。"
+  },
+  {
+    "no": 280,
+    "text": "聞き取れなかったときの自然な動詞が catch です。hear が「音が耳に入る」なのに対し、catch は「流れてきた言葉をつかまえる＝聞き取る」というイメージで、会話の一部を逃したときにぴったりです。日本語の「聞き取れませんでした」は自分側の事情なので、I を主語に据えて I didn't catch + 聞き逃した部分、と組み立てます。\n主語が I なので相手の話し方を責める響きにならず、聞き返しの前置きとして角が立ちません。\n使い回し例:\nSorry, I didn't catch your last name. Could you spell it for me?（すみません、名字が聞き取れませんでした。つづりを教えてもらえますか？）\nI didn't catch the last part. Could you say it again?（最後の部分が聞き取れませんでした。もう一度言ってもらえますか？）\nよくある間違い:\n誤）I couldn't listen to the name of the station. → 正）I didn't catch the name of the station.\nlisten to は「意識して耳を傾ける」動作なので「聞き取れなかった」には合わず、catch か hear を使うことに注意。"
+  },
+  {
+    "no": 281,
+    "text": "go over は「内容を順にたどって確認・説明する」という句動詞で、単に repeat（同じ言葉を繰り返す）と違い「もう一度かみくだいて説明してほしい」というニュアンスが出ます。組み立ての手順は、お願いなので you を主語に Could you を置き、動詞に go over を選び、対象（that last point）を直後に、one more time を文末に付ける、という順番です。\n会議で説明が速くてついていけなかったとき、全部ではなく「最後のポイントだけ」と範囲を絞って頼めるのが実用的な点です。\n使い回し例:\nCould you go over the deployment steps one more time?（デプロイ手順をもう一度説明してもらえますか？）\nLet's go over the schedule before the client call.（クライアントとの電話の前にスケジュールを一度確認しておきましょう。）\nよくある間違い:\n誤）Could you explain one more time the last point? → 正）Could you go over that last point one more time?\n語順に注意。目的語は動詞の直後に置き、one more time のような副詞句は文末に回すのが基本です。"
+  },
+  {
+    "no": 282,
+    "text": "follow は「話の流れについていく＝理解する」という意味で、I don't understand. と直接言うより、I'm not sure I follow. は「自分の理解が追いついていないだけかもしれない」という柔らかい伝え方になります。組み立ては、分かっていないのは自分なので I を主語にし、not sure で断定を避け、そのあとに Which report do you mean? のような具体的な質問を続けて、何が分からないのかを絞り込みます。\nこの「柔らかい前置き＋具体的な質問」の二段構えが、会話を止めずに認識を合わせるコツです。\n使い回し例:\nI'm not sure I follow. Do you want to change the design, or just the colors?（ちょっと話が見えていなくて。デザインを変えたいの、それとも色だけ？）\nSorry, I'm not sure I follow the last part. Could you give me an example?（すみません、最後の部分がよく分からなくて。例を挙げてもらえますか？）\nよくある間違い:\n誤）I can't understand your explanation. → 正）Sorry, I'm not sure I follow.\nI can't understand は「まったく理解できない」と強く響き、相手の説明を否定しているように聞こえるので注意。"
+  },
+  {
+    "no": 283,
+    "text": "即答できない質問への切り返しは二段構えです。まず That's a good question. で相手の質問を That で受けて肯定的に評価し、次に Let me think で「考えさせて」と時間をもらいます。日本語から組み立てるときは「考えさせてください」を、Let me + 動詞の原形（私に〜させて）という型に当てはめるのが手順です。\nfor a second は「ほんの少しだけ」で、待たせる時間が短いことを伝えて相手を安心させます。会議やインタビューで沈黙する代わりに使うと落ち着いた印象になります。\n使い回し例:\nThat's a good point. Let me check the numbers first.（いい指摘ですね。まず数字を確認させてください。）\nGood question. Let me get back to you after the meeting.（いい質問ですね。会議の後に改めて回答させてください。）\nよくある間違い:\n誤）Please wait. I think now. → 正）Let me think for a second.\nI think を単独で使うと「私は〜だと思う」の意味になってしまうので、「考えさせて」は Let me think の形で覚えることに注意。"
+  },
+  {
+    "no": 284,
+    "text": "相手の話を自分の言葉でまとめて確認する表現です。if I understand correctly を前置きにすると「もし間違っていたら訂正してください」という謙虚な姿勢が伝わり、確認が失礼になりません。組み立てのコツは、疑問文の語順にせず、自分の理解を平叙文のまま（the meeting moved to Friday）述べて語尾を上げることです。\n文頭の So は「つまり」とまとめに入る合図で、相手に「今から確認するよ」と知らせる働きをします。\n使い回し例:\nSo, if I understand correctly, we don't need approval for small fixes?（つまり、私の理解が正しければ、小さな修正には承認は不要なんですね？）\nIf I understand correctly, the new pricing starts next month?（私の理解が正しければ、新しい料金は来月からですよね？）\nよくある間違い:\n誤）So, if I understand correctly, the meeting moved to Friday, isn't it? → 正）So, if I understand correctly, the meeting moved to Friday?\n付加疑問を何でも isn't it? で済ませるのは誤りで、この文なら didn't it? が正しい形。迷ったら平叙文の語尾を上げるだけで十分という点に注意。"
+  },
+  {
+    "no": 285,
+    "text": "break up は通話や音声が「途切れる」という句動詞で、オンライン会議の必須表現です。途切れているのは相手の声なので You を主語に据え、「今まさに途切れている」最中の出来事として現在進行形 You're breaking up. で表す、というのが組み立ての手順です。\n続けて Could you repeat...? で聞き返しますが、話全体ではなく the server name のように必要な情報だけに絞るのがポイントで、相手の負担が減り会議も止まりません。\n使い回し例:\nYou're breaking up. Could you say the ticket number again?（音声が途切れています。チケット番号をもう一度言ってもらえますか？）\nSorry, you froze for a second. Could you repeat the last step?（すみません、一瞬固まってました。最後の手順をもう一度お願いできますか？）\nよくある間違い:\n誤）Your voice is cutting. → 正）You're breaking up.\ncut 単独では通じにくく、使うなら cutting out と out が必要。まずは定番の You're breaking up. を進行形のまま丸ごと覚えるのが安全です。"
+  },
+  {
+    "no": 286,
+    "text": "rollback のような技術用語は、人によって指す範囲が違います。When you say X, do you mean Y? は、X に相手の言葉をそのまま引用し、Y に自分の解釈を入れて「あなたの言うXとは、Yのことですか」と確認する型です。組み立ての手順は、前半で相手の発言を When you say + 引用で受け、後半で you を主語に do you mean...? と自分の理解をぶつける、の二段階です。\n相手は Yes / No か訂正で答えられるので、認識ずれによる作業事故を未然に防げます。障害対応やリリース判断の場面で特に効きます。\n使い回し例:\nWhen you say 'ASAP', do you mean today?（「なるはや」というのは、今日中という意味ですか？）\nWhen you say the API is slow, do you mean all the endpoints, or just one?（「APIが遅い」というのは、全エンドポイントですか、それとも特定の1つですか？）\nよくある間違い:\n誤）What is the meaning of 'rollback'? → 正）When you say 'rollback', do you mean the whole release?\n辞書的な意味ではなく相手の意図を確認したい場面では、mean の主語を you にすることに注意。"
+  },
+  {
+    "no": 287,
+    "text": "put には「言葉で表現する」という意味があり、How can I put it... は「どう言えばいいかな」と適切な言葉を探しているサインです。日本語の「なんて言えばいいか」を単語ごとに直訳せず、この決まり文句をひとかたまりで出して考える時間を確保し、そのあとに説明の本体を続ける、というのが組み立ての手順です。\n文末の it は「これから言おうとしている内容」を指しており、省略できません。微妙なニュアンスの不具合報告や言いにくい指摘の前置きとして便利です。\n使い回し例:\nHow can I put it... the code works, but it's hard to maintain.（なんて言えばいいかな…コードは動くんですが、保守が大変なんです。）\nHow should I put it... the new design feels a bit busy to me.（どう言えばいいかな…新しいデザインは少しごちゃごちゃして見えるんです。）\nよくある間違い:\n誤）How can I say... the bug only appears in production. → 正）How can I put it... the bug only appears in production.\nHow can I say は目的語が抜けていて不自然。put it の it を落とさないこと、say を使うなら How should I say this? のように目的語を添えることに注意。"
+  },
+  {
+    "no": 288,
+    "text": "作業に取りかかる前の認識合わせは Just to confirm を文頭に置くのが定番です。Just が「ちょっと確認だけ」という軽さを出し、相手に構えさせません。組み立てのコツは、前置きのあとを疑問文にせず、自分の理解を平叙文のまま（you need the logs from last night）述べて、文末に right? を付けて「合ってますよね？」と軽く念押しすることです。\n依頼内容を自分の言葉で復唱してから動くこの型は、ログの範囲違いのような手戻りを防ぐ実務スキルとしても重要です。\n使い回し例:\nJust to confirm, the demo starts at three, right?（確認ですが、デモは3時開始ですよね？）\nJust to confirm, I should deploy to staging first, right?（確認ですが、まずステージングにデプロイすればいいんですよね？）\nよくある間違い:\n誤）Just to confirm, do you need the logs from last night, right? → 正）Just to confirm, you need the logs from last night, right?\n疑問文の語順（do you need...?）と文末の right? は併用できません。right? を付けるなら文は平叙文のままにすることに注意。"
+  },
+  {
+    "no": 289,
+    "text": "「2倍になる」は become two times big などと訳さず、double を1語の動詞として使うのが英語らしい言い方です。日本語から組み立てるときは、変化したもの（食費）をそのまま主語に据え、「去年から今まで続く変化」なので since と相性のよい現在完了形 has doubled を選びます。\n同じ発想で triple（3倍になる）や halve（半分になる）も動詞として使え、増減の報告がぐっと簡潔になります。\n使い回し例:\nThe number of remote workers has almost doubled since 2023.（リモートワーカーの数は2023年からほぼ倍になった。）\nMy electricity bill has doubled since I started working from home.（在宅勤務を始めてから電気代が倍になった。）\nよくある間違い:\n誤）Our grocery bill became almost double since last year. → 正）Our grocery bill has almost doubled since last year.\nsince で「〜以来」を言う文は過去形ではなく現在完了形と組み、double は名詞化せず動詞のまま活用させます。"
+  },
+  {
+    "no": 290,
+    "text": "手順の説明は First ..., then ... で順番を示し、いつやっても成り立つ内容なので動詞は現在形にします。この you は目の前の相手だけでなく「やる人は誰でも」を指す一般の you です。\n日本語の「まず〜して、それから〜」には主語がないので、英語にするときは you を補い、各ステップを現在形の短い文で並べる、と考えて組み立てます。\n使い回し例:\nFirst you create a branch, then you push your changes.（まずブランチを作って、それから変更をプッシュする。）\nFirst you back up the data, then you run the update.（まずデータをバックアップして、それからアップデートを実行する。）\nよくある間違い:\n誤）At first you boil the noodles, then you add the sauce. → 正）First you boil the noodles, then you add the sauce.\nat first は「最初のうちは（後で状況が変わる）」という意味なので、手順の「まず最初に」には first を使います。"
+  },
+  {
+    "no": 291,
+    "text": "所要時間を言う型は It takes + 時間 + to 動詞の原形です。「駅までは20分かかる」という日本語には英語の主語にしやすい名詞がないので、仮主語の it を立ててこの型に数字と動作を流し込む、と考えると迷いません。「〜くらい」の概数は数字の前に about を置くだけです。\n過去のことなら It took ~、「私には」と人を入れるなら It takes me ~ と同じ型のまま拡張できます。\n使い回し例:\nIt takes about an hour to set up the development environment.（開発環境の構築には1時間くらいかかる。）\nIt took me two days to find the cause of the crash.（クラッシュの原因を見つけるのに2日かかった。）\nよくある間違い:\n誤）Walking to the station costs about twenty minutes. → 正）It takes about twenty minutes to walk to the station.\ncost が使えるのはお金だけで、時間が「かかる」は必ず take で表します。"
+  },
+  {
+    "no": 292,
+    "text": "「〜人のうち…人」という割合は、X out of Y + 名詞の複数形で表します。日本語から組み立てるときは、割合をパーセントに変換しようとせず、数えた人数をそのまま Three out of four people というかたまりで主語に据えて動詞を続ける、と考えるのが近道です。\nこの形はテスト結果やアンケートの報告など、ITの現場で数字を具体的に伝えたいときにも便利です。\n使い回し例:\nTwo out of five tests failed on the new build.（新しいビルドでは5件中2件のテストが失敗した。）\nNine out of ten users never change the default settings.（ユーザーの10人中9人は初期設定を変えない。）\nよくある間違い:\n誤）Three out of four people in my family wears glasses. → 正）Three out of four people in my family wear glasses.\n主語の中心は複数形の people なので、ひとまとまりの割合だからと単数扱いにせず、動詞は複数のまま使います。"
+  },
+  {
+    "no": 293,
+    "text": "増減の「幅」を言うときは went up / went down の後に by + 数字を続けます。日本語から組み立てるときは、変化した指標（売上）を主語に据え、動き（went up）→ 幅（by fifteen percent）→ 比較対象（compared to ~）の順に後ろへ足していく、と考えます。\nincreased や decreased など別の動詞に変えても、幅を by で示す仕組みは同じです。\n使い回し例:\nTraffic to our site went up by thirty percent after the campaign.（キャンペーンの後、サイトのアクセスが30%増えた。）\nOur server costs went down by ten percent compared to last year.（サーバー費用は昨年と比べて10%下がった。）\nよくある間違い:\n誤）Sales went up to fifteen percent compared to last quarter. → 正）Sales went up by fifteen percent compared to last quarter.\nto を使うと「15%まで上がった」という到達点の意味に変わってしまうので、増えた幅には必ず by を使います。"
+  },
+  {
+    "no": 294,
+    "text": "「このグラフを見ると〜がわかります」は、人ではなく資料そのものを主語にして This chart shows ~ と言うのが英語らしい発想です。日本語の「見るとわかる」を If you look at ~, you can see ~ と直訳せず、chart を主語に据えて shows の1語でつなぐ、と考えて組み立てます。\nshows の後ろは how our costs have changed のように主語+動詞の平叙文の語順（間接疑問）にするのがもう一つのポイントです。\n使い回し例:\nThis graph shows how memory usage grows during peak hours.（このグラフはピーク時間帯にメモリ使用量がどう増えるかを示している。）\nThis table shows where most of our budget goes.（この表を見ると、予算の大半がどこに使われているかがわかる。）\nよくある間違い:\n誤）This chart shows how have our costs changed over time. → 正）This chart shows how our costs have changed over time.\nhow や where の後を疑問文の語順に戻さないこと。文の中に埋め込んだ疑問は主語+動詞の順のままにします。"
+  },
+  {
+    "no": 295,
+    "text": "「ほぼ半数」は roughly half of ~ で表します。roughly は about や around と同じ「ざっくり」を表す副詞で、数量表現の前に置くだけで概数になります。日本語から組み立てるときは、「クライアントのほぼ半数が」を語順そのままに Roughly half of our clients という主語のかたまりにして、動詞を続けると考えます。\nhalf を a third（3分の1）や a quarter（4分の1）に置き換えれば、いろいろな割合が同じ型で言えます。\n使い回し例:\nRoughly half of the team works from home on Fridays.（チームのほぼ半数は金曜日は在宅勤務だ。）\nRoughly a third of the support tickets came from the same client.（問い合わせのおよそ3分の1は同じクライアントからだった。）\nよくある間違い:\n誤）Roughly the half of our clients renewed their contracts. → 正）Roughly half of our clients renewed their contracts.\n「その半分」という日本語につられて the を入れたくなりますが、half of の前に the は付けません。"
+  },
+  {
+    "no": 296,
+    "text": "walk you through ~ は「相手と一緒に手順を一歩ずつたどりながら説明する」という定番イディオムで、explain よりも「順を追って」の感じが強く出ます。「私が説明しますね」と自分から申し出る場面なので、文頭に Let me + 動詞の原形を置き、動詞に walk you through を選ぶ、という2段構えで組み立てます。quickly を挟むと「ざっと」の軽さが出せます。\nデモ、引き継ぎ、新メンバーのオンボーディングなど、ITの現場で非常によく聞く言い回しです。\n使い回し例:\nLet me walk you through the deployment steps.（デプロイの手順を順を追って説明しますね。）\nShe walked me through the new expense system.（彼女が新しい経費精算システムを一通り説明してくれた。）\nよくある間違い:\n誤）Let me explain you the plan for the launch. → 正）Let me walk you through the plan for the launch.\nexplain は explain + 人 + 物の語順を取れません（言うなら explain the plan to you）。walk through なら人をそのまま間に挟めます。"
+  },
+  {
+    "no": 297,
+    "text": "「下がり続けている」のように今も進行中の変化は、現在完了進行形 has been dropping で表します。has dropped（下がった）が結果だけを伝えるのに対し、has been dropping は変化がまだ途中で続いていると示せます。日本語から組み立てるときは、変化している指標（エラー率）を主語に据え、「〜し続けている」と言いたければ have/has been + ing 形を選ぶ、と判断します。\nsteadily（着実に）のほか slowly や rapidly を添えると、変化のスピード感まで伝えられます。\n使い回し例:\nOur test coverage has been improving steadily since April.（4月からテストカバレッジは着実に上がり続けている。）\nThe number of support tickets has been going down since the update.（アップデート以降、問い合わせ件数は減り続けている。）\nよくある間違い:\n誤）The error rate is dropping steadily since the fix. → 正）The error rate has been dropping steadily since the fix.\nsince（〜以来）がある文は「今」だけでなく過去からの継続を語っているので、現在進行形ではなく完了形と組み合わせます。"
+  },
+  {
+    "no": 298,
+    "text": "変化の前後を数字で示すときは from A to B（AからBへ）の型を使います。改善前と改善後の2つの数値があるなら、指標（応答時間）を主語にして dropped from ~ to ~ に数字を当てはめるだけ、と考えて組み立てます。文末の under one は under one second の second を省略した形で、同じ語の繰り返しを避ける自然な言い方です。\n上がる変化なら went up from A to B、上下を言わず中立に述べるなら went from A to B が使えます。\n使い回し例:\nBuild time went from ten minutes to about two.（ビルド時間が10分から2分程度になった。）\nThe price dropped from ninety dollars to sixty.（価格は90ドルから60ドルに下がった。）\nよくある間違い:\n誤）Response time dropped from three seconds until under one. → 正）Response time dropped from three seconds to under one.\nuntil は「〜まで（時間の継続）」専用で、変化の到達点には使えません。数値の行き先は to で示します。"
+  },
+  {
+    "no": 299,
+    "text": "Once you ~ は「いったん〜したら」「〜しさえすれば」という条件を表し、手順書や操作説明の因果関係にぴったりの型です。日本語の「再起動すれば反映されます」は、条件の Once you + 現在形を文頭に置き、結果をコンマの後に現在形で続ける、という順で組み立てます。if よりも「それをすれば必ずこうなる」という自動的な流れが感じられます。\ntake effect（効力を持つ・反映される）も、設定変更やルール変更の説明で頻出の言い回しです。\n使い回し例:\nOnce you sign in, you can see your dashboard.（サインインすれば、ダッシュボードが見られます。）\nOnce the tests pass, we can merge the branch.（テストが通ったら、ブランチをマージできます。）\nよくある間違い:\n誤）Once you will restart the server, the new settings take effect. → 正）Once you restart the server, the new settings take effect.\nonce や if、when が作る節の中では、未来のことでも will を入れず現在形で言うのがルールです。"
+  },
+  {
+    "no": 300,
+    "text": "バグの再現条件のように「条件がそろえば毎回起きる」ことは、現在形 happens で述べるのが基本です。日本語から組み立てるときは、バグそのものを主語に据え、「〜のときだけ」は only を動詞の前に置き、条件を when 節で続ける、という順で考えます。この型は障害報告やバグチケットの説明文にそのまま使えます。\nwhen 節の中も edit という現在形でそろえる点に注意してください。\n使い回し例:\nThe app only crashes when the network is slow.（そのアプリはネットワークが遅いときにだけ落ちる。）\nThis alert only fires when disk usage goes over ninety percent.（このアラートはディスク使用率が90%を超えたときだけ発報する。）\nよくある間違い:\n誤）The bug is only happening when two people edit the same file. → 正）The bug only happens when two people edit the same file.\n進行形は「今まさに起きている最中」に限定されるので、いつでも成り立つ再現条件は現在形で述べます。"
+  }
+]
