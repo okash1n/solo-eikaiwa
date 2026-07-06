@@ -1,6 +1,7 @@
 import type { Database } from "bun:sqlite";
 import { addDaysYmd, localYmd } from "./dates";
 import { defaultRunner, type ClaudeRunner } from "./converse";
+import { insertReturningId } from "./db-util";
 import type { Sentence } from "./sentences";
 import type { MetricsSummary } from "./metrics-aggregate";
 import type { PlacementResultRow } from "./placement";
@@ -135,14 +136,23 @@ export type AssessmentStore = {
 
 type ReportDbRow = { id: number; ts: string; ymd: string; text: string };
 
+export function ensureAssessmentSchema(db: Database): void {
+  db.run(`CREATE TABLE IF NOT EXISTS monthly_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts TEXT NOT NULL,
+    ymd TEXT NOT NULL,
+    text TEXT NOT NULL,
+    data_json TEXT NOT NULL
+  )`);
+}
+
 export function makeAssessmentStore(db: Database): AssessmentStore {
   return {
     save(r) {
       const ts = new Date().toISOString();
       db.run("INSERT INTO monthly_reports (ts, ymd, text, data_json) VALUES (?, ?, ?, ?)",
         [ts, r.ymd, r.text, JSON.stringify(r.data)]);
-      const row = db.query<{ id: number }, []>("SELECT last_insert_rowid() AS id").get()!;
-      return { id: row.id, ts, ymd: r.ymd, text: r.text };
+      return { id: insertReturningId(db), ts, ymd: r.ymd, text: r.text };
     },
     latest() {
       return db.query<ReportDbRow, []>(

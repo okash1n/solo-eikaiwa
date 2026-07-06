@@ -1,4 +1,5 @@
 import type { Database } from "bun:sqlite";
+import { insertReturningId } from "./db-util";
 import {
   BOUNDARY_LEVELS, DEFAULT_LEVEL, demotionTargetLevel, needXp, stageOf, PLACEMENT_XP,
 } from "./progression";
@@ -38,6 +39,30 @@ const DEMOTE_FTT_ABORTS = 3;
 const DECLINE_COOLDOWN_DAYS = 7;
 
 type ProgressRow = { level: number; xp: number; xp_into_level: number };
+
+export function ensureProgressSchema(db: Database): void {
+  db.run(`CREATE TABLE IF NOT EXISTS user_progress (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    level INTEGER NOT NULL,
+    xp INTEGER NOT NULL,
+    xp_into_level INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL
+  )`);
+  db.run(`CREATE TABLE IF NOT EXISTS xp_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts TEXT NOT NULL, ymd TEXT NOT NULL, kind TEXT NOT NULL, amount INTEGER NOT NULL, meta TEXT
+  )`);
+  db.run(`CREATE TABLE IF NOT EXISTS level_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts TEXT NOT NULL, ymd TEXT NOT NULL, kind TEXT NOT NULL,
+    from_level INTEGER NOT NULL, to_level INTEGER NOT NULL, rationale TEXT
+  )`);
+  db.run(`CREATE TABLE IF NOT EXISTS block_attempts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts TEXT NOT NULL, ymd TEXT NOT NULL, kind TEXT NOT NULL,
+    completed INTEGER NOT NULL DEFAULT 0
+  )`);
+}
 
 export function makeProgressStore(db: Database): ProgressStore {
   function nowTs(): string {
@@ -207,8 +232,7 @@ export function makeProgressStore(db: Database): ProgressStore {
 
     blockStart(kind, today = localYmd()) {
       db.run("INSERT INTO block_attempts (ts, ymd, kind, completed) VALUES (?, ?, ?, 0)", [nowTs(), today, kind]);
-      const r = db.query<{ id: number }, []>("SELECT last_insert_rowid() AS id").get()!;
-      return { attemptId: r.id };
+      return { attemptId: insertReturningId(db) };
     },
 
     levelAction(action, level, today = localYmd()) {

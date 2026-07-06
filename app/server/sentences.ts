@@ -91,6 +91,21 @@ export function loadBundledExplanations(file: string = EXPLANATIONS_FILE): Map<n
   return map;
 }
 
+export function ensureSentenceSchema(db: Database): void {
+  db.run(`CREATE TABLE IF NOT EXISTS sentence_srs (
+    no INTEGER PRIMARY KEY,
+    stage INTEGER NOT NULL DEFAULT 0,
+    due TEXT NOT NULL,
+    last_grade TEXT,
+    reviews INTEGER NOT NULL DEFAULT 0
+  )`);
+  db.run(`CREATE TABLE IF NOT EXISTS sentence_explanations (
+    no INTEGER PRIMARY KEY,
+    text TEXT NOT NULL,
+    created TEXT NOT NULL
+  )`);
+}
+
 export function makeSentenceStore(
   db: Database,
   sentences: Sentence[],

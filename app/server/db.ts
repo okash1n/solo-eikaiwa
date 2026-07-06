@@ -2,6 +2,11 @@ import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { DATA_DIR } from "./paths";
+import { ensureProgressSchema } from "./progress-store";
+import { ensureSentenceSchema } from "./sentences";
+import { ensureChunkSchema } from "./chunks";
+import { ensurePlacementSchema } from "./placement";
+import { ensureAssessmentSchema } from "./assessment";
 
 /** 構造化された状態・履歴の置き場（ログはJSONLのまま）。data/ はローカル専用（gitignore済み）。 */
 export const DEFAULT_DB_PATH = path.join(DATA_DIR, "learn-english.db");
@@ -19,11 +24,7 @@ export type LibraryStore = {
   listModelTalks: (limit?: number) => ModelTalkEntry[];
 };
 
-/** DBを開き、スキーマを保証する（CREATE IF NOT EXISTS のみ。マイグレーション機構はYAGNI） */
-export function openDb(dbPath: string = DEFAULT_DB_PATH): Database {
-  if (dbPath !== ":memory:") mkdirSync(path.dirname(dbPath), { recursive: true });
-  const db = new Database(dbPath, { create: true });
-  db.run("PRAGMA journal_mode = WAL");
+export function ensureLibrarySchema(db: Database): void {
   db.run(`CREATE TABLE IF NOT EXISTS model_talks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL,
@@ -31,57 +32,10 @@ export function openDb(dbPath: string = DEFAULT_DB_PATH): Database {
     topic_title TEXT NOT NULL,
     text TEXT NOT NULL
   )`);
-  db.run(`CREATE TABLE IF NOT EXISTS sentence_srs (
-    no INTEGER PRIMARY KEY,
-    stage INTEGER NOT NULL DEFAULT 0,
-    due TEXT NOT NULL,
-    last_grade TEXT,
-    reviews INTEGER NOT NULL DEFAULT 0
-  )`);
-  db.run(`CREATE TABLE IF NOT EXISTS user_progress (
-    id INTEGER PRIMARY KEY CHECK (id = 1),
-    level INTEGER NOT NULL,
-    xp INTEGER NOT NULL,
-    xp_into_level INTEGER NOT NULL DEFAULT 0,
-    updated_at TEXT NOT NULL
-  )`);
-  db.run(`CREATE TABLE IF NOT EXISTS xp_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts TEXT NOT NULL, ymd TEXT NOT NULL, kind TEXT NOT NULL, amount INTEGER NOT NULL, meta TEXT
-  )`);
-  db.run(`CREATE TABLE IF NOT EXISTS level_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts TEXT NOT NULL, ymd TEXT NOT NULL, kind TEXT NOT NULL,
-    from_level INTEGER NOT NULL, to_level INTEGER NOT NULL, rationale TEXT
-  )`);
-  db.run(`CREATE TABLE IF NOT EXISTS block_attempts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts TEXT NOT NULL, ymd TEXT NOT NULL, kind TEXT NOT NULL,
-    completed INTEGER NOT NULL DEFAULT 0
-  )`);
-  db.run(`CREATE TABLE IF NOT EXISTS placement_results (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts TEXT NOT NULL, stage INTEGER NOT NULL, start_level INTEGER NOT NULL,
-    rationale TEXT NOT NULL, metrics TEXT NOT NULL
-  )`);
-  db.run(`CREATE TABLE IF NOT EXISTS sentence_explanations (
-    no INTEGER PRIMARY KEY,
-    text TEXT NOT NULL,
-    created TEXT NOT NULL
-  )`);
-  db.run(`CREATE TABLE IF NOT EXISTS collected_chunks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    created TEXT NOT NULL,
-    source TEXT NOT NULL,
-    prompt_text TEXT NOT NULL,
-    en TEXT NOT NULL,
-    norm_en TEXT NOT NULL UNIQUE,
-    note TEXT NOT NULL DEFAULT '',
-    stage INTEGER NOT NULL DEFAULT 0,
-    due TEXT NOT NULL,
-    last_grade TEXT,
-    reviews INTEGER NOT NULL DEFAULT 0
-  )`);
+}
+
+/** hashTextCache 系の2テーブル（訳・解説キャッシュ）をまとめて保証する */
+export function ensureHashCacheSchemas(db: Database): void {
   db.run(`CREATE TABLE IF NOT EXISTS talk_explanations (
     hash TEXT PRIMARY KEY,
     text TEXT NOT NULL,
@@ -92,13 +46,20 @@ export function openDb(dbPath: string = DEFAULT_DB_PATH): Database {
     text TEXT NOT NULL,
     created TEXT NOT NULL
   )`);
-  db.run(`CREATE TABLE IF NOT EXISTS monthly_reports (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts TEXT NOT NULL,
-    ymd TEXT NOT NULL,
-    text TEXT NOT NULL,
-    data_json TEXT NOT NULL
-  )`);
+}
+
+/** DBを開き、各ストアの ensureSchema を合成して呼ぶ（CREATE IF NOT EXISTS のみ。マイグレーション機構はYAGNI） */
+export function openDb(dbPath: string = DEFAULT_DB_PATH): Database {
+  if (dbPath !== ":memory:") mkdirSync(path.dirname(dbPath), { recursive: true });
+  const db = new Database(dbPath, { create: true });
+  db.run("PRAGMA journal_mode = WAL");
+  ensureLibrarySchema(db);
+  ensureHashCacheSchemas(db);
+  ensureProgressSchema(db);
+  ensureSentenceSchema(db);
+  ensureChunkSchema(db);
+  ensurePlacementSchema(db);
+  ensureAssessmentSchema(db);
   return db;
 }
 
