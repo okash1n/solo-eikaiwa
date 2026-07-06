@@ -222,9 +222,9 @@ export const STR: Record<Lang, Strings> = {
     uiScale: { small: "小", medium: "中", large: "大", xlarge: "特大" },
     support: {
       title: "サポート",
-      presetAuto: "おまかせ", presetMore: "多め", presetLess: "少なめ",
+      presetAuto: "自動", presetMore: "多め", presetLess: "少なめ",
       jaHint: "日本語ヒント", modelTalk: "モデルトーク", cloze: "歯抜け既定",
-      optAuto: "おまかせ", optOn: "オン", optOff: "オフ",
+      optAuto: "自動", optOn: "オン", optOff: "オフ",
     },
     stat: { title: "練習記録", thisWeekUnit: "日（今週）", total: (n) => `累計 ${n}日` },
     hero: {
