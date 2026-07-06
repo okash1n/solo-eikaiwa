@@ -36,6 +36,8 @@ A local-first, research-grounded English speaking practice app for daily self-st
 
 初回は**レベル測定（約10分）**がおすすめ: 自己紹介 → 状況説明 → 意見の3タスクを録音すると、CEFR 記述子ベースのルーブリックで開始レベルが提示されます（反映するかはあなたが決めます）。以後は30日ごとに月次測定の導線が出て、話す力の変化を定点観測できます。
 
+30日ごとに Progress 画面で**月次レビュー**も書いてもらえます。直近30日の練習時間・調音速度・例文の定着・収集チャンクなどをまとめた日本語の振り返りレポートです（情報表示のみ・ノルマや判定はありません）。
+
 ### 📚 ライブラリと練習記録
 
 - 生成されたモデルトークは自動でライブラリに保存され、あとから本文確認・再再生できる
@@ -135,6 +137,14 @@ Talk about:
 
 ```bash
 cd app && bun ../scripts/generate-sentence-audio.ts
+```
+
+実力データに合わせて教材を増やすこともできます（要 Claude Code ログイン・完全オリジナル生成）:
+
+```bash
+bun scripts/generate-content.ts sentences --dry   # SRSの苦手カテゴリ×4文をプレビュー
+bun scripts/generate-content.ts sentences         # 例文に追記（音声は上の差分生成コマンドで）
+bun scripts/generate-content.ts topics            # 現在レベル向けのお題2本+シナリオ1本を追加
 ```
 
 ## テスト
