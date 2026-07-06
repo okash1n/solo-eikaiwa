@@ -54,7 +54,13 @@ export function makeClaudeRunner(queryFn: typeof query): ClaudeRunner {
   };
 }
 
-export const runClaudeTurn: ClaudeRunner = makeClaudeRunner(query);
+/**
+ * 全ドメイン共有の LLM ランナー（唯一の makeClaudeRunner(query) 生成点）。
+ * プロンプト配置規約: 各ドメインの system プロンプトはそのドメインモジュール
+ * （coach.ts / placement.ts / assessment.ts / content-gen.ts / converse.ts）に置き、
+ * ここでは実行器だけを共有する。
+ */
+export const defaultRunner: ClaudeRunner = makeClaudeRunner(query);
 
 export async function converseTurn(args: {
   userText: string;
@@ -63,7 +69,7 @@ export async function converseTurn(args: {
   logFile?: string;
   systemPromptOverride?: string;
 }): Promise<{ replyText: string; sessionId: string }> {
-  const runner = args.runner ?? runClaudeTurn;
+  const runner = args.runner ?? defaultRunner;
   const logFile = args.logFile ?? sessionLogPath(new Date());
   const now = () => new Date().toISOString();
 

@@ -1,5 +1,4 @@
-import { query } from "@anthropic-ai/claude-agent-sdk";
-import { makeClaudeRunner, type ClaudeRunner } from "./converse";
+import { defaultRunner, type ClaudeRunner } from "./converse";
 import type { SessionEvent } from "./session-log";
 
 export type AeItem = { quote: string; issue: string; better: string; why_ja: string };
@@ -9,8 +8,6 @@ export type Reflection = {
   fixes: Array<{ original: string; better: string }>;
   noteForTomorrow_ja: string;
 };
-
-const defaultRunner: ClaudeRunner = makeClaudeRunner(query);
 
 /** LLM出力からJSONを取り出す。```フェンス除去→最初の{から最後の}までをparse。失敗はnull */
 export function extractJson<T>(text: string): T | null {

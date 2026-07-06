@@ -1,7 +1,6 @@
-import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { Database } from "bun:sqlite";
 import { addDaysYmd, localYmd } from "./dates";
-import { makeClaudeRunner, type ClaudeRunner } from "./converse";
+import { defaultRunner, type ClaudeRunner } from "./converse";
 import type { Sentence } from "./sentences";
 import type { MetricsSummary } from "./metrics-aggregate";
 import type { PlacementResultRow } from "./placement";
@@ -100,8 +99,6 @@ export function makeAssembleMonthData(deps: AssembleDeps) {
     };
   };
 }
-
-const defaultRunner: ClaudeRunner = makeClaudeRunner(query);
 
 const REPORT_SYSTEM = `あなたは日本人ITプロフェッショナルの英語スピーキング学習を見守るコーチです。
 受け取った直近30日の学習データ(JSON)から、日本語で「今月のスピーキング振り返り」を書いてください。

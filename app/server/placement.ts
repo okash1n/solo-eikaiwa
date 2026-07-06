@@ -1,7 +1,6 @@
-import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { Database } from "bun:sqlite";
 import { extractJson } from "./coach";
-import { makeClaudeRunner, type ClaudeRunner } from "./converse";
+import { defaultRunner, type ClaudeRunner } from "./converse";
 
 export type PlacementTaskDef = {
   id: string;
@@ -45,8 +44,6 @@ export type PlacementEvaluation = { stage: number; startLevel: number; rationale
 export function startLevelForStage(stage: number): number {
   return (stage - 1) * 10 + 3;
 }
-
-const defaultRunner: ClaudeRunner = makeClaudeRunner(query);
 
 /** stage 1..6 ↔ CEFR A2前半〜B2 の話し言葉記述子。プロンプトに明文で埋め込む（スペック§6.2） */
 const RUBRIC = `Stage rubric (spoken production, CEFR-informed; stage 1-6):

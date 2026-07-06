@@ -6,7 +6,7 @@ import { converseTurn, makeClaudeRunner, PARTNER_SYSTEM_PROMPT } from "../conver
 import { isErrorLogged, readEvents } from "../session-log";
 import type { query } from "@anthropic-ai/claude-agent-sdk";
 
-// Minimal fake message shapes; only the fields runClaudeTurn actually reads are populated.
+// Minimal fake message shapes; only the fields defaultRunner actually reads are populated.
 function fakeQuery(messages: unknown[]): typeof query {
   return (() => {
     async function* gen() {
