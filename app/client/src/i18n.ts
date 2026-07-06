@@ -11,7 +11,7 @@ export function saveLang(lang: Lang): void {
 }
 
 type Strings = {
-  nav: { home: string; free: string; library: string; sentences: string };
+  nav: { home: string; free: string; library: string; sentences: string; progress: string };
   stat: { title: string; thisWeekUnit: string; total: (n: number) => string };
   hero: { title: string; date: (d: Date) => string };
   quick: { label: string; note: string };
@@ -36,6 +36,13 @@ type Strings = {
     fttAborts: (n: number) => string;
     acceptUp: string; acceptDown: string; decline: string;
     actionError: string;
+    title: string;
+    speakingTime: string; speakingMinUnit: string;
+    articulation: string; articulationUnit: string;
+    pauseCard: string; repetitionCard: string; weekOverWeek: string;
+    levelHistory: string; currentLevel: (n: number) => string;
+    empty: string;
+    loading: string; retry: string;
   };
   placement: {
     cardTitleNew: string; cardBodyNew: string;
@@ -86,7 +93,7 @@ const WEEKDAYS_JA = ["日", "月", "火", "水", "木", "金", "土"];
 
 export const STR: Record<Lang, Strings> = {
   en: {
-    nav: { home: "Home", free: "Free Talk", library: "Library", sentences: "300 Sentences" },
+    nav: { home: "Home", free: "Free Talk", library: "Library", sentences: "300 Sentences", progress: "Progress" },
     stat: { title: "Practice log", thisWeekUnit: "days this week", total: (n) => `${n} days total` },
     hero: {
       title: "Ready to practice your English?",
@@ -122,6 +129,13 @@ export const STR: Record<Lang, Strings> = {
       fttAborts: (n) => `${n} of the last five 4/3/2 blocks were cut short`,
       acceptUp: "Level up", acceptDown: "Move down", decline: "Not now",
       actionError: "Couldn't apply. Refreshed the latest state.",
+      title: "Progress",
+      speakingTime: "Speaking time (last 14 days)", speakingMinUnit: "min",
+      articulation: "Articulation rate", articulationUnit: "wpm",
+      pauseCard: "Pause ratio", repetitionCard: "Self-repetition", weekOverWeek: "vs last week",
+      levelHistory: "Level history", currentLevel: (n) => `Now Lv ${n}`,
+      empty: "Start speaking and your metrics will show up here.",
+      loading: "Loading…", retry: "Retry",
     },
     placement: {
       cardTitleNew: "Find your level (10 min)",
@@ -178,7 +192,7 @@ export const STR: Record<Lang, Strings> = {
     },
   },
   ja: {
-    nav: { home: "ホーム", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300" },
+    nav: { home: "ホーム", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300", progress: "進捗" },
     stat: { title: "練習記録", thisWeekUnit: "日（今週）", total: (n) => `累計 ${n}日` },
     hero: {
       title: "今日も英語を話しましょう",
@@ -214,6 +228,13 @@ export const STR: Record<Lang, Strings> = {
       fttAborts: (n) => `直近5回の4/3/2のうち${n}回が中断`,
       acceptUp: "レベルアップ", acceptDown: "レベルを下げる", decline: "今はしない",
       actionError: "適用できませんでした。最新の状態に更新しました",
+      title: "進捗",
+      speakingTime: "話した時間（直近14日）", speakingMinUnit: "分",
+      articulation: "調音速度", articulationUnit: "wpm",
+      pauseCard: "ポーズ比率", repetitionCard: "言い直し率", weekOverWeek: "前週比",
+      levelHistory: "レベル履歴", currentLevel: (n) => `現在 Lv ${n}`,
+      empty: "話すと、ここに記録が貯まりはじめます。",
+      loading: "読み込み中…", retry: "再試行",
     },
     placement: {
       cardTitleNew: "レベル測定（10分）",

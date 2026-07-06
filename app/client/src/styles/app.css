@@ -276,3 +276,19 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 .sentences-toolbar { align-items: center; }
 .hide-note-toggle { display: inline-flex; align-items: center; gap: var(--sp-1); margin-left: auto; cursor: pointer; user-select: none; }
 .hide-note-toggle input { accent-color: var(--accent); }
+
+/* 進捗ダッシュボード */
+.stack-sm > * + * { margin-top: var(--sp-2); }
+.metric-bars { display: flex; align-items: flex-end; gap: 4px; height: 120px; }
+.metric-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 2px; }
+.metric-bar { width: 100%; max-width: 26px; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; }
+.metric-bar-label { font-size: 10px; color: var(--text-muted); }
+.hbar-row { display: flex; align-items: center; gap: var(--sp-2); }
+.hbar-label { width: 44px; font-size: var(--fs-sm); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.hbar-track { flex: 1; background: var(--border); border-radius: 4px; height: 10px; overflow: hidden; }
+.hbar { height: 100%; background: var(--accent); border-radius: 4px; }
+.hbar-value { width: 74px; text-align: right; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+.metric-cards { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.metric-cards .card + .card { margin-top: 0; }
+.level-history { list-style: none; padding: 0; margin: 0; font-variant-numeric: tabular-nums; }
+.level-history li + li { margin-top: var(--sp-1); }

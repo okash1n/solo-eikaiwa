@@ -7,13 +7,14 @@ import { loadLang, saveLang, STR, type Lang } from "./i18n";
 import { FreeTalkScreen } from "./screens/FreeTalkScreen";
 import { LibraryScreen } from "./screens/LibraryScreen";
 import { PlacementScreen } from "./screens/PlacementScreen";
+import { ProgressScreen } from "./screens/ProgressScreen";
 import { SentencesScreen } from "./screens/SentencesScreen";
 import { SessionRunner, type MenuSource } from "./screens/SessionRunner";
 import { StartScreen, type StartSelection } from "./screens/StartScreen";
 import { Banner } from "./ui/Banner";
 import { Button } from "./ui/Button";
 
-type Mode = { kind: "start" } | { kind: "free" } | { kind: "session"; source: MenuSource } | { kind: "library" } | { kind: "sentences" } | { kind: "placement" };
+type Mode = { kind: "start" } | { kind: "free" } | { kind: "session"; source: MenuSource } | { kind: "library" } | { kind: "sentences" } | { kind: "placement" } | { kind: "progress" };
 
 export function App() {
   const [health, setHealth] = useState<Health | null>(null);
@@ -60,6 +61,7 @@ export function App() {
     { key: "free", icon: "💬", label: t.nav.free, active: mode.kind === "free", go: () => setMode({ kind: "free" }) },
     { key: "library", icon: "📚", label: t.nav.library, active: mode.kind === "library", go: () => setMode({ kind: "library" }) },
     { key: "sentences", icon: "📖", label: t.nav.sentences, active: mode.kind === "sentences", go: () => setMode({ kind: "sentences" }) },
+    { key: "progress", icon: "📈", label: t.nav.progress, active: mode.kind === "progress", go: () => setMode({ kind: "progress" }) },
   ];
 
   return (
@@ -110,6 +112,7 @@ export function App() {
       {mode.kind === "library" && <LibraryScreen />}
       {mode.kind === "sentences" && <SentencesScreen lang={lang} />}
       {mode.kind === "placement" && <PlacementScreen lang={lang} onExit={() => setMode({ kind: "start" })} />}
+      {mode.kind === "progress" && <ProgressScreen lang={lang} />}
       </main>
     </div>
   );
