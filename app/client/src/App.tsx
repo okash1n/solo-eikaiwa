@@ -26,6 +26,15 @@ export function App() {
     setLang(next);
     saveLang(next);
   }
+  // 文字サイズ（小/中/大）。tokens.css の :root[data-ui-scale] が --fs-* を切り替える
+  const [uiScale, setUiScale] = useState<"small" | "medium" | "large">(() => {
+    const v = localStorage.getItem("ui.scale");
+    return v === "small" || v === "large" ? v : "medium";
+  });
+  useEffect(() => {
+    document.documentElement.dataset.uiScale = uiScale;
+    localStorage.setItem("ui.scale", uiScale);
+  }, [uiScale]);
   // このタブのセッションを識別するUUID。ライフサイクル/ブロック/ラウンドイベントは
   // モードに関わらずすべてこのIDで記録する（converse() が返す会話用sessionIdとは別概念。そちらは変更しない）
   const [sessionId] = useState(() => crypto.randomUUID());
@@ -81,6 +90,11 @@ export function App() {
           <Button variant="secondary" onClick={() => setMode({ kind: "start" })}>← メニューに戻る</Button>
         )}
         <div className="sidebar-spacer" />
+        <div className="lang-toggle" role="group" aria-label="Text size">
+          <button className={uiScale === "small" ? "is-active" : ""} onClick={() => setUiScale("small")}>{t.uiScale.small}</button>
+          <button className={uiScale === "medium" ? "is-active" : ""} onClick={() => setUiScale("medium")}>{t.uiScale.medium}</button>
+          <button className={uiScale === "large" ? "is-active" : ""} onClick={() => setUiScale("large")}>{t.uiScale.large}</button>
+        </div>
         <div className="lang-toggle" role="group" aria-label="Language">
           <button className={lang === "en" ? "is-active" : ""} onClick={() => switchLang("en")}>EN</button>
           <button className={lang === "ja" ? "is-active" : ""} onClick={() => switchLang("ja")}>日本語</button>
