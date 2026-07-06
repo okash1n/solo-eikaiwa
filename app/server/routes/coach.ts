@@ -83,7 +83,8 @@ async function respondHashCached(
   if (text.length > 3000) return json({ error: "text too long" }, 400);
   const hash = createHash("sha256").update(text).digest("hex");
   const cached = cache.get(hash);
-  if (cached !== null) return json({ text: cached });
+  // 空エントリは miss 扱い（502保護導入前に保存された空訳の自己修復。save は UPSERT なので成功時に上書きされる）
+  if (cached !== null && cached.trim().length > 0) return json({ text: cached });
   const generated = await generate(text);
   // LLM が空文字を返した場合はキャッシュせず 502（空訳を永久キャッシュしない・再試行で回復可能に）
   if (generated.text.trim().length === 0) {

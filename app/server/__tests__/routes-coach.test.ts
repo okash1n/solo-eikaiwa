@@ -228,6 +228,26 @@ describe("routes: AI発話の訳（translate）", () => {
     expect(res.status).toBe(502);
     expect(saved).toBe(0);
   });
+
+  test("POST /api/coach/translate は過去に保存された空キャッシュを miss 扱いで再生成し上書きする", async () => {
+    const saved: Array<{ hash: string; text: string }> = [];
+    let generateCalls = 0;
+    const { deps } = makeTestDeps({
+      translate: async () => { generateCalls++; return { text: "正しい訳です。" }; },
+      translationCache: makeFakeTalkExplainCache({
+        get: () => "", // 502保護導入前に保存された空エントリを想定
+        save: (hash, text) => { saved.push({ hash, text }); },
+      }),
+    });
+    const res = await makeFetchHandler(deps)(new Request("http://x/api/coach/translate", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: "Any line." }),
+    }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ text: "正しい訳です。" });
+    expect(generateCalls).toBe(1); // 空キャッシュでは生成をスキップしない
+    expect(saved).toHaveLength(1); // UPSERT で空エントリが上書きされる（自己修復）
+  });
 });
 
 describe("routes: 言い方ヒント（phrase-hint）", () => {
