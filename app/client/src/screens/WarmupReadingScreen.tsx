@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { fetchPrepPack, type ContentItem } from "../api";
+import { STR, type Lang } from "../i18n";
 import { useLoad } from "../useLoad";
 import { usePlayRow } from "../usePlayRow";
 import { Banner } from "../ui/Banner";
@@ -13,7 +14,8 @@ import { clozeText } from "../cloze";
  * セッション冒頭の低負荷な音読ウォームアップ。今日のトピックの表現チャンクと骨組みを
  * 声に出して読むだけ（録音・採点なし）。この後の4/3/2で同じ素材を使う下地作り。
  */
-export function WarmupReadingScreen(props: { topic: ContentItem }) {
+export function WarmupReadingScreen(props: { topic: ContentItem; lang: Lang }) {
+  const t = STR[props.lang].warmup;
   const load = useLoad(() => fetchPrepPack(props.topic.id));
   const playRow = usePlayRow<number>();
   const [clozeStep, setClozeStep] = useState(false);
@@ -27,17 +29,17 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
   return (
     <div className="stack">
       <p className="text-muted">
-        声に出して読みましょう（各フレーズ2回ずつ）。🔊でお手本を聞けます。このあとの 4/3/2 で実際に使います。
+        {t.intro}
       </p>
-      {load.state.status === "loading" && <p>コーチが表現チャンクを用意しています…</p>}
+      {load.state.status === "loading" && <p>{t.loading}</p>}
       {load.state.status === "error" && (
         <div>
-          <Banner kind="error" action={<Button onClick={load.reload}>再試行</Button>}>
+          <Banner kind="error" action={<Button onClick={load.reload}>{t.retry}</Button>}>
             {load.state.error}
           </Banner>
           {props.topic.hints.length > 0 && (
             <div>
-              <h4>代わりにこちらを声に出して読みましょう</h4>
+              <h4>{t.fallbackTitle}</h4>
               <ChunkList chunks={props.topic.hints.map((h) => ({ en: h }))} playingIdx={null} />
             </div>
           )}
@@ -45,14 +47,19 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
       )}
       {load.state.status === "ready" && prep && (
         <div className="stack">
-          {chunks.length > 0 && <ChunkList chunks={chunks} playingIdx={playRow.playingKey} onPlay={(i, text) => playRow.play(i, text)} showJa={showJa} />}
+          {chunks.length > 0 && (
+            <ChunkList
+              chunks={chunks} playingIdx={playRow.playingKey} onPlay={(i, text) => playRow.play(i, text)} showJa={showJa}
+              playAria={(en) => STR[props.lang].chunkList.playAria(en)}
+            />
+          )}
           {playRow.error && <Banner kind="error">{playRow.error}</Banner>}
           {chunks.length > 0 && !clozeStep && (
-            <Button variant="secondary" onClick={() => setClozeStep(true)}>🔡 歯抜けで音読（2周目・任意）</Button>
+            <Button variant="secondary" onClick={() => setClozeStep(true)}>{t.clozeStepButton}</Button>
           )}
           {clozeStep && (
-            <Card header="歯抜けで音読（任意）">
-              <p className="text-muted">今度は空欄を自分で埋めながら声に出しましょう。答えは上の一覧で確認できます。</p>
+            <Card header={t.clozeStepTitle}>
+              <p className="text-muted">{t.clozeStepBody}</p>
               <ul className="chunk-list no-audio">
                 {chunks.map((c, i) => (
                   <li key={i}><span className="chunk-en">{clozeText(c.en, i + 1)}</span></li>
@@ -61,7 +68,7 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
             </Card>
           )}
           {prep.outline.length > 0 && (
-            <Card header="今日の話の骨組み">
+            <Card header={t.outlineTitle}>
               <ol>
                 {prep.outline.map((o, i) => (
                   <li key={i}>{o}</li>

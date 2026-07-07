@@ -123,11 +123,36 @@ type SentencesStrings = {
   };
 };
 
+type WarmupStrings = { warmup: {
+  intro: string; loading: string; retry: string; fallbackTitle: string;
+  clozeStepButton: string; clozeStepTitle: string; clozeStepBody: string; outlineTitle: string;
+} };
+type Ftt432Strings = { ftt432: {
+  min: (v: string) => string;
+  prepTitle: (topic: string) => string;
+  prepIntro: (rounds: string, count: number, prep: string) => string;
+  prepTimerNote: string; loading: string; retry: string; outlineTitle: string;
+  modelIdle: string; modelScript: string; modelAudio: string; modelPlaying: string; modelRetry: string;
+  startRound1: (min: string) => string; modelTranscript: string;
+  aeTitle: string; aeLoading: string; aeNoRecording: string; startRound2: (min: string) => string;
+  doneBody: (count: number) => string;
+  roundHeading: (n: number, min: string, topic: string) => string;
+  timeUp: string; recStop: string; recTranscribing: string; recStart: string; roundFinish: string;
+  micError: (detail: string) => string;
+  explainMore: string; explainLoading: string; explainError: string;
+} };
+type ReflectionStrings = { reflection: {
+  loading: string; retry: string; goodPhrases: string; fixes: string; tomorrow: string;
+  explainMore: string; explainLoading: string; explainError: string;
+} };
+type ChunkListStrings = { chunkList: { playAria: (en: string) => string } };
+
 type Strings =
   & NavStrings & UiScaleStrings & SupportStrings & StatStrings & HeroStrings
   & QuickStrings & IntensiveStrings & DrillsStrings & SessionCardStrings
   & CalendarStrings & FreeTalkHeaderStrings & ProgressStrings & PlacementStrings & SentencesStrings
-  & MenuTitleStrings & SessionStrings;
+  & MenuTitleStrings & SessionStrings
+  & WarmupStrings & Ftt432Strings & ReflectionStrings & ChunkListStrings;
 
 const WEEKDAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -263,6 +288,39 @@ export const STR: Record<Lang, Strings> = {
       noTopic: "No topic available", noScenario: "No scenario available",
       unknownBlock: (kind) => `Unknown block: ${kind}`,
     },
+    warmup: {
+      intro: "Read these out loud (twice each). Tap 🔊 to hear a model. You'll use them in the 4/3/2 that follows.",
+      loading: "Your coach is preparing phrases…", retry: "Retry",
+      fallbackTitle: "Read these out loud instead",
+      clozeStepButton: "🔡 Read with gaps (round 2 · optional)",
+      clozeStepTitle: "Read with gaps (optional)",
+      clozeStepBody: "This time fill the blanks yourself as you read aloud. The answers are in the list above.",
+      outlineTitle: "Today's story outline",
+    },
+    ftt432: {
+      min: (v) => `${v} min`,
+      prepTitle: (topic) => `Prep — ${topic}`,
+      prepIntro: (rounds, count, prep) => `You'll tell the same story ${count} times: ${rounds}. First, look over some phrases and an outline (about ${prep}).`,
+      prepTimerNote: "Time to get started", loading: "Your coach is preparing phrases…", retry: "Retry",
+      outlineTitle: "Story outline",
+      modelIdle: "🎧 Hear a model talk (optional)", modelScript: "✍ Writing the script…",
+      modelAudio: "🎙 Generating audio…", modelPlaying: "🔊 Playing…", modelRetry: "🎧 Model talk (retry)",
+      startRound1: (min) => `Start Round 1 (${min}) →`, modelTranscript: "Model talk transcript",
+      aeTitle: "Feedback (read it, then Round 2)", aeLoading: "Your coach is writing feedback…",
+      aeNoRecording: "No recording, so there's no feedback", startRound2: (min) => `Start Round 2 (${min})`,
+      doneBody: (count) => `4/3/2 done! You told the same story ${count} times, a little faster each round.`,
+      roundHeading: (n, min, topic) => `Round ${n} (${min}) — ${topic}`,
+      timeUp: "— Time's up!", recStop: "⏹ Stop recording", recTranscribing: "📝 Transcribing…",
+      recStart: "🎙 Start speaking", roundFinish: "End this round →",
+      micError: (detail) => `Can't access the microphone: ${detail}`,
+      explainMore: "💡 Explain more", explainLoading: "Writing an explanation…", explainError: "Couldn't load the explanation.",
+    },
+    reflection: {
+      loading: "Your coach is reviewing today's session…", retry: "Retry",
+      goodPhrases: "👏 What went well", fixes: "✏️ Worth polishing", tomorrow: "📝 For tomorrow",
+      explainMore: "💡 Explain more", explainLoading: "Writing an explanation…", explainError: "Couldn't load the explanation.",
+    },
+    chunkList: { playAria: (en) => `Play "${en}"` },
   },
   ja: {
     nav: { home: "ホーム", placement: "レベル測定", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300", progress: "進捗" },
@@ -393,5 +451,38 @@ export const STR: Record<Lang, Strings> = {
       noTopic: "トピックがありません", noScenario: "シナリオがありません",
       unknownBlock: (kind) => `未知のブロック: ${kind}`,
     },
+    warmup: {
+      intro: "声に出して読みましょう（各フレーズ2回ずつ）。🔊でお手本を聞けます。このあとの 4/3/2 で実際に使います。",
+      loading: "コーチが表現チャンクを用意しています…", retry: "再試行",
+      fallbackTitle: "代わりにこちらを声に出して読みましょう",
+      clozeStepButton: "🔡 歯抜けで音読（2周目・任意）",
+      clozeStepTitle: "歯抜けで音読（任意）",
+      clozeStepBody: "今度は空欄を自分で埋めながら声に出しましょう。答えは上の一覧で確認できます。",
+      outlineTitle: "今日の話の骨組み",
+    },
+    ftt432: {
+      min: (v) => `${v}分`,
+      prepTitle: (topic) => `準備 — ${topic}`,
+      prepIntro: (rounds, count, prep) => `これから同じ話を ${rounds} で${count}回話します。まず使えそうな表現と骨組みを確認してください（目安 ${prep}）。`,
+      prepTimerNote: "そろそろ始めましょう", loading: "コーチが表現チャンクを用意しています…", retry: "再試行",
+      outlineTitle: "話の骨組み",
+      modelIdle: "🎧 モデルトークを聞く（任意）", modelScript: "✍ 原稿を作成中…",
+      modelAudio: "🎙 音声を生成中…", modelPlaying: "🔊 再生中…", modelRetry: "🎧 モデルトーク（再試行）",
+      startRound1: (min) => `Round 1 を始める（${min}）→`, modelTranscript: "モデルトーク本文",
+      aeTitle: "フィードバック（読んだら Round 2 へ）", aeLoading: "コーチがフィードバックを書いています…",
+      aeNoRecording: "録音がなかったのでフィードバックはありません", startRound2: (min) => `Round 2 を始める（${min}）`,
+      doneBody: (count) => `4/3/2 完了！同じ話を${count}回、少しずつ速く話せました。`,
+      roundHeading: (n, min, topic) => `Round ${n}（${min}） — ${topic}`,
+      timeUp: "— 時間切れ！", recStop: "⏹ 録音を止める", recTranscribing: "📝 文字起こし中…",
+      recStart: "🎙 話し始める", roundFinish: "このラウンドを終える →",
+      micError: (detail) => `マイクにアクセスできません: ${detail}`,
+      explainMore: "💡 もっと詳しく", explainLoading: "解説を書いています…", explainError: "解説を取得できませんでした。",
+    },
+    reflection: {
+      loading: "コーチが今日のセッションを振り返っています…", retry: "再試行",
+      goodPhrases: "👏 良かった表現", fixes: "✏️ 直したい表現", tomorrow: "📝 明日へ",
+      explainMore: "💡 もっと詳しく", explainLoading: "解説を書いています…", explainError: "解説を取得できませんでした。",
+    },
+    chunkList: { playAria: (en) => `「${en}」を再生` },
   },
 };
