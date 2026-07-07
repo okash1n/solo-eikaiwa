@@ -11,17 +11,16 @@ import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { localYmd } from "../dates";
+import { initialPhase, type Phase } from "./practicePhase";
 
 const NEW_PER_DAY = 10;
 
-type Phase = "prompt" | "cloze" | "answer";
-
 /** 練習タブ: ja→（声に出す）→[歯抜け]→答えを見る→自動再生→自己評価、の産出リトリーバルフロー */
-export function PracticeTab({ lang, hideNote, clozeDefault }: { lang: Lang; hideNote: boolean; clozeDefault: boolean }) {
+export function PracticeTab({ lang, hideNote, clozeDefault, audioFirst = false }: { lang: Lang; hideNote: boolean; clozeDefault: boolean; audioFirst?: boolean }) {
   const t = STR[lang].sentences;
   const load = useLoad(() => fetchSentenceQueue(NEW_PER_DAY));
   const [idx, setIdx] = useState(0);
-  const [phase, setPhase] = useState<Phase>(clozeDefault ? "cloze" : "prompt");
+  const [phase, setPhase] = useState<Phase>(initialPhase(audioFirst, clozeDefault));
   const [gradedCount, setGradedCount] = useState(0);
   const [dueTomorrow, setDueTomorrow] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
@@ -36,6 +35,17 @@ export function PracticeTab({ lang, hideNote, clozeDefault }: { lang: Lang; hide
   const queue = load.state.status === "ready" ? load.state.data : [];
   const current = queue[idx];
   const done = load.state.status === "ready" && !current;
+
+  // 「音から」フェーズに入ったカードごとに一度だけ TTS を自動再生する（英文・ja は非表示のまま）。
+  // 音声は補助 — 失敗してもフローは止めない。ref キーで StrictMode 二重実行・再レンダーの重複再生を防ぐ。
+  const listenPlayedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (phase !== "listen" || !current) return;
+    const key = current.kind === "chunk" ? `c${current.id}` : `s${current.no}`;
+    if (listenPlayedRef.current === key) return;
+    listenPlayedRef.current = key;
+    playTtsCached(current.en).catch(() => {});
+  }, [phase, current]);
 
   useEffect(() => {
     // 完了画面で「明日の復習予定数」を出す（情報表示のみ・失敗は無視）
@@ -71,7 +81,7 @@ export function PracticeTab({ lang, hideNote, clozeDefault }: { lang: Lang; hide
       stopPlayback();
       setGradedCount((n) => n + 1);
       setIdx((i) => i + 1);
-      setPhase(clozeDefault ? "cloze" : "prompt");
+      setPhase(initialPhase(audioFirst, clozeDefault));
     } catch (err) {
       if (!aliveRef.current) return;
       setErrorMsg(err instanceof Error ? err.message : String(err));
@@ -99,16 +109,27 @@ export function PracticeTab({ lang, hideNote, clozeDefault }: { lang: Lang; hide
     <div className="stack">
       <p className="text-sm text-muted">{t.remaining(queue.length - idx, gradedCount)}</p>
       <Card>
-        {current.kind === "chunk" ? (
+        {phase !== "listen" && (current.kind === "chunk" ? (
           <>
             <p className="text-sm text-muted">{t.chunkLabel}</p>
             <p className="sentence-ja">{current.promptText}</p>
           </>
         ) : (
           <p className="sentence-ja">{current.ja}</p>
-        )}
+        ))}
         {/* ヒント非表示中でも答え合わせ時は表示する（隠す意味があるのは想起の前だけ） */}
-        {(!hideNote || phase === "answer") && current.note && <p className="text-sm text-muted">{current.note}</p>}
+        {phase !== "listen" && (!hideNote || phase === "answer") && current.note && <p className="text-sm text-muted">{current.note}</p>}
+        {phase === "listen" && (
+          <>
+            <p className="text-muted">{t.listenPrompt}</p>
+            <div className="round-actions">
+              <Button variant="ghost" onClick={() => playTtsCached(current.en).catch(() => {})} ariaLabel={t.playAgain}>
+                {t.playAgain}
+              </Button>
+              <Button variant="primary" size="lg" onClick={reveal}>{t.showAnswer}</Button>
+            </div>
+          </>
+        )}
         {phase === "prompt" && (
           <>
             <p className="text-muted">{current.kind === "chunk" ? t.chunkSayIt : t.sayItFirst}</p>

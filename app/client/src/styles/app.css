@@ -326,6 +326,8 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 
 .sentences-toolbar { align-items: center; }
 .hide-note-toggle { display: inline-flex; align-items: center; gap: var(--sp-1); margin-left: auto; cursor: pointer; user-select: none; }
+/* トグルが複数並ぶとき、2つ目以降は auto にしない（両方 auto だと余白が間に割れて離れてしまう） */
+.hide-note-toggle ~ .hide-note-toggle { margin-left: var(--sp-3); }
 .hide-note-toggle input { accent-color: var(--accent); }
 
 /* 進捗ダッシュボード */
