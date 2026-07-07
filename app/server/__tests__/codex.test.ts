@@ -25,7 +25,7 @@ describe("composeCodexPrompt", () => {
 });
 
 /** exec 呼び出しを記録し、canned テキストを返すフェイク。 */
-function fakeExec(reply: string, seen: Array<{ prompt: string; model?: string; cwd: string }>): CodexExec {
+function fakeExec(reply: string, seen: Array<{ prompt: string; model?: string; cwd: string; reasoningEffort?: string }>): CodexExec {
   return async (args) => {
     seen.push(args);
     return reply;
@@ -55,6 +55,18 @@ describe("makeCodexRunner", () => {
     const runner = makeCodexRunner(baseCfg({ exec: fakeExec("x", seen) }));
     await runner("hi");
     expect(seen[0].prompt).toContain("DEFAULT SYS");
+  });
+
+  test("reasoningEffort が exec にそのまま渡る（未指定なら undefined）", async () => {
+    const seen: Array<{ prompt: string; model?: string; cwd: string; reasoningEffort?: string }> = [];
+    const runner = makeCodexRunner(baseCfg({ exec: fakeExec("x", seen), reasoningEffort: "medium" }));
+    await runner("hi");
+    expect(seen[0].reasoningEffort).toBe("medium");
+
+    const seen2: Array<{ prompt: string; model?: string; cwd: string; reasoningEffort?: string }> = [];
+    const plain = makeCodexRunner(baseCfg({ exec: fakeExec("x", seen2) }));
+    await plain("hi");
+    expect(seen2[0].reasoningEffort).toBeUndefined();
   });
 
   test("resume: 返った sessionId で再呼び出しすると過去の往復が composed に入る", async () => {

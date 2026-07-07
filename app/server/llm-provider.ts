@@ -53,6 +53,8 @@ export function selectRunner(args: SelectRunnerArgs): ClaudeRunner {
     case "codex":
       return makeCodexRunner({
         model: env.CODEX_MODEL?.trim() || undefined,
+        // 会話用途では xhigh 級の長考がレイテンシに直撃するため、既定を medium に固定（env で変更可）
+        reasoningEffort: env.CODEX_REASONING_EFFORT?.trim() || "medium",
         defaultSystemPrompt: args.defaultSystemPrompt,
       });
 
