@@ -153,6 +153,19 @@ cd app/client && bun run dev # UI :5173（/api をプロキシ）
 - **crash-loop のリスクは env 直接設定のときのみ**: `app/.env` の `LLM_PROVIDER` に不正な値を設定、または `openai-compat` で `OPENAI_COMPAT_BASE_URL` / `OPENAI_COMPAT_MODEL` を未設定のまま起動すると、サーバは起動時に throw して落ちる（fail-fast）。常駐運用では LaunchAgent（KeepAlive）が再起動を繰り返す crash-loop になるため、`data/logs/server.stderr.log` のエラーを確認して `app/.env` を修正するか、`LLM_PROVIDER` を空に戻す。一方、UI（サイドバーの「LLM プロバイダ」パネル）からの変更は保存前に検証され不正な入力はエラー表示で弾かれ、起動時の DB 設定適用も fail-open（不正値は warn してフォールバックし常駐プロセスは落ちない）なので crash-loop にはならない。
 - **CLI（generate-content 等）から使う場合**: Bun は cwd の `.env` しか自動ロードしないため、リポジトリルートからの `bun scripts/generate-content.ts …` では `app/.env` の設定は効かない。`LLM_PROVIDER=… bun scripts/generate-content.ts …` のように環境変数を直接付けるか、`cd app && bun ../scripts/generate-content.ts …` で実行する。
 
+### ローカル LLM のおすすめ構成（Apple Silicon Mac の例）
+
+```bash
+brew install ollama && brew services start ollama
+ollama pull qwen3:30b-instruct   # Qwen3-30B-A3B-Instruct（MoE・約18GB・RAM 32GB 以上推奨）
+```
+
+サイドバーの LLM パネルで **OpenAI 互換** を選び、Base URL `http://localhost:11434/v1`・モデル名 `qwen3:30b-instruct` を保存すれば完了（Ollama は API キー不要なので「キー未設定」表示のままで正常）。
+
+- **モデル選定の目安**: 訳・添削解説など日本語出力があるため、日英両対応のモデルを選ぶ（Qwen3 / Gemma 3 が有力）。**thinking 系の変種は避ける** — `<think>` タグが会話にそのまま表示・読み上げされてしまう。RAM 16GB の Mac なら `qwen3:8b` などの小型を。
+- **使い分けの目安**: 会話相手・ロールプレイ・訳はローカル 30B 級で実用的。添削の日本語解説・月次レビュー・レベル測定は Claude の品質が明確に上なので、用途に応じてパネルで切り替える運用がおすすめ。
+- 長い自由会話で文脈が切れる場合は Ollama のコンテキスト長を広げる: `OLLAMA_CONTEXT_LENGTH=16384 brew services restart ollama`
+
 ## 自分用にカスタマイズする
 
 お題・シナリオ（`content/topics/` / `content/scenarios/`）は frontmatter 付き Markdown ファイル1枚です。既存ファイルを真似て追加すれば、自動で least-recently-used ローテーションに入ります。同梱のお題はサンプルなので、自分の仕事・関心に合わせて差し替えてください。
