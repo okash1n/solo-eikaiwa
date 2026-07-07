@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   BOUNDARY_LEVELS, DEFAULT_LEVEL, demotionTargetLevel, fttMiniRoundsSec, fttRoundsSec,
-  needXp, PLACEMENT_XP, prepParams, stageOf, vocabConstraint, xpForGrade,
+  needXp, PLACEMENT_XP, prepParams, stageAnchorLevel, stageOf, vocabConstraint, xpForGrade,
 } from "../progression";
 
 describe("progression: stageOf", () => {
@@ -66,10 +66,15 @@ describe("progression: 定数と降格先", () => {
   test("境界レベルは 10,20,30,40,50（60は含まない: 60→61は同stage）", () => {
     expect([...BOUNDARY_LEVELS]).toEqual([10, 20, 30, 40, 50]);
   });
-  test("降格先は現ステージ最下端の1つ下（例: Lv23→20、Lv75→50）", () => {
-    expect(demotionTargetLevel(23)).toBe(20);
-    expect(demotionTargetLevel(11)).toBe(10);
-    expect(demotionTargetLevel(75)).toBe(50);
+  test("降格先は一つ下のstageの開始アンカー（例: Lv23→15、Lv13→5、Lv75→45）", () => {
+    expect(demotionTargetLevel(23)).toBe(15);
+    expect(demotionTargetLevel(13)).toBe(5);
+    expect(demotionTargetLevel(75)).toBe(45);
+  });
+  test("stageAnchorLevel は各stageの代表アンカー（(stage-1)*10+5）", () => {
+    expect(stageAnchorLevel(1)).toBe(5);
+    expect(stageAnchorLevel(2)).toBe(15);
+    expect(stageAnchorLevel(6)).toBe(55);
   });
   test("XP換算は good=2・soso=1・bad=1（bad でも参加XPは付く）・placement=10", () => {
     expect(xpForGrade("good")).toBe(2);

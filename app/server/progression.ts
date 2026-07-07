@@ -82,9 +82,15 @@ export function vocabConstraint(stage: number): string | null {
     : null;
 }
 
-/** 降格承認時の移動先: 現ステージ最下端の1つ下（例 Lv23→20）。stage1 では呼ばない前提（提案側で抑止） */
+/** stage(1..6) の代表アンカーレベル（各stageの下寄り中央）。降格先・既定開始レベルの基準。 */
+export function stageAnchorLevel(stage: number): number {
+  const s = Math.min(Math.max(Math.trunc(stage), 1), 6);
+  return (s - 1) * 10 + 5; // stage1→5, stage2→15, ..., stage6→55
+}
+
+/** 降格承認時の移動先: 一つ下の stage の開始アンカー（体感差を作る）。stage1 では呼ばない前提（提案側で抑止） */
 export function demotionTargetLevel(level: number): number {
-  return (stageOf(level) - 1) * 10;
+  return stageAnchorLevel(stageOf(level) - 1);
 }
 
 /** 自己評価1枚ごとの努力XP（スペック§4.1: good=2 / soso・bad=1）。routes 側の分散リテラルを一元化 */

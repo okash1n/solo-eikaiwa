@@ -162,7 +162,7 @@ describe("progress-store: 降格提案", () => {
     for (let i = 0; i < 5; i++) seedAttempt(db, "2026-07-04", "roleplay", i === 0 ? 1 : 0); // 1/5=20%
     const p = store.getSummary(T).proposal!;
     expect(p.kind).toBe("down");
-    expect(p.toLevel).toBe(20);
+    expect(p.toLevel).toBe(15);
   });
   test("試行4件以下なら完了率条件では提案しない", () => {
     const { db, store } = freshStore();
@@ -192,13 +192,13 @@ describe("progress-store: 降格提案", () => {
     for (let i = 0; i < 6; i++) seedAttempt(db, "2026-07-04", "roleplay", 0);
     expect(store.getSummary(T).proposal).toBeNull();
   });
-  test("承認で現ステージ最下端の1つ下へ・XPは減らない", () => {
+  test("承認で一つ下のstageアンカーへ・XPは減らない", () => {
     const { db, store } = freshStore();
     store.levelAction("set", 23, T);
     store.addXp("block", 10, {}, T);
     for (let i = 0; i < 5; i++) seedAttempt(db, "2026-07-04", "roleplay", 0);
     const s = store.levelAction("accept", undefined, T)!;
-    expect(s.summary.level).toBe(20);
+    expect(s.summary.level).toBe(15);
     expect(s.summary.xp).toBe(10); // 累積XPは不変
     expect(s.summary.xpIntoLevel).toBe(0);
     expect(s.levelChanged).toBe(true);
@@ -208,11 +208,11 @@ describe("progress-store: 降格提案", () => {
     store.levelAction("set", 23, T);
     for (let i = 0; i < 5; i++) seedAttempt(db, "2026-07-04", "roleplay", 0);
     const s = store.levelAction("accept", undefined, T)!;
-    expect(s.summary.level).toBe(20);
+    expect(s.summary.level).toBe(15);
     const row = db.query<{ kind: string; from_level: number; to_level: number }, []>(
       "SELECT kind, from_level, to_level FROM level_events WHERE kind = 'accept-down' ORDER BY id DESC LIMIT 1").get()!;
     expect(row.from_level).toBe(23);
-    expect(row.to_level).toBe(20);
+    expect(row.to_level).toBe(15);
   });
   test("降格条件と昇格条件が同時成立したら降格を優先", () => {
     const { db, store } = freshStore();
