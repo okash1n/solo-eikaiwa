@@ -84,7 +84,7 @@ type ProgressStrings = {
 };
 type PlacementStrings = {
   placement: {
-    cardTitleNew: string; cardBodyNew: string; startDefaultNote: string;
+    cardTitleNew: string; cardBodyNew: string; startDefaultNote: (lv: number) => string;
     cardTitleMonthly: string; cardBodyMonthly: string;
     introTitle: string; introBody: string; introStart: string;
     taskLabel: (i: number, total: number) => string;
@@ -271,7 +271,7 @@ export const STR: Record<Lang, Strings> = {
     placement: {
       cardTitleNew: "Find your level (10 min)",
       cardBodyNew: "Three short speaking tasks set your starting level",
-      startDefaultNote: "No test? You'll start at Lv 5 — you can change it anytime.",
+      startDefaultNote: (lv) => `No test? You'll start at Lv ${lv} — you can change it anytime.`,
       cardTitleMonthly: "Monthly level check",
       cardBodyMonthly: "It's been a month — see how your speaking has moved",
       introTitle: "Level check",
@@ -493,7 +493,7 @@ export const STR: Record<Lang, Strings> = {
     placement: {
       cardTitleNew: "レベル測定（10分）",
       cardBodyNew: "3つの短いスピーキングで開始レベルを決めます",
-      startDefaultNote: "測定しない場合は Lv5 から始まります（いつでも変更できます）。",
+      startDefaultNote: (lv) => `測定しない場合は Lv${lv} から始まります（いつでも変更できます）。`,
       cardTitleMonthly: "月次レベル測定",
       cardBodyMonthly: "前回から1ヶ月 — 話す力の変化を見てみましょう",
       introTitle: "レベル測定",

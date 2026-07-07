@@ -153,7 +153,9 @@ export function StartScreen(props: { onSelect: (sel: StartSelection) => void; la
       {showBedtime && <p className="hero-bedtime text-sm text-muted">{t.hero.bedtime}</p>}
 
       {/* 未測定の測定導線は「最初の一歩」なのでヒーロー直下。練習メニュー群とは別物として扱う */}
-      {placementCard === "new" && <PlacementCallout kind="new" tp={tp} onGo={() => props.onSelect({ type: "placement" })} />}
+      {placementCard === "new" && (
+        <PlacementCallout kind="new" tp={tp} level={summary?.level} onGo={() => props.onSelect({ type: "placement" })} />
+      )}
 
       <div>
         <p className="section-label">{t.quick.label} <span className="section-note">{t.quick.note}</span></p>
@@ -230,15 +232,19 @@ function PlacementCallout(props: {
   kind: "new" | "monthly";
   tp: (typeof STR)["en"]["placement"];
   onGo: () => void;
+  /** kind==="new"の既定Lv表示に使う現在値（summary未取得の間は表示を見送る） */
+  level?: number;
 }) {
-  const { kind, tp } = props;
+  const { kind, tp, level } = props;
   return (
     <button className="placement-callout" onClick={props.onGo}>
       <span className="placement-callout-icon" aria-hidden="true">📐</span>
       <span className="drill-body">
         <span className="drill-title">{kind === "new" ? tp.cardTitleNew : tp.cardTitleMonthly}</span>
         <span className="drill-desc">{kind === "new" ? tp.cardBodyNew : tp.cardBodyMonthly}</span>
-        {kind === "new" && <span className="drill-desc text-sm text-muted">{tp.startDefaultNote}</span>}
+        {kind === "new" && typeof level === "number" && (
+          <span className="drill-desc text-sm text-muted">{tp.startDefaultNote(level)}</span>
+        )}
       </span>
       <span className="drill-arrow" aria-hidden="true">→</span>
     </button>
