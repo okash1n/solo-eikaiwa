@@ -10,6 +10,10 @@ import {
   contentToMarkdown, genSentences, genTopics,
   validateNewSentences, validateTopicCandidate,
 } from "../content-gen";
+import { loadListening, parseListeningFile } from "../listening";
+import {
+  genListening, listeningToMarkdown, validateListeningCandidate,
+} from "../content-gen";
 import { pickWorstCategories, type CategoryRate } from "../srs-analytics";
 
 /** 呼び出し順にレスポンスを返す fake ClaudeRunner（実Claude呼び出し・実content/への書き込みは一切しない） */
@@ -409,5 +413,113 @@ describe("content-gen / genTopics", () => {
     expect(seen[0].systemPrompt).not.toContain("word families");
     expect(seen[0].systemPrompt).not.toMatch(/\bnull\b/);
     cleanup(dirs);
+  });
+});
+
+describe("content-gen / listeningToMarkdown", () => {
+  test("parseListeningFile とラウンドトリップする", () => {
+    const md = listeningToMarkdown({
+      id: "coffee-shop", title: "A morning at the coffee shop", titleJa: "朝のカフェ",
+      domain: "daily", level: [1, 3],
+      paragraphs: ["I go to the same coffee shop every morning.", "The staff already know my order."],
+    });
+    const parsed = parseListeningFile(md)!;
+    expect(parsed.id).toBe("coffee-shop");
+    expect(parsed.domain).toBe("daily");
+    expect(parsed.level).toEqual([1, 3]);
+    expect(parsed.paragraphs).toHaveLength(2);
+  });
+});
+
+describe("content-gen / validateListeningCandidate", () => {
+  const BASE = {
+    id: "team-standup", title: "Our daily standup", titleJa: "朝会",
+    paragraphs: ["We meet at nine every morning.", "Each person shares what they did yesterday."],
+  };
+
+  test("正常系は NewListeningCandidate を返す", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "gen-listen-valid-"));
+    const cand = validateListeningCandidate(BASE, new Set(), dir);
+    expect(cand?.id).toBe("team-standup");
+    expect(cand?.paragraphs).toHaveLength(2);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("id が kebab-case でない / 空 title / 段落2未満 / 空段落は null", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "gen-listen-bad-"));
+    expect(validateListeningCandidate({ ...BASE, id: "Not_Kebab" }, new Set(), dir)).toBeNull();
+    expect(validateListeningCandidate({ ...BASE, title: "  " }, new Set(), dir)).toBeNull();
+    expect(validateListeningCandidate({ ...BASE, paragraphs: ["only one"] }, new Set(), dir)).toBeNull();
+    expect(validateListeningCandidate({ ...BASE, paragraphs: ["ok", "  "] }, new Set(), dir)).toBeNull();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("既存 id 集合との衝突・ファイル衝突は null", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "gen-listen-dup-"));
+    expect(validateListeningCandidate(BASE, new Set(["team-standup"]), dir)).toBeNull();
+    writeFileSync(path.join(dir, "team-standup.md"), "x");
+    expect(validateListeningCandidate(BASE, new Set(), dir)).toBeNull();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("id が予約語 'log' は null（GET /api/listening/:id と POST /api/listening/log の解釈衝突を避ける）", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "gen-listen-reserved-"));
+    expect(validateListeningCandidate({ ...BASE, id: "log" }, new Set(), dir)).toBeNull();
+    rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+describe("content-gen / genListening", () => {
+  function listeningJson(id: string, overrides: Record<string, unknown> = {}) {
+    return JSON.stringify({
+      id, title: `Title ${id}`, titleJa: `タイトル${id}`,
+      paragraphs: [`First paragraph of ${id}.`, `Second paragraph of ${id}.`],
+      ...overrides,
+    });
+  }
+  // LISTENING_PLAN の6件分（下帯3・上帯3）を順に返す
+  const SIX = ["daily-lo", "biz-lo", "it-lo", "daily-hi", "biz-hi", "it-hi"].map((id) => listeningJson(id));
+
+  test("正常系: LISTENING_PLAN 分（6本）が listeningDir に書かれ loadListening で読める", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "gen-listen-run-"));
+    const logs: string[] = [];
+    await genListening({ runner: makeRunner(SIX), listeningDir: dir, dry: false, log: (s) => logs.push(s) });
+    const items = loadListening(dir);
+    expect(items).toHaveLength(6);
+    // 下帯 [1,3] と上帯 [4,6] の両方が生成される
+    expect(items.some((i) => i.level[0] === 1 && i.level[1] === 3)).toBe(true);
+    expect(items.some((i) => i.level[0] === 4 && i.level[1] === 6)).toBe(true);
+    expect(logs.some((l) => l.startsWith("完了:"))).toBe(true);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("dry=true は一切書かない", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "gen-listen-dry-"));
+    const logs: string[] = [];
+    await genListening({ runner: makeRunner(SIX), listeningDir: dir, dry: true, log: (s) => logs.push(s) });
+    expect(loadListening(dir)).toHaveLength(0);
+    expect(logs.some((l) => l.includes("--dry"))).toBe(true);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("下帯は systemPrompt に高頻度語彙制約(word families)が入り、上帯には入らない", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "gen-listen-vocab-"));
+    const { runner, seen } = makeCapturingRunner(SIX);
+    await genListening({ runner, listeningDir: dir, dry: true });
+    // LISTENING_PLAN の先頭3件が下帯（vocabStage 2）、後半3件が上帯（vocabStage 5）
+    expect(seen[0].systemPrompt).toContain("word families");
+    expect(seen[3].systemPrompt).not.toContain("word families");
+    expect(seen[3].systemPrompt).not.toMatch(/\bnull\b/);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("不正候補が2回続くと書き込みゼロで throw（オーファン無し）", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "gen-listen-fail-"));
+    const bad = listeningJson("ok-id", { paragraphs: ["only one"] }); // 段落2未満で検証NG
+    await expect(
+      genListening({ runner: makeRunner([SIX[0], SIX[1], bad, bad]), listeningDir: dir, dry: false }),
+    ).rejects.toThrow();
+    expect(loadListening(dir)).toHaveLength(0); // 先に検証を通った候補も書かれない
+    rmSync(dir, { recursive: true, force: true });
   });
 });

@@ -1,11 +1,12 @@
 import type { Database } from "bun:sqlite";
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { normalizeEn } from "./chunks";
 import { extractJson } from "./coach";
 import type { ClaudeRunner } from "./converse";
 import { loadContent } from "./content";
+import { loadListening } from "./listening";
 import { loadSentences, type Sentence } from "./sentences";
 import { vocabConstraint } from "./progression";
 import { categoryBadRates, pickWorstCategories } from "./srs-analytics";
@@ -266,4 +267,118 @@ Do not use any tools — reply directly with text only.`;
     throw err;
   }
   log(`完了: ${written.length} ファイルを追加しました。`);
+}
+
+export type NewListeningCandidate = { id: string; title: string; titleJa: string; paragraphs: string[] };
+
+/** parseListeningFile が読める markdown に整形する（ラウンドトリップをテストで保証）。domain/level はプラン側で固定。 */
+export function listeningToMarkdown(c: NewListeningCandidate & { domain: string; level: [number, number] }): string {
+  return [
+    "---",
+    `id: ${c.id}`,
+    `title: "${c.title}"`,
+    `title_ja: "${c.titleJa}"`,
+    `domain: ${c.domain}`,
+    `level: [${c.level[0]}, ${c.level[1]}]`,
+    "---",
+    "",
+    c.paragraphs.join("\n\n"),
+    "",
+  ].join("\n");
+}
+
+/**
+ * AI 生成 listening 候補の厳格バリデーション（parseListeningFile とは別物 — 不正は静かにフォールバックせず候補全体を棄却）。
+ * 検査: id(kebab-case・予約語"log"禁止・既存集合/ファイルと非衝突) / title・titleJa(空でない) / paragraphs(2件以上・すべて非空文字列)。
+ * domain・level はプランで固定するためここでは検査しない。
+ * id="log" を拒否するのは POST /api/listening/log と GET /api/listening/:id (prefix) の混同を避けるため。
+ */
+export function validateListeningCandidate(
+  parsed: unknown, existingIds: Set<string>, dir: string,
+): NewListeningCandidate | null {
+  if (typeof parsed !== "object" || parsed === null) return null;
+  const c = parsed as Partial<NewListeningCandidate>;
+  if (typeof c.id !== "string" || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(c.id)) return null;
+  if (c.id === "log") return null;
+  if (existingIds.has(c.id) || existsSync(path.join(dir, `${c.id}.md`))) return null;
+  if (typeof c.title !== "string" || !c.title.trim()) return null;
+  if (typeof c.titleJa !== "string" || !c.titleJa.trim()) return null;
+  if (!Array.isArray(c.paragraphs) || c.paragraphs.length < 2) return null;
+  if (!c.paragraphs.every((p) => typeof p === "string" && p.trim().length > 0)) return null;
+  return { id: c.id, title: c.title.trim(), titleJa: c.titleJa.trim(), paragraphs: c.paragraphs.map((p) => p.trim()) };
+}
+
+export type GenListeningDeps = {
+  runner: ClaudeRunner;
+  listeningDir: string;
+  dry: boolean;
+  log?: (s: string) => void;
+};
+
+/**
+ * stage帯（下=1-3 / 上=4-6）× 3ドメイン = 6本の多聴素材を生成する。level と domain はプランで固定し、
+ * 語彙制約は帯に連動（下帯は vocabConstraint あり・上帯は無し）。全候補を検証してから一括書き込み（all-or-nothing）。
+ * いずれかが2回とも検証NGなら何も書き込まず throw する。
+ */
+const LISTENING_PLAN: ReadonlyArray<{ domain: (typeof DOMAINS)[number]; level: [number, number]; vocabStage: number }> = [
+  { domain: "daily", level: [1, 3], vocabStage: 2 },
+  { domain: "business", level: [1, 3], vocabStage: 2 },
+  { domain: "it", level: [1, 3], vocabStage: 2 },
+  { domain: "daily", level: [4, 6], vocabStage: 5 },
+  { domain: "business", level: [4, 6], vocabStage: 5 },
+  { domain: "it", level: [4, 6], vocabStage: 5 },
+];
+
+export async function genListening(deps: GenListeningDeps): Promise<void> {
+  const log = deps.log ?? console.log;
+  const existingIds = new Set(loadListening(deps.listeningDir).map((it) => it.id));
+  const candidates: Array<NewListeningCandidate & { domain: string; level: [number, number] }> = [];
+
+  for (const p of LISTENING_PLAN) {
+    const vocab = vocabConstraint(p.vocabStage);
+    // stage>=4（vocab===null）は行自体を挿入しない（上級者向け素材の語彙制約なし）
+    const vocabLine = vocab ? `${vocab}\n` : "";
+    const domainDesc = p.domain === "daily" ? "everyday life" : p.domain === "business" ? "the workplace" : "software/IT work";
+    const system = `You write an original short LISTENING script for a Japanese learner of English to listen to (about 2-4 minutes when read aloud, roughly 250-450 words).
+Topic domain: ${domainDesc}. Difficulty: aim at CEFR level band for learner stage ${p.level[0]}-${p.level[1]} of 6.
+Write natural spoken-style prose (first or third person) in 3-5 short paragraphs. No headings, no bullet lists, no dialogue markers, no speaker labels.
+${vocabLine}${ORIGINALITY}
+Do NOT reuse these existing ids: ${[...existingIds].join(", ") || "(none)"}
+Reply with STRICT JSON only — no markdown fences:
+{"id":"kebab-case-id","title":"English title","titleJa":"日本語タイトル","paragraphs":["paragraph 1 text", "paragraph 2 text", "..."]}
+Do not use any tools — reply directly with text only.`;
+    let cand: NewListeningCandidate | null = null;
+    for (let attempt = 1; attempt <= 2 && !cand; attempt++) {
+      const { text } = await deps.runner(`Write the ${p.domain} listening script now.`, undefined, { systemPrompt: system });
+      const parsed = extractJson<NewListeningCandidate>(text);
+      cand = validateListeningCandidate(parsed, existingIds, deps.listeningDir);
+      if (!cand && attempt === 1) log(`  ${p.domain}/${p.level[0]}-${p.level[1]}: 検証NG — 再生成します`);
+    }
+    if (!cand) {
+      throw new Error(`エラー: ${p.domain}/${p.level[0]}-${p.level[1]} の多聴素材が検証を通りませんでした。何も書き込みません。`);
+    }
+    existingIds.add(cand.id);
+    candidates.push({ ...cand, domain: p.domain, level: p.level });
+    log(`  + listening: ${cand.id} [${p.domain}/${p.level[0]}-${p.level[1]}] ${cand.title}`);
+  }
+
+  if (deps.dry) {
+    log("--dry のため書き込みません");
+    return;
+  }
+
+  mkdirSync(deps.listeningDir, { recursive: true });
+  const written: string[] = [];
+  try {
+    for (const cand of candidates) {
+      const file = path.join(deps.listeningDir, `${cand.id}.md`);
+      if (existsSync(file)) throw new Error(`エラー: ${file} は既に存在します。中止します。`);
+      writeFileSync(file, listeningToMarkdown(cand));
+      written.push(file);
+    }
+  } catch (err) {
+    for (const f of written) rmSync(f, { force: true });
+    throw err;
+  }
+  log(`完了: ${written.length} 本の多聴素材を追加しました。`);
 }
