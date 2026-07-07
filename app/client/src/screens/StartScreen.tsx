@@ -238,6 +238,7 @@ function PlacementCallout(props: {
       <span className="drill-body">
         <span className="drill-title">{kind === "new" ? tp.cardTitleNew : tp.cardTitleMonthly}</span>
         <span className="drill-desc">{kind === "new" ? tp.cardBodyNew : tp.cardBodyMonthly}</span>
+        {kind === "new" && <span className="drill-desc text-sm text-muted">{tp.startDefaultNote}</span>}
       </span>
       <span className="drill-arrow" aria-hidden="true">→</span>
     </button>

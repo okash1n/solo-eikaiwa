@@ -83,7 +83,7 @@ type ProgressStrings = {
 };
 type PlacementStrings = {
   placement: {
-    cardTitleNew: string; cardBodyNew: string;
+    cardTitleNew: string; cardBodyNew: string; startDefaultNote: string;
     cardTitleMonthly: string; cardBodyMonthly: string;
     introTitle: string; introBody: string; introStart: string;
     taskLabel: (i: number, total: number) => string;
@@ -138,6 +138,7 @@ type Ftt432Strings = { ftt432: {
   min: (v: string) => string;
   prepTitle: (topic: string) => string;
   prepIntro: (rounds: string, count: number, prep: string) => string;
+  prepMicNote: string; roundTimeboxNote: string; roundChunksToggle: string;
   prepTimerNote: string; loading: string; retry: string; outlineTitle: string;
   modelIdle: string; modelScript: string; modelAudio: string; modelPlaying: string; modelRetry: string;
   startRound1: (min: string) => string; modelTranscript: string;
@@ -264,6 +265,7 @@ export const STR: Record<Lang, Strings> = {
     placement: {
       cardTitleNew: "Find your level (10 min)",
       cardBodyNew: "Three short speaking tasks set your starting level",
+      startDefaultNote: "No test? You'll start at Lv 5 — you can change it anytime.",
       cardTitleMonthly: "Monthly level check",
       cardBodyMonthly: "It's been a month — see how your speaking has moved",
       introTitle: "Level check",
@@ -349,6 +351,9 @@ export const STR: Record<Lang, Strings> = {
       min: (v) => `${v} min`,
       prepTitle: (topic) => `Prep — ${topic}`,
       prepIntro: (rounds, count, prep) => `You'll tell the same story ${count} times: ${rounds}. First, look over some phrases and an outline (about ${prep}).`,
+      prepMicNote: "Press 🎙 to start speaking — the timer starts then. Your Round 1 recording gets coach feedback before Round 2.",
+      roundTimeboxNote: "This time is a cap — if you finish sooner, that's great.",
+      roundChunksToggle: "Prep phrases",
       prepTimerNote: "Time to get started", loading: "Your coach is preparing phrases…", retry: "Retry",
       outlineTitle: "Story outline",
       modelIdle: "🎧 Hear a model talk (optional)", modelScript: "✍ Writing the script…",
@@ -358,7 +363,7 @@ export const STR: Record<Lang, Strings> = {
       aeNoRecording: "No recording, so there's no feedback", startRound2: (min) => `Start Round 2 (${min})`,
       doneBody: (count) => `4/3/2 done! You told the same story ${count} times, a little faster each round.`,
       roundHeading: (n, min, topic) => `Round ${n} (${min}) — ${topic}`,
-      timeUp: "— Time's up!", recStop: "⏹ Stop recording", recTranscribing: "📝 Transcribing…",
+      timeUp: "— Time reached", recStop: "⏹ Stop recording", recTranscribing: "📝 Transcribing…",
       recStart: "🎙 Start speaking", roundFinish: "End this round →",
       micError: (detail) => `Can't access the microphone: ${detail}`,
       explainMore: "💡 Explain more", explainLoading: "Writing an explanation…", explainError: "Couldn't load the explanation.",
@@ -477,6 +482,7 @@ export const STR: Record<Lang, Strings> = {
     placement: {
       cardTitleNew: "レベル測定（10分）",
       cardBodyNew: "3つの短いスピーキングで開始レベルを決めます",
+      startDefaultNote: "測定しない場合は Lv5 から始まります（いつでも変更できます）。",
       cardTitleMonthly: "月次レベル測定",
       cardBodyMonthly: "前回から1ヶ月 — 話す力の変化を見てみましょう",
       introTitle: "レベル測定",
@@ -562,6 +568,9 @@ export const STR: Record<Lang, Strings> = {
       min: (v) => `${v}分`,
       prepTitle: (topic) => `準備 — ${topic}`,
       prepIntro: (rounds, count, prep) => `これから同じ話を ${rounds} で${count}回話します。まず使えそうな表現と骨組みを確認してください（目安 ${prep}）。`,
+      prepMicNote: "🎙を押して話し始めるとタイマーが動きます。Round 1 の録音には Round 2 の前にコーチのフィードバックが付きます。",
+      roundTimeboxNote: "時間は上限です。言えたところまでで早く終えてもOKです。",
+      roundChunksToggle: "準備の表現チャンク",
       prepTimerNote: "そろそろ始めましょう", loading: "コーチが表現チャンクを用意しています…", retry: "再試行",
       outlineTitle: "話の骨組み",
       modelIdle: "🎧 モデルトークを聞く（任意）", modelScript: "✍ 原稿を作成中…",
@@ -571,7 +580,7 @@ export const STR: Record<Lang, Strings> = {
       aeNoRecording: "録音がなかったのでフィードバックはありません", startRound2: (min) => `Round 2 を始める（${min}）`,
       doneBody: (count) => `4/3/2 完了！同じ話を${count}回、少しずつ速く話せました。`,
       roundHeading: (n, min, topic) => `Round ${n}（${min}） — ${topic}`,
-      timeUp: "— 時間切れ！", recStop: "⏹ 録音を止める", recTranscribing: "📝 文字起こし中…",
+      timeUp: "— 目安の時間になりました", recStop: "⏹ 録音を止める", recTranscribing: "📝 文字起こし中…",
       recStart: "🎙 話し始める", roundFinish: "このラウンドを終える →",
       micError: (detail) => `マイクにアクセスできません: ${detail}`,
       explainMore: "💡 もっと詳しく", explainLoading: "解説を書いています…", explainError: "解説を取得できませんでした。",
