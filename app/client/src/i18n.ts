@@ -189,7 +189,7 @@ export const STR: Record<Lang, Strings> = {
     support: {
       title: "Support",
       presetAuto: "Auto", presetMore: "More", presetLess: "Less",
-      jaHint: "Japanese hints", modelTalk: "Model talk", cloze: "Fill-in-the-blank",
+      jaHint: "Japanese hints", modelTalk: "Model talk autoplay", cloze: "Fill-in-the-blank",
       optAuto: "Auto", optOn: "On", optOff: "Off",
       helpPreset: "Sets the defaults for the three items below. Auto: follows your level. More: show everything. Less: hide by default. Any item you set individually takes priority.",
       helpJaHint: "Whether practice chunks show a Japanese gloss. Auto: shown at lower levels, hidden as you level up. You can change it here anytime.",
@@ -386,7 +386,7 @@ export const STR: Record<Lang, Strings> = {
     support: {
       title: "サポート",
       presetAuto: "自動", presetMore: "多め", presetLess: "少なめ",
-      jaHint: "日本語ヒント", modelTalk: "モデルトーク", cloze: "歯抜け既定",
+      jaHint: "日本語ヒント", modelTalk: "モデルトーク自動再生", cloze: "歯抜け既定",
       optAuto: "自動", optOn: "オン", optOff: "オフ",
       helpPreset: "下の3項目のまとめ設定です。自動=レベルに応じた既定 / 多め=すべて表示側 / 少なめ=すべて非表示側。個別に変えた項目はそちらが優先されます。",
       helpJaHint: "練習チャンクに日本語訳を添えるかどうか。自動=低いレベルでは表示し、上がると非表示になります。いつでもここで変更できます。",
