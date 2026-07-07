@@ -6,6 +6,7 @@ import {
 import { loadLang, saveLang, STR, type Lang } from "./i18n";
 import { FreeTalkScreen } from "./screens/FreeTalkScreen";
 import { LibraryScreen } from "./screens/LibraryScreen";
+import { ListeningScreen } from "./screens/ListeningScreen";
 import { PlacementScreen } from "./screens/PlacementScreen";
 import { ProgressScreen } from "./screens/ProgressScreen";
 import { SentencesScreen } from "./screens/SentencesScreen";
@@ -16,7 +17,7 @@ import { Button } from "./ui/Button";
 import { localYmd } from "./dates";
 import { saveSupport, useSupport, type SupportToggle } from "./support";
 
-type Mode = { kind: "start" } | { kind: "free" } | { kind: "session"; source: MenuSource } | { kind: "library" } | { kind: "sentences" } | { kind: "placement" } | { kind: "progress" };
+type Mode = { kind: "start" } | { kind: "free" } | { kind: "session"; source: MenuSource } | { kind: "library" } | { kind: "sentences" } | { kind: "listening" } | { kind: "placement" } | { kind: "progress" };
 
 export function App() {
   const [health, setHealth] = useState<Health | null>(null);
@@ -72,6 +73,7 @@ export function App() {
     { key: "free", icon: "💬", label: t.nav.free, active: mode.kind === "free", go: () => setMode({ kind: "free" }) },
     { key: "library", icon: "📚", label: t.nav.library, active: mode.kind === "library", go: () => setMode({ kind: "library" }) },
     { key: "sentences", icon: "📖", label: t.nav.sentences, active: mode.kind === "sentences", go: () => setMode({ kind: "sentences" }) },
+    { key: "listening", icon: "🎧", label: t.nav.listening, active: mode.kind === "listening", go: () => setMode({ kind: "listening" }) },
     { key: "progress", icon: "📈", label: t.nav.progress, active: mode.kind === "progress", go: () => setMode({ kind: "progress" }) },
   ];
 
@@ -129,6 +131,7 @@ export function App() {
       )}
       {mode.kind === "library" && <LibraryScreen lang={lang} />}
       {mode.kind === "sentences" && <SentencesScreen lang={lang} />}
+      {mode.kind === "listening" && <ListeningScreen lang={lang} />}
       {mode.kind === "placement" && <PlacementScreen lang={lang} onExit={() => setMode({ kind: "start" })} />}
       {mode.kind === "progress" && <ProgressScreen lang={lang} />}
       </main>
