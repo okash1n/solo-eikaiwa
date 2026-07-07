@@ -2,6 +2,13 @@
 
 このプロジェクトの特筆すべき変更を記録します。形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に、バージョニングは [Semantic Versioning](https://semver.org/lang/ja/) に従います。
 
+## [0.11.0] - 2026-07-07
+
+### Added
+
+- **多聴ライブラリ（P6-2）**: サイドバーに「多聴」を新設。レベルに合った短い英語（3ドメイン×難易度2帯・各2〜4分）を段落ごとの音声で通し再生。スクリプトは隠して聞くのが既定（ボタンで表示・日本語訳と解説も可）。聴いた本数は「今週n本」の情報表示のみ（ノルマなし）。研究根拠: 多読・多聴はレベル適合の選書と記録があるときに効果が出る（d=0.50/0.47）
+- 多聴素材の生成CLIモード（`scripts/generate-content.ts listening` — 語彙レベリング連動・検証付き一括書き込み）
+
 ## [0.10.0] - 2026-07-07
 
 ### Added
@@ -153,6 +160,7 @@
 - 学習データ（録音・トランスクリプト・進捗・DB・キャッシュ）は `data/` のローカルファイルで、リポジトリにコミットされない
 - 音声データはマシン外に出ない（外部送信はテキストのみ: Claude への発話テキスト、OpenAI TTS への応答テキスト）
 
+[0.11.0]: https://github.com/okash1n/learn-english/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/okash1n/learn-english/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/okash1n/learn-english/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/okash1n/learn-english/compare/v0.7.0...v0.8.0
