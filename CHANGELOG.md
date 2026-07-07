@@ -2,6 +2,12 @@
 
 このプロジェクトの特筆すべき変更を記録します。形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に、バージョニングは [Semantic Versioning](https://semver.org/lang/ja/) に従います。
 
+## [0.16.0] - 2026-07-07
+
+### Added
+
+- **LLM プロバイダの切替**: コーチ・会話・コンテンツ生成のバックエンドを `LLM_PROVIDER` で選択可能に — `openai-compat`（Ollama / LM Studio / OpenAI API / GitHub Models）と `codex`（OpenAI Codex CLI・常に read-only サンドボックスで起動）。**既定（未設定）はこれまでどおり Claude で挙動は完全に同一**。設定手順・品質の前提・注意点は README「LLM プロバイダの切替」を参照（GitHub Copilot は公式 API がないため非対応）
+
 ## [0.15.0] - 2026-07-07
 
 ### Added
