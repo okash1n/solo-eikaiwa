@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  fetchAeFeedback, fetchFixExplanation, fetchPrepPack, playTtsCached, prefetchModelTalkAudio, sendSessionEvent, sttUpload,
+  fetchAeFeedback, fetchFixExplanation, fetchPrepPack, prefetchModelTalkAudio, sendSessionEvent, sttUpload,
   type AeFeedback, type ContentItem, type PrepPack,
 } from "../api";
 import { playBlob, Recorder, stopPlayback } from "../audio";
 import { formatMmSs, useCountdown } from "../useCountdown";
+import { usePlayRow } from "../usePlayRow";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
@@ -67,7 +68,7 @@ export function FourThreeTwoScreen(props: {
   type ModelState = "idle" | "script" | "audio" | "ready" | "playing" | "error";
   const [modelState, setModelState] = useState<ModelState>(autoPlay ? "script" : "idle");
   const [modelText, setModelText] = useState("");
-  const [playingIdx, setPlayingIdx] = useState<number | null>(null);
+  const playRow = usePlayRow<number>();
   const prepFetchedRef = useRef(false); // StrictMode の二重マウントで prep を二重フェッチしない
   const prepTimer = useCountdown(PREP_SECONDS);
   const recorderRef = useRef(new Recorder());
@@ -153,19 +154,6 @@ export function FourThreeTwoScreen(props: {
       if (!aliveRef.current) return;
       setErrorMsg(err instanceof Error ? err.message : String(err));
       setModelState("error");
-    }
-  }
-
-  async function playChunk(i: number, text: string) {
-    setErrorMsg("");
-    setPlayingIdx(i);
-    try {
-      await playTtsCached(text);
-    } catch (err) {
-      if (!aliveRef.current) return;
-      setErrorMsg(err instanceof Error ? err.message : String(err));
-    } finally {
-      if (aliveRef.current) setPlayingIdx(null);
     }
   }
 
@@ -279,7 +267,7 @@ export function FourThreeTwoScreen(props: {
           return (
           <div className="stack">
             {filteredChunks.length > 0 && (
-              <ChunkList chunks={filteredChunks} playingIdx={playingIdx} onPlay={playChunk} showJa={showJa} />
+              <ChunkList chunks={filteredChunks} playingIdx={playRow.playingKey} onPlay={(i, text) => playRow.play(i, text)} showJa={showJa} />
             )}
             {prep.outline.length > 0 && (
               <Card header="話の骨組み">
@@ -312,7 +300,7 @@ export function FourThreeTwoScreen(props: {
             <p className="reading-text">{modelText}</p>
           </details>
         )}
-        {prepState !== "error" && errorMsg && <Banner kind="error">{errorMsg}</Banner>}
+        {prepState !== "error" && (errorMsg || playRow.error) && <Banner kind="error">{errorMsg || playRow.error}</Banner>}
       </div>
     );
   }

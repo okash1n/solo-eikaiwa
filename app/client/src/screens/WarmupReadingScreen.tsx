@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { fetchPrepPack, playTtsCached, type ContentItem } from "../api";
-import { stopPlayback } from "../audio";
+import { useState } from "react";
+import { fetchPrepPack, type ContentItem } from "../api";
 import { useLoad } from "../useLoad";
+import { usePlayRow } from "../usePlayRow";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
@@ -15,28 +15,8 @@ import { clozeText } from "../cloze";
  */
 export function WarmupReadingScreen(props: { topic: ContentItem }) {
   const load = useLoad(() => fetchPrepPack(props.topic.id));
-  const [playErr, setPlayErr] = useState("");
-  const [playingIdx, setPlayingIdx] = useState<number | null>(null);
+  const playRow = usePlayRow<number>();
   const [clozeStep, setClozeStep] = useState(false);
-  const aliveRef = useRef(true);
-
-  useEffect(() => {
-    aliveRef.current = true;
-    return () => { aliveRef.current = false; stopPlayback(); };
-  }, []);
-
-  async function playChunk(i: number, text: string) {
-    setPlayErr("");
-    setPlayingIdx(i);
-    try {
-      await playTtsCached(text);
-    } catch (err) {
-      if (!aliveRef.current) return;
-      setPlayErr(err instanceof Error ? err.message : String(err));
-    } finally {
-      if (aliveRef.current) setPlayingIdx(null);
-    }
-  }
 
   const support = useSupport();
   const prep = load.state.status === "ready" ? load.state.data : null;
@@ -65,8 +45,8 @@ export function WarmupReadingScreen(props: { topic: ContentItem }) {
       )}
       {load.state.status === "ready" && prep && (
         <div className="stack">
-          {chunks.length > 0 && <ChunkList chunks={chunks} playingIdx={playingIdx} onPlay={playChunk} showJa={showJa} />}
-          {playErr && <Banner kind="error">{playErr}</Banner>}
+          {chunks.length > 0 && <ChunkList chunks={chunks} playingIdx={playRow.playingKey} onPlay={(i, text) => playRow.play(i, text)} showJa={showJa} />}
+          {playRow.error && <Banner kind="error">{playRow.error}</Banner>}
           {chunks.length > 0 && !clozeStep && (
             <Button variant="secondary" onClick={() => setClozeStep(true)}>🔡 歯抜けで音読（2周目・任意）</Button>
           )}

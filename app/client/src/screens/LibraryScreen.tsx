@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { fetchModelTalkLibrary, playTtsCached, type ModelTalkEntry } from "../api";
-import { stopPlayback } from "../audio";
+import { fetchModelTalkLibrary } from "../api";
 import { useLoad } from "../useLoad";
+import { usePlayRow } from "../usePlayRow";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
@@ -9,27 +8,7 @@ import { Card } from "../ui/Card";
 /** 生成済みモデルトークの一覧（情報表示のみ）。本文確認と再再生ができる。 */
 export function LibraryScreen() {
   const { state, reload } = useLoad(fetchModelTalkLibrary);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [playingId, setPlayingId] = useState<number | null>(null);
-  const aliveRef = useRef(true);
-
-  useEffect(() => {
-    aliveRef.current = true;
-    return () => { aliveRef.current = false; stopPlayback(); };
-  }, []);
-
-  async function play(entry: ModelTalkEntry) {
-    setErrorMsg("");
-    setPlayingId(entry.id);
-    try {
-      await playTtsCached(entry.text);
-    } catch (err) {
-      if (!aliveRef.current) return;
-      setErrorMsg(err instanceof Error ? err.message : String(err));
-    } finally {
-      if (aliveRef.current) setPlayingId(null);
-    }
-  }
+  const row = usePlayRow<number>();
 
   return (
     <div>
@@ -51,11 +30,11 @@ export function LibraryScreen() {
               <>
                 <Button
                   variant="ghost"
-                  onClick={() => play(e)}
-                  disabled={playingId !== null}
+                  onClick={() => row.play(e.id, e.text)}
+                  disabled={row.playingKey !== null}
                   ariaLabel={`「${e.topicTitle || e.topicId}」を再生`}
                 >
-                  {playingId === e.id ? "🔊 再生中…" : "▶"}
+                  {row.playingKey === e.id ? "🔊 再生中…" : "▶"}
                 </Button>{" "}
                 {e.topicTitle || e.topicId}{" "}
                 <span className="text-sm text-muted">{e.createdAt.slice(0, 10)}</span>
@@ -68,7 +47,7 @@ export function LibraryScreen() {
             </details>
           </Card>
         ))}
-      {state.status === "ready" && errorMsg && <Banner kind="error">{errorMsg}</Banner>}
+      {state.status === "ready" && row.error && <Banner kind="error">{row.error}</Banner>}
     </div>
   );
 }
