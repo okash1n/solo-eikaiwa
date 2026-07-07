@@ -28,8 +28,15 @@ type SessionStrings = {
   };
 };
 
-type NavStrings = { nav: { home: string; placement: string; free: string; library: string; sentences: string; listening: string; progress: string } };
+type NavStrings = {
+  nav: {
+    home: string; placement: string; free: string; library: string; sentences: string; listening: string; progress: string;
+    sectionToday: string; sectionSelf: string; sectionRecords: string; selfStudyHint: string;
+  };
+};
 type AppShellStrings = { appShell: { backToMenu: string; textSize: string; language: string } };
+/** 難易度の実態を1語で開示するチップの文言。kind ("auto"/"band"/"all") は事実マップに厳密対応（嘘のチップは信頼を壊す） */
+type LevelChipStrings = { levelChip: { auto: string; band: string; all: string } };
 type UiScaleStrings = { uiScale: { small: string; medium: string; large: string; xlarge: string } };
 type SupportStrings = {
   support: {
@@ -84,7 +91,7 @@ type ProgressStrings = {
 };
 type PlacementStrings = {
   placement: {
-    cardTitleNew: string; cardBodyNew: string; startDefaultNote: string;
+    cardTitleNew: string; cardBodyNew: string; startDefaultNote: (lv: number) => string;
     cardTitleMonthly: string; cardBodyMonthly: string;
     introTitle: string; introBody: string; introStart: string;
     taskLabel: (i: number, total: number) => string;
@@ -107,6 +114,7 @@ type SentencesStrings = {
     hideNoteLabel: string;
     audioFirstLabel: string;
     newPerDayLabel: string;
+    newPerDayNote: string;
     loading: string; retry: string;
     remaining: (left: number, graded: number) => string;
     sayItFirst: string;
@@ -194,7 +202,8 @@ type Strings =
   & CalendarStrings & FreeTalkHeaderStrings & ProgressStrings & PlacementStrings & SentencesStrings
   & MenuTitleStrings & SessionStrings
   & WarmupStrings & Ftt432Strings & ReflectionStrings & ChunkListStrings
-  & ShadowingStrings & LibraryStrings & RoleplayStrings & FreeTalkScreenStrings & ListeningScreenStrings;
+  & ShadowingStrings & LibraryStrings & RoleplayStrings & FreeTalkScreenStrings & ListeningScreenStrings
+  & LevelChipStrings;
 
 const WEEKDAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -202,8 +211,13 @@ const WEEKDAYS_JA = ["日", "月", "火", "水", "木", "金", "土"];
 
 export const STR: Record<Lang, Strings> = {
   en: {
-    nav: { home: "Home", placement: "Level Check", free: "Free Talk", library: "Library", sentences: "300 Sentences", listening: "Listening", progress: "Progress" },
+    nav: {
+      home: "Home", placement: "Level Check", free: "Free Talk", library: "Library", sentences: "300 Sentences", listening: "Listening", progress: "Progress",
+      sectionToday: "Today's practice", sectionSelf: "Self-study", sectionRecords: "Records & level",
+      selfStudyHint: "Your main path is Today's practice. Self-study fits spare moments — a good order: listen (Listening) → memorize (Sentences) → speak (Free talk).",
+    },
     appShell: { backToMenu: "← Back to menu", textSize: "Text size", language: "Language" },
+    levelChip: { auto: "Adjusts to your level", band: "Pick by level band", all: "Same for all levels" },
     uiScale: { small: "A−", medium: "A", large: "A＋", xlarge: "A＋＋" },
     support: {
       title: "Support",
@@ -271,7 +285,7 @@ export const STR: Record<Lang, Strings> = {
     placement: {
       cardTitleNew: "Find your level (10 min)",
       cardBodyNew: "Three short speaking tasks set your starting level",
-      startDefaultNote: "No test? You'll start at Lv 5 — you can change it anytime.",
+      startDefaultNote: (lv) => `No test? You'll start at Lv ${lv} — you can change it anytime.`,
       cardTitleMonthly: "Monthly level check",
       cardBodyMonthly: "It's been a month — see how your speaking has moved",
       introTitle: "Level check",
@@ -303,6 +317,7 @@ export const STR: Record<Lang, Strings> = {
       hideNoteLabel: "Hide hints",
       audioFirstLabel: "Start from audio",
       newPerDayLabel: "New/day",
+      newPerDayNote: "Applies the next time practice loads.",
       loading: "Loading…", retry: "Retry",
       remaining: (left, graded) => `${left} left (${graded} graded)`,
       sayItFirst: "↑ Say it in English out loud first",
@@ -424,8 +439,13 @@ export const STR: Record<Lang, Strings> = {
     },
   },
   ja: {
-    nav: { home: "ホーム", placement: "レベル測定", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300", listening: "多聴", progress: "進捗" },
+    nav: {
+      home: "ホーム", placement: "レベル測定", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300", listening: "多聴", progress: "進捗",
+      sectionToday: "今日の練習", sectionSelf: "自主練", sectionRecords: "記録・測定",
+      selfStudyHint: "メインは「今日の練習」。自主練はすきま時間に。目安の順番: 聞く(多聴) → 覚える(暗記例文) → 話す(自由会話)。",
+    },
     appShell: { backToMenu: "← メニューに戻る", textSize: "文字サイズ", language: "言語" },
+    levelChip: { auto: "Lvに自動調整", band: "Lv帯で選ぶ", all: "全レベル共通" },
     uiScale: { small: "小", medium: "中", large: "大", xlarge: "特大" },
     support: {
       title: "サポート",
@@ -493,7 +513,7 @@ export const STR: Record<Lang, Strings> = {
     placement: {
       cardTitleNew: "レベル測定（10分）",
       cardBodyNew: "3つの短いスピーキングで開始レベルを決めます",
-      startDefaultNote: "測定しない場合は Lv5 から始まります（いつでも変更できます）。",
+      startDefaultNote: (lv) => `測定しない場合は Lv${lv} から始まります（いつでも変更できます）。`,
       cardTitleMonthly: "月次レベル測定",
       cardBodyMonthly: "前回から1ヶ月 — 話す力の変化を見てみましょう",
       introTitle: "レベル測定",
@@ -525,6 +545,7 @@ export const STR: Record<Lang, Strings> = {
       hideNoteLabel: "ヒントを隠す",
       audioFirstLabel: "音から始める",
       newPerDayLabel: "1日の新規",
+      newPerDayNote: "次に練習タブを開いたときから反映されます。",
       loading: "読み込み中…", retry: "再試行",
       remaining: (left, graded) => `残り ${left} 文（うち評価済み ${graded}）`,
       sayItFirst: "↑ を英語で、まず声に出して言ってみる",

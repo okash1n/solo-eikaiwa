@@ -6,6 +6,8 @@ import { useExplain } from "../useExplain";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { ExplainBox } from "../ui/ExplainBox";
+import { LevelChip } from "../ui/LevelChip";
 
 type State = "script" | "audio" | "ready" | "playing" | "error";
 
@@ -67,6 +69,7 @@ export function ShadowingScreen(props: { topic: ContentItem; lang: Lang }) {
 
   return (
     <div className="stack">
+      <LevelChip kind="auto" lang={props.lang} />
       <p className="text-muted">
         {t.intro}
       </p>
@@ -88,14 +91,10 @@ export function ShadowingScreen(props: { topic: ContentItem; lang: Lang }) {
           {showScript && (
             <>
               <Card className="reading-text">{text}</Card>
-              {explainer.state.status === "idle" && (
-                <Button variant="ghost" onClick={explainer.request}>{t.explainMore}</Button>
-              )}
-              {explainer.state.status === "loading" && <p className="text-sm text-muted">{t.explainLoading}</p>}
-              {explainer.state.status === "error" && (
-                <p className="text-sm text-muted">{t.explainError}<Button variant="ghost" onClick={explainer.request}>{t.retry}</Button></p>
-              )}
-              {explainer.state.status === "done" && <p className="sentence-explain text-sm">{explainer.state.text}</p>}
+              <ExplainBox
+                state={explainer.state} request={explainer.request}
+                labels={{ more: t.explainMore, loading: t.explainLoading, error: t.explainError, retry: t.retry }}
+              />
             </>
           )}
         </div>

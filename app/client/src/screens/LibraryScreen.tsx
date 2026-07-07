@@ -6,6 +6,7 @@ import { useExplain } from "../useExplain";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { ExplainBox } from "../ui/ExplainBox";
 
 /** 生成済みモデルトークの一覧（情報表示のみ）。本文確認・再再生・訳解説ができる。 */
 export function LibraryScreen({ lang }: { lang: Lang }) {
@@ -59,14 +60,10 @@ function LibraryEntry({ entry, lang, row }: {
         <summary className="text-muted">{t.transcript}</summary>
         <p className="reading-text">{entry.text}</p>
       </details>
-      {explainer.state.status === "idle" && (
-        <Button variant="ghost" onClick={explainer.request}>{t.explainMore}</Button>
-      )}
-      {explainer.state.status === "loading" && <p className="text-sm text-muted">{t.explainLoading}</p>}
-      {explainer.state.status === "error" && (
-        <p className="text-sm text-muted">{t.explainError}<Button variant="ghost" onClick={explainer.request}>{t.retry}</Button></p>
-      )}
-      {explainer.state.status === "done" && <p className="sentence-explain text-sm">{explainer.state.text}</p>}
+      <ExplainBox
+        state={explainer.state} request={explainer.request}
+        labels={{ more: t.explainMore, loading: t.explainLoading, error: t.explainError, retry: t.retry }}
+      />
     </Card>
   );
 }

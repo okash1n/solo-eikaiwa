@@ -234,14 +234,29 @@ export async function genTopics(deps: GenTopicsDeps): Promise<void> {
     const vocab = vocabConstraint(deps.stage);
     // stage>=4（vocab===null）は行自体を挿入しない（元々この行は無かった＝上級者の挙動不変）
     const vocabLine = vocab ? `${vocab}\n` : "";
-    const system = `You create one original ${p.kind} for an English speaking practice app (Japanese learner, difficulty stage ${deps.stage} of 6).
-${p.kind === "topic"
-  ? "A topic gives 4 talking-point hints for a monologue."
-  : "A scenario sets up a roleplay: who the AI plays, who the learner is, the goal, and useful moves."}
+    // scenario は genScenarios と同じナラティブ+スターター仕様（coach.ts roleplayPrompt の Setup 欄が
+    // 前提とする形式）。topic 側のプロンプトは従来どおり一切変更しない。domain/level は genTopics 従来仕様
+    // のままモデルが決める（genScenarios の固定プランとは異なる）。
+    const system = p.kind === "topic"
+      ? `You create one original topic for an English speaking practice app (Japanese learner, difficulty stage ${deps.stage} of 6).
+A topic gives 4 talking-point hints for a monologue.
 Each hint line: English phrase — 日本語の補足. Spoken register. ${ORIGINALITY}
 ${vocabLine}Do NOT reuse these existing ids: ${existing}
 Reply with STRICT JSON only:
 {"id":"kebab-case-id","title":"English title","titleJa":"日本語タイトル","domain":"daily|business|it","level":[min,max],"hints":["English — 日本語", ...4 items]}
+level must be within 1..6 and include stage ${deps.stage}.
+Do not use any tools — reply directly with text only.`
+      : `You create one original roleplay SCENARIO for an English speaking practice app (Japanese learner, difficulty stage ${deps.stage} of 6).
+A scenario sets up a roleplay that an AI coach will run with the learner by voice.
+Write exactly 3 "hints" lines, English only (no Japanese, no translations), in this order:
+1. The learner's role or task in the scene (what they are doing / who they are).
+2. Who the AI plays, starting with "The AI plays ...".
+3. The goal of the roleplay, starting with "Goal: ...".
+Also write exactly 3 "starters": short English sentences the learner could say to open the roleplay.
+Spoken register. ${ORIGINALITY}
+${vocabLine}Do NOT reuse these existing ids: ${existing}
+Reply with STRICT JSON only:
+{"id":"kebab-case-id","title":"English title","titleJa":"日本語タイトル","domain":"daily|business|it","level":[min,max],"hints":["You ...","The AI plays ...","Goal: ..."],"starters":["Opener sentence 1.","Opener sentence 2.","Opener sentence 3."]}
 level must be within 1..6 and include stage ${deps.stage}.
 Do not use any tools — reply directly with text only.`;
     let cand: NewContentCandidate | null = null;
@@ -256,7 +271,13 @@ Do not use any tools — reply directly with text only.`;
       }
       if (text !== undefined) {
         const parsed = extractJson<NewContentCandidate>(text);
-        cand = validateTopicCandidate(parsed, p.kind, existingIds, p.dir, deps.stage);
+        const base = validateTopicCandidate(parsed, p.kind, existingIds, p.dir, deps.stage);
+        if (base && p.kind === "scenario") {
+          const starters = validateStarters((parsed as { starters?: unknown } | null)?.starters);
+          cand = starters ? { ...base, starters } : null;
+        } else {
+          cand = base;
+        }
       }
       if (!cand && attempt === 1) log(`  ${p.kind}: 検証NG — 再生成します`);
     }
@@ -304,6 +325,16 @@ export const SCENARIO_BAND_PLAN: ReadonlyArray<{ domain: (typeof DOMAINS)[number
 ];
 
 /**
+ * starters 配列の検証: ちょうど3件・非空・改行なし。genScenarios と genTopics のシナリオ分岐で共有する
+ * （roleplayPrompt / RoleplayScreen が前提とする既存シナリオ形式の一部）。
+ */
+function validateStarters(raw: unknown): string[] | null {
+  if (!Array.isArray(raw) || raw.length !== 3) return null;
+  if (!raw.every((s) => typeof s === "string" && s.trim().length > 0 && !s.includes("\n"))) return null;
+  return raw.map((s) => (s as string).trim());
+}
+
+/**
  * genScenarios 用の候補検証（domain/level はプラン固定なので検査しない — id/title/titleJa/hints/starters のみ）。
  * hints/starters は roleplayPrompt（coach.ts）の Setup 注入と RoleplayScreen の表示が前提とする既存シナリオ形式
  * （hints=英語のみのナラティブ、starters=英語オープナー3件）に合わせて検査する。
@@ -319,11 +350,11 @@ function validateScenarioCandidate(
   if (typeof c.titleJa !== "string" || !c.titleJa.trim() || /[\n"]/.test(c.titleJa)) return null;
   if (!Array.isArray(c.hints) || c.hints.length === 0) return null;
   if (!c.hints.every((h) => typeof h === "string" && h.trim().length > 0)) return null;
-  if (!Array.isArray(c.starters) || c.starters.length !== 3) return null;
-  if (!c.starters.every((s) => typeof s === "string" && s.trim().length > 0 && !s.includes("\n"))) return null;
+  const starters = validateStarters(c.starters);
+  if (!starters) return null;
   return {
     id: c.id, title: c.title.trim(), titleJa: c.titleJa.trim(),
-    hints: c.hints.map((h) => h.trim()), starters: c.starters.map((s) => s.trim()),
+    hints: c.hints.map((h) => h.trim()), starters,
   };
 }
 
@@ -392,6 +423,106 @@ Do not use any tools — reply directly with text only.`;
     throw err;
   }
   log(`完了: ${written.length} 本の stage1 シナリオを追加しました。`);
+}
+
+export type GenTopicsBandDeps = {
+  runner: ClaudeRunner;
+  topicsDir: string;
+  dry: boolean;
+  log?: (s: string) => void;
+};
+
+/** stage1 帯が枯渇しているドメイン(business/it)を補う固定プラン（domain/level を固定・語彙は stage1 レベリング） */
+export const TOPIC_BAND_PLAN: ReadonlyArray<{ domain: "business" | "it"; level: [number, number]; vocabStage: number }> = [
+  { domain: "business", level: [1, 3], vocabStage: 1 },
+  { domain: "business", level: [1, 3], vocabStage: 1 },
+  { domain: "it", level: [1, 3], vocabStage: 1 },
+  { domain: "it", level: [1, 3], vocabStage: 1 },
+];
+
+/**
+ * genTopicsBand 用の候補検証（domain/level はプラン固定なので検査しない — id/title/titleJa/hints のみ）。
+ * hints は genTopics の topic 分岐と同じ「English phrase — 日本語の補足」形式で4件ちょうどを要求する。
+ */
+function validateTopicBandCandidate(
+  parsed: unknown, existingIds: Set<string>, dir: string,
+): { id: string; title: string; titleJa: string; hints: string[] } | null {
+  if (typeof parsed !== "object" || parsed === null) return null;
+  const c = parsed as Partial<NewContentCandidate>;
+  if (typeof c.id !== "string" || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(c.id)) return null;
+  if (existingIds.has(c.id) || existsSync(path.join(dir, `${c.id}.md`))) return null;
+  if (typeof c.title !== "string" || !c.title.trim() || /[\n"]/.test(c.title)) return null;
+  if (typeof c.titleJa !== "string" || !c.titleJa.trim() || /[\n"]/.test(c.titleJa)) return null;
+  if (!Array.isArray(c.hints) || c.hints.length !== 4) return null;
+  if (!c.hints.every((h) => typeof h === "string" && h.trim().length > 0)) return null;
+  return {
+    id: c.id, title: c.title.trim(), titleJa: c.titleJa.trim(),
+    hints: c.hints.map((h) => h.trim()),
+  };
+}
+
+/**
+ * 固定プラン（TOPIC_BAND_PLAN）で stage1 帯の business/IT お題を補充する。domain/level はプランで固定し、
+ * 語彙制約は帯に連動（stage1）。全候補を検証してから一括書き込み（all-or-nothing）。
+ */
+export async function genTopicsBand(deps: GenTopicsBandDeps): Promise<void> {
+  const log = deps.log ?? console.log;
+  const existingIds = new Set(loadContent(deps.topicsDir).map((c) => c.id));
+  const candidates: NewContentCandidate[] = [];
+
+  for (const p of TOPIC_BAND_PLAN) {
+    const vocab = vocabConstraint(p.vocabStage);
+    const vocabLine = vocab ? `${vocab}\n` : "";
+    const domainDesc = p.domain === "business" ? "the workplace" : "software/IT work";
+    const system = `You create one original topic for an English speaking practice app (Japanese learner, beginner difficulty stage ${p.level[0]}-${p.level[1]} of 6).
+Domain: ${domainDesc}. A topic gives 4 talking-point hints for a monologue: a near-beginner can talk about it from their own daily work life (e.g., describing a workday, tools they use, asking for help — pick your own original angle).
+Each hint line: English phrase — 日本語の補足. Spoken register. ${ORIGINALITY}
+${vocabLine}Do NOT reuse these existing ids: ${[...existingIds].join(", ") || "(none)"}
+Reply with STRICT JSON only:
+{"id":"kebab-case-id","title":"English title","titleJa":"日本語タイトル","hints":["English — 日本語", ...4 items]}
+Do not use any tools — reply directly with text only.`;
+    let cand: { id: string; title: string; titleJa: string; hints: string[] } | null = null;
+    for (let attempt = 1; attempt <= 2 && !cand; attempt++) {
+      let text: string | undefined;
+      try {
+        ({ text } = await deps.runner(`Write the ${p.domain} beginner topic now.`, undefined, { systemPrompt: system }));
+      } catch (err) {
+        // SDK呼び出し自体の一過性エラー（例: tool_use起因のmaxTurns超過）も検証NGと同様に1回だけ再試行する。
+        // 非一過性の障害（認証切れ等）が「検証NG」に化けて原因が消えないよう、実エラーは必ずログに残す
+        console.warn("[content-gen] runner error:", err instanceof Error ? err.message : String(err));
+      }
+      if (text !== undefined) {
+        const parsed = extractJson<NewContentCandidate>(text);
+        cand = validateTopicBandCandidate(parsed, existingIds, deps.topicsDir);
+      }
+      if (!cand && attempt === 1) log(`  ${p.domain}/${p.level[0]}-${p.level[1]}: 検証NG — 再生成します`);
+    }
+    if (!cand) {
+      throw new Error(`エラー: ${p.domain}/${p.level[0]}-${p.level[1]} のお題が検証を通りませんでした。何も書き込みません。`);
+    }
+    existingIds.add(cand.id);
+    candidates.push({ ...cand, kind: "topic", domain: p.domain, level: p.level });
+    log(`  + topic: ${cand.id} [${p.domain}/${p.level[0]}-${p.level[1]}] ${cand.title}`);
+  }
+
+  if (deps.dry) {
+    log("--dry のため書き込みません");
+    return;
+  }
+
+  const written: string[] = [];
+  try {
+    for (const cand of candidates) {
+      const file = path.join(deps.topicsDir, `${cand.id}.md`);
+      if (existsSync(file)) throw new Error(`エラー: ${file} は既に存在します。中止します。`);
+      writeFileSync(file, contentToMarkdown(cand));
+      written.push(file);
+    }
+  } catch (err) {
+    for (const f of written) rmSync(f, { force: true });
+    throw err;
+  }
+  log(`完了: ${written.length} 本の stage1帯 business/IT お題を追加しました。`);
 }
 
 export type NewListeningCandidate = { id: string; title: string; titleJa: string; paragraphs: string[] };

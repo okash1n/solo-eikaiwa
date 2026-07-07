@@ -9,6 +9,7 @@ import { useExplain } from "../useExplain";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { ExplainBox } from "../ui/ExplainBox";
 
 /** 行キー: 例文は no、チャンクは id。種別を混ぜないよう kind でタグ付けする */
 type RowKey = { kind: "sentence"; no: number } | { kind: "chunk"; id: number };
@@ -129,15 +130,9 @@ function ChunkExplain({ chunk, lang }: { chunk: ChunkListItem; lang: Lang }) {
   const t = STR[lang].sentences;
   const { state, request } = useExplain(() => fetchFixExplanation(chunk.promptText, chunk.en, chunk.note));
   return (
-    <>
-      {state.status === "idle" && (
-        <Button variant="ghost" onClick={request}>{t.explainMore}</Button>
-      )}
-      {state.status === "loading" && <p className="text-sm text-muted">{t.explainLoading}</p>}
-      {state.status === "error" && (
-        <p className="text-sm text-muted">{t.explainError}<Button variant="ghost" onClick={request}>{t.retry}</Button></p>
-      )}
-      {state.status === "done" && <p className="sentence-explain text-sm">{state.text}</p>}
-    </>
+    <ExplainBox
+      state={state} request={request}
+      labels={{ more: t.explainMore, loading: t.explainLoading, error: t.explainError, retry: t.retry }}
+    />
   );
 }

@@ -5,6 +5,7 @@ import { STR, type Lang } from "../i18n";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { ExplainBox } from "../ui/ExplainBox";
 
 /** 直したい表現1件。「もっと詳しく」で fetchFixExplanation を呼び、解説を自分の state に保持する */
 function FixItem({ fix, lang }: { fix: { original: string; better: string }; lang: Lang }) {
@@ -13,12 +14,10 @@ function FixItem({ fix, lang }: { fix: { original: string; better: string }; lan
   return (
     <li>
       <s>{fix.original}</s> → <strong>{fix.better}</strong>
-      {state.status === "idle" && <Button variant="ghost" onClick={request}>{t.explainMore}</Button>}
-      {state.status === "loading" && <p className="text-sm text-muted">{t.explainLoading}</p>}
-      {state.status === "error" && (
-        <p className="text-sm text-muted">{t.explainError}<Button variant="ghost" onClick={request}>{t.retry}</Button></p>
-      )}
-      {state.status === "done" && <p className="sentence-explain text-sm">{state.text}</p>}
+      <ExplainBox
+        state={state} request={request}
+        labels={{ more: t.explainMore, loading: t.explainLoading, error: t.explainError, retry: t.retry }}
+      />
     </li>
   );
 }

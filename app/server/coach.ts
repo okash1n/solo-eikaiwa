@@ -1,5 +1,5 @@
 import { defaultRunner, type ClaudeRunner } from "./converse";
-import { vocabConstraint, type HintLang } from "./progression";
+import { syntaxConstraint, vocabConstraint, type HintLang } from "./progression";
 import type { SessionEvent } from "./session-log";
 
 export type AeItem = { quote: string; issue: string; better: string; why_ja: string };
@@ -23,19 +23,26 @@ export function extractJson<T>(text: string): T | null {
   }
 }
 
-const AE_SYSTEM = `You are an English error-correction coach for a Japanese IT professional (CEFR A2-B1).
+function makeAeSystem(stage: number): string {
+  const vocab = vocabConstraint(stage);
+  // stage>=4（vocab===null）は旧文言を一字一句維持する（上級者の挙動不変）
+  const constraintLine = vocab
+    ? `${vocab}\nKeep every "better" version short and simple enough for the learner to actually say (one clause when possible).\n`
+    : "";
+  return `You are an English error-correction coach for a Japanese IT professional (CEFR A2-B1).
 You receive the transcript of the learner's spoken monologue (round 1 of a 4/3/2 fluency task).
 Pick the 3-5 most impactful language problems (grammar, word choice, unnatural phrasing). Ignore filler words and small slips.
-Reply with STRICT JSON only — no markdown fences, no commentary — exactly this shape:
+${constraintLine}Reply with STRICT JSON only — no markdown fences, no commentary — exactly this shape:
 {"items":[{"quote":"<the learner's exact words>","issue":"<short English label>","better":"<corrected natural version>","why_ja":"<1〜2文の簡潔な日本語解説>"}],"praise":"<one short encouraging sentence in English>"}
 Do not use any tools — reply directly with text only.`;
+}
 
 export async function generateAeFeedback(
-  args: { transcript: string; topicTitle: string },
+  args: { transcript: string; topicTitle: string; stage: number },
   runner: ClaudeRunner = defaultRunner,
 ): Promise<AeFeedback> {
   const prompt = `Topic: ${args.topicTitle}\n\nLearner's transcript:\n${args.transcript}`;
-  const { text } = await runner(prompt, undefined, { systemPrompt: AE_SYSTEM });
+  const { text } = await runner(prompt, undefined, { systemPrompt: makeAeSystem(args.stage) });
   const parsed = extractJson<AeFeedback>(text);
   if (parsed && Array.isArray(parsed.items)) return parsed;
   // パース失敗時のフォールバック: 素のテキストを1itemに包んでUIに出せる形にする
@@ -149,11 +156,14 @@ export async function generateFixExplanation(
 
 function modelTalkSystem(stage: number): string {
   const vocab = vocabConstraint(stage);
+  const syntax = syntaxConstraint(stage);
+  const learnerLabel = stage <= 2 ? "(CEFR A2)" : stage === 3 ? "(CEFR A2-B1)" : "(CEFR B1)";
+  const wordCount = stage <= 2 ? "90-120" : "120-150";
   // stage>=4（vocab===null）は旧文言を一字一句維持する（上級者の挙動不変）
   const rules = vocab
-    ? `Rules: 120-150 words, spoken register, first person, short sentences. ${vocab}`
+    ? `Rules: ${wordCount} words, spoken register, first person, short sentences. ${vocab} ${syntax}`
     : "Rules: 120-150 words, spoken register, first person, plain high-frequency vocabulary, short sentences.";
-  return `You produce a model monologue for an English learner (CEFR B1) to shadow.
+  return `You produce a model monologue for an English learner ${learnerLabel} to shadow.
 ${rules}
 No headings, no lists — just the monologue text.
 Do not use any tools — reply directly with text only.`;
@@ -194,16 +204,21 @@ export type PrepPack = { chunks: Array<{ en: string; ja: string }>; outline: str
 
 function prepSystem(chunkCount: number, stage: number): string {
   const vocab = vocabConstraint(stage);
+  const syntax = syntaxConstraint(stage);
   // stage>=4（vocab===null）はバレット自体を挿入しない（元々このバレットは存在しなかった＝上級者の挙動不変）
   const vocabBullet = vocab ? `\n- ${vocab}` : "";
+  const syntaxBullet = syntax ? `\n- ${syntax}` : "";
+  const levelLabel = stage <= 2 ? "A2 level" : stage === 3 ? "A2-B1 level" : "B1 level";
+  const levelAdj = stage <= 2 ? "A2-level" : stage === 3 ? "A2-B1-level" : "B1-level";
+  const chunkWords = stage <= 2 ? "roughly 6-10 words" : stage === 3 ? "roughly 8-14 words" : "roughly 8-16 words";
   return `You prepare a Japanese IT professional (CEFR A2-B1) for a short English monologue.
 You receive a topic and hint angles. Reply with STRICT JSON only — no markdown fences, no commentary — exactly this shape:
-{"chunks":[{"en":"<complete, speakable sentence, B1 level>","ja":"<自然な日本語訳>"}],"outline":["<short English bullet>"]}
+{"chunks":[{"en":"<complete, speakable sentence, ${levelLabel}>","ja":"<自然な日本語訳>"}],"outline":["<short English bullet>"]}
 Rules:
-- Exactly ${chunkCount} chunks. Each "en" MUST be a complete, speakable sentence of roughly 8-16 words that the learner can read aloud as-is.
+- Exactly ${chunkCount} chunks. Each "en" MUST be a complete, speakable sentence of ${chunkWords} that the learner can read aloud as-is.
   No ellipses ("..."), no blanks, and no placeholders like [X] — always fill the slot with a concrete, topic-relevant
-  example a B1-level IT professional could plausibly say, using the given topic and hints for the content
-  (e.g. "The main problem we had was a slow database query.", "What worked well was splitting the task into smaller steps.").${vocabBullet}
+  example a ${levelAdj} IT professional could plausibly say, using the given topic and hints for the content
+  (e.g. "The main problem we had was a slow database query.", "What worked well was splitting the task into smaller steps.").${vocabBullet}${syntaxBullet}
 - Keep the reusable sentence frame recognizable at the START of each sentence (sentence-starter + filled example), so the
   learner can reuse that same frame with their own content in the next exercise.
 - ja: the natural full-sentence Japanese translation of "en" (not a fragment).

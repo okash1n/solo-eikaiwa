@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   BOUNDARY_LEVELS, DEFAULT_LEVEL, demotionTargetLevel, fttMiniRoundsSec, fttRoundsSec,
-  needXp, PLACEMENT_XP, prepParams, stageAnchorLevel, stageOf, vocabConstraint, xpForGrade,
+  needXp, PLACEMENT_XP, prepParams, stageAnchorLevel, stageOf, syntaxConstraint, vocabConstraint, xpForGrade,
 } from "../progression";
 
 describe("progression: stageOf", () => {
@@ -94,6 +94,26 @@ describe("progression: vocabConstraint", () => {
   test("stage 4+ は null（制約なし。各呼び出し点が自サイトの旧文言をそのまま使う）", () => {
     for (const s of [4, 5, 6]) {
       expect(vocabConstraint(s)).toBeNull();
+    }
+  });
+});
+
+describe("progression: syntaxConstraint", () => {
+  test("stage 1〜2 はA2水準・1文6-10語の制約文字列を返す", () => {
+    for (const s of [1, 2]) {
+      expect(syntaxConstraint(s)).toContain("CEFR A2");
+      expect(syntaxConstraint(s)).toContain("6-10 words");
+    }
+  });
+
+  test("stage 3 はA2-B1水準・1文8-12語の制約文字列を返す", () => {
+    expect(syntaxConstraint(3)).toContain("CEFR A2-B1");
+    expect(syntaxConstraint(3)).toContain("8-12 words");
+  });
+
+  test("stage 4+ は null（制約なし。各呼び出し点が自サイトの旧文言をそのまま使う）", () => {
+    for (const s of [4, 5, 6]) {
+      expect(syntaxConstraint(s)).toBeNull();
     }
   });
 });

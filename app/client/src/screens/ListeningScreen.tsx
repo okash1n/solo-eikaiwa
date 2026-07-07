@@ -10,6 +10,8 @@ import { useExplain } from "../useExplain";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { ExplainBox } from "../ui/ExplainBox";
+import { LevelChip } from "../ui/LevelChip";
 
 type LibraryData = { items: ListeningMeta[]; weeklyCount: number; stage: number };
 
@@ -35,6 +37,7 @@ export function ListeningScreen({ lang }: { lang: Lang }) {
     <div className="stack">
       <div className="hero">
         <h2 className="hero-title">{t.title}</h2>
+        <LevelChip kind="band" lang={lang} />
         <p className="hero-date">{t.desc}</p>
       </div>
       {state.status === "loading" && <p className="text-muted">{t.loading}</p>}
@@ -182,14 +185,10 @@ function ListeningPlayback({ item, lang, onListened }: {
               <p key={i} className={`listening-para${playingIdx === i ? " is-playing" : ""}`}>{p}</p>
             ))}
           </Card>
-          {explainer.state.status === "idle" && (
-            <Button variant="ghost" onClick={explainer.request}>{t.explainMore}</Button>
-          )}
-          {explainer.state.status === "loading" && <p className="text-sm text-muted">{t.explainLoading}</p>}
-          {explainer.state.status === "error" && (
-            <p className="text-sm text-muted">{t.explainError}<Button variant="ghost" onClick={explainer.request}>{t.retry}</Button></p>
-          )}
-          {explainer.state.status === "done" && <p className="sentence-explain text-sm">{explainer.state.text}</p>}
+          <ExplainBox
+            state={explainer.state} request={explainer.request}
+            labels={{ more: t.explainMore, loading: t.explainLoading, error: t.explainError, retry: t.retry }}
+          />
         </>
       )}
     </div>

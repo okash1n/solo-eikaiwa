@@ -10,6 +10,7 @@ import { useExplain } from "../useExplain";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { ExplainBox } from "../ui/ExplainBox";
 import { localYmd } from "../dates";
 import { initialPhase, type Phase } from "./practicePhase";
 
@@ -193,15 +194,9 @@ function SentenceExplain({ no, lang }: { no: number; lang: Lang }) {
   const t = STR[lang].sentences;
   const { state, request } = useExplain(() => fetchSentenceExplanation(no));
   return (
-    <>
-      {state.status === "idle" && (
-        <Button variant="ghost" onClick={request}>{t.explainMore}</Button>
-      )}
-      {state.status === "loading" && <p className="text-sm text-muted">{t.explainLoading}</p>}
-      {state.status === "error" && (
-        <p className="text-sm text-muted">{t.explainError}<Button variant="ghost" onClick={request}>{t.retry}</Button></p>
-      )}
-      {state.status === "done" && <p className="sentence-explain text-sm">{state.text}</p>}
-    </>
+    <ExplainBox
+      state={state} request={request}
+      labels={{ more: t.explainMore, loading: t.explainLoading, error: t.explainError, retry: t.retry }}
+    />
   );
 }

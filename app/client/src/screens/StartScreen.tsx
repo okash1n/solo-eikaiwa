@@ -153,7 +153,9 @@ export function StartScreen(props: { onSelect: (sel: StartSelection) => void; la
       {showBedtime && <p className="hero-bedtime text-sm text-muted">{t.hero.bedtime}</p>}
 
       {/* 未測定の測定導線は「最初の一歩」なのでヒーロー直下。練習メニュー群とは別物として扱う */}
-      {placementCard === "new" && <PlacementCallout kind="new" tp={tp} onGo={() => props.onSelect({ type: "placement" })} />}
+      {placementCard === "new" && (
+        <PlacementCallout kind="new" tp={tp} level={summary?.level} onGo={() => props.onSelect({ type: "placement" })} />
+      )}
 
       <div>
         <p className="section-label">{t.quick.label} <span className="section-note">{t.quick.note}</span></p>
@@ -230,15 +232,19 @@ function PlacementCallout(props: {
   kind: "new" | "monthly";
   tp: (typeof STR)["en"]["placement"];
   onGo: () => void;
+  /** kind==="new"の既定Lv表示に使う現在値（summary未取得の間は表示を見送る） */
+  level?: number;
 }) {
-  const { kind, tp } = props;
+  const { kind, tp, level } = props;
   return (
     <button className="placement-callout" onClick={props.onGo}>
       <span className="placement-callout-icon" aria-hidden="true">📐</span>
       <span className="drill-body">
         <span className="drill-title">{kind === "new" ? tp.cardTitleNew : tp.cardTitleMonthly}</span>
         <span className="drill-desc">{kind === "new" ? tp.cardBodyNew : tp.cardBodyMonthly}</span>
-        {kind === "new" && <span className="drill-desc text-sm text-muted">{tp.startDefaultNote}</span>}
+        {kind === "new" && typeof level === "number" && (
+          <span className="drill-desc text-sm text-muted">{tp.startDefaultNote(level)}</span>
+        )}
       </span>
       <span className="drill-arrow" aria-hidden="true">→</span>
     </button>
@@ -256,10 +262,21 @@ function ProposalCard(props: {
   const lines: string[] = [];
   if (r.xpReached) lines.push(t.xpReached);
   if (typeof r.practicedDays14 === "number") lines.push(t.practicedDays(r.practicedDays14));
-  if (typeof r.completionRate === "number") lines.push(t.completionRate(Math.round(r.completionRate * 100)));
-  // 0回中断は根拠として提示する意味がないため、1回以上のときだけ表示する
-  if (typeof r.fttAborts === "number" && r.fttAborts > 0 && proposal.kind === "down") lines.push(t.fttAborts(r.fttAborts));
-  if (typeof r.lowOutputRounds === "number" && r.lowOutputRounds > 0 && proposal.kind === "down") lines.push(t.lowOutput(r.lowOutputRounds));
+  if (proposal.kind === "up") {
+    if (typeof r.completionRate === "number") lines.push(t.completionRate(Math.round(r.completionRate * 100)));
+  } else {
+    // triggers があれば実際に発火した行だけを表示（例: lowOutput起因の降格でcompletionRateがほぼ100%でも
+    // 紛らわしい行を出さない）。triggers が無い場合（型上optional）は従来表示にフォールバックする。
+    const triggers = r.triggers;
+    const fires = (key: "lowCompletion" | "fttAborts" | "lowOutput", fallback: boolean) =>
+      triggers ? triggers.includes(key) : fallback;
+    if (typeof r.completionRate === "number" && fires("lowCompletion", true)) {
+      lines.push(t.completionRate(Math.round(r.completionRate * 100)));
+    }
+    // 0回中断は根拠として提示する意味がないため、フォールバック時は1回以上のときだけ表示する
+    if (typeof r.fttAborts === "number" && fires("fttAborts", r.fttAborts > 0)) lines.push(t.fttAborts(r.fttAborts));
+    if (typeof r.lowOutputRounds === "number" && fires("lowOutput", r.lowOutputRounds > 0)) lines.push(t.lowOutput(r.lowOutputRounds));
+  }
   return (
     <div className="card proposal-card">
       <h3>{proposal.kind === "up" ? t.upTitle : t.downTitle}</h3>
