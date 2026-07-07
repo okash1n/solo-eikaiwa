@@ -55,6 +55,8 @@ export function selectRunner(args: SelectRunnerArgs): ClaudeRunner {
         model: env.CODEX_MODEL?.trim() || undefined,
         // 会話用途では xhigh 級の長考がレイテンシに直撃するため、既定を medium に固定（env で変更可）
         reasoningEffort: env.CODEX_REASONING_EFFORT?.trim() || "medium",
+        // Fast サービスティアを既定に（無効な環境ではサーバ側で黙って無視されるため安全）
+        serviceTier: env.CODEX_SERVICE_TIER?.trim() || "fast",
         defaultSystemPrompt: args.defaultSystemPrompt,
       });
 

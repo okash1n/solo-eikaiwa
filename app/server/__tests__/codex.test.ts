@@ -57,16 +57,18 @@ describe("makeCodexRunner", () => {
     expect(seen[0].prompt).toContain("DEFAULT SYS");
   });
 
-  test("reasoningEffort が exec にそのまま渡る（未指定なら undefined）", async () => {
-    const seen: Array<{ prompt: string; model?: string; cwd: string; reasoningEffort?: string }> = [];
-    const runner = makeCodexRunner(baseCfg({ exec: fakeExec("x", seen), reasoningEffort: "medium" }));
+  test("reasoningEffort / serviceTier が exec にそのまま渡る（未指定なら undefined）", async () => {
+    const seen: Array<{ prompt: string; model?: string; cwd: string; reasoningEffort?: string; serviceTier?: string }> = [];
+    const runner = makeCodexRunner(baseCfg({ exec: fakeExec("x", seen), reasoningEffort: "medium", serviceTier: "fast" }));
     await runner("hi");
     expect(seen[0].reasoningEffort).toBe("medium");
+    expect(seen[0].serviceTier).toBe("fast");
 
-    const seen2: Array<{ prompt: string; model?: string; cwd: string; reasoningEffort?: string }> = [];
+    const seen2: Array<{ prompt: string; model?: string; cwd: string; reasoningEffort?: string; serviceTier?: string }> = [];
     const plain = makeCodexRunner(baseCfg({ exec: fakeExec("x", seen2) }));
     await plain("hi");
     expect(seen2[0].reasoningEffort).toBeUndefined();
+    expect(seen2[0].serviceTier).toBeUndefined();
   });
 
   test("resume: 返った sessionId で再呼び出しすると過去の往復が composed に入る", async () => {
