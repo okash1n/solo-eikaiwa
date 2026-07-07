@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  fetchAeFeedback, fetchPrepPack, playTtsCached, prefetchModelTalkAudio, sendSessionEvent, sttUpload,
+  fetchAeFeedback, fetchFixExplanation, fetchPrepPack, playTtsCached, prefetchModelTalkAudio, sendSessionEvent, sttUpload,
   type AeFeedback, type ContentItem, type PrepPack,
 } from "../api";
 import { playBlob, Recorder, stopPlayback } from "../audio";
@@ -327,14 +327,7 @@ export function FourThreeTwoScreen(props: {
             {ae.praise && <Banner kind="info">👏 {ae.praise}</Banner>}
             <ul>
               {ae.items.map((item, i) => (
-                <li key={i} className="ae-item">
-                  {item.quote && (
-                    <div>
-                      <s>{item.quote}</s> → <strong>{item.better}</strong> <em>({item.issue})</em>
-                    </div>
-                  )}
-                  <div className="ae-why">{item.why_ja}</div>
-                </li>
+                <AeItemView key={i} item={item} />
               ))}
             </ul>
           </div>
@@ -388,5 +381,47 @@ export function FourThreeTwoScreen(props: {
         </Card>
       )}
     </div>
+  );
+}
+
+/** AE指摘1件。「もっと詳しく」で fetchFixExplanation を呼び、解説を自分の state に保持する */
+function AeItemView({ item }: { item: { quote: string; issue: string; better: string; why_ja: string } }) {
+  const aliveRef = useRef(true);
+  useEffect(() => { aliveRef.current = true; return () => { aliveRef.current = false; }; }, []);
+  // undefined=未取得, "loading"=生成中, "error"=取得失敗, それ以外=解説テキスト
+  const [explain, setExplain] = useState<string | undefined>(undefined);
+
+  async function explainFix() {
+    setExplain("loading");
+    try {
+      const text = await fetchFixExplanation(item.quote, item.better, item.issue);
+      if (aliveRef.current) setExplain(text);
+    } catch {
+      if (aliveRef.current) setExplain("error");
+    }
+  }
+
+  return (
+    <li className="ae-item">
+      {item.quote && (
+        <div>
+          <s>{item.quote}</s> → <strong>{item.better}</strong> <em>({item.issue})</em>
+        </div>
+      )}
+      <div className="ae-why">{item.why_ja}</div>
+      {item.quote && item.better && explain === undefined && (
+        <Button variant="ghost" onClick={explainFix}>💡 もっと詳しく</Button>
+      )}
+      {explain === "loading" && <p className="text-sm text-muted">解説を書いています…</p>}
+      {explain === "error" && (
+        <p className="text-sm text-muted">
+          解説を取得できませんでした。
+          <Button variant="ghost" onClick={explainFix}>再試行</Button>
+        </p>
+      )}
+      {explain !== undefined && explain !== "loading" && explain !== "error" && (
+        <p className="sentence-explain text-sm">{explain}</p>
+      )}
+    </li>
   );
 }
