@@ -3,7 +3,7 @@ import {
   fetchPlacementLatest, fetchPracticeDays, fetchProgressSummary, progressLevelAction,
   type LevelProposal, type PlacementLatest, type ProgressSummary, type QuickDrillKind, type RoleplayDomain,
 } from "../api";
-import { STR, type Lang } from "../i18n";
+import { STR, type DrillKey, type Lang } from "../i18n";
 import { Button } from "../ui/Button";
 import { type MenuSource } from "./SessionRunner";
 import { localYmd } from "../dates";
@@ -15,7 +15,7 @@ export type StartSelection =
   | { type: "placement" };
 
 /** クイックドリルカード。ロールプレイはドメイン別に3枚（i18nキーは drillKey で引く） */
-const QUICK_DRILLS: Array<{ drill: QuickDrillKind; domain?: RoleplayDomain; drillKey: string; icon: string; tile: string }> = [
+const QUICK_DRILLS: Array<{ drill: QuickDrillKind; domain?: RoleplayDomain; drillKey: DrillKey; icon: string; tile: string }> = [
   { drill: "warmup", drillKey: "warmup", icon: "🔊", tile: "c-green" },
   { drill: "ftt-mini", drillKey: "ftt-mini", icon: "🗣", tile: "c-purple" },
   { drill: "shadowing", drillKey: "shadowing", icon: "🎧", tile: "c-blue" },

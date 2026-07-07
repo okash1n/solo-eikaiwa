@@ -10,24 +10,32 @@ export function saveLang(lang: Lang): void {
   localStorage.setItem("lang", lang);
 }
 
-type Strings = {
-  nav: { home: string; placement: string; free: string; library: string; sentences: string; progress: string };
-  uiScale: { small: string; medium: string; large: string; xlarge: string };
+export type DrillKey =
+  | "warmup" | "ftt-mini" | "shadowing"
+  | "roleplay-daily" | "roleplay-business" | "roleplay-it";
+
+type NavStrings = { nav: { home: string; placement: string; free: string; library: string; sentences: string; progress: string } };
+type UiScaleStrings = { uiScale: { small: string; medium: string; large: string; xlarge: string } };
+type SupportStrings = {
   support: {
     title: string;
     presetAuto: string; presetMore: string; presetLess: string;
     jaHint: string; modelTalk: string; cloze: string;
     optAuto: string; optOn: string; optOff: string;
   };
-  stat: { title: string; thisWeekUnit: string; total: (n: number) => string };
-  hero: { title: string; date: (d: Date) => string };
-  quick: { label: string; note: string };
-  intensive: { label: string; note: string };
-  drills: Record<string, { title: string; minutes: string; desc: string }>;
+};
+type StatStrings = { stat: { title: string; thisWeekUnit: string; total: (n: number) => string } };
+type HeroStrings = { hero: { title: string; date: (d: Date) => string } };
+type QuickStrings = { quick: { label: string; note: string } };
+type IntensiveStrings = { intensive: { label: string; note: string } };
+type DrillsStrings = { drills: Record<DrillKey, { title: string; minutes: string; desc: string }> };
+type SessionCardStrings = {
   fullSession: { title: string; minutes: string; desc: string };
   shortSession: { title: string; minutes: string; desc: string };
-  calendar: { title: string; practiced: string; notYet: string };
-  freeTalk: { title: string; desc: string };
+};
+type CalendarStrings = { calendar: { title: string; practiced: string; notYet: string } };
+type FreeTalkHeaderStrings = { freeTalk: { title: string; desc: string } };
+type ProgressStrings = {
   progress: {
     levelLabel: (n: number) => string;
     toNext: (xp: number) => string;
@@ -55,6 +63,8 @@ type Strings = {
     mrPast: string;
     mrDate: (ymd: string) => string;
   };
+};
+type PlacementStrings = {
   placement: {
     cardTitleNew: string; cardBodyNew: string;
     cardTitleMonthly: string; cardBodyMonthly: string;
@@ -70,6 +80,8 @@ type Strings = {
     xpNote: string;
     micError: (detail: string) => string;
   };
+};
+type SentencesStrings = {
   sentences: {
     heroTitle: string; heroDesc: string;
     tabPractice: string; tabBrowse: string;
@@ -97,6 +109,11 @@ type Strings = {
     playChunkAria: (id: number) => string;
   };
 };
+
+type Strings =
+  & NavStrings & UiScaleStrings & SupportStrings & StatStrings & HeroStrings
+  & QuickStrings & IntensiveStrings & DrillsStrings & SessionCardStrings
+  & CalendarStrings & FreeTalkHeaderStrings & ProgressStrings & PlacementStrings & SentencesStrings;
 
 const WEEKDAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
