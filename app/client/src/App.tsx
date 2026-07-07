@@ -116,7 +116,7 @@ export function App() {
       )}
       {mode.kind === "start" && <StartScreen onSelect={onSelect} lang={lang} />}
       {mode.kind === "session" && (
-        <SessionRunner source={mode.source} sessionId={sessionId} onExit={() => setMode({ kind: "start" })} />
+        <SessionRunner source={mode.source} sessionId={sessionId} lang={lang} onExit={() => setMode({ kind: "start" })} />
       )}
       {mode.kind === "free" && (
         <div className="stack">

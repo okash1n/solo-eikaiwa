@@ -1,7 +1,13 @@
+import type { MenuTitleKey } from "../i18n";
 import { extractErrorMessage } from "./http";
 
 export type ContentItem = { id: string; kind: "topic" | "scenario"; title: string; titleJa: string; hints: string[]; starters?: string[] };
-export type MenuBlock = { id: string; kind: string; title: string; minutes: number; params: { topic?: ContentItem; scenario?: ContentItem; roundsSec?: number[]; modelTalkMode?: "auto" | "button" } };
+export type MenuBlock = {
+  id: string; kind: string; title: string;
+  titleKey?: MenuTitleKey; topicTitle?: string;
+  minutes: number;
+  params: { topic?: ContentItem; scenario?: ContentItem; roundsSec?: number[]; modelTalkMode?: "auto" | "button" };
+};
 export type Menu = { minutes: number; date: string; blocks: MenuBlock[] };
 
 export async function fetchMenu(minutes: 60 | 30): Promise<Menu> {

@@ -242,6 +242,20 @@ describe("buildTodayMenu", () => {
       expect(todayCount).toBeLessThanOrEqual(1);
     }
   });
+
+  test("各ブロックが titleKey を持ち、topic 系は topicTitle を返す（title は従来の日本語のまま）", () => {
+    const dirs = makeContentDirs();
+    const menu = buildTodayMenu(60, { ...dirs, today: JULY5 });
+    // makeContentDirs の s1 は domain 省略＝既定 "it" なので roleplay-it になる
+    expect(menu.blocks.map((b) => b.titleKey)).toEqual([
+      "warmup", "ftt", "roleplay-it", "shadowing", "reflection",
+    ]);
+    const ftt = menu.blocks[1];
+    expect(ftt.topicTitle).toBe("Topic One");
+    expect(ftt.title).toBe("4/3/2: Topic One"); // title(JA) は据え置き
+    expect(menu.blocks[0].topicTitle).toBeUndefined(); // warmup は topicTitle なし
+    expect(menu.blocks[4].topicTitle).toBeUndefined(); // reflection も無し
+  });
 });
 
 describe("four-three-two の roundsSec", () => {
@@ -340,6 +354,18 @@ describe("buildQuickMenu", () => {
     buildQuickMenu("roleplay", deps);
     const state = JSON.parse(readFileSync(usageFile, "utf8")) as RotationState;
     expect(state.lastDomain.scenario).not.toBe("");
+  });
+
+  test("quick メニューも titleKey/topicTitle を返す", () => {
+    const dirs = makeContentDirs();
+    const deps: MenuDeps = { ...dirs, today: JULY5 };
+    expect(buildQuickMenu("warmup", deps).blocks[0].titleKey).toBe("warmup");
+    expect(buildQuickMenu("ftt-mini", deps).blocks[0].titleKey).toBe("ftt-mini");
+    // warmup(t1) → ftt-mini 1回目(t2) の順で消費済みのため、2回目は LRU で t3(Topic Three) が選ばれる
+    expect(buildQuickMenu("ftt-mini", deps).blocks[0].topicTitle).toBe("Topic Three");
+    expect(buildQuickMenu("shadowing", deps).blocks[0].titleKey).toBe("shadowing");
+    // s1 は domain 省略＝既定 "it" のため roleplay-it（domain 明示時のロールプレイは既存テスト 319/334 行が担保）
+    expect(buildQuickMenu("roleplay", deps).blocks[0].titleKey).toBe("roleplay-it");
   });
 });
 

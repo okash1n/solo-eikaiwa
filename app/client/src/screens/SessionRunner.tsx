@@ -3,6 +3,7 @@ import {
   fetchMenu, fetchQuickMenu, progressBlockStart, progressBlockXp, sendSessionEvent,
   type Menu, type MenuBlock, type QuickDrillKind, type RoleplayDomain,
 } from "../api";
+import { STR, type Lang } from "../i18n";
 import { useCountdown } from "../useCountdown";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
@@ -19,8 +20,15 @@ export type MenuSource =
   | { type: "daily"; minutes: 60 | 30 }
   | { type: "quick"; drill: QuickDrillKind; domain?: RoleplayDomain };
 
+/** ブロックの表示タイトルを言語別に組み立てる。titleKey の無い旧キャッシュ（デプロイ当日など）は従来の JA title をそのまま使う */
+function blockTitle(block: MenuBlock, lang: Lang): string {
+  if (!block.titleKey) return block.title;
+  return STR[lang].menuTitle[block.titleKey](block.topicTitle ?? "");
+}
+
 /** メニューを取得し、ブロックを順番に進行させる。ブロックタイマーと進行イベント記録を持つ */
-export function SessionRunner(props: { source: MenuSource; sessionId: string; onExit: () => void }) {
+export function SessionRunner(props: { source: MenuSource; sessionId: string; lang: Lang; onExit: () => void }) {
+  const t = STR[props.lang].session;
   const [menu, setMenu] = useState<Menu | null>(null);
   const [index, setIndex] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
@@ -81,11 +89,11 @@ export function SessionRunner(props: { source: MenuSource; sessionId: string; on
   if (errorMsg) {
     return (
       <div>
-        <Banner kind="error" action={<Button onClick={loadMenu}>再試行</Button>}>{errorMsg}</Banner>
+        <Banner kind="error" action={<Button onClick={loadMenu}>{t.retry}</Button>}>{errorMsg}</Banner>
       </div>
     );
   }
-  if (!menu) return <p className="text-muted">今日のメニューを組んでいます…</p>;
+  if (!menu) return <p className="text-muted">{t.building}</p>;
 
   const block = menu.blocks[index];
   const isLast = index === menu.blocks.length - 1;
@@ -113,32 +121,32 @@ export function SessionRunner(props: { source: MenuSource; sessionId: string; on
 
   return (
     <Screen
-      title={block.title}
+      title={blockTitle(block, props.lang)}
       meta={
         <>
           <ProgressDots current={index} total={menu.blocks.length} />
-          <TimerChip remaining={timer.remaining} expired={timer.expired} note="キリのいいところで次へ" />
+          <TimerChip remaining={timer.remaining} expired={timer.expired} note={t.timerNote} />
         </>
       }
     >
       <div key={block.id} className="fade-in">
-        <BlockBody block={block} sessionId={props.sessionId} />
+        <BlockBody block={block} sessionId={props.sessionId} lang={props.lang} />
       </div>
       <div className="round-actions">
         <Button variant="primary" size="lg" onClick={nextBlock} disabled={advancingRef.current}>
-          {isLast ? "✅ セッションを終える" : "次のブロックへ →"}
+          {isLast ? t.finish : t.next}
         </Button>
       </div>
     </Screen>
   );
 }
 
-function BlockBody({ block, sessionId }: { block: MenuBlock; sessionId: string }) {
+function BlockBody({ block, sessionId, lang }: { block: MenuBlock; sessionId: string; lang: Lang }) {
   switch (block.kind) {
     case "chunk-placeholder":
       return <ChunkPlaceholderScreen />;
     case "warmup-reading":
-      return block.params.topic ? <WarmupReadingScreen topic={block.params.topic} /> : <p>トピックがありません</p>;
+      return block.params.topic ? <WarmupReadingScreen topic={block.params.topic} /> : <p>{STR[lang].session.noTopic}</p>;
     case "four-three-two":
       return block.params.topic ? (
         <FourThreeTwoScreen
@@ -146,15 +154,15 @@ function BlockBody({ block, sessionId }: { block: MenuBlock; sessionId: string }
           roundsSec={block.params.roundsSec} modelTalkMode={block.params.modelTalkMode}
         />
       ) : (
-        <p>トピックがありません</p>
+        <p>{STR[lang].session.noTopic}</p>
       );
     case "roleplay":
-      return block.params.scenario ? <RoleplayScreen scenario={block.params.scenario} /> : <p>シナリオがありません</p>;
+      return block.params.scenario ? <RoleplayScreen scenario={block.params.scenario} /> : <p>{STR[lang].session.noScenario}</p>;
     case "shadowing":
-      return block.params.topic ? <ShadowingScreen topic={block.params.topic} /> : <p>トピックがありません</p>;
+      return block.params.topic ? <ShadowingScreen topic={block.params.topic} /> : <p>{STR[lang].session.noTopic}</p>;
     case "reflection":
       return <ReflectionScreen />;
     default:
-      return <p>未知のブロック: {block.kind}</p>;
+      return <p>{STR[lang].session.unknownBlock(block.kind)}</p>;
   }
 }

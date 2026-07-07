@@ -14,7 +14,14 @@ export const BLOCK_KINDS = [
   "chunk-placeholder", "warmup-reading", "four-three-two", "roleplay", "shadowing", "reflection",
 ] as const satisfies readonly BlockKind[];
 
-export type MenuBlock = { id: string; kind: BlockKind; title: string; minutes: number; params: Record<string, unknown> };
+export type MenuTitleKey =
+  | "warmup" | "ftt" | "ftt-mini"
+  | "roleplay-daily" | "roleplay-business" | "roleplay-it"
+  | "shadowing" | "reflection";
+export type MenuBlock = {
+  id: string; kind: BlockKind; title: string; titleKey: MenuTitleKey; topicTitle?: string;
+  minutes: number; params: Record<string, unknown>;
+};
 /** level: メニュー構築時点のレベル。日次キャッシュの有効性判定（isValidMenuShape）に使う */
 export type Menu = { minutes: number; date: string; level: number; blocks: MenuBlock[] };
 
@@ -25,6 +32,11 @@ export const QUICK_KINDS: readonly QuickKind[] = ["warmup", "ftt-mini", "rolepla
 export function roleplayTitle(scenario: ContentItem): string {
   const label = scenario.domain === "daily" ? "日常" : scenario.domain === "business" ? "ビジネス" : "IT";
   return `${label}ロールプレイ: ${scenario.title}`;
+}
+
+/** ロールプレイの titleKey は選ばれたシナリオの実ドメインで決まる */
+export function roleplayTitleKey(scenario: ContentItem): MenuTitleKey {
+  return scenario.domain === "daily" ? "roleplay-daily" : scenario.domain === "business" ? "roleplay-business" : "roleplay-it";
 }
 
 /**
@@ -88,17 +100,17 @@ export function buildTodayMenu(minutes: 60 | 30, deps: MenuDeps = {}): Menu {
   const blocks: MenuBlock[] =
     minutes === 60
       ? [
-          { id: "b1", kind: "warmup-reading", title: warmupTitle, minutes: 8, params: { topic: mainTopic } },
-          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, minutes: 16, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk } },
-          { id: "b3", kind: "roleplay", title: roleplayTitle(scenario), minutes: 20, params: { scenario } },
-          { id: "b4", kind: "shadowing", title: `シャドーイング: ${shadowTopic.title}`, minutes: 8, params: { topic: shadowTopic } },
-          { id: "b5", kind: "reflection", title: "振り返り", minutes: 5, params: {} },
+          { id: "b1", kind: "warmup-reading", title: warmupTitle, titleKey: "warmup", minutes: 8, params: { topic: mainTopic } },
+          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, titleKey: "ftt", topicTitle: mainTopic.title, minutes: 16, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk } },
+          { id: "b3", kind: "roleplay", title: roleplayTitle(scenario), titleKey: roleplayTitleKey(scenario), topicTitle: scenario.title, minutes: 20, params: { scenario } },
+          { id: "b4", kind: "shadowing", title: `シャドーイング: ${shadowTopic.title}`, titleKey: "shadowing", topicTitle: shadowTopic.title, minutes: 8, params: { topic: shadowTopic } },
+          { id: "b5", kind: "reflection", title: "振り返り", titleKey: "reflection", minutes: 5, params: {} },
         ]
       : [
-          { id: "b1", kind: "warmup-reading", title: warmupTitle, minutes: 6, params: { topic: mainTopic } },
-          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, minutes: 12, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk } },
-          { id: "b3", kind: "roleplay", title: roleplayTitle(scenario), minutes: 10, params: { scenario } },
-          { id: "b4", kind: "reflection", title: "振り返り", minutes: 2, params: {} },
+          { id: "b1", kind: "warmup-reading", title: warmupTitle, titleKey: "warmup", minutes: 6, params: { topic: mainTopic } },
+          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, titleKey: "ftt", topicTitle: mainTopic.title, minutes: 12, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk } },
+          { id: "b3", kind: "roleplay", title: roleplayTitle(scenario), titleKey: roleplayTitleKey(scenario), topicTitle: scenario.title, minutes: 10, params: { scenario } },
+          { id: "b4", kind: "reflection", title: "振り返り", titleKey: "reflection", minutes: 2, params: {} },
         ];
 
   const menu: Menu = { minutes, date: ymd, level, blocks };
@@ -144,19 +156,25 @@ export function buildQuickMenu(kind: QuickKind, deps: MenuDeps = {}): Menu {
       ? pickInDomain(all, state, ymd, stage, deps.domain)
       : pickNextByDomain(all, state, ymd, stage, "scenario");
     markUsed(state.usage, scenario.id, ymd);
-    block = { id: "q1", kind: "roleplay", title: roleplayTitle(scenario), minutes: 10, params: { scenario } };
+    block = {
+      id: "q1", kind: "roleplay", title: roleplayTitle(scenario), titleKey: roleplayTitleKey(scenario),
+      topicTitle: scenario.title, minutes: 10, params: { scenario },
+    };
   } else {
     const topic = pickNextByDomain(loadContent(topicsDir), state, ymd, stage, "topic");
     markUsed(state.usage, topic.id, ymd);
     if (kind === "warmup") {
-      block = { id: "q1", kind: "warmup-reading", title: "音読ウォームアップ", minutes: 6, params: { topic } };
+      block = { id: "q1", kind: "warmup-reading", title: "音読ウォームアップ", titleKey: "warmup", minutes: 6, params: { topic } };
     } else if (kind === "ftt-mini") {
       block = {
-        id: "q1", kind: "four-three-two", title: `4/3/2ミニ: ${topic.title}`, minutes: 8,
+        id: "q1", kind: "four-three-two", title: `4/3/2ミニ: ${topic.title}`, titleKey: "ftt-mini", topicTitle: topic.title, minutes: 8,
         params: { topic, roundsSec: fttMiniRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk },
       };
     } else {
-      block = { id: "q1", kind: "shadowing", title: `シャドーイング: ${topic.title}`, minutes: 5, params: { topic } };
+      block = {
+        id: "q1", kind: "shadowing", title: `シャドーイング: ${topic.title}`, titleKey: "shadowing",
+        topicTitle: topic.title, minutes: 5, params: { topic },
+      };
     }
   }
 

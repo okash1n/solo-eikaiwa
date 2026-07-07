@@ -14,6 +14,19 @@ export type DrillKey =
   | "warmup" | "ftt-mini" | "shadowing"
   | "roleplay-daily" | "roleplay-business" | "roleplay-it";
 
+export type MenuTitleKey =
+  | "warmup" | "ftt" | "ftt-mini"
+  | "roleplay-daily" | "roleplay-business" | "roleplay-it"
+  | "shadowing" | "reflection";
+type MenuTitleStrings = { menuTitle: Record<MenuTitleKey, (topicTitle: string) => string> };
+type SessionStrings = {
+  session: {
+    building: string; retry: string; timerNote: string;
+    finish: string; next: string;
+    noTopic: string; noScenario: string; unknownBlock: (kind: string) => string;
+  };
+};
+
 type NavStrings = { nav: { home: string; placement: string; free: string; library: string; sentences: string; progress: string } };
 type UiScaleStrings = { uiScale: { small: string; medium: string; large: string; xlarge: string } };
 type SupportStrings = {
@@ -113,7 +126,8 @@ type SentencesStrings = {
 type Strings =
   & NavStrings & UiScaleStrings & SupportStrings & StatStrings & HeroStrings
   & QuickStrings & IntensiveStrings & DrillsStrings & SessionCardStrings
-  & CalendarStrings & FreeTalkHeaderStrings & ProgressStrings & PlacementStrings & SentencesStrings;
+  & CalendarStrings & FreeTalkHeaderStrings & ProgressStrings & PlacementStrings & SentencesStrings
+  & MenuTitleStrings & SessionStrings;
 
 const WEEKDAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -233,6 +247,22 @@ export const STR: Record<Lang, Strings> = {
       deleteAria: (id) => `Delete chunk ${id}`,
       playChunkAria: (id) => `Play chunk ${id}`,
     },
+    menuTitle: {
+      warmup: () => "Read-Aloud Warm-up",
+      ftt: (t) => `4/3/2: ${t}`,
+      "ftt-mini": (t) => `4/3/2 Mini: ${t}`,
+      "roleplay-daily": (t) => `Daily Role-play: ${t}`,
+      "roleplay-business": (t) => `Business Role-play: ${t}`,
+      "roleplay-it": (t) => `IT Role-play: ${t}`,
+      shadowing: (t) => `Shadowing: ${t}`,
+      reflection: () => "Reflection",
+    },
+    session: {
+      building: "Building today's menu…", retry: "Retry", timerNote: "Move on at a natural stopping point",
+      finish: "✅ Finish session", next: "Next block →",
+      noTopic: "No topic available", noScenario: "No scenario available",
+      unknownBlock: (kind) => `Unknown block: ${kind}`,
+    },
   },
   ja: {
     nav: { home: "ホーム", placement: "レベル測定", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300", progress: "進捗" },
@@ -346,6 +376,22 @@ export const STR: Record<Lang, Strings> = {
       deleteConfirm: "削除する?",
       deleteAria: (id) => `チャンク${id}を削除`,
       playChunkAria: (id) => `チャンク${id}を再生`,
+    },
+    menuTitle: {
+      warmup: () => "音読ウォームアップ",
+      ftt: (t) => `4/3/2: ${t}`,
+      "ftt-mini": (t) => `4/3/2ミニ: ${t}`,
+      "roleplay-daily": (t) => `日常ロールプレイ: ${t}`,
+      "roleplay-business": (t) => `ビジネスロールプレイ: ${t}`,
+      "roleplay-it": (t) => `ITロールプレイ: ${t}`,
+      shadowing: (t) => `シャドーイング: ${t}`,
+      reflection: () => "振り返り",
+    },
+    session: {
+      building: "今日のメニューを組んでいます…", retry: "再試行", timerNote: "キリのいいところで次へ",
+      finish: "✅ セッションを終える", next: "次のブロックへ →",
+      noTopic: "トピックがありません", noScenario: "シナリオがありません",
+      unknownBlock: (kind) => `未知のブロック: ${kind}`,
     },
   },
 };

@@ -15,13 +15,13 @@ export const FAKE_MENU = {
   minutes: 60 as const,
   date: "2026-07-05",
   level: 13,
-  blocks: [{ id: "b1", kind: "reflection", title: "振り返り", minutes: 5, params: {} }],
+  blocks: [{ id: "b1", kind: "reflection", title: "振り返り", titleKey: "reflection", minutes: 5, params: {} }],
 } satisfies Menu;
 export const FAKE_QUICK_MENU = {
   minutes: 6,
   date: "2026-07-05",
   level: 13,
-  blocks: [{ id: "q1", kind: "warmup-reading", title: "音読ウォームアップ", minutes: 6, params: {} }],
+  blocks: [{ id: "q1", kind: "warmup-reading", title: "音読ウォームアップ", titleKey: "warmup", minutes: 6, params: {} }],
 } satisfies Menu;
 export const FAKE_AE = { items: [{ quote: "q", issue: "i", better: "b", why_ja: "w" }], praise: "p" };
 export const FAKE_REFLECTION = { goodPhrases: ["g"], fixes: [], noteForTomorrow_ja: "n" };
