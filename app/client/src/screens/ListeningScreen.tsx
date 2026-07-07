@@ -102,10 +102,15 @@ function ListeningPlayer({ meta, lang, onListened, onBack }: {
 
 /**
  * 逐次TTS再生本体。段落ごとに playTtsCached を await 連鎖で順次再生する。
- * - stop: abortRef を立ててから stopPlayback()。stopPlayback は再生中 Promise を「正常終了扱い」で
- *   resolve するため await が戻る → ループが次段落へ進んでしまう。abortRef の後段チェックで確実に止める。
- * - unmount: aliveRef=false + abortRef=true + stopPlayback() でループと setState を安全に停止。
- * 全段落を通し再生し終えたときだけ聴取を記録する（情報表示のみ）。
+ * - tokenRef は単調増加の「再生世代」。playAll 開始時に発番し（my）、各 await の後で
+ *   tokenRef.current !== my なら自分は古い世代と判定して即 return する。boolean の abortRef
+ *   ではこれができない: fetch 待ち中（stopPlayback は再生開始前で no-op）に stop → 再度 play すると、
+ *   新しい playAll が abortRef を false に戻すため、await から目覚めた「旧」ループがそのまま生き返り、
+ *   新旧2ループが並走して段落が早送りされ、実際には聴いていないのに logListening まで届いてしまう
+ *   （研究上の記録忠実性を損なう）。世代が増分される tokenRef ならこの蘇生が起きない。
+ * - stop: tokenRef を増分してから stopPlayback()。
+ * - unmount: aliveRef=false + tokenRef 増分 + stopPlayback() でループと setState を安全に停止。
+ * 全段落を通し再生し終えたときだけ、かつ自分が最新世代のときだけ聴取を記録する（情報表示のみ）。
  */
 function ListeningPlayback({ item, lang, onListened }: {
   item: ListeningDetail; lang: Lang; onListened: (weeklyCount: number) => void;
@@ -115,46 +120,46 @@ function ListeningPlayback({ item, lang, onListened }: {
   const [showScript, setShowScript] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const aliveRef = useRef(true);
-  const abortRef = useRef(false);
+  const tokenRef = useRef(0);
   const explainer = useExplain(() => fetchTalkExplanation(item.paragraphs.join("\n\n")));
 
   useEffect(() => {
     aliveRef.current = true;
     return () => {
       aliveRef.current = false;
-      abortRef.current = true;
+      tokenRef.current++;
       stopPlayback();
     };
   }, []);
 
   async function playAll() {
     setErrorMsg("");
-    abortRef.current = false;
+    const my = ++tokenRef.current;
     for (let i = 0; i < item.paragraphs.length; i++) {
-      if (abortRef.current || !aliveRef.current) { setPlayingIdx(null); return; }
+      if (tokenRef.current !== my || !aliveRef.current) { if (aliveRef.current) setPlayingIdx(null); return; }
       setPlayingIdx(i);
       try {
         await playTtsCached(item.paragraphs[i]);
       } catch (err) {
-        if (!aliveRef.current) return;
+        if (tokenRef.current !== my || !aliveRef.current) return;
         setErrorMsg(err instanceof Error ? err.message : String(err));
         setPlayingIdx(null);
         return;
       }
     }
-    if (abortRef.current || !aliveRef.current) { setPlayingIdx(null); return; }
+    if (tokenRef.current !== my || !aliveRef.current) { if (aliveRef.current) setPlayingIdx(null); return; }
     setPlayingIdx(null);
     // 通し再生の完了 → 聴取を記録（記録失敗は再生体験を妨げない）
     try {
       const { weeklyCount } = await logListening(item.id);
-      if (aliveRef.current) onListened(weeklyCount);
+      if (aliveRef.current && tokenRef.current === my) onListened(weeklyCount);
     } catch (err) {
       console.warn("listening log failed:", err);
     }
   }
 
   function stop() {
-    abortRef.current = true;
+    tokenRef.current++;
     stopPlayback();
     setPlayingIdx(null);
   }
