@@ -94,6 +94,7 @@ type PlacementStrings = {
     resultStartAt: (level: number) => string; chooseOwn: string; notNow: string;
     chooseLabel: string; apply: string; confirmError: string;
     xpNote: string;
+    showPromptJa: string; translating: string; translateError: string;
     micError: (detail: string) => string;
   };
 };
@@ -267,6 +268,8 @@ export const STR: Record<Lang, Strings> = {
       chooseLabel: "Level (1–999)", apply: "Apply",
       confirmError: "Couldn't apply. Please try again.",
       xpNote: "+10 XP for completing the check",
+      showPromptJa: "💡 Show Japanese", translating: "Translating…",
+      translateError: "Couldn't load the translation.",
       micError: (detail) => `Can't access the microphone: ${detail}`,
     },
     sentences: {
@@ -460,6 +463,8 @@ export const STR: Record<Lang, Strings> = {
       chooseLabel: "レベル（1〜999）", apply: "適用",
       confirmError: "適用できませんでした。もう一度お試しください",
       xpNote: "測定完了で +10 XP",
+      showPromptJa: "💡 日本語で見る", translating: "訳しています…",
+      translateError: "訳を取得できませんでした。",
       micError: (detail) => `マイクにアクセスできません: ${detail}`,
     },
     sentences: {
