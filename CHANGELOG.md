@@ -2,6 +2,12 @@
 
 このプロジェクトの特筆すべき変更を記録します。形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に、バージョニングは [Semantic Versioning](https://semver.org/lang/ja/) に従います。
 
+## [0.17.1] - 2026-07-07
+
+### Changed
+
+- **Codex プロバイダの reasoning effort を既定 `medium` に**: `~/.codex/config.toml` が `xhigh` 等でも、会話の応答待ちが長くならないようアプリ経由の `codex exec` は `medium` で起動する（`CODEX_REASONING_EFFORT` で変更可）
+
 ## [0.17.0] - 2026-07-07
 
 ### Added
