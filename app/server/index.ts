@@ -1,4 +1,4 @@
-import { ensureDirs, RECORDINGS_DIR, sessionLogPath } from "./paths";
+import { ensureDirs, LISTENING_DIR, RECORDINGS_DIR, sessionLogPath } from "./paths";
 import { transcribeAudio } from "./stt";
 import { synthesize } from "./tts";
 import { converseTurn } from "./converse";
@@ -17,6 +17,8 @@ import { prepParams, stageOf } from "./progression";
 import { evaluatePlacement, makePlacementStore } from "./placement";
 import { makeMetricsSummary } from "./metrics-aggregate";
 import { generateMonthlyReport, makeAssembleMonthData, makeAssessmentStore } from "./assessment";
+import { loadListening, findListening } from "./listening";
+import { makeListeningStore } from "./listening-store";
 
 ensureDirs();
 const PORT = 3111;
@@ -31,6 +33,7 @@ const progressStore = makeProgressStore(db);
 const placementStore = makePlacementStore(db);
 const metricsSummary = makeMetricsSummary({ db, currentLevel: () => progressStore.getLevel() });
 const assessmentStore = makeAssessmentStore(db);
+const listeningStore = makeListeningStore(db);
 const assembleMonthData = makeAssembleMonthData({
   db,
   sentences,
@@ -89,6 +92,9 @@ const realDeps: RouteDeps = {
   assessmentStore,
   assembleMonthData: () => assembleMonthData(),
   generateMonthlyReport: (data) => generateMonthlyReport(data),
+  listListening: () => loadListening(LISTENING_DIR),
+  findListening: (id) => findListening(id),
+  listeningStore,
 };
 
 Bun.serve({

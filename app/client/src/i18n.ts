@@ -28,7 +28,7 @@ type SessionStrings = {
   };
 };
 
-type NavStrings = { nav: { home: string; placement: string; free: string; library: string; sentences: string; progress: string } };
+type NavStrings = { nav: { home: string; placement: string; free: string; library: string; sentences: string; listening: string; progress: string } };
 type AppShellStrings = { appShell: { backToMenu: string; textSize: string; language: string } };
 type UiScaleStrings = { uiScale: { small: string; medium: string; large: string; xlarge: string } };
 type SupportStrings = {
@@ -167,6 +167,17 @@ type FreeTalkScreenStrings = { freeTalkScreen: {
   hintLabel: string; hintPlaceholder: string; hintButton: string; hintThinking: string; hintError: string; retry: string;
   you: string; ai: string; translate: string; translating: string; translateError: string;
 } };
+type ListeningScreenStrings = { listeningScreen: {
+  title: string; desc: string;
+  loading: string; retry: string; empty: string;
+  weekCount: (n: number) => string;
+  filterFit: string; filterAll: string;
+  domain: { daily: string; business: string; it: string };
+  open: string; back: string;
+  play: string; playing: string; stop: string;
+  showScript: string; scriptLoading: string;
+  explainMore: string; explainLoading: string; explainError: string;
+} };
 
 type Strings =
   & NavStrings & UiScaleStrings & AppShellStrings & SupportStrings & StatStrings & HeroStrings
@@ -174,7 +185,7 @@ type Strings =
   & CalendarStrings & FreeTalkHeaderStrings & ProgressStrings & PlacementStrings & SentencesStrings
   & MenuTitleStrings & SessionStrings
   & WarmupStrings & Ftt432Strings & ReflectionStrings & ChunkListStrings
-  & ShadowingStrings & LibraryStrings & RoleplayStrings & FreeTalkScreenStrings;
+  & ShadowingStrings & LibraryStrings & RoleplayStrings & FreeTalkScreenStrings & ListeningScreenStrings;
 
 const WEEKDAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -182,7 +193,7 @@ const WEEKDAYS_JA = ["日", "月", "火", "水", "木", "金", "土"];
 
 export const STR: Record<Lang, Strings> = {
   en: {
-    nav: { home: "Home", placement: "Level Check", free: "Free Talk", library: "Library", sentences: "300 Sentences", progress: "Progress" },
+    nav: { home: "Home", placement: "Level Check", free: "Free Talk", library: "Library", sentences: "300 Sentences", listening: "Listening", progress: "Progress" },
     appShell: { backToMenu: "← Back to menu", textSize: "Text size", language: "Language" },
     uiScale: { small: "A−", medium: "A", large: "A＋", xlarge: "A＋＋" },
     support: {
@@ -376,9 +387,23 @@ export const STR: Record<Lang, Strings> = {
       hintThinking: "Thinking of ways to say it…", hintError: "Couldn't get hints. Please try again.", retry: "Retry",
       you: "You", ai: "AI", translate: "Translate", translating: "Translating…", translateError: "Couldn't load the translation.",
     },
+    listeningScreen: {
+      title: "Listening Library",
+      desc: "Short talks at your level. Listen first without the script — it trains your ear.",
+      loading: "Loading…", retry: "Retry",
+      empty: "No listening material for this filter yet.",
+      weekCount: (n) => `${n} listens this week`,
+      filterFit: "Your level", filterAll: "All",
+      domain: { daily: "Daily", business: "Business", it: "IT" },
+      open: "Listen", back: "← Back to list",
+      play: "▶ Play", playing: "🔊 Playing…", stop: "⏹ Stop",
+      showScript: "📄 Show script", scriptLoading: "Loading the script…",
+      explainMore: "💡 Translation & notes", explainLoading: "Writing the translation and notes…",
+      explainError: "Couldn't load the explanation. Please try again.",
+    },
   },
   ja: {
-    nav: { home: "ホーム", placement: "レベル測定", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300", progress: "進捗" },
+    nav: { home: "ホーム", placement: "レベル測定", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300", listening: "多聴", progress: "進捗" },
     appShell: { backToMenu: "← メニューに戻る", textSize: "文字サイズ", language: "言語" },
     uiScale: { small: "小", medium: "中", large: "大", xlarge: "特大" },
     support: {
@@ -571,6 +596,20 @@ export const STR: Record<Lang, Strings> = {
       hintPlaceholder: "例: その機能はまだ試していません", hintButton: "💡 言い方のヒント",
       hintThinking: "言い方を考えています…", hintError: "ヒントを取得できませんでした。もう一度お試しください。", retry: "再試行",
       you: "あなた", ai: "AI", translate: "訳", translating: "訳しています…", translateError: "訳を取得できませんでした。",
+    },
+    listeningScreen: {
+      title: "多聴ライブラリ",
+      desc: "レベルに合った短い英語を聞きます。まずはスクリプトを見ずに聞くと、耳が育ちます。",
+      loading: "読み込み中…", retry: "再試行",
+      empty: "この絞り込みに合う多聴素材がまだありません。",
+      weekCount: (n) => `今週 ${n} 本`,
+      filterFit: "自分のレベル", filterAll: "すべて",
+      domain: { daily: "日常", business: "ビジネス", it: "IT" },
+      open: "聞く", back: "← 一覧に戻る",
+      play: "▶ 再生", playing: "🔊 再生中…", stop: "⏹ 停止",
+      showScript: "📄 スクリプトを表示", scriptLoading: "スクリプトを読み込み中…",
+      explainMore: "💡 日本語訳と解説", explainLoading: "日本語訳と解説を書いています…",
+      explainError: "解説を取得できませんでした。もう一度お試しください。",
     },
   },
 };

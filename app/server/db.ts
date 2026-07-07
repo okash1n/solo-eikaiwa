@@ -7,6 +7,7 @@ import { ensureSentenceSchema } from "./sentences";
 import { ensureChunkSchema } from "./chunks";
 import { ensurePlacementSchema } from "./placement";
 import { ensureAssessmentSchema } from "./assessment";
+import { ensureListeningSchema } from "./listening-store";
 
 /** 構造化された状態・履歴の置き場（ログはJSONLのまま）。data/ はローカル専用（gitignore済み）。 */
 export const DEFAULT_DB_PATH = path.join(DATA_DIR, "learn-english.db");
@@ -60,6 +61,7 @@ export function openDb(dbPath: string = DEFAULT_DB_PATH): Database {
   ensureChunkSchema(db);
   ensurePlacementSchema(db);
   ensureAssessmentSchema(db);
+  ensureListeningSchema(db);
   return db;
 }
 

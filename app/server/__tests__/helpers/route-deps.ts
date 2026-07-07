@@ -9,6 +9,8 @@ import type { PlacementStore } from "../../placement";
 import type { LibraryStore, TalkExplainCache } from "../../db";
 import type { AssessmentStore } from "../../assessment";
 import type { Menu, QuickKind } from "../../menu";
+import type { ListeningItem } from "../../listening";
+import type { ListeningStore } from "../../listening-store";
 
 export const FAKE_HEALTH = { ok: true, whisper: true, ffmpeg: true, claude: true, ttsKey: true, modelFile: true };
 export const FAKE_MENU = {
@@ -100,6 +102,19 @@ export function makeFakeAssessmentStore(overrides: Partial<AssessmentStore> = {}
   } satisfies AssessmentStore;
 }
 
+export const FAKE_LISTENING_ITEM: ListeningItem = {
+  id: "morning-routine", title: "My morning routine", titleJa: "朝のルーティン",
+  domain: "daily", level: [1, 3], paragraphs: ["I wake up at seven.", "Then I make coffee."],
+};
+
+export function makeFakeListeningStore(overrides: Partial<ListeningStore> = {}): ListeningStore {
+  return {
+    log: (itemId, ymd) => ({ id: 1, ts: "2026-07-07T00:00:00.000Z", ymd, itemId }),
+    countSince: () => 0,
+    ...overrides,
+  } satisfies ListeningStore;
+}
+
 export function makeFakeTalkExplainCache(overrides: Partial<TalkExplainCache> = {}): TalkExplainCache {
   return {
     get: (_hash) => null,
@@ -161,6 +176,9 @@ export function makeTestDeps(overrides: Partial<RouteDeps> = {}): {
     assessmentStore: makeFakeAssessmentStore(),
     assembleMonthData: () => ({ windowDays: 30 }) as ReturnType<RouteDeps["assembleMonthData"]>,
     generateMonthlyReport: async () => "今月の振り返りテキスト",
+    listListening: () => [FAKE_LISTENING_ITEM],
+    findListening: (id: string) => (id === "morning-routine" ? FAKE_LISTENING_ITEM : undefined),
+    listeningStore: makeFakeListeningStore(),
     ...overrides,
   };
   return { deps, logFile, recordingsDir };
