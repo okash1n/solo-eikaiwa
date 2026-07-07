@@ -1,7 +1,7 @@
 import { ensureDirs, LISTENING_DIR, RECORDINGS_DIR, sessionLogPath } from "./paths";
 import { transcribeAudio } from "./stt";
 import { synthesize } from "./tts";
-import { converseTurn, applyLlmRoleSettings } from "./converse";
+import { converseTurn, applyLlmRoleSettings, runnerFor } from "./converse";
 import { checkHealth } from "./health";
 import { buildQuickMenu, buildTodayMenu, invalidateTodayMenuCache } from "./menu";
 import { findScenario, findTopic } from "./content";
@@ -52,20 +52,20 @@ const assembleMonthData = makeAssembleMonthData({
 const realDeps: RouteDeps = {
   transcribe: transcribeAudio,
   synthesize,
-  converse: converseTurn,
+  converse: (args) => converseTurn({ ...args, runner: runnerFor("conversation") }),
   health: () => checkHealth(),
   logFile: () => sessionLogPath(new Date()),
   recordingsDir: RECORDINGS_DIR,
   buildMenu: (minutes) => buildTodayMenu(minutes, { level: progressStore.getLevel() }),
-  aeFeedback: (args) => generateAeFeedback({ ...args, stage: stageOf(progressStore.getLevel()) }),
+  aeFeedback: (args) => generateAeFeedback({ ...args, stage: stageOf(progressStore.getLevel()) }, runnerFor("coaching")),
   modelTalk: async (topicId) => {
     const topic = findTopic(topicId);
     if (!topic) return null;
-    const talk = await generateModelTalk({ topicTitle: topic.title, hints: topic.hints, stage: stageOf(progressStore.getLevel()) });
+    const talk = await generateModelTalk({ topicTitle: topic.title, hints: topic.hints, stage: stageOf(progressStore.getLevel()) }, runnerFor("generation"));
     return { text: talk.text, topicTitle: topic.title };
   },
   libraryStore,
-  reflection: () => generateReflection({ events: readEvents(sessionLogPath(new Date())) }),
+  reflection: () => generateReflection({ events: readEvents(sessionLogPath(new Date())) }, runnerFor("coaching")),
   scenarioPrompt: (scenarioId) => {
     const sc = findScenario(scenarioId);
     return sc ? roleplayPrompt(sc, stageOf(progressStore.getLevel())) : null;
@@ -76,7 +76,7 @@ const realDeps: RouteDeps = {
     if (!topic) return null;
     const stage = stageOf(progressStore.getLevel());
     const p = prepParams(stage);
-    return generatePrepPack({ topicTitle: topic.title, hints: topic.hints, chunkCount: p.chunkCount, hintLang: p.hintLang, stage });
+    return generatePrepPack({ topicTitle: topic.title, hints: topic.hints, chunkCount: p.chunkCount, hintLang: p.hintLang, stage }, runnerFor("generation"));
   },
   buildQuick: (kind, domain) => buildQuickMenu(kind, { level: progressStore.getLevel(), domain }),
   practiceDays: () => listPracticeDays(),
@@ -87,18 +87,18 @@ const realDeps: RouteDeps = {
   progressStore,
   invalidateMenuCache: () => invalidateTodayMenuCache(),
   placementStore,
-  evaluatePlacement: (subs) => evaluatePlacement(subs),
-  explainSentence: (s) => generateSentenceExplanation(s),
-  explainTalk: (text) => generateTalkExplanation({ text }),
+  evaluatePlacement: (subs) => evaluatePlacement(subs, runnerFor("assessment")),
+  explainSentence: (s) => generateSentenceExplanation(s, runnerFor("coaching")),
+  explainTalk: (text) => generateTalkExplanation({ text }, runnerFor("coaching")),
   talkExplainCache: makeTalkExplainCache(db),
-  translate: (text) => generateUtteranceTranslation({ text }),
+  translate: (text) => generateUtteranceTranslation({ text }, runnerFor("coaching")),
   translationCache: makeTranslationCache(db),
-  phraseHint: (args) => generatePhraseHints(args),
-  fixExplain: (args) => generateFixExplanation(args),
+  phraseHint: (args) => generatePhraseHints(args, runnerFor("coaching")),
+  fixExplain: (args) => generateFixExplanation(args, runnerFor("coaching")),
   metricsSummary,
   assessmentStore,
   assembleMonthData: () => assembleMonthData(),
-  generateMonthlyReport: (data) => generateMonthlyReport(data),
+  generateMonthlyReport: (data) => generateMonthlyReport(data, runnerFor("assessment")),
   listListening: () => loadListening(LISTENING_DIR),
   findListening: (id) => findListening(id),
   listeningStore,
