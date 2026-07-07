@@ -2,6 +2,17 @@
 
 このプロジェクトの特筆すべき変更を記録します。形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に、バージョニングは [Semantic Versioning](https://semver.org/lang/ja/) に従います。
 
+## [0.8.0] - 2026-07-07
+
+### Added
+
+- **練習系画面の英語UI対応（P4）**: 音読ウォームアップ・4/3/2・振り返り・ロールプレイ・自由会話・シャドーイング・ライブラリ・チャンク一覧の全文言を EN/日本語 切り替えに対応。サーバ生成のメニュータイトルも言語別に表示（日本語表示は従来と完全に同一）
+
+### Changed
+
+- クライアント内部を再編（R4・外部挙動は不変）: API層をドメイン別モジュールへ分割、i18n を画面別サブ辞書の合成に再構成、例文練習画面をタブ別ファイルへ分割、行の音声再生・解説ボタン・サポート設定購読を共有フックに統一
+- シャドーイングの訳解説が失敗したとき再試行ボタンを表示（従来は再試行不能）
+
 ## [0.7.0] - 2026-07-07
 
 ### Added
@@ -117,6 +128,7 @@
 - 学習データ（録音・トランスクリプト・進捗・DB・キャッシュ）は `data/` のローカルファイルで、リポジトリにコミットされない
 - 音声データはマシン外に出ない（外部送信はテキストのみ: Claude への発話テキスト、OpenAI TTS への応答テキスト）
 
+[0.8.0]: https://github.com/okash1n/learn-english/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/okash1n/learn-english/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/okash1n/learn-english/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/okash1n/learn-english/compare/v0.4.0...v0.5.0
