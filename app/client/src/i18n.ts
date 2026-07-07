@@ -70,19 +70,8 @@ type SettingsStrings = {
   settings: {
     title: string;
     llmSection: string;
-    connectionTitle: string;
-    presetTitle: string;
-    recommendApply: string;
-    recommendDesc: string;
-    recommendDisabled: string;
-    resetApply: string;
-    resetDesc: string;
-    rolesTitle: string;
-    rolesSummary: string;
     roleName: Record<LlmRole, string>;
     roleDesc: Record<LlmRole, string>;
-    optInherit: string;
-    saveRoles: string;
     presetSection: string;
     presetAllLocal: string;
     presetAllLocalDesc: string;
@@ -332,15 +321,6 @@ export const STR: Record<Lang, Strings> = {
     settings: {
       title: "Settings",
       llmSection: "Language model",
-      connectionTitle: "Overall provider",
-      presetTitle: "Quick setup",
-      recommendApply: "Apply recommended setup",
-      recommendDesc: "Use your local model for casual conversation and keep the tested default for coaching, content, and assessment.",
-      recommendDisabled: "Connect a local LLM above first to enable the recommended setup.",
-      resetApply: "Reset everything to default",
-      resetDesc: "Set the overall provider to the environment default and let every role follow it.",
-      rolesTitle: "Per-role model (advanced)",
-      rolesSummary: "Set a different model per role",
       roleName: {
         conversation: "Conversation",
         coaching: "Coaching",
@@ -353,8 +333,6 @@ export const STR: Record<Lang, Strings> = {
         generation: "Model talks, 4/3/2 prep, generated study material",
         assessment: "Level check and monthly review",
       },
-      optInherit: "Follow overall",
-      saveRoles: "Save per-role settings",
       presetSection: "Presets",
       presetAllLocal: "All local",
       presetAllLocalDesc: "Every role uses your local model.",
@@ -661,15 +639,6 @@ export const STR: Record<Lang, Strings> = {
     settings: {
       title: "設定",
       llmSection: "言語モデル",
-      connectionTitle: "全体の接続先",
-      presetTitle: "かんたん設定",
-      recommendApply: "推奨構成を適用",
-      recommendDesc: "自由会話はローカルモデルに任せ、添削・教材生成・測定は動作確認済みの既定のままにします。",
-      recommendDisabled: "先に上でローカルLLMを接続すると推奨構成が使えます。",
-      resetApply: "すべて既定に戻す",
-      resetDesc: "全体の接続先を環境変数の既定に戻し、各ロールはそれに従います。",
-      rolesTitle: "用途別モデル（詳細）",
-      rolesSummary: "ロールごとに別のモデルを指定する",
       roleName: {
         conversation: "会話",
         coaching: "コーチング",
@@ -682,8 +651,6 @@ export const STR: Record<Lang, Strings> = {
         generation: "モデルトーク・4/3/2 準備・生成教材",
         assessment: "レベル測定・月次レビュー",
       },
-      optInherit: "全体に従う",
-      saveRoles: "用途別設定を保存",
       presetSection: "プリセット",
       presetAllLocal: "オールローカル",
       presetAllLocalDesc: "すべての用途をローカルモデルで動かします。",
