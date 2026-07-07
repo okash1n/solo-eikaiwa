@@ -7,6 +7,13 @@ set -euo pipefail
 
 REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." >/dev/null 2>&1 && pwd -P)"
 LABEL="com.local.solo-eikaiwa.server"
+# 旧名（learn-english）からの移行: 旧デーモンが残っていれば解除する（v0.20.0 リネーム対応・冪等）
+OLD_LABEL="com.local.learn-english.server"
+if launchctl print "gui/$(id -u)/$OLD_LABEL" >/dev/null 2>&1; then
+  echo "-- 旧デーモン ($OLD_LABEL) を解除します"
+  launchctl bootout "gui/$(id -u)/$OLD_LABEL" 2>/dev/null || true
+fi
+rm -f "$HOME/Library/LaunchAgents/$OLD_LABEL.plist"
 DAEMON_SCRIPT="$REPO_DIR/scripts/daemon-server.sh"
 LOG_DIR="$REPO_DIR/data/logs"
 PLIST_PATH="${LAUNCH_AGENTS_DIR:-$HOME/Library/LaunchAgents}/${LABEL}.plist"
