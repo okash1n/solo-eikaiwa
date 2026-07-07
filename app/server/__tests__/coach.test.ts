@@ -68,9 +68,10 @@ describe("generateModelTalk", () => {
     expect(seen[0].systemPrompt).toContain("word families");
   });
 
-  test("stage 4+ の systemPrompt は word families 制約を課さない", async () => {
+  test("stage 4+ の systemPrompt は旧文言(plain high-frequency vocabulary)を維持し、word families 制約は課さない", async () => {
     const { runner, seen } = runnerReturning("x");
     await generateModelTalk({ topicTitle: "t", hints: [], stage: 5 }, runner);
+    expect(seen[0].systemPrompt).toContain("plain high-frequency vocabulary");
     expect(seen[0].systemPrompt).not.toContain("word families");
   });
 });
@@ -178,10 +179,11 @@ describe("generatePrepPack", () => {
     expect(seen[0].systemPrompt).toContain("word families");
   });
 
-  test("stage 4+ は word families 制約を課さない（B1 目安のみ）", async () => {
+  test("stage 4+ は語彙制約バレット自体を挿入しない（word families も No rare idioms も含まない）", async () => {
     const { runner, seen } = runnerReturning(JSON.stringify(valid));
     await generatePrepPack({ topicTitle: "t", hints: [], stage: 5 }, runner);
     expect(seen[0].systemPrompt).not.toContain("word families");
+    expect(seen[0].systemPrompt).not.toContain("No rare idioms");
   });
 });
 

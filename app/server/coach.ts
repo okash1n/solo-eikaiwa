@@ -148,8 +148,13 @@ export async function generateFixExplanation(
 }
 
 function modelTalkSystem(stage: number): string {
+  const vocab = vocabConstraint(stage);
+  // stage>=4（vocab===null）は旧文言を一字一句維持する（上級者の挙動不変）
+  const rules = vocab
+    ? `Rules: 120-150 words, spoken register, first person, short sentences. ${vocab}`
+    : "Rules: 120-150 words, spoken register, first person, plain high-frequency vocabulary, short sentences.";
   return `You produce a model monologue for an English learner (CEFR B1) to shadow.
-Rules: 120-150 words, spoken register, first person, short sentences. ${vocabConstraint(stage)}
+${rules}
 No headings, no lists — just the monologue text.
 Do not use any tools — reply directly with text only.`;
 }
@@ -188,6 +193,9 @@ export async function generateReflection(
 export type PrepPack = { chunks: Array<{ en: string; ja: string }>; outline: string[]; hintDefault: HintLang };
 
 function prepSystem(chunkCount: number, stage: number): string {
+  const vocab = vocabConstraint(stage);
+  // stage>=4（vocab===null）はバレット自体を挿入しない（元々このバレットは存在しなかった＝上級者の挙動不変）
+  const vocabBullet = vocab ? `\n- ${vocab}` : "";
   return `You prepare a Japanese IT professional (CEFR A2-B1) for a short English monologue.
 You receive a topic and hint angles. Reply with STRICT JSON only — no markdown fences, no commentary — exactly this shape:
 {"chunks":[{"en":"<complete, speakable sentence, B1 level>","ja":"<自然な日本語訳>"}],"outline":["<short English bullet>"]}
@@ -195,8 +203,7 @@ Rules:
 - Exactly ${chunkCount} chunks. Each "en" MUST be a complete, speakable sentence of roughly 8-16 words that the learner can read aloud as-is.
   No ellipses ("..."), no blanks, and no placeholders like [X] — always fill the slot with a concrete, topic-relevant
   example a B1-level IT professional could plausibly say, using the given topic and hints for the content
-  (e.g. "The main problem we had was a slow database query.", "What worked well was splitting the task into smaller steps.").
-- ${vocabConstraint(stage)}
+  (e.g. "The main problem we had was a slow database query.", "What worked well was splitting the task into smaller steps.").${vocabBullet}
 - Keep the reusable sentence frame recognizable at the START of each sentence (sentence-starter + filled example), so the
   learner can reuse that same frame with their own content in the next exercise.
 - ja: the natural full-sentence Japanese translation of "en" (not a fragment).
@@ -235,7 +242,7 @@ ${scenario.hints.map((h) => `- ${h}`).join("\n")}
 Rules:
 - Stay in your assigned role for the whole conversation. Do not break character.
 - Keep every reply SHORT: 2-4 sentences, then ask ONE question or make ONE request.
-- ${vocabConstraint(stage)}
+- ${vocabConstraint(stage) ?? "Use plain, high-frequency English (B1 level). No rare idioms."}
 - Do NOT correct the learner's errors explicitly; respond naturally.
 - Never switch to Japanese.
 - Do not use any tools — reply directly with text only.`;

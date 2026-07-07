@@ -79,17 +79,15 @@ describe("progression: 定数と降格先", () => {
 });
 
 describe("progression: vocabConstraint", () => {
-  test("stage 1〜3 は高頻度語彙(word families)に絞り、B1 level 表記を使わない", () => {
+  test("stage 1〜3 は高頻度語彙(word families)制約の文字列を返す", () => {
     for (const s of [1, 2, 3]) {
       expect(vocabConstraint(s)).toContain("word families");
-      expect(vocabConstraint(s)).not.toContain("B1 level");
     }
   });
 
-  test("stage 4+ は従来の B1 目安を維持し word families 制約は課さない", () => {
+  test("stage 4+ は null（制約なし。各呼び出し点が自サイトの旧文言をそのまま使う）", () => {
     for (const s of [4, 5, 6]) {
-      expect(vocabConstraint(s)).toContain("B1 level");
-      expect(vocabConstraint(s)).not.toContain("word families");
+      expect(vocabConstraint(s)).toBeNull();
     }
   });
 });

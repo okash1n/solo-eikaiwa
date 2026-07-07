@@ -277,6 +277,15 @@ describe("content-gen / genSentences", () => {
     expect(seen[0].systemPrompt).toContain("word families");
     rmSync(dir, { recursive: true, force: true });
   });
+
+  test("stage 4+ は systemPrompt に word families 制約行を挿入しない（上級者の挙動不変・null埋め込みも禁止）", async () => {
+    const { dir, file, db } = setup();
+    const { runner, seen } = makeCapturingRunner([VALID_BATCH]);
+    await genSentences({ runner, sentencesFile: file, db, stage: 5, dry: true });
+    expect(seen[0].systemPrompt).not.toContain("word families");
+    expect(seen[0].systemPrompt).not.toMatch(/\bnull\b/);
+    rmSync(dir, { recursive: true, force: true });
+  });
 });
 
 describe("content-gen / genTopics", () => {
@@ -387,6 +396,18 @@ describe("content-gen / genTopics", () => {
     ]);
     await genTopics({ runner, topicsDir: dirs.topicsDir, scenariosDir: dirs.scenariosDir, stage: 2, dry: true });
     expect(seen[0].systemPrompt).toContain("word families");
+    cleanup(dirs);
+  });
+
+  test("stage 4+ は topic 生成 systemPrompt に word families 制約行を挿入しない（上級者の挙動不変）", async () => {
+    const dirs = tempDirs();
+    // contentJson の level は [2,4] 固定なので、検証を通すため stage は4（範囲内かつ4+の境界）を使う
+    const { runner, seen } = makeCapturingRunner([
+      contentJson("topic-one", "daily"), contentJson("topic-two", "it"), contentJson("scenario-one", "business"),
+    ]);
+    await genTopics({ runner, topicsDir: dirs.topicsDir, scenariosDir: dirs.scenariosDir, stage: 4, dry: true });
+    expect(seen[0].systemPrompt).not.toContain("word families");
+    expect(seen[0].systemPrompt).not.toMatch(/\bnull\b/);
     cleanup(dirs);
   });
 });
