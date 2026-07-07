@@ -339,10 +339,13 @@ describe("content-gen / genTopics", () => {
     rmSync(dirs.topicsDir, { recursive: true, force: true });
     rmSync(dirs.scenariosDir, { recursive: true, force: true });
   }
+  // starters はここでは topic/scenario 共通のダミー値（topic 側は検証されないので無視される）。
+  // scenario 分岐のstarters検証（ちょうど3件）を満たすため既定で含める。
   function contentJson(id: string, domain: string, overrides: Record<string, unknown> = {}) {
     return JSON.stringify({
       id, title: `Title ${id}`, titleJa: `タイトル${id}`, domain,
       level: [2, 4], hints: ["a — あ", "b — い", "c — う", "d — え"],
+      starters: ["S1.", "S2.", "S3."],
       ...overrides,
     });
   }
@@ -469,6 +472,60 @@ describe("content-gen / genTopics", () => {
     await genTopics({ runner, topicsDir: dirs.topicsDir, scenariosDir: dirs.scenariosDir, stage: 4, dry: true });
     expect(seen[0].systemPrompt).not.toContain("word families");
     expect(seen[0].systemPrompt).not.toMatch(/\bnull\b/);
+    cleanup(dirs);
+  });
+
+  test("scenarioスロットはgenScenariosと同じナラティブ+スターター形式で生成され、topicスロットは従来どおりstartersなし", async () => {
+    const dirs = tempDirs();
+    const scenarioJson = JSON.stringify({
+      id: "scenario-narrative", title: "Asking for help", titleJa: "助けを求める",
+      domain: "business", level: [2, 4],
+      hints: [
+        "You ask a coworker for help with a simple task.",
+        "The AI plays a helpful coworker.",
+        "Goal: get the help you need and say thanks.",
+      ],
+      starters: ["Can you help me for a second?", "I have a quick question.", "Do you have a minute?"],
+    });
+    await genTopics({
+      runner: makeRunner([contentJson("topic-one", "daily"), contentJson("topic-two", "it"), scenarioJson]),
+      topicsDir: dirs.topicsDir, scenariosDir: dirs.scenariosDir, stage: 3, dry: false,
+    });
+    const topicItems = loadContent(dirs.topicsDir);
+    expect(topicItems).toHaveLength(2);
+    expect(topicItems.every((c) => c.starters.length === 0)).toBe(true); // topic側は従来どおりstartersなし
+
+    const scenarioItems = loadContent(dirs.scenariosDir);
+    expect(scenarioItems).toHaveLength(1);
+    expect(scenarioItems[0].hints).toHaveLength(3);
+    expect(scenarioItems[0].hints.every((h) => !/[぀-ヿ一-鿿]/.test(h))).toBe(true); // 英語のみのナラティブ
+    expect(scenarioItems[0].starters).toEqual([
+      "Can you help me for a second?", "I have a quick question.", "Do you have a minute?",
+    ]);
+    cleanup(dirs);
+  });
+
+  test("scenarioスロットのstartersが3件でない候補は検証NGとして再生成される", async () => {
+    const dirs = tempDirs();
+    const badScenario = JSON.stringify({
+      id: "scenario-bad-starters", title: "Bad starters", titleJa: "不正なスターター",
+      domain: "business", level: [2, 4],
+      hints: ["You ask for help.", "The AI plays a coworker.", "Goal: finish the task."],
+      starters: ["Only one starter."],
+    });
+    const goodScenario = JSON.stringify({
+      id: "scenario-good-starters", title: "Good starters", titleJa: "正しいスターター",
+      domain: "business", level: [2, 4],
+      hints: ["You ask for help.", "The AI plays a coworker.", "Goal: finish the task."],
+      starters: ["One.", "Two.", "Three."],
+    });
+    const logs: string[] = [];
+    await genTopics({
+      runner: makeRunner([contentJson("topic-one", "daily"), contentJson("topic-two", "it"), badScenario, goodScenario]),
+      topicsDir: dirs.topicsDir, scenariosDir: dirs.scenariosDir, stage: 3, dry: false, log: (s) => logs.push(s),
+    });
+    expect(loadContent(dirs.scenariosDir).map((c) => c.id)).toEqual(["scenario-good-starters"]);
+    expect(logs.some((l) => l.includes("検証NG"))).toBe(true);
     cleanup(dirs);
   });
 });

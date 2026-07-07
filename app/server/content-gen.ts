@@ -234,14 +234,29 @@ export async function genTopics(deps: GenTopicsDeps): Promise<void> {
     const vocab = vocabConstraint(deps.stage);
     // stage>=4（vocab===null）は行自体を挿入しない（元々この行は無かった＝上級者の挙動不変）
     const vocabLine = vocab ? `${vocab}\n` : "";
-    const system = `You create one original ${p.kind} for an English speaking practice app (Japanese learner, difficulty stage ${deps.stage} of 6).
-${p.kind === "topic"
-  ? "A topic gives 4 talking-point hints for a monologue."
-  : "A scenario sets up a roleplay: who the AI plays, who the learner is, the goal, and useful moves."}
+    // scenario は genScenarios と同じナラティブ+スターター仕様（coach.ts roleplayPrompt の Setup 欄が
+    // 前提とする形式）。topic 側のプロンプトは従来どおり一切変更しない。domain/level は genTopics 従来仕様
+    // のままモデルが決める（genScenarios の固定プランとは異なる）。
+    const system = p.kind === "topic"
+      ? `You create one original topic for an English speaking practice app (Japanese learner, difficulty stage ${deps.stage} of 6).
+A topic gives 4 talking-point hints for a monologue.
 Each hint line: English phrase — 日本語の補足. Spoken register. ${ORIGINALITY}
 ${vocabLine}Do NOT reuse these existing ids: ${existing}
 Reply with STRICT JSON only:
 {"id":"kebab-case-id","title":"English title","titleJa":"日本語タイトル","domain":"daily|business|it","level":[min,max],"hints":["English — 日本語", ...4 items]}
+level must be within 1..6 and include stage ${deps.stage}.
+Do not use any tools — reply directly with text only.`
+      : `You create one original roleplay SCENARIO for an English speaking practice app (Japanese learner, difficulty stage ${deps.stage} of 6).
+A scenario sets up a roleplay that an AI coach will run with the learner by voice.
+Write exactly 3 "hints" lines, English only (no Japanese, no translations), in this order:
+1. The learner's role or task in the scene (what they are doing / who they are).
+2. Who the AI plays, starting with "The AI plays ...".
+3. The goal of the roleplay, starting with "Goal: ...".
+Also write exactly 3 "starters": short English sentences the learner could say to open the roleplay.
+Spoken register. ${ORIGINALITY}
+${vocabLine}Do NOT reuse these existing ids: ${existing}
+Reply with STRICT JSON only:
+{"id":"kebab-case-id","title":"English title","titleJa":"日本語タイトル","domain":"daily|business|it","level":[min,max],"hints":["You ...","The AI plays ...","Goal: ..."],"starters":["Opener sentence 1.","Opener sentence 2.","Opener sentence 3."]}
 level must be within 1..6 and include stage ${deps.stage}.
 Do not use any tools — reply directly with text only.`;
     let cand: NewContentCandidate | null = null;
@@ -256,7 +271,13 @@ Do not use any tools — reply directly with text only.`;
       }
       if (text !== undefined) {
         const parsed = extractJson<NewContentCandidate>(text);
-        cand = validateTopicCandidate(parsed, p.kind, existingIds, p.dir, deps.stage);
+        const base = validateTopicCandidate(parsed, p.kind, existingIds, p.dir, deps.stage);
+        if (base && p.kind === "scenario") {
+          const starters = validateStarters((parsed as { starters?: unknown } | null)?.starters);
+          cand = starters ? { ...base, starters } : null;
+        } else {
+          cand = base;
+        }
       }
       if (!cand && attempt === 1) log(`  ${p.kind}: 検証NG — 再生成します`);
     }
@@ -304,6 +325,16 @@ export const SCENARIO_BAND_PLAN: ReadonlyArray<{ domain: (typeof DOMAINS)[number
 ];
 
 /**
+ * starters 配列の検証: ちょうど3件・非空・改行なし。genScenarios と genTopics のシナリオ分岐で共有する
+ * （roleplayPrompt / RoleplayScreen が前提とする既存シナリオ形式の一部）。
+ */
+function validateStarters(raw: unknown): string[] | null {
+  if (!Array.isArray(raw) || raw.length !== 3) return null;
+  if (!raw.every((s) => typeof s === "string" && s.trim().length > 0 && !s.includes("\n"))) return null;
+  return raw.map((s) => (s as string).trim());
+}
+
+/**
  * genScenarios 用の候補検証（domain/level はプラン固定なので検査しない — id/title/titleJa/hints/starters のみ）。
  * hints/starters は roleplayPrompt（coach.ts）の Setup 注入と RoleplayScreen の表示が前提とする既存シナリオ形式
  * （hints=英語のみのナラティブ、starters=英語オープナー3件）に合わせて検査する。
@@ -319,11 +350,11 @@ function validateScenarioCandidate(
   if (typeof c.titleJa !== "string" || !c.titleJa.trim() || /[\n"]/.test(c.titleJa)) return null;
   if (!Array.isArray(c.hints) || c.hints.length === 0) return null;
   if (!c.hints.every((h) => typeof h === "string" && h.trim().length > 0)) return null;
-  if (!Array.isArray(c.starters) || c.starters.length !== 3) return null;
-  if (!c.starters.every((s) => typeof s === "string" && s.trim().length > 0 && !s.includes("\n"))) return null;
+  const starters = validateStarters(c.starters);
+  if (!starters) return null;
   return {
     id: c.id, title: c.title.trim(), titleJa: c.titleJa.trim(),
-    hints: c.hints.map((h) => h.trim()), starters: c.starters.map((s) => s.trim()),
+    hints: c.hints.map((h) => h.trim()), starters,
   };
 }
 
