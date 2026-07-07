@@ -74,6 +74,26 @@ describe("generateModelTalk", () => {
     expect(seen[0].systemPrompt).toContain("plain high-frequency vocabulary");
     expect(seen[0].systemPrompt).not.toContain("word families");
   });
+
+  // stage4+ 不変ロック: 変更前の実出力をそのまま転記（回帰基準）
+  test("stage 4+ の systemPrompt は現行文字列と完全一致する（回帰ロック）", async () => {
+    const { runner, seen } = runnerReturning("x");
+    await generateModelTalk({ topicTitle: "t", hints: [], stage: 5 }, runner);
+    expect(seen[0].systemPrompt).toBe(
+      "You produce a model monologue for an English learner (CEFR B1) to shadow.\n" +
+      "Rules: 120-150 words, spoken register, first person, plain high-frequency vocabulary, short sentences.\n" +
+      "No headings, no lists — just the monologue text.\n" +
+      "Do not use any tools — reply directly with text only.",
+    );
+  });
+
+  test("stage 1 の systemPrompt は構文制約(6-10 words・A2)を含み、B1 level は含まない", async () => {
+    const { runner, seen } = runnerReturning("x");
+    await generateModelTalk({ topicTitle: "t", hints: [], stage: 1 }, runner);
+    expect(seen[0].systemPrompt).toContain("6-10 words");
+    expect(seen[0].systemPrompt).toContain("CEFR A2");
+    expect(seen[0].systemPrompt).not.toContain("B1 level");
+  });
 });
 
 describe("generateReflection", () => {
@@ -184,6 +204,35 @@ describe("generatePrepPack", () => {
     await generatePrepPack({ topicTitle: "t", hints: [], stage: 5 }, runner);
     expect(seen[0].systemPrompt).not.toContain("word families");
     expect(seen[0].systemPrompt).not.toContain("No rare idioms");
+  });
+
+  // stage4+ 不変ロック: 変更前の実出力(chunkCount既定6)をそのまま転記（回帰基準）
+  test("stage 4+ の systemPrompt は現行文字列と完全一致する（回帰ロック）", async () => {
+    const { runner, seen } = runnerReturning(JSON.stringify(valid));
+    await generatePrepPack({ topicTitle: "t", hints: [], stage: 5 }, runner);
+    expect(seen[0].systemPrompt).toBe(
+      "You prepare a Japanese IT professional (CEFR A2-B1) for a short English monologue.\n" +
+      "You receive a topic and hint angles. Reply with STRICT JSON only — no markdown fences, no commentary — exactly this shape:\n" +
+      '{"chunks":[{"en":"<complete, speakable sentence, B1 level>","ja":"<自然な日本語訳>"}],"outline":["<short English bullet>"]}\n' +
+      "Rules:\n" +
+      '- Exactly 6 chunks. Each "en" MUST be a complete, speakable sentence of roughly 8-16 words that the learner can read aloud as-is.\n' +
+      '  No ellipses ("..."), no blanks, and no placeholders like [X] — always fill the slot with a concrete, topic-relevant\n' +
+      "  example a B1-level IT professional could plausibly say, using the given topic and hints for the content\n" +
+      '  (e.g. "The main problem we had was a slow database query.", "What worked well was splitting the task into smaller steps.").\n' +
+      "- Keep the reusable sentence frame recognizable at the START of each sentence (sentence-starter + filled example), so the\n" +
+      "  learner can reuse that same frame with their own content in the next exercise.\n" +
+      '- ja: the natural full-sentence Japanese translation of "en" (not a fragment).\n' +
+      "- outline: 3-4 bullets forming a simple talk skeleton (opening → 1-2 points → wrap-up), tied to the given hints.\n" +
+      "Do not use any tools — reply directly with text only.",
+    );
+  });
+
+  test("stage 1 の systemPrompt は構文制約(6-10 words・A2 level)を含み、B1 level は含まない", async () => {
+    const { runner, seen } = runnerReturning(JSON.stringify(valid));
+    await generatePrepPack({ topicTitle: "t", hints: [], stage: 1 }, runner);
+    expect(seen[0].systemPrompt).toContain("6-10 words");
+    expect(seen[0].systemPrompt).toContain("A2 level");
+    expect(seen[0].systemPrompt).not.toContain("B1 level");
   });
 });
 

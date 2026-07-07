@@ -82,6 +82,17 @@ export function vocabConstraint(stage: number): string | null {
     : null;
 }
 
+/** 構文・文長の stage 制約。vocabConstraint と同じ null 契約: stage>=4 は null（呼び出し側が現行文言を維持）。 */
+export function syntaxConstraint(stage: number): string | null {
+  if (stage <= 2) {
+    return "Keep grammar very simple: CEFR A2, one clause per sentence, no relative clauses or cleft sentences, most sentences 6-10 words.";
+  }
+  if (stage === 3) {
+    return "Keep grammar simple: around CEFR A2-B1, at most one subordinate clause per sentence, most sentences 8-12 words.";
+  }
+  return null;
+}
+
 /** stage(1..6) の代表アンカーレベル（各stageの下寄り中央）。降格先・既定開始レベルの基準。 */
 export function stageAnchorLevel(stage: number): number {
   const s = Math.min(Math.max(Math.trunc(stage), 1), 6);
