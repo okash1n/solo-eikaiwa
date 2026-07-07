@@ -254,6 +254,9 @@ describe("generatePrepPack", () => {
     expect(seen[0].systemPrompt).toContain("6-10 words");
     expect(seen[0].systemPrompt).toContain("A2 level");
     expect(seen[0].systemPrompt).not.toContain("B1 level");
+    // 例文の難易度シグナルも levelLabel と同じ stage 連動にする（stage 非依存の B1-level 固定を防ぐ回帰チェック）
+    expect(seen[0].systemPrompt).toContain("a A2-level IT professional");
+    expect(seen[0].systemPrompt).not.toContain("B1-level");
   });
 });
 

@@ -209,6 +209,7 @@ function prepSystem(chunkCount: number, stage: number): string {
   const vocabBullet = vocab ? `\n- ${vocab}` : "";
   const syntaxBullet = syntax ? `\n- ${syntax}` : "";
   const levelLabel = stage <= 2 ? "A2 level" : stage === 3 ? "A2-B1 level" : "B1 level";
+  const levelAdj = stage <= 2 ? "A2-level" : stage === 3 ? "A2-B1-level" : "B1-level";
   const chunkWords = stage <= 2 ? "roughly 6-10 words" : stage === 3 ? "roughly 8-14 words" : "roughly 8-16 words";
   return `You prepare a Japanese IT professional (CEFR A2-B1) for a short English monologue.
 You receive a topic and hint angles. Reply with STRICT JSON only — no markdown fences, no commentary — exactly this shape:
@@ -216,7 +217,7 @@ You receive a topic and hint angles. Reply with STRICT JSON only — no markdown
 Rules:
 - Exactly ${chunkCount} chunks. Each "en" MUST be a complete, speakable sentence of ${chunkWords} that the learner can read aloud as-is.
   No ellipses ("..."), no blanks, and no placeholders like [X] — always fill the slot with a concrete, topic-relevant
-  example a B1-level IT professional could plausibly say, using the given topic and hints for the content
+  example a ${levelAdj} IT professional could plausibly say, using the given topic and hints for the content
   (e.g. "The main problem we had was a slow database query.", "What worked well was splitting the task into smaller steps.").${vocabBullet}${syntaxBullet}
 - Keep the reusable sentence frame recognizable at the START of each sentence (sentence-starter + filled example), so the
   learner can reuse that same frame with their own content in the next exercise.
