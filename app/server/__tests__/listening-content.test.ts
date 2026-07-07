@@ -30,4 +30,10 @@ describe("listening content integrity", () => {
       expect(it.level[0]).toBeLessThanOrEqual(it.level[1]);
     }
   });
+
+  test("全 item の本文結合は 2800 字以内（訳解説 talk-explain の 3000 字上限とのマージン — 手書き編集の逸脱もここで捕まえる）", () => {
+    for (const it of items) {
+      expect(it.paragraphs.join("\n\n").length).toBeLessThanOrEqual(2800);
+    }
+  });
 });
