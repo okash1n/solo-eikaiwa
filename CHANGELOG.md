@@ -2,6 +2,15 @@
 
 このプロジェクトの特筆すべき変更を記録します。形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に、バージョニングは [Semantic Versioning](https://semver.org/lang/ja/) に従います。
 
+## [0.12.1] - 2026-07-07
+
+### Fixed
+
+- 多聴の段落間の無音を解消（再生中に次の段落の音声を先読み）
+- 例文練習のトグル（ヒント非表示・音から始める）を、効果のない一覧タブでは非表示に
+- 素材生成CLI: 一時的な通信エラーでも例文・お題生成が再試行するように（多聴と同じ挙動に統一）。多聴素材の検証を強化（本文長・タイトルの禁止文字）
+- サポート設定 ⓘ ボタンの読み上げ対応を改善（スクリーンリーダー向け）
+
 ## [0.12.0] - 2026-07-07
 
 ### Added
@@ -166,6 +175,7 @@
 - 学習データ（録音・トランスクリプト・進捗・DB・キャッシュ）は `data/` のローカルファイルで、リポジトリにコミットされない
 - 音声データはマシン外に出ない（外部送信はテキストのみ: Claude への発話テキスト、OpenAI TTS への応答テキスト）
 
+[0.12.1]: https://github.com/okash1n/learn-english/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/okash1n/learn-english/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/okash1n/learn-english/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/okash1n/learn-english/compare/v0.9.0...v0.10.0
