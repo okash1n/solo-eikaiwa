@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "== learn-english setup =="
+echo "== solo-eikaiwa setup =="
 
 command -v brew >/dev/null || { echo "ERROR: Homebrew が必要です"; exit 1; }
 command -v bun >/dev/null || { echo "ERROR: bun が必要です (https://bun.sh)"; exit 1; }

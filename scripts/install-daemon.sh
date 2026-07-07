@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# learn-english API サーバを LaunchAgent として常駐化する。
+# solo-eikaiwa API サーバを LaunchAgent として常駐化する。
 # 使い方:
 #   ./scripts/install-daemon.sh                  # クライアントビルド → plist生成 → 常駐登録
 #   ./scripts/install-daemon.sh --plist-only <path>  # plist生成のみ（テスト用、常駐登録はしない）
 set -euo pipefail
 
 REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." >/dev/null 2>&1 && pwd -P)"
-LABEL="com.local.learn-english.server"
+LABEL="com.local.solo-eikaiwa.server"
 DAEMON_SCRIPT="$REPO_DIR/scripts/daemon-server.sh"
 LOG_DIR="$REPO_DIR/data/logs"
 PLIST_PATH="${LAUNCH_AGENTS_DIR:-$HOME/Library/LaunchAgents}/${LABEL}.plist"
@@ -54,7 +54,7 @@ if [[ "${1:-}" == "--plist-only" ]]; then
   exit 0
 fi
 
-echo "== learn-english daemon install =="
+echo "== solo-eikaiwa daemon install =="
 
 # 1. ポート3111が dev サーバ (bun run dev) で使用中でないか確認してから進める
 if lsof_pids="$(lsof -nP -ti :3111 2>/dev/null)" && [[ -n "$lsof_pids" ]]; then
@@ -101,16 +101,16 @@ echo "health: $health"
 
 # 6. 共有Caddyの反映状況を確認（このスクリプト自体はsudoを使わない）
 echo ""
-echo "-- https://learn-english の現況確認"
-site_body="$(curl -sk --max-time 3 https://learn-english/ 2>/dev/null || true)"
+echo "-- https://solo-eikaiwa の現況確認"
+site_body="$(curl -sk --max-time 3 https://solo-eikaiwa/ 2>/dev/null || true)"
 if [[ -z "$site_body" ]]; then
-  echo "https://learn-english に到達できませんでした（共有Caddyが未起動の可能性があります）"
+  echo "https://solo-eikaiwa に到達できませんでした（共有Caddyが未起動の可能性があります）"
 elif echo "$site_body" | grep -q '/src/main.tsx'; then
-  echo "NOTE: https://learn-english はまだ旧設定（Viteへのproxy）を返しています。下記コマンドで反映してください。"
+  echo "NOTE: https://solo-eikaiwa はまだ旧設定（Viteへのproxy）を返しています。下記コマンドで反映してください。"
 elif echo "$site_body" | grep -q '/assets/'; then
-  echo "OK: https://learn-english は新しい静的配信設定を返しています。"
+  echo "OK: https://solo-eikaiwa は新しい静的配信設定を返しています。"
 else
-  echo "https://learn-english の応答内容から新旧を判定できませんでした。以下のコマンドで反映してから確認してください。"
+  echo "https://solo-eikaiwa の応答内容から新旧を判定できませんでした。以下のコマンドで反映してから確認してください。"
 fi
 
 echo ""

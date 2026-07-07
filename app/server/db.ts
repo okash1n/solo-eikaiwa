@@ -14,6 +14,7 @@ import { ensureTtsSettingsSchema } from "./tts-settings-store";
 import { ensureLlmRoleSettingsSchema } from "./llm-role-settings-store";
 
 /** 構造化された状態・履歴の置き場（ログはJSONLのまま）。data/ はローカル専用（gitignore済み）。 */
+// DB ファイル名はリネーム（solo-eikaiwa）後も旧名を維持する: 既存ユーザーの学習データ継続のため（表示名とは独立）
 export const DEFAULT_DB_PATH = path.join(DATA_DIR, "learn-english.db");
 
 export type ModelTalkEntry = {

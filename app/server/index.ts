@@ -148,4 +148,4 @@ Bun.serve({
   fetch: makeFetchHandler(realDeps),
 });
 
-console.log(`learn-english server: http://${HOSTNAME}:${PORT} (health: /api/health)`);
+console.log(`solo-eikaiwa server: http://${HOSTNAME}:${PORT} (health: /api/health)`);

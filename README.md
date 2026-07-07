@@ -1,4 +1,4 @@
-# learn-english
+# solo-eikaiwa
 
 毎日5分から回せる、自分専用の英会話ジム。録音した声をローカルで文字起こしし、AIが会話相手とコーチを務め、練習履歴が貯まっていく — すべて自分の Mac の上で。
 A local-first, research-grounded English speaking practice app for daily self-study on macOS.
@@ -122,13 +122,13 @@ TTS_VOICE=af_sky                        # サーバが受け付ける voice
 brew install caddy
 # 1. このリポジトリの Caddyfile 内 root のパスを自分のチェックアウト先に合わせて編集
 # 2. Homebrew の Caddyfile（/opt/homebrew/etc/Caddyfile）に import 行を追加:
-#      import /path/to/learn-english/Caddyfile
+#      import /path/to/solo-eikaiwa/Caddyfile
 brew services start caddy    # ログイン時自動起動の常駐サービスとして登録
 caddy trust                  # ローカルCA証明書をキーチェーンへ登録（初回のみ・要パスワード）
-echo "127.0.0.1 learn-english" | sudo tee -a /etc/hosts   # https://learn-english 用
+echo "127.0.0.1 solo-eikaiwa" | sudo tee -a /etc/hosts   # https://solo-eikaiwa 用
 ```
 
-ブラウザで https://learn-english を開く（hosts を編集しない場合は https://learn-english.localhost — Chrome 系なら hosts 不要）。
+ブラウザで https://solo-eikaiwa を開く（hosts を編集しない場合は https://solo-eikaiwa.localhost — Chrome 系なら hosts 不要）。
 
 - 状態確認: `./scripts/status-daemon.sh` / 停止・解除: `./scripts/uninstall-daemon.sh`
 - コードを更新したら `./scripts/install-daemon.sh` を再実行（再ビルド＋デーモン再起動が一括で済む）
@@ -142,7 +142,7 @@ cd app && bun run dev        # APIサーバ :3111（127.0.0.1 のみ）
 cd app/client && bun run dev # UI :5173（/api をプロキシ）
 ```
 
-ブラウザで http://localhost:5173 を開く。常駐運用（https://learn-english）とは独立して動きます。ポート3111は共用なので、常駐と開発サーバは同時に起動できません。
+ブラウザで http://localhost:5173 を開く。常駐運用（https://solo-eikaiwa）とは独立して動きます。ポート3111は共用なので、常駐と開発サーバは同時に起動できません。
 
 ## LLM プロバイダの切替
 

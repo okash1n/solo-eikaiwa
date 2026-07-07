@@ -94,7 +94,7 @@ export function App() {
   return (
     <div className="shell">
       <aside className="sidebar">
-        <h1 className="app-brand"><span className="brand-mark" aria-hidden="true" />learn-english</h1>
+        <h1 className="app-brand"><span className="brand-mark" aria-hidden="true" />solo-eikaiwa</h1>
         <nav className="side-nav">
           {navSections.map((sec) => (
             <Fragment key={sec.key}>

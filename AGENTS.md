@@ -52,5 +52,5 @@ cd app/client && bun run build  # クライアント型チェック + ビルド
 ## デプロイ（LaunchAgent 常駐運用）
 
 - クライアントのみの変更: `cd app/client && bun run build`（dist 直配信のため即反映）。
-- サーバ変更あり: 上記 + `launchctl kickstart -k gui/$(id -u)/com.local.learn-english.server`。
+- サーバ変更あり: 上記 + `launchctl kickstart -k gui/$(id -u)/com.local.solo-eikaiwa.server`。
 - `scripts/install-daemon.sh` は初回導入用（稼働中は自分のデーモンを検出して拒否する）。

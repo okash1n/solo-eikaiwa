@@ -35,7 +35,7 @@ export function readEvents(file: string): SessionEvent[] {
   return events;
 }
 
-const LOGGED_MARKER = Symbol.for("learn-english.errorLogged");
+const LOGGED_MARKER = Symbol.for("solo-eikaiwa.errorLogged");
 
 /** この Error は既に error イベントとして記録済み、という印を付ける（二重記録防止） */
 export function markErrorLogged(err: unknown): void {

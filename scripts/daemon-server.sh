@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# LaunchAgent (com.local.learn-english.server) から呼ばれるラッパー。
+# LaunchAgent (com.local.solo-eikaiwa.server) から呼ばれるラッパー。
 # zsh -lc でログインシェルを経由することで、~/.zshenv 等で export された
 # $OPENAI_API_KEY_LEARN (app/.env が参照する変数) が解決される。
 # シークレットは plist にも本スクリプトにも書かない。
