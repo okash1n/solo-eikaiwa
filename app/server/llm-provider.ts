@@ -2,6 +2,17 @@ import type { ClaudeRunner } from "./converse";
 import { makeOpenAICompatRunner } from "./providers/openai-compat";
 import { makeCodexRunner } from "./providers/codex";
 
+/** サイドバー設定UIで選べる LLM プロバイダ。"env" は「環境変数に従う」リセット用センチネル。 */
+export type LlmProvider = "env" | "claude" | "openai-compat" | "codex";
+
+/** DB(llm_settings 単一行)に永続化する LLM 設定。APIキーは含めない（.env のみ）。 */
+export type LlmSettings = {
+  provider: LlmProvider;
+  baseUrl: string | null;
+  model: string | null;
+  codexModel: string | null;
+};
+
 export type SelectRunnerArgs = {
   /** 既定（claude）で返す、事前構築済みの Claude SDK runner。converse.ts から渡す（循環回避のため） */
   claudeRunner: ClaudeRunner;
@@ -48,4 +59,24 @@ export function selectRunner(args: SelectRunnerArgs): ClaudeRunner {
     default:
       throw new Error(`Unknown LLM_PROVIDER: ${provider} (expected claude | openai-compat | codex)`);
   }
+}
+
+/**
+ * DB 由来の LlmSettings を selectRunner が読む env 形状へ写像する純関数。
+ * - provider="env" は「環境変数に従う」ので、渡した env をそのまま返す（DB 値で一切上書きしない＝起動時の pure-env 挙動を完全再現）。
+ * - それ以外は env を土台に LLM_PROVIDER / OPENAI_COMPAT_BASE_URL / OPENAI_COMPAT_MODEL / CODEX_MODEL を DB 値で上書きする。
+ *   OPENAI_COMPAT_API_KEY は上書きせず env（.env）由来のまま — APIキーは DB に持たせない衛生を1箇所で担保する。
+ */
+export function settingsToEnv(
+  s: LlmSettings,
+  env: Record<string, string | undefined> = Bun.env,
+): Record<string, string | undefined> {
+  if (s.provider === "env") return env;
+  return {
+    ...env,
+    LLM_PROVIDER: s.provider,
+    OPENAI_COMPAT_BASE_URL: s.baseUrl ?? undefined,
+    OPENAI_COMPAT_MODEL: s.model ?? undefined,
+    CODEX_MODEL: s.codexModel ?? undefined,
+  };
 }

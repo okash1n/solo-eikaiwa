@@ -1,7 +1,7 @@
 import { ensureDirs, LISTENING_DIR, RECORDINGS_DIR, sessionLogPath } from "./paths";
 import { transcribeAudio } from "./stt";
 import { synthesize } from "./tts";
-import { converseTurn } from "./converse";
+import { converseTurn, applyLlmSettings } from "./converse";
 import { checkHealth } from "./health";
 import { buildQuickMenu, buildTodayMenu, invalidateTodayMenuCache } from "./menu";
 import { findScenario, findTopic } from "./content";
@@ -20,6 +20,7 @@ import { generateMonthlyReport, makeAssembleMonthData, makeAssessmentStore } fro
 import { loadListening, findListening } from "./listening";
 import { makeListeningStore } from "./listening-store";
 import { makeFeedbackStore } from "./feedback-store";
+import { makeLlmSettingsStore } from "./llm-settings-store";
 
 ensureDirs();
 const PORT = 3111;
@@ -36,6 +37,7 @@ const metricsSummary = makeMetricsSummary({ db, currentLevel: () => progressStor
 const assessmentStore = makeAssessmentStore(db);
 const listeningStore = makeListeningStore(db);
 const feedbackStore = makeFeedbackStore(db);
+const llmSettingsStore = makeLlmSettingsStore(db);
 const assembleMonthData = makeAssembleMonthData({
   db,
   sentences,
@@ -98,7 +100,28 @@ const realDeps: RouteDeps = {
   findListening: (id) => findListening(id),
   listeningStore,
   feedbackStore,
+  getLlmSettings: () => llmSettingsStore.get(),
+  saveLlmSettings: (s) => llmSettingsStore.save(s),
+  applyLlmSettings: (s) => applyLlmSettings(s),
+  // env 由来情報。APIキーは有無のみ（値は絶対に返さない）。
+  llmEnv: () => ({
+    provider: (Bun.env.LLM_PROVIDER ?? "claude").trim().toLowerCase() || "claude",
+    apiKeyConfigured: Boolean(Bun.env.OPENAI_COMPAT_API_KEY?.trim()),
+  }),
 };
+
+// 起動時: DB に LLM 設定があれば実行中プロセスへ適用する（fail-open）。
+// 行が無ければ何もせず、converse.ts のモジュールロード時 env 既定のまま（現行と完全同一）。
+// provider="env" は settingsToEnv 経由で pure-env を再現する。UI 由来の不正値で LaunchAgent の
+// crash-loop を起こさないため、失敗は warn してフォールバックする（プロセスは落とさない）。
+const savedLlm = llmSettingsStore.get();
+if (savedLlm) {
+  try {
+    applyLlmSettings(savedLlm);
+  } catch (err) {
+    console.warn(`[llm] failed to apply saved settings, falling back to environment/claude: ${String(err)}`);
+  }
+}
 
 Bun.serve({
   port: PORT,

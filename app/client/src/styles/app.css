@@ -365,3 +365,12 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 .metric-cards .card + .card { margin-top: 0; }
 .level-history { list-style: none; padding: 0; margin: 0; font-variant-numeric: tabular-nums; }
 .level-history li + li { margin-top: var(--sp-1); }
+
+/* LLM プロバイダ設定パネル（サイドバー常設） */
+.llm-provider-toggle { flex-wrap: wrap; }
+.llm-field { display: flex; flex-direction: column; gap: var(--sp-1); }
+.llm-input {
+  font: inherit; font-size: var(--fs-sm); padding: 4px 6px; width: 100%;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text);
+}

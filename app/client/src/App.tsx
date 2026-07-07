@@ -1,7 +1,8 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import {
-  fetchPracticeDays, fetchProgressSummary, getHealth, onProgressUpdate, progressLevelAction, sessionEnd,
-  sessionEndKeepalive, sessionStart, type Health, type ProgressSummary,
+  fetchLlmSettings, fetchPracticeDays, fetchProgressSummary, getHealth, onProgressUpdate, progressLevelAction,
+  saveLlmSettings, sessionEnd, sessionEndKeepalive, sessionStart,
+  type Health, type LlmProvider, type LlmSettingsView, type ProgressSummary,
 } from "./api";
 import { loadLang, saveLang, STR, type Lang } from "./i18n";
 import { FeedbackScreen } from "./screens/FeedbackScreen";
@@ -125,6 +126,7 @@ export function App() {
         )}
         <div className="sidebar-spacer" />
         <SupportPanel lang={lang} />
+        <LlmPanel lang={lang} />
         <div className="lang-toggle" role="group" aria-label={t.appShell.textSize}>
           <button className={uiScale === "small" ? "is-active" : ""} onClick={() => setUiScale("small")}>{t.uiScale.small}</button>
           <button className={uiScale === "medium" ? "is-active" : ""} onClick={() => setUiScale("medium")}>{t.uiScale.medium}</button>
@@ -216,6 +218,113 @@ function SupportPanel({ lang }: { lang: Lang }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/**
+ * サイドバー常設の LLM プロバイダ設定。DB に永続化し、保存時に実行中プロセスへ即時適用する（再起動不要）。
+ * APIキーは扱わない（app/.env のみ）。研究トーンで中立に表示する。
+ */
+function LlmPanel({ lang }: { lang: Lang }) {
+  const t = STR[lang].llm;
+  const [view, setView] = useState<LlmSettingsView | null>(null);
+  const [provider, setProvider] = useState<LlmProvider>("env");
+  const [baseUrl, setBaseUrl] = useState("");
+  const [model, setModel] = useState("");
+  const [codexModel, setCodexModel] = useState("");
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const fetchedRef = useRef(false);
+
+  function hydrate(v: LlmSettingsView) {
+    setView(v);
+    setProvider(v.provider);
+    setBaseUrl(v.baseUrl ?? "");
+    setModel(v.model ?? "");
+    setCodexModel(v.codexModel ?? "");
+  }
+
+  useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+    fetchLlmSettings().then(hydrate).catch(() => {});
+  }, []);
+
+  async function onSave() {
+    setSaving(true);
+    setResult(null);
+    try {
+      const v = await saveLlmSettings({
+        provider,
+        baseUrl: provider === "openai-compat" ? baseUrl : null,
+        model: provider === "openai-compat" ? model : null,
+        codexModel: provider === "codex" ? (codexModel || null) : null,
+      });
+      hydrate(v);
+      setResult(v.applied === false ? t.notApplied(v.error ?? "") : t.applied);
+    } catch {
+      setResult(t.saveFailed);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const providers: Array<{ key: LlmProvider; label: string }> = [
+    { key: "env", label: t.optEnv },
+    { key: "claude", label: t.optClaude },
+    { key: "openai-compat", label: t.optOpenai },
+    { key: "codex", label: t.optCodex },
+  ];
+
+  return (
+    <div className="support-panel stack">
+      <div className="support-label-row">
+        <div className="stat-title">{t.title}</div>
+        <button
+          className="info-btn"
+          aria-label={t.helpAria}
+          title={t.help}
+          aria-expanded={helpOpen}
+          aria-controls="llm-help"
+          onClick={() => setHelpOpen((v) => !v)}
+        >ⓘ</button>
+      </div>
+      {helpOpen && <div id="llm-help" className="info-pop">{t.help}</div>}
+      <div className="lang-toggle llm-provider-toggle" role="group" aria-label={t.providerLabel}>
+        {providers.map((p) => (
+          <button
+            key={p.key}
+            className={provider === p.key ? "is-active" : ""}
+            onClick={() => setProvider(p.key)}
+          >{p.label}</button>
+        ))}
+      </div>
+      {provider === "env" && view && (
+        <div className="text-sm text-muted">{t.envNote(view.envProvider)}</div>
+      )}
+      {provider === "openai-compat" && (
+        <div className="llm-fields stack">
+          <label className="llm-field">
+            <span className="text-sm text-muted">{t.baseUrlLabel}</span>
+            <input className="llm-input" value={baseUrl} placeholder={t.baseUrlPlaceholder} onChange={(e) => setBaseUrl(e.target.value)} />
+          </label>
+          <label className="llm-field">
+            <span className="text-sm text-muted">{t.modelLabel}</span>
+            <input className="llm-input" value={model} placeholder={t.modelPlaceholder} onChange={(e) => setModel(e.target.value)} />
+          </label>
+          <div className="text-sm text-muted">{view?.apiKeyConfigured ? t.apiKeyConfigured : t.apiKeyMissing}</div>
+        </div>
+      )}
+      {provider === "codex" && (
+        <label className="llm-field">
+          <span className="text-sm text-muted">{t.codexModelLabel}</span>
+          <input className="llm-input" value={codexModel} placeholder={t.codexModelPlaceholder} onChange={(e) => setCodexModel(e.target.value)} />
+        </label>
+      )}
+      <Button variant="secondary" onClick={onSave} disabled={saving}>{saving ? t.saving : t.save}</Button>
+      {result && <div className="info-pop" role="status">{result}</div>}
     </div>
   );
 }

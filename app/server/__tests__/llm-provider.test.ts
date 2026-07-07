@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { selectRunner } from "../llm-provider";
+import { selectRunner, settingsToEnv } from "../llm-provider";
 import type { ClaudeRunner } from "../converse";
+import type { LlmSettings } from "../llm-provider";
 
 /** 参照比較用のセンチネル runner（呼ばれない） */
 const sentinel: ClaudeRunner = async () => ({ text: "sentinel", sessionId: "s" });
@@ -50,5 +51,50 @@ describe("selectRunner", () => {
 
   test("未知プロバイダ: 明示エラー", () => {
     expect(() => selectRunner(args({ LLM_PROVIDER: "gemini" }))).toThrow(/Unknown LLM_PROVIDER/);
+  });
+});
+
+describe("settingsToEnv", () => {
+  const openaiSettings: LlmSettings = {
+    provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null,
+  };
+
+  test("provider=env: 渡した env をそのまま返す（DB値で上書きしない＝pure-env再現）", () => {
+    const env = { LLM_PROVIDER: "codex", FOO: "bar" };
+    const out = settingsToEnv({ provider: "env", baseUrl: null, model: null, codexModel: null }, env);
+    expect(out).toBe(env);
+  });
+
+  test("provider=openai-compat: BASE_URL/MODEL を DB 由来で設定し、APIキーは env 由来のみ保持する", () => {
+    const env = { OPENAI_COMPAT_API_KEY: "sk-from-env", OTHER: "x" };
+    const out = settingsToEnv(openaiSettings, env);
+    expect(out.LLM_PROVIDER).toBe("openai-compat");
+    expect(out.OPENAI_COMPAT_BASE_URL).toBe("http://localhost:11434/v1");
+    expect(out.OPENAI_COMPAT_MODEL).toBe("llama3");
+    // APIキーは settings に存在しない。必ず env（.env）から来る
+    expect(out.OPENAI_COMPAT_API_KEY).toBe("sk-from-env");
+    expect(out.OTHER).toBe("x");
+  });
+
+  test("provider=claude: LLM_PROVIDER=claude を立てる", () => {
+    const out = settingsToEnv({ provider: "claude", baseUrl: null, model: null, codexModel: null }, {});
+    expect(out.LLM_PROVIDER).toBe("claude");
+  });
+
+  test("provider=codex: CODEX_MODEL を DB 由来で設定する", () => {
+    const out = settingsToEnv({ provider: "codex", baseUrl: null, model: null, codexModel: "o4-mini" }, {});
+    expect(out.LLM_PROVIDER).toBe("codex");
+    expect(out.CODEX_MODEL).toBe("o4-mini");
+  });
+
+  test("settingsToEnv → selectRunner: openai-compat 設定で claudeRunner とは別 runner を返す", () => {
+    const sentinel: ClaudeRunner = async () => ({ text: "s", sessionId: "s" });
+    const r = selectRunner({
+      claudeRunner: sentinel,
+      defaultSystemPrompt: "SYS",
+      env: settingsToEnv(openaiSettings, {}),
+    });
+    expect(r).not.toBe(sentinel);
+    expect(typeof r).toBe("function");
   });
 });
