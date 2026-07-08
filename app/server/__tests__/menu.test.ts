@@ -6,7 +6,10 @@ import {
   buildQuickMenu, buildTodayMenu, invalidateTodayMenuCache, QUICK_KINDS, type MenuDeps, type QuickKind,
 } from "../menu";
 import { loadContent, parseContentFile, type ContentItem, type Domain } from "../content";
-import { pickNext, pickNextByDomain, type RotationState, type UsageMap } from "../rotation";
+import {
+  pickInDomain, pickInDomainWithFallback, pickNext, pickNextByDomain, pickNextByDomainWithFallback,
+  type RotationState, type UsageMap,
+} from "../rotation";
 import { DEFAULT_LEVEL } from "../progression";
 
 function makeContentDirs(): { topicsDir: string; scenariosDir: string; usageFile: string; menuCacheDir: string } {
@@ -366,6 +369,173 @@ describe("buildQuickMenu", () => {
     expect(buildQuickMenu("shadowing", deps).blocks[0].titleKey).toBe("shadowing");
     // s1 は domain 省略＝既定 "it" のため roleplay-it（domain 明示時のロールプレイは既存テスト 319/334 行が担保）
     expect(buildQuickMenu("roleplay", deps).blocks[0].titleKey).toBe("roleplay-it");
+  });
+});
+
+describe("pickNextByDomainWithFallback（v0.26 wave5: rotation の情報的注記）", () => {
+  const mk = (id: string, domain: "daily" | "business" | "it", level: [number, number]): ContentItem =>
+    ({ id, kind: "topic", title: id, titleJa: "", hints: [], starters: [], domain, level });
+  const items = [
+    mk("d1", "daily", [1, 6]), mk("d2", "daily", [1, 6]),
+    mk("b1", "business", [1, 6]),
+    mk("i1", "it", [1, 6]), mk("i2", "it", [4, 6]),
+  ];
+
+  test("通常時（本来の次ドメインに在庫あり・帯適合あり）は fallback が null", () => {
+    const state: RotationState = { version: 2, usage: {}, lastDomain: { topic: "", scenario: "" } };
+    const { item, fallback } = pickNextByDomainWithFallback(items, state, "2026-07-06", 2, "topic");
+    expect(item.domain).toBe("daily"); // 選定結果は既存の pickNextByDomain と同一
+    expect(fallback).toBeNull();
+  });
+
+  test("本来の次ドメインの在庫がゼロで振り替わったら domain-substituted（選定結果自体は変えない）", () => {
+    const noBusiness = items.filter((it) => it.domain !== "business");
+    const state: RotationState = { version: 2, usage: {}, lastDomain: { topic: "daily", scenario: "" } };
+    const { item, fallback } = pickNextByDomainWithFallback(noBusiness, state, "2026-07-06", 2, "topic");
+    expect(item.domain).toBe("it"); // 既存の pickNextByDomain と同じ選定結果
+    expect(fallback).toBe("domain-substituted");
+  });
+
+  test("全アイテムが stage 不適合で帯域を無視したら band-relaxed", () => {
+    const hard = [mk("x1", "it", [5, 6]), mk("x2", "daily", [4, 6])];
+    const state: RotationState = { version: 2, usage: {}, lastDomain: { topic: "", scenario: "" } };
+    const { fallback } = pickNextByDomainWithFallback(hard, state, "2026-07-06", 1, "topic");
+    expect(fallback).toBe("band-relaxed");
+  });
+
+  test("band-relaxed と domain-substituted が同時発生時は band-relaxed を優先する", () => {
+    // it ドメインしか存在せず、かつ stage に帯適合しない → 帯域緩和とドメイン振替が同時に起きる
+    const onlyIt = [mk("z1", "it", [5, 6])];
+    const state: RotationState = { version: 2, usage: {}, lastDomain: { topic: "", scenario: "" } };
+    const { item, fallback } = pickNextByDomainWithFallback(onlyIt, state, "2026-07-06", 1, "topic");
+    expect(item.id).toBe("z1");
+    expect(fallback).toBe("band-relaxed");
+  });
+
+  test("pickNextByDomain（従来API）は fallback 情報を持たず選定結果のみ返す（後方互換）", () => {
+    const state: RotationState = { version: 2, usage: {}, lastDomain: { topic: "", scenario: "" } };
+    const picked = pickNextByDomain(items, state, "2026-07-06", 2, "topic");
+    expect(picked.domain).toBe("daily");
+  });
+});
+
+describe("pickInDomainWithFallback（v0.26 wave5: rotation の情報的注記）", () => {
+  const mk = (id: string, domain: "daily" | "business" | "it", level: [number, number]): ContentItem =>
+    ({ id, kind: "topic", title: id, titleJa: "", hints: [], starters: [], domain, level });
+
+  test("帯適合ありなら fallback は null", () => {
+    const items = [mk("a", "business", [1, 6]), mk("b", "business", [1, 6])];
+    const state: RotationState = { version: 2, usage: {}, lastDomain: { topic: "", scenario: "" } };
+    const { item, fallback } = pickInDomainWithFallback(items, state, "2026-07-06", 2, "business");
+    expect(item.domain).toBe("business");
+    expect(fallback).toBeNull();
+  });
+
+  test("指定ドメイン内に帯適合が無ければ band-relaxed（ドメイン全体から選ぶ・選定結果は変えない）", () => {
+    const items = [mk("hard", "business", [5, 6])];
+    const state: RotationState = { version: 2, usage: {}, lastDomain: { topic: "", scenario: "" } };
+    const { item, fallback } = pickInDomainWithFallback(items, state, "2026-07-06", 1, "business");
+    expect(item.id).toBe("hard"); // pickInDomain と同じ選定結果
+    expect(fallback).toBe("band-relaxed");
+  });
+
+  test("pickInDomain（従来API）は fallback 情報を持たず選定結果のみ返す（後方互換）", () => {
+    const items = [mk("a", "business", [1, 6])];
+    const state: RotationState = { version: 2, usage: {}, lastDomain: { topic: "", scenario: "" } };
+    expect(pickInDomain(items, state, "2026-07-06", 2, "business").id).toBe("a");
+  });
+});
+
+describe("menu: rotation fallback の情報的注記（block.fallback）", () => {
+  function makeDomainDirs(
+    topics: Array<{ id: string; domain: string; level: [number, number] }>,
+    scenarios: Array<{ id: string; domain: string; level: [number, number] }>,
+  ): { topicsDir: string; scenariosDir: string; usageFile: string; menuCacheDir: string } {
+    const dir = mkdtempSync(path.join(tmpdir(), "menu-fallback-"));
+    const topicsDir = path.join(dir, "topics");
+    const scenariosDir = path.join(dir, "scenarios");
+    const menuCacheDir = path.join(dir, "cache");
+    mkdirSync(topicsDir, { recursive: true });
+    mkdirSync(scenariosDir, { recursive: true });
+    mkdirSync(menuCacheDir, { recursive: true });
+    for (const t of topics) {
+      writeFileSync(
+        path.join(topicsDir, `${t.id}.md`),
+        `---\nid: ${t.id}\nkind: topic\ntitle: "${t.id}"\ntitle_ja: "ja-${t.id}"\ndomain: ${t.domain}\nlevel: [${t.level[0]}, ${t.level[1]}]\n---\n- hint one\n- hint two\n`,
+      );
+    }
+    for (const s of scenarios) {
+      writeFileSync(
+        path.join(scenariosDir, `${s.id}.md`),
+        `---\nid: ${s.id}\nkind: scenario\ntitle: "${s.id}"\ntitle_ja: "ja-${s.id}"\ndomain: ${s.domain}\nlevel: [${s.level[0]}, ${s.level[1]}]\n---\n- setup one\n`,
+      );
+    }
+    return { topicsDir, scenariosDir, usageFile: path.join(dir, "usage.json"), menuCacheDir };
+  }
+
+  test("3ドメインとも在庫があり帯適合もあれば block.fallback は付かない", () => {
+    const dirs = makeDomainDirs(
+      [
+        { id: "dt", domain: "daily", level: [1, 6] },
+        { id: "bt", domain: "business", level: [1, 6] },
+        { id: "tt", domain: "it", level: [1, 6] },
+      ],
+      [
+        { id: "ds", domain: "daily", level: [1, 6] },
+        { id: "bs", domain: "business", level: [1, 6] },
+        { id: "ts", domain: "it", level: [1, 6] },
+      ],
+    );
+    const menu = buildTodayMenu(60, { ...dirs, today: JULY5 }); // DEFAULT_LEVEL(5) → stage1
+    const warmup = menu.blocks.find((b) => b.kind === "warmup-reading")!;
+    const roleplay = menu.blocks.find((b) => b.kind === "roleplay")!;
+    expect(warmup.fallback).toBeUndefined();
+    expect(roleplay.fallback).toBeUndefined();
+  });
+
+  test("トピックが1ドメインにしか無いと、ラウンドロビンの振替がblock.fallbackにdomain-substitutedとして載る", () => {
+    const dirs = makeDomainDirs(
+      [{ id: "tt", domain: "it", level: [1, 6] }],
+      [{ id: "ts", domain: "it", level: [1, 6] }],
+    );
+    const menu = buildTodayMenu(60, { ...dirs, today: JULY5 });
+    const warmup = menu.blocks.find((b) => b.kind === "warmup-reading")!;
+    const ftt = menu.blocks.find((b) => b.kind === "four-three-two")!;
+    const roleplay = menu.blocks.find((b) => b.kind === "roleplay")!;
+    expect(warmup.fallback).toBe("domain-substituted");
+    expect(ftt.fallback).toBe("domain-substituted"); // mainTopic と同じ選定を共有
+    expect(roleplay.fallback).toBe("domain-substituted");
+  });
+
+  test("全教材が現在の帯に不適合だと、block.fallbackにband-relaxedとして載る", () => {
+    // DEFAULT_LEVEL(5) → stage1。教材は全て level [4,6] で stage1 に不適合
+    const dirs = makeDomainDirs(
+      [
+        { id: "dt", domain: "daily", level: [4, 6] },
+        { id: "bt", domain: "business", level: [4, 6] },
+        { id: "tt", domain: "it", level: [4, 6] },
+      ],
+      [
+        { id: "ds", domain: "daily", level: [4, 6] },
+        { id: "bs", domain: "business", level: [4, 6] },
+        { id: "ts", domain: "it", level: [4, 6] },
+      ],
+    );
+    const menu = buildTodayMenu(60, { ...dirs, today: JULY5 });
+    const warmup = menu.blocks.find((b) => b.kind === "warmup-reading")!;
+    const roleplay = menu.blocks.find((b) => b.kind === "roleplay")!;
+    expect(warmup.fallback).toBe("band-relaxed");
+    expect(roleplay.fallback).toBe("band-relaxed");
+  });
+
+  test("buildQuickMenu の roleplay（domain明示）でも帯域緩和はband-relaxedとしてblock.fallbackに載る", () => {
+    const dirs = makeDomainDirs(
+      [],
+      [{ id: "hard", domain: "business", level: [5, 6] }],
+    );
+    const deps: MenuDeps = { ...dirs, today: JULY5, domain: "business" };
+    const m = buildQuickMenu("roleplay", deps);
+    expect(m.blocks[0].fallback).toBe("band-relaxed");
   });
 });
 

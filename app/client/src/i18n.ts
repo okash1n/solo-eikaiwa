@@ -28,6 +28,8 @@ type SessionStrings = {
     finish: string; next: string; doneExit: string;
     noTopic: string; noScenario: string; unknownBlock: (kind: string) => string;
     blockAria: (index: number, total: number) => string;
+    /** v0.26 wave5: rotation の情報的注記。教材がラウンドロビン振替・帯域緩和のフォールバックで選ばれたときだけ表示する中立な一文（警告調ではない） */
+    fallbackNote: string;
   };
 };
 
@@ -583,6 +585,7 @@ export const STR: Record<Lang, Strings> = {
       noTopic: "No topic available", noScenario: "No scenario available",
       unknownBlock: (kind) => `Unknown block: ${kind}`,
       blockAria: (index, total) => `Block ${index + 1}/${total}`,
+      fallbackNote: "We picked material from a nearby level.",
     },
     warmup: {
       intro: "Read these out loud (twice each). Tap 🔊 to hear a model. You'll use them in the 4/3/2 that follows.",
@@ -949,6 +952,7 @@ export const STR: Record<Lang, Strings> = {
       noTopic: "トピックがありません", noScenario: "シナリオがありません",
       unknownBlock: (kind) => `未知のブロック: ${kind}`,
       blockAria: (index, total) => `ブロック ${index + 1}/${total}`,
+      fallbackNote: "近いレベルの教材を選びました",
     },
     warmup: {
       intro: "声に出して読みましょう（各フレーズ2回ずつ）。🔊でお手本を聞けます。このあとの 4/3/2 で実際に使います。",

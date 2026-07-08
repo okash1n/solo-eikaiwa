@@ -5,7 +5,8 @@ import { PROGRESS_DIR, SCENARIOS_DIR, TOPICS_DIR } from "./paths";
 import { DEFAULT_LEVEL, fttMiniRoundsSec, fttRoundsSec, prepParams, stageOf } from "./progression";
 import { loadContent, type ContentItem, type Domain } from "./content";
 import {
-  filterInBand, loadRotation, markUsed, pickInDomain, pickNext, pickNextByDomain, readJsonSafe, saveRotation,
+  filterInBand, loadRotation, markUsed, pickInDomainWithFallback, pickNext, pickNextByDomainWithFallback,
+  readJsonSafe, saveRotation, type RotationFallback,
 } from "./rotation";
 
 export type BlockKind = "chunk-placeholder" | "warmup-reading" | "four-three-two" | "roleplay" | "shadowing" | "reflection";
@@ -21,6 +22,12 @@ export type MenuTitleKey =
 export type MenuBlock = {
   id: string; kind: BlockKind; title: string; titleKey: MenuTitleKey; topicTitle?: string;
   minutes: number; params: Record<string, unknown>;
+  /**
+   * v0.26 wave5: rotation の情報的注記（rotation.ts の RotationFallback）。この block の topic/scenario が
+   * ラウンドロビン振替・帯域緩和のフォールバックで選ばれたときだけ載る（無い＝通常選定・additive）。
+   * 選定挙動自体は変えず、事実の掲示のみ。UI は警告調ではなく中立な情報行として表示する。
+   */
+  fallback?: Exclude<RotationFallback, null>;
 };
 /** level: メニュー構築時点のレベル。日次キャッシュの有効性判定（isValidMenuShape）に使う */
 export type Menu = { minutes: number; date: string; level: number; blocks: MenuBlock[] };
@@ -84,8 +91,8 @@ export function buildTodayMenu(minutes: 60 | 30, deps: MenuDeps = {}): Menu {
   const topics = loadContent(topicsDir);
   const scenarios = loadContent(scenariosDir);
 
-  const mainTopic = pickNextByDomain(topics, state, ymd, stage, "topic");
-  const scenario = pickNextByDomain(scenarios, state, ymd, stage, "scenario");
+  const { item: mainTopic, fallback: topicFallback } = pickNextByDomainWithFallback(topics, state, ymd, stage, "topic");
+  const { item: scenario, fallback: scenarioFallback } = pickNextByDomainWithFallback(scenarios, state, ymd, stage, "scenario");
   // シャドーイング素材は「次にローテーションが選ぶトピック」のプレビュー。
   // 使用済みマーク・ドメインカーソルの前進はしない（帯域フィルタだけ適用）
   const others = topics.filter((t) => t.id !== mainTopic.id);
@@ -100,16 +107,16 @@ export function buildTodayMenu(minutes: 60 | 30, deps: MenuDeps = {}): Menu {
   const blocks: MenuBlock[] =
     minutes === 60
       ? [
-          { id: "b1", kind: "warmup-reading", title: warmupTitle, titleKey: "warmup", minutes: 8, params: { topic: mainTopic } },
-          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, titleKey: "ftt", topicTitle: mainTopic.title, minutes: 16, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk } },
-          { id: "b3", kind: "roleplay", title: roleplayTitle(scenario), titleKey: roleplayTitleKey(scenario), topicTitle: scenario.title, minutes: 20, params: { scenario } },
+          { id: "b1", kind: "warmup-reading", title: warmupTitle, titleKey: "warmup", minutes: 8, params: { topic: mainTopic }, fallback: topicFallback ?? undefined },
+          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, titleKey: "ftt", topicTitle: mainTopic.title, minutes: 16, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk }, fallback: topicFallback ?? undefined },
+          { id: "b3", kind: "roleplay", title: roleplayTitle(scenario), titleKey: roleplayTitleKey(scenario), topicTitle: scenario.title, minutes: 20, params: { scenario }, fallback: scenarioFallback ?? undefined },
           { id: "b4", kind: "shadowing", title: `シャドーイング: ${shadowTopic.title}`, titleKey: "shadowing", topicTitle: shadowTopic.title, minutes: 8, params: { topic: shadowTopic } },
           { id: "b5", kind: "reflection", title: "振り返り", titleKey: "reflection", minutes: 5, params: {} },
         ]
       : [
-          { id: "b1", kind: "warmup-reading", title: warmupTitle, titleKey: "warmup", minutes: 6, params: { topic: mainTopic } },
-          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, titleKey: "ftt", topicTitle: mainTopic.title, minutes: 12, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk } },
-          { id: "b3", kind: "roleplay", title: roleplayTitle(scenario), titleKey: roleplayTitleKey(scenario), topicTitle: scenario.title, minutes: 10, params: { scenario } },
+          { id: "b1", kind: "warmup-reading", title: warmupTitle, titleKey: "warmup", minutes: 6, params: { topic: mainTopic }, fallback: topicFallback ?? undefined },
+          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, titleKey: "ftt", topicTitle: mainTopic.title, minutes: 12, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk }, fallback: topicFallback ?? undefined },
+          { id: "b3", kind: "roleplay", title: roleplayTitle(scenario), titleKey: roleplayTitleKey(scenario), topicTitle: scenario.title, minutes: 10, params: { scenario }, fallback: scenarioFallback ?? undefined },
           { id: "b4", kind: "reflection", title: "振り返り", titleKey: "reflection", minutes: 2, params: {} },
         ];
 
@@ -152,28 +159,28 @@ export function buildQuickMenu(kind: QuickKind, deps: MenuDeps = {}): Menu {
   if (kind === "roleplay") {
     const all = loadContent(scenariosDir);
     // ドメイン明示時はそのドメイン内から（ラウンドロビンのカーソル不変）、省略時は従来のローテーション
-    const scenario = deps.domain
-      ? pickInDomain(all, state, ymd, stage, deps.domain)
-      : pickNextByDomain(all, state, ymd, stage, "scenario");
+    const { item: scenario, fallback } = deps.domain
+      ? pickInDomainWithFallback(all, state, ymd, stage, deps.domain)
+      : pickNextByDomainWithFallback(all, state, ymd, stage, "scenario");
     markUsed(state.usage, scenario.id, ymd);
     block = {
       id: "q1", kind: "roleplay", title: roleplayTitle(scenario), titleKey: roleplayTitleKey(scenario),
-      topicTitle: scenario.title, minutes: 10, params: { scenario },
+      topicTitle: scenario.title, minutes: 10, params: { scenario }, fallback: fallback ?? undefined,
     };
   } else {
-    const topic = pickNextByDomain(loadContent(topicsDir), state, ymd, stage, "topic");
+    const { item: topic, fallback } = pickNextByDomainWithFallback(loadContent(topicsDir), state, ymd, stage, "topic");
     markUsed(state.usage, topic.id, ymd);
     if (kind === "warmup") {
-      block = { id: "q1", kind: "warmup-reading", title: "音読ウォームアップ", titleKey: "warmup", minutes: 6, params: { topic } };
+      block = { id: "q1", kind: "warmup-reading", title: "音読ウォームアップ", titleKey: "warmup", minutes: 6, params: { topic }, fallback: fallback ?? undefined };
     } else if (kind === "ftt-mini") {
       block = {
         id: "q1", kind: "four-three-two", title: `くり返しトーク（4/3/2）: ${topic.title}`, titleKey: "ftt-mini", topicTitle: topic.title, minutes: 8,
-        params: { topic, roundsSec: fttMiniRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk },
+        params: { topic, roundsSec: fttMiniRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk }, fallback: fallback ?? undefined,
       };
     } else {
       block = {
         id: "q1", kind: "shadowing", title: `シャドーイング: ${topic.title}`, titleKey: "shadowing",
-        topicTitle: topic.title, minutes: 5, params: { topic },
+        topicTitle: topic.title, minutes: 5, params: { topic }, fallback: fallback ?? undefined,
       };
     }
   }

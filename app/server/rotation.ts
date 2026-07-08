@@ -56,13 +56,61 @@ export function filterInBand(items: ContentItem[], stage: number): ContentItem[]
   return inBand.length > 0 ? inBand : items;
 }
 
+/**
+ * v0.26 wave5: rotation の情報的注記（設計doc §6）。fallback が起きた事実を metadata 化するだけで、
+ * 選定挙動（どのアイテムが返るか）は一切変えない。研究制約により警告調・叱責調は禁止 — UI側は
+ * 「近いレベルの教材を選びました」程度の中立な情報表示にのみ使う。
+ *   - "band-relaxed": 帯域内に適合が無く、帯域を無視して選んだ（filterInBand の緩和が発生）
+ *   - "domain-substituted": 帯域内はあるが、ラウンドロビン上「本来次に来るはずのドメイン」に
+ *     在庫が無く、別ドメインへ振り替えた
+ *   - 両方同時に起きた場合は band-relaxed を優先する（在庫不足という、より根本的な事実の方を伝える）
+ */
+export type RotationFallback = "domain-substituted" | "band-relaxed" | null;
+
+/** ドメイン明示指定の選択+fallback情報。帯域内に適合が無ければ band-relaxed（ドメイン全体から選ぶ）。 */
+export function pickInDomainWithFallback(
+  items: ContentItem[], state: RotationState, todayYmd: string, stage: number, domain: Domain,
+): { item: ContentItem; fallback: RotationFallback } {
+  const inDomain = items.filter((it) => it.domain === domain);
+  if (inDomain.length === 0) throw new Error(`no content items for domain: ${domain}`);
+  const inBand = inDomain.filter((it) => it.level[0] <= stage && stage <= it.level[1]);
+  const bandRelaxed = inBand.length === 0;
+  const pool = bandRelaxed ? inDomain : inBand;
+  return { item: pickNext(pool, state.usage, todayYmd), fallback: bandRelaxed ? "band-relaxed" : null };
+}
+
 /** ドメイン明示指定の選択。帯域内→ドメイン全体の順で選び、ラウンドロビンのカーソルは動かさない */
 export function pickInDomain(
   items: ContentItem[], state: RotationState, todayYmd: string, stage: number, domain: Domain,
 ): ContentItem {
-  const inDomain = items.filter((it) => it.domain === domain);
-  if (inDomain.length === 0) throw new Error(`no content items for domain: ${domain}`);
-  return pickNext(filterInBand(inDomain, stage), state.usage, todayYmd);
+  return pickInDomainWithFallback(items, state, todayYmd, stage, domain).item;
+}
+
+/**
+ * 帯域フィルタ → ドメインラウンドロビン → LRU の選択+fallback情報（スペック §7.3 / v0.26 wave5）。
+ * stage 適合プール（空なら全体にフォールバック）から、前回ドメインの次を優先して
+ * 存在する最初のドメインを選び、ドメイン内は pickNext（LRU + 3日連続回避）。
+ */
+export function pickNextByDomainWithFallback(
+  items: ContentItem[], state: RotationState, todayYmd: string, stage: number, kind: "topic" | "scenario",
+): { item: ContentItem; fallback: RotationFallback } {
+  if (items.length === 0) throw new Error("no content items available");
+  const inBand = items.filter((it) => it.level[0] <= stage && stage <= it.level[1]);
+  const bandRelaxed = inBand.length === 0;
+  const pool = bandRelaxed ? items : inBand;
+  const last = state.lastDomain[kind];
+  const start = last === "" ? 0 : (DOMAINS.indexOf(last) + 1) % DOMAINS.length;
+  for (let i = 0; i < DOMAINS.length; i++) {
+    const domain = DOMAINS[(start + i) % DOMAINS.length];
+    const sub = pool.filter((it) => it.domain === domain);
+    if (sub.length === 0) continue;
+    const picked = pickNext(sub, state.usage, todayYmd);
+    state.lastDomain[kind] = domain;
+    const fallback: RotationFallback = bandRelaxed ? "band-relaxed" : i > 0 ? "domain-substituted" : null;
+    return { item: picked, fallback };
+  }
+  // 論理上到達しない安全網（items.length>0 保証のための保険）
+  return { item: pickNext(pool, state.usage, todayYmd), fallback: bandRelaxed ? "band-relaxed" : "domain-substituted" };
 }
 
 /**
@@ -73,19 +121,7 @@ export function pickInDomain(
 export function pickNextByDomain(
   items: ContentItem[], state: RotationState, todayYmd: string, stage: number, kind: "topic" | "scenario",
 ): ContentItem {
-  if (items.length === 0) throw new Error("no content items available");
-  const pool = filterInBand(items, stage);
-  const last = state.lastDomain[kind];
-  const start = last === "" ? 0 : (DOMAINS.indexOf(last) + 1) % DOMAINS.length;
-  for (let i = 0; i < DOMAINS.length; i++) {
-    const domain = DOMAINS[(start + i) % DOMAINS.length];
-    const sub = pool.filter((it) => it.domain === domain);
-    if (sub.length === 0) continue;
-    const picked = pickNext(sub, state.usage, todayYmd);
-    state.lastDomain[kind] = domain;
-    return picked;
-  }
-  return pickNext(pool, state.usage, todayYmd); // 論理上到達しない安全網
+  return pickNextByDomainWithFallback(items, state, todayYmd, stage, kind).item;
 }
 
 export function markUsed(usage: UsageMap, id: string, ymd: string): void {

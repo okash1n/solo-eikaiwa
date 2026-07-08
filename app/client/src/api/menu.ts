@@ -2,11 +2,14 @@ import type { MenuTitleKey } from "../i18n";
 import { extractErrorMessage } from "./http";
 
 export type ContentItem = { id: string; kind: "topic" | "scenario"; title: string; titleJa: string; hints: string[]; starters?: string[] };
+/** v0.26 wave5: rotation の情報的注記（サーバ rotation.ts の RotationFallback と同じ2値）。無ければ通常選定。 */
+export type RotationFallback = "domain-substituted" | "band-relaxed";
 export type MenuBlock = {
   id: string; kind: string; title: string;
   titleKey?: MenuTitleKey; topicTitle?: string;
   minutes: number;
   params: { topic?: ContentItem; scenario?: ContentItem; roundsSec?: number[]; modelTalkMode?: "auto" | "button" };
+  fallback?: RotationFallback;
 };
 export type Menu = { minutes: number; date: string; blocks: MenuBlock[] };
 

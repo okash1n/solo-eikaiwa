@@ -145,6 +145,8 @@ export function SessionRunner(props: { source: MenuSource; sessionId: string; la
         </>
       }
     >
+      {/* v0.26 wave5: rotation の情報的注記。ラウンドロビン振替・帯域緩和で選ばれたときだけ出す中立な一文（警告調ではない） */}
+      {block.fallback && <Banner kind="info">{t.fallbackNote}</Banner>}
       <div key={block.id} className="fade-in">
         <BlockBody block={block} sessionId={props.sessionId} lang={props.lang} />
       </div>
