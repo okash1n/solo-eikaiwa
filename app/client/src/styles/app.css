@@ -220,6 +220,7 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 }
 .lang-toggle button:hover { color: var(--text); }
 .lang-toggle button.is-active { background: var(--accent-soft); color: var(--accent); font-weight: 650; }
+.settings-tabs { align-self: flex-start; }
 /* サポートパネルのラベル行 + ⓘ ヘルプ */
 .support-label-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
 .info-btn {
