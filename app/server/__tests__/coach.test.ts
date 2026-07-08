@@ -5,7 +5,7 @@ import {
 } from "../coach";
 import type { ClaudeRunner } from "../converse";
 import type { SessionEvent } from "../session-log";
-import { SPOKEN_STYLE_BLOCK } from "../spoken-style";
+import { SPOKEN_STYLE_BLOCK, spokenStyleFor } from "../spoken-style";
 
 function runnerReturning(text: string): { runner: ClaudeRunner; seen: Array<{ prompt: string; systemPrompt?: string }> } {
   const seen: Array<{ prompt: string; systemPrompt?: string }> = [];
@@ -104,16 +104,29 @@ describe("generateModelTalk", () => {
     expect(seen[0].systemPrompt).not.toContain("word families");
   });
 
-  // stage4+ 不変ロック: 変更前の実出力をそのまま転記（回帰基準）
+  // stage4+ 不変ロック: 変更前の実出力をそのまま転記（回帰基準）。
+  // v0.26 content-ladder wave3でspokenStyleForの注入を追加した際に意図的に更新した
+  // （実測でstage5のmodelTalkが短縮形率不足でcheckModelTalkにFAILする実例を確認したため。coach.ts参照）。
   test("stage 4+ の systemPrompt は現行文字列と完全一致する（回帰ロック）", async () => {
     const { runner, seen } = runnerReturning("x");
     await generateModelTalk({ topicTitle: "t", hints: [], stage: 5 }, runner);
     expect(seen[0].systemPrompt).toBe(
       "You produce a model monologue for an English learner (CEFR B1) to shadow.\n" +
       "Rules: 120-150 words, spoken register, first person, plain high-frequency vocabulary, short sentences.\n" +
+      `${spokenStyleFor("advanced")}\n` +
       "No headings, no lists — just the monologue text.\n" +
       "Do not use any tools — reply directly with text only.",
     );
+  });
+
+  test("systemPrompt は帯別のspokenStyleForを含む(短縮形ガイド・stageに応じた帯)", async () => {
+    const { runner, seen } = runnerReturning("x");
+    await generateModelTalk({ topicTitle: "t", hints: [], stage: 1 }, runner);
+    await generateModelTalk({ topicTitle: "t", hints: [], stage: 3 }, runner);
+    await generateModelTalk({ topicTitle: "t", hints: [], stage: 5 }, runner);
+    expect(seen[0].systemPrompt).toContain(spokenStyleFor("beginner"));
+    expect(seen[1].systemPrompt).toContain(spokenStyleFor("intermediate"));
+    expect(seen[2].systemPrompt).toContain(spokenStyleFor("advanced"));
   });
 
   test("stage 1 の systemPrompt は構文制約(6-10 words・A2)を含み、B1 level は含まない", async () => {

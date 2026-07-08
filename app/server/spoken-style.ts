@@ -26,3 +26,14 @@ const LENGTH_CAP_BY_BAND: Record<SpokenBand, string> = {
 export function spokenStyleFor(band: SpokenBand): string {
   return `${SPOKEN_STYLE_BLOCK} ${LENGTH_CAP_BY_BAND[band]}`;
 }
+
+/**
+ * stage(1..6) → SpokenBand。content-coverage.ts の BAND_STAGE_RANGE（foundation[1,2]/development[3,4]/
+ * fluency[5,6]）と同じ境界を beginner/intermediate/advanced に対応させる（content-gen.ts の
+ * SPOKEN_BAND_FOR_BAND と同じ対応をstage単位の入力向けに提供する）。
+ */
+export function spokenBandForStage(stage: number): SpokenBand {
+  if (stage <= 2) return "beginner";
+  if (stage <= 4) return "intermediate";
+  return "advanced";
+}

@@ -1,7 +1,7 @@
 import { defaultRunner, type ClaudeRunner } from "./converse";
 import { syntaxConstraint, vocabConstraint, type HintLang } from "./progression";
 import type { SessionEvent } from "./session-log";
-import { SPOKEN_STYLE_BLOCK } from "./spoken-style";
+import { SPOKEN_STYLE_BLOCK, spokenBandForStage, spokenStyleFor } from "./spoken-style";
 
 export type AeItem = { quote: string; issue: string; better: string; why_ja: string };
 export type AeFeedback = { items: AeItem[]; praise: string };
@@ -157,17 +157,25 @@ export async function generateFixExplanation(
   return { text: text.trim() };
 }
 
+/**
+ * v0.26 content-ladder wave3: 全stageにspokenStyleForを注入する（stage>=4も含む・従来の「旧文言を一字一句
+ * 維持」ロックはここで意図的に外す）。prepSystem/多聴生成は既にSPOKEN_STYLE_BLOCK/spokenStyleForで
+ * 短縮形などの話し言葉ガイドを注入していたが、modelTalkSystemだけそれが無く、hard-failゲート
+ * （checkModelTalk）を新設した際にrealな生成（answering-office-phone/business/advanced帯）で
+ * 短縮形率0.125（下限0.2未満）のFAILを実測した。ガイドを注入せず3ラウンド再生成に任せるのは
+ * 「たまたま閾値を超えるまで運任せに引き直す」だけで歩留まりが悪いため、根本のプロンプトを直す。
+ */
 function modelTalkSystem(stage: number): string {
   const vocab = vocabConstraint(stage);
   const syntax = syntaxConstraint(stage);
   const learnerLabel = stage <= 2 ? "(CEFR A2)" : stage === 3 ? "(CEFR A2-B1)" : "(CEFR B1)";
   const wordCount = stage <= 2 ? "90-120" : "120-150";
-  // stage>=4（vocab===null）は旧文言を一字一句維持する（上級者の挙動不変）
   const rules = vocab
     ? `Rules: ${wordCount} words, spoken register, first person, short sentences. ${vocab} ${syntax}`
     : "Rules: 120-150 words, spoken register, first person, plain high-frequency vocabulary, short sentences.";
   return `You produce a model monologue for an English learner ${learnerLabel} to shadow.
 ${rules}
+${spokenStyleFor(spokenBandForStage(stage))}
 No headings, no lists — just the monologue text.
 Do not use any tools — reply directly with text only.`;
 }
