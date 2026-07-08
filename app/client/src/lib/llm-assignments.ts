@@ -11,12 +11,12 @@ export type Connection = { baseUrl: string; model: string; codexModel: string };
 export type PresetId = "all-local" | "balanced" | "high-quality";
 
 /**
- * プリセットのロール割当（固定）。バランスは会話のみローカル（速度優先）、
- * コーチング・教材生成・測定は品質優先で Claude（生成・測定は低頻度なため）。
+ * プリセットのロール割当（固定）。バランスは会話・教材生成=ローカル / コーチング・測定=Claude。
+ * 測定は Claude との品質差が最大かつ低頻度のため Claude 側に含める。
  */
 export const PRESETS: Record<PresetId, RoleTargets> = {
   "all-local": { conversation: "local", coaching: "local", generation: "local", assessment: "local" },
-  balanced: { conversation: "local", coaching: "claude", generation: "claude", assessment: "claude" },
+  balanced: { conversation: "local", coaching: "claude", generation: "local", assessment: "claude" },
   "high-quality": { conversation: "claude", coaching: "claude", generation: "claude", assessment: "claude" },
 };
 

@@ -64,12 +64,12 @@ describe("buildRolesPayload", () => {
     });
   });
 
-  test("バランス: 会話=ローカル / コーチング・教材生成・測定=Claude", () => {
+  test("バランス: 会話・教材生成=ローカル / コーチング・測定=Claude", () => {
     const payload = buildRolesPayload(PRESETS.balanced, LOCAL_CONN);
     expect(payload.roles).toEqual({
       conversation: { provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3" },
       coaching: { provider: "claude" },
-      generation: { provider: "claude" },
+      generation: { provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3" },
       assessment: { provider: "claude" },
     });
     expect(payload.global).toEqual({ provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3", codexModel: null });
@@ -166,9 +166,6 @@ describe("matchPreset", () => {
   });
   test("1ロールでも異なれば custom", () => {
     expect(matchPreset({ ...PRESETS.balanced, generation: "codex" })).toBe("custom");
-  });
-  test("旧バランス（生成=ローカル）は custom になる（定義変更の明示仕様）", () => {
-    expect(matchPreset({ conversation: "local", coaching: "claude", generation: "local", assessment: "claude" })).toBe("custom");
   });
   test("往復整合: buildRolesPayload→hydrateTargets→matchPreset が元に戻る", () => {
     const conn = { baseUrl: "http://localhost:11434/v1", model: "qwen3", codexModel: "" };
