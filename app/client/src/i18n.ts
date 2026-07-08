@@ -321,7 +321,7 @@ const WEEKDAYS_JA = ["日", "月", "火", "水", "木", "金", "土"];
 export const STR: Record<Lang, Strings> = {
   en: {
     nav: {
-      home: "Home", placement: "Level Check", free: "Free Talk", library: "Library", sentences: "300 Sentences", listening: "Listening", progress: "Progress", feedback: "Feedback", settings: "Settings",
+      home: "Home", placement: "Level Check", free: "Free Talk", library: "Library", sentences: "390 Sentences", listening: "Listening", progress: "Progress", feedback: "Feedback", settings: "Settings",
       sectionToday: "Today's practice", sectionSelf: "Self-study", sectionRecords: "Records & level",
       selfStudyHint: "Your main path is Today's practice. Self-study fits spare moments — a good order: listen (Listening) → memorize (Sentences) → speak (Free talk).",
     },
@@ -532,7 +532,7 @@ export const STR: Record<Lang, Strings> = {
       micError: (detail) => `Can't access the microphone: ${detail}`,
     },
     sentences: {
-      heroTitle: "300 Sentences",
+      heroTitle: "390 Sentences",
       heroDesc: "Read the Japanese, say it out loud first — recalling is what builds memory",
       tabPractice: "Today's practice", tabBrowse: "Browse",
       hideNoteLabel: "Hide hints",
@@ -687,7 +687,7 @@ export const STR: Record<Lang, Strings> = {
   },
   ja: {
     nav: {
-      home: "ホーム", placement: "レベル測定", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300", listening: "リスニング（多聴）", progress: "進捗", feedback: "フィードバック", settings: "設定",
+      home: "ホーム", placement: "レベル測定", free: "自由会話", library: "ライブラリ", sentences: "暗記例文390", listening: "リスニング（多聴）", progress: "進捗", feedback: "フィードバック", settings: "設定",
       sectionToday: "今日の練習", sectionSelf: "自主練", sectionRecords: "記録・測定",
       selfStudyHint: "メインは「今日の練習」。自主練はすきま時間に。目安の順番: 聞く(多聴) → 覚える(暗記例文) → 話す(自由会話)。",
     },
@@ -898,7 +898,7 @@ export const STR: Record<Lang, Strings> = {
       micError: (detail) => `マイクにアクセスできません: ${detail}`,
     },
     sentences: {
-      heroTitle: "暗記例文300",
+      heroTitle: "暗記例文390",
       heroDesc: "日本語を見て、まず声に出す — 思い出す練習が記憶を作ります",
       tabPractice: "今日の練習", tabBrowse: "一覧",
       hideNoteLabel: "ヒントを隠す",
