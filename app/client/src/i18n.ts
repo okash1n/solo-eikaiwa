@@ -343,7 +343,7 @@ export const STR: Record<Lang, Strings> = {
       roleReason: {
         conversation: "Recommended: local — fastest responses. Switch to Claude or Codex if quality falls short.",
         coaching: "Recommended: Claude or Codex — writing quality matters more than speed.",
-        generation: "Recommended: local — fairly templated output with modest quality demands. Switch to Claude for higher quality.",
+        generation: "Recommended: local — fairly templated output with modest quality demands. Switch to Claude or Codex for higher quality.",
         assessment: "Recommended: Claude or Codex — runs infrequently and quality matters most.",
       },
       roleQualityNote: "Where model quality matters most: Assessment > Coaching > Content generation. Conversation benefits more from response speed.",
@@ -677,7 +677,7 @@ export const STR: Record<Lang, Strings> = {
       roleReason: {
         conversation: "推奨: ローカル — 応答が最も速いため。品質が物足りなければ Claude や Codex へ。",
         coaching: "推奨: Claude / Codex — 速度より文章の品質が重要なため。",
-        generation: "推奨: ローカル — 出力が定型的で要求性能は低め。品質を上げたいときは Claude へ。",
+        generation: "推奨: ローカル — 出力が定型的で要求性能は低め。品質を上げたいときは Claude / Codex へ。",
         assessment: "推奨: Claude / Codex — 実行頻度が低く、質の高さが最優先のため。",
       },
       roleQualityNote: "モデル性能が効く順: 測定 > コーチング > 教材生成。会話は性能より応答の速さが効きます。",
