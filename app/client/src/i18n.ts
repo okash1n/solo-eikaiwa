@@ -109,6 +109,13 @@ type SettingsStrings = {
     tuningSdkStandard: string;
     tuningTierFast: string;
     tuningTierStandard: string;
+    effectiveLabel: string;
+    effectiveUnconfirmedWith: (label: string) => string;
+    cliDefaultLabel: string;
+    cliDefaultBadgeWith: (label: string) => string;
+    refreshCatalog: string;
+    refreshingCatalog: string;
+    catalogNote: string;
     saveConnection: string;
     saveAssignments: string;
     displaySection: string;
@@ -400,6 +407,13 @@ export const STR: Record<Lang, Strings> = {
       tuningSdkStandard: "SDK standard",
       tuningTierFast: "Fast (priority)",
       tuningTierStandard: "Standard",
+      effectiveLabel: "Effective:",
+      effectiveUnconfirmedWith: (label) => `${label} (unconfirmed)`,
+      cliDefaultLabel: "CLI default",
+      cliDefaultBadgeWith: (label) => `${label} (CLI default)`,
+      refreshCatalog: "Refresh model list",
+      refreshingCatalog: "Refreshing…",
+      catalogNote: "Fetches the real model list from Claude / Codex / your local endpoint to power the pickers below and the “Effective” line. If a source can't be reached, it degrades to “unconfirmed” rather than guessing.",
       saveConnection: "Save connections",
       saveAssignments: "Save assignments",
       displaySection: "Display",
@@ -752,6 +766,13 @@ export const STR: Record<Lang, Strings> = {
       tuningSdkStandard: "SDK標準",
       tuningTierFast: "fast（優先配信）",
       tuningTierStandard: "standard（標準・安価）",
+      effectiveLabel: "実効:",
+      effectiveUnconfirmedWith: (label) => `${label}（実体未確認）`,
+      cliDefaultLabel: "CLI既定",
+      cliDefaultBadgeWith: (label) => `${label}（CLI既定）`,
+      refreshCatalog: "モデル一覧を更新",
+      refreshingCatalog: "更新中…",
+      catalogNote: "Claude/Codex/ローカル接続先から実際のモデル一覧を取得し、下の選択肢と「実効」表示に反映します。取得できないソースは推測せず「実体未確認」に留めます。",
       saveConnection: "接続を保存",
       saveAssignments: "割当を保存",
       displaySection: "表示",

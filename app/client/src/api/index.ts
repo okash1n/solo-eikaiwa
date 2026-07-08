@@ -26,4 +26,5 @@ export * from "./assessment";
 export * from "./listening";
 export * from "./feedback";
 export * from "./llm-settings";
+export * from "./llm-models";
 export * from "./tts-settings";

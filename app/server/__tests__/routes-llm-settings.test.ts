@@ -356,6 +356,20 @@ describe("llm-settings tuning API", () => {
     expect(savedTuning).toHaveLength(0);
   });
 
+  test("PUT /roles: effort \"max\" は受理される（claude opus/sonnet の実カタログ効果に対応）", async () => {
+    const savedPatches: Array<Partial<Record<LlmRole, Partial<RoleTuning>>>> = [];
+    const { deps } = makeTestDeps({
+      getLlmSettings: () => null,
+      saveLlmRoleTuning: (t) => savedPatches.push(t),
+      llmEnv: () => ({ provider: "claude", apiKeyConfigured: false }),
+    });
+    const res = await makeFetchHandler(deps)(putJson("/api/llm-settings/roles", {
+      tuning: { assessment: { effort: "max" } },
+    }));
+    expect(res.status).toBe(200);
+    expect(savedPatches).toEqual([{ assessment: { effort: "max" } }]);
+  });
+
   test("PUT /roles: null で明示クリアできる（クリアと未指定は区別される）", async () => {
     const savedPatches: Array<Partial<Record<LlmRole, Partial<RoleTuning>>>> = [];
     const { deps } = makeTestDeps({

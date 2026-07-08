@@ -21,7 +21,7 @@ export type RoleTuning = { claudeModel: string | null; effort: string | null; se
 
 /** チューニング値のホワイトリスト（route 検証と CLI の env 解釈で共有する単一定義。クライアントの *_OPTIONS と一致させる）。 */
 export const CLAUDE_MODELS = ["haiku", "sonnet", "opus"] as const;
-export const EFFORTS = ["low", "medium", "high", "xhigh"] as const;
+export const EFFORTS = ["low", "medium", "high", "xhigh", "max"] as const;
 export const SERVICE_TIERS = ["fast", "standard"] as const;
 
 export type LlmRoleTuningStore = {

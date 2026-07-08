@@ -2,13 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import {
   fetchLlmSettings, saveLlmRoleSettings, LLM_ROLES,
   fetchTtsSettings, saveTtsSettings,
-  CLAUDE_MODEL_OPTIONS, EFFORT_OPTIONS, SERVICE_TIER_OPTIONS,
-  type LlmRole, type LlmSettingsView, type TtsSettingsView, type RoleTuning,
+  fetchLlmModels,
+  EFFORT_OPTIONS, SERVICE_TIER_OPTIONS,
+  type LlmRole, type LlmSettingsView, type TtsSettingsView, type RoleTuning, type LlmModelsResponse, type CatalogModelEffort,
 } from "../api";
 import {
   isLocalDefined, presetEnabled, presetTargets, matchPreset, hydrateConnection, hydrateTargets, hydrateTuning,
   buildRolesPayload, defaultTuning, applyRecommendedTuning,
-  type RoleTarget, type RoleTargets, type Connection, type PresetId, type CloudTarget,
+  claudeModelSelectOptions, effortOptionsForClaudeAlias, codexModelSelectOptions, effortOptionsForCodexModel,
+  tierOptionsForCodexModel, codexDefaultEffortLabel, localModelSelectOptions, resolveEffective,
+  type RoleTarget, type RoleTargets, type Connection, type PresetId, type CloudTarget, type EffectiveResolution,
 } from "../lib/llm-assignments";
 import { loadPreferredCloud, savePreferredCloud } from "../lib/preferred-cloud";
 import { STR, type Lang } from "../i18n";
@@ -75,6 +78,10 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<"conn" | "roles" | "display">("conn");
   const fetchedRef = useRef(false);
+  // モデルカタログ（GET /api/llm-models）。用途タブを開いたときに遅延取得する（app起動時には叩かない）。
+  const [catalog, setCatalog] = useState<LlmModelsResponse | null>(null);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const catalogFetchedRef = useRef(false);
   // プリセット適用時のクラウド枠（課金先）。localStorage永続・既存割当には影響しない。
   const [preferredCloud, setPreferredCloudState] = useState<CloudTarget>(() => loadPreferredCloud());
   function setPreferredCloud(c: CloudTarget) {
@@ -121,6 +128,22 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
     fetchLlmSettings().then(hydrate).catch(() => {});
     fetchTtsSettings().then(hydrateTts).catch(() => {});
   }, []);
+
+  /** refresh=true は「モデル一覧を更新」ボタン用（?refresh=1）。失敗は fail-quiet — カタログは
+   * null のままとなり、選択肢・実効表示は静的フォールバック/「実体未確認」へ劣化する（嘘の表示をしない）。 */
+  function refreshCatalog(refresh: boolean) {
+    setCatalogLoading(true);
+    fetchLlmModels(refresh)
+      .then(setCatalog)
+      .catch(() => {})
+      .finally(() => setCatalogLoading(false));
+  }
+
+  useEffect(() => {
+    if (tab !== "roles" || catalogFetchedRef.current) return;
+    catalogFetchedRef.current = true;
+    refreshCatalog(false);
+  }, [tab]);
 
   const conn: Connection = { baseUrl: connBaseUrl, model: connModel, codexModel: connCodex };
   const localDefined = isLocalDefined(conn);
@@ -192,6 +215,22 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
     fast: s.settings.tuningTierFast, standard: s.settings.tuningTierStandard,
   };
 
+  /** 用途タブの「実効」サマリ1行を組み立てる（表示専用。判定ロジックは resolveEffective が純関数で担う）。 */
+  function effectiveLine(eff: EffectiveResolution): string {
+    const providerLabel = targetLabels[eff.provider];
+    const modelText = eff.model.confirmed
+      ? eff.model.text
+      : s.settings.effectiveUnconfirmedWith(eff.model.cliDefault ? s.settings.cliDefaultLabel : eff.model.text);
+    const parts = [`${providerLabel} ${modelText}`];
+    if (eff.effort) {
+      parts.push(`${s.settings.tuningEffort} ${eff.effort.value === "sdk-standard" ? s.settings.tuningSdkStandard : eff.effort.value}`);
+    }
+    if (eff.tier) {
+      parts.push(`${s.settings.tuningTier} ${tierLabels[eff.tier.value as (typeof SERVICE_TIER_OPTIONS)[number]] ?? eff.tier.value}`);
+    }
+    return `${s.settings.effectiveLabel} ${parts.join(" · ")}`;
+  }
+
   return (
     <div className="stack">
       <div className="hero">
@@ -216,7 +255,20 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             </label>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.llm.modelLabel}</span>
-              <input className="llm-input" value={connModel} placeholder={s.llm.modelPlaceholder} onChange={(e) => setConnModel(e.target.value)} />
+              {(() => {
+                const opts = localModelSelectOptions(catalog?.local);
+                if (opts.length === 0) {
+                  return <input className="llm-input" value={connModel} placeholder={s.llm.modelPlaceholder} onChange={(e) => setConnModel(e.target.value)} />;
+                }
+                const known = opts.some((o) => o.value === connModel);
+                return (
+                  <select className="llm-input" value={connModel} onChange={(e) => setConnModel(e.target.value)}>
+                    <option value="">{s.llm.modelPlaceholder}</option>
+                    {!known && connModel && <option value={connModel}>{connModel}</option>}
+                    {opts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                );
+              })()}
             </label>
             <div className="text-sm text-muted">{view?.apiKeyConfigured ? s.llm.apiKeyConfigured : s.llm.apiKeyMissing}</div>
           </div>
@@ -224,7 +276,22 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             <div className="text-sm">{s.settings.codexConnTitle}</div>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.llm.codexModelLabel}</span>
-              <input className="llm-input" value={connCodex} placeholder={s.llm.codexModelPlaceholder} onChange={(e) => setConnCodex(e.target.value)} />
+              {(() => {
+                const opts = codexModelSelectOptions(catalog?.codex);
+                if (opts.length === 0) {
+                  return <input className="llm-input" value={connCodex} placeholder={s.llm.codexModelPlaceholder} onChange={(e) => setConnCodex(e.target.value)} />;
+                }
+                const known = opts.some((o) => o.value === connCodex);
+                return (
+                  <select className="llm-input" value={connCodex} onChange={(e) => setConnCodex(e.target.value)}>
+                    <option value="">{s.llm.codexModelPlaceholder}</option>
+                    {!known && connCodex && <option value={connCodex}>{connCodex}</option>}
+                    {opts.map((o) => (
+                      <option key={o.value} value={o.value}>{o.isDefault ? s.settings.cliDefaultBadgeWith(o.label) : o.label}</option>
+                    ))}
+                  </select>
+                );
+              })()}
             </label>
           </div>
           <div className="text-sm text-muted">{s.llm.help}</div>
@@ -267,6 +334,15 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
       {tab === "roles" && (
         <section className="support-panel stack">
           <div className="info-pop">{s.settings.roleQualityNote}</div>
+
+          {/* モデルカタログ（用途タブを開いた時点で遅延取得済み）の手動再取得 */}
+          <div className="stack">
+            <Button variant="secondary" onClick={() => refreshCatalog(true)} disabled={catalogLoading}>
+              {catalogLoading ? s.settings.refreshingCatalog : s.settings.refreshCatalog}
+            </Button>
+            <div className="text-sm text-muted">{s.settings.catalogNote}</div>
+          </div>
+
           {/* プリセット（現在の割当から逆引き表示。手動変更でカスタムに落ちる） */}
           <div className="stack">
             <div className="stat-title">{s.settings.presetSection}</div>
@@ -322,75 +398,100 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
           <div className="stack">
             <div className="stat-title">{s.settings.roleAssignSection}</div>
             <div className="text-sm text-muted">{s.settings.roleAssignDesc}</div>
-            {LLM_ROLES.map((role) => (
-              <div key={role} className="stack">
-                <div className="text-sm">{s.settings.roleName[role]}</div>
-                <div className="text-sm text-muted">{s.settings.roleDesc[role]}</div>
-                <div className="text-sm text-muted">{s.settings.roleReason[role]}</div>
-                <RoleTargetToggle
-                  value={targets[role]}
-                  localEnabled={localDefined}
-                  labels={targetLabels}
-                  localDisabledNote={s.settings.targetLocalDisabled}
-                  ariaLabel={s.settings.roleName[role]}
-                  disabled={saving || !view}
-                  onChange={(t) => setTarget(role, t)}
-                />
-                <details className="stack">
-                  <summary className="text-sm text-muted">{s.settings.tuningDetails}</summary>
-                  <div className="stack">
-                    {targets[role] === "claude" && (
+            {LLM_ROLES.map((role) => {
+              const catalogClaude = catalog?.claude;
+              const catalogCodex = catalog?.codex;
+              const selectedClaudeAlias = tuning[role].claudeModel ?? "sonnet";
+              // カタログ不可時は現行の静的選択肢へ劣化する（推測の具体IDは出さない・「実効」行が別途「実体未確認」を明示する）
+              const claudeEffortOptions = catalogClaude?.available
+                ? effortOptionsForClaudeAlias(catalogClaude, selectedClaudeAlias)
+                : [...EFFORT_OPTIONS];
+              const codexEffortOptions: CatalogModelEffort[] = catalogCodex?.available
+                ? effortOptionsForCodexModel(catalogCodex, connCodex)
+                : EFFORT_OPTIONS.map((id) => ({ id }));
+              const codexTierOptions = catalogCodex?.available
+                ? tierOptionsForCodexModel(catalogCodex, connCodex)
+                : SERVICE_TIER_OPTIONS;
+              const codexEffortDefaultLabel = codexDefaultEffortLabel(catalogCodex, connCodex);
+              const effective = view ? resolveEffective(role, view, catalog ?? undefined) : null;
+              return (
+                <div key={role} className="stack">
+                  <div className="text-sm">{s.settings.roleName[role]}</div>
+                  <div className="text-sm text-muted">{s.settings.roleDesc[role]}</div>
+                  <div className="text-sm text-muted">{s.settings.roleReason[role]}</div>
+                  <RoleTargetToggle
+                    value={targets[role]}
+                    localEnabled={localDefined}
+                    labels={targetLabels}
+                    localDisabledNote={s.settings.targetLocalDisabled}
+                    ariaLabel={s.settings.roleName[role]}
+                    disabled={saving || !view}
+                    onChange={(t) => setTarget(role, t)}
+                  />
+                  {/* 実効サマリ（常時表示）: 現在この用途で実際に使われているプロバイダ・具体モデル・effort・配信 */}
+                  {effective && <div className="text-sm text-muted">{effectiveLine(effective)}</div>}
+                  <details className="stack">
+                    <summary className="text-sm text-muted">{s.settings.tuningDetails}</summary>
+                    <div className="stack">
+                      {targets[role] === "claude" && (
+                        <label className="llm-field">
+                          <span className="text-sm text-muted">{s.settings.tuningModel}</span>
+                          <select
+                            className="llm-input"
+                            value={tuning[role].claudeModel ?? ""}
+                            disabled={saving || !view}
+                            onChange={(e) => setTuningField(role, "claudeModel", (e.target.value || null) as RoleTuning["claudeModel"])}
+                          >
+                            {/* 既定はコード定数（サーバは env チューニングを読まない）ため、静的表記が常に真 */}
+                            <option value="">{s.settings.tuningDefaultWith("sonnet")}</option>
+                            {claudeModelSelectOptions(catalogClaude).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                          </select>
+                        </label>
+                      )}
                       <label className="llm-field">
-                        <span className="text-sm text-muted">{s.settings.tuningModel}</span>
+                        <span className="text-sm text-muted">{s.settings.tuningEffort}</span>
                         <select
                           className="llm-input"
-                          value={tuning[role].claudeModel ?? ""}
+                          value={tuning[role].effort ?? ""}
                           disabled={saving || !view}
-                          onChange={(e) => setTuningField(role, "claudeModel", (e.target.value || null) as RoleTuning["claudeModel"])}
+                          onChange={(e) => setTuningField(role, "effort", (e.target.value || null) as RoleTuning["effort"])}
                         >
-                          {/* 既定はコード定数（サーバは env チューニングを読まない）ため、静的表記が常に真 */}
-                          <option value="">{s.settings.tuningDefaultWith("sonnet")}</option>
-                          {CLAUDE_MODEL_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
+                          {/* claude の既定effortはSDK標準（未指定）、codex はカタログのdefaultEffort優先（不可時コード既定medium）。
+                              local は対応項目なしのため実効値を併記しない */}
+                          <option value="">
+                            {targets[role] === "claude"
+                              ? s.settings.tuningDefaultWith(s.settings.tuningSdkStandard)
+                              : targets[role] === "codex"
+                              ? s.settings.tuningDefaultWith(codexEffortDefaultLabel)
+                              : s.settings.tuningDefault}
+                          </option>
+                          {/* claude: haiku 等 effort 非対応モデルではカタログ側が空配列を返し、既定のみ選択可になる */}
+                          {targets[role] === "claude" && claudeEffortOptions.map((ef) => <option key={ef} value={ef}>{ef}</option>)}
+                          {targets[role] === "codex" && codexEffortOptions.map((ef) => (
+                            <option key={ef.id} value={ef.id}>{ef.description ? `${ef.id} — ${ef.description}` : ef.id}</option>
+                          ))}
+                          {targets[role] === "local" && EFFORT_OPTIONS.map((ef) => <option key={ef} value={ef}>{ef}</option>)}
                         </select>
                       </label>
-                    )}
-                    <label className="llm-field">
-                      <span className="text-sm text-muted">{s.settings.tuningEffort}</span>
-                      <select
-                        className="llm-input"
-                        value={tuning[role].effort ?? ""}
-                        disabled={saving || !view}
-                        onChange={(e) => setTuningField(role, "effort", (e.target.value || null) as RoleTuning["effort"])}
-                      >
-                        {/* claude の既定effortはSDK標準（未指定）、codex はコード既定 medium。local は対応項目なしのため実効値を併記しない */}
-                        <option value="">
-                          {targets[role] === "claude"
-                            ? s.settings.tuningDefaultWith(s.settings.tuningSdkStandard)
-                            : targets[role] === "codex"
-                            ? s.settings.tuningDefaultWith("medium")
-                            : s.settings.tuningDefault}
-                        </option>
-                        {EFFORT_OPTIONS.map((ef) => <option key={ef} value={ef}>{ef}</option>)}
-                      </select>
-                    </label>
-                    {targets[role] === "codex" && (
-                      <label className="llm-field">
-                        <span className="text-sm text-muted">{s.settings.tuningTier}</span>
-                        <select
-                          className="llm-input"
-                          value={tuning[role].serviceTier ?? ""}
-                          disabled={saving || !view}
-                          onChange={(e) => setTuningField(role, "serviceTier", (e.target.value || null) as RoleTuning["serviceTier"])}
-                        >
-                          <option value="">{s.settings.tuningDefaultWith("fast")}</option>
-                          {SERVICE_TIER_OPTIONS.map((t) => <option key={t} value={t}>{tierLabels[t]}</option>)}
-                        </select>
-                      </label>
-                    )}
-                  </div>
-                </details>
-              </div>
-            ))}
+                      {targets[role] === "codex" && (
+                        <label className="llm-field">
+                          <span className="text-sm text-muted">{s.settings.tuningTier}</span>
+                          <select
+                            className="llm-input"
+                            value={tuning[role].serviceTier ?? ""}
+                            disabled={saving || !view}
+                            onChange={(e) => setTuningField(role, "serviceTier", (e.target.value || null) as RoleTuning["serviceTier"])}
+                          >
+                            <option value="">{s.settings.tuningDefaultWith("fast")}</option>
+                            {codexTierOptions.map((t) => <option key={t} value={t}>{tierLabels[t]}</option>)}
+                          </select>
+                        </label>
+                      )}
+                    </div>
+                  </details>
+                </div>
+              );
+            })}
             <Button variant="secondary" onClick={() => void persist(targets, conn)} disabled={saving || !view}>{saving ? s.llm.saving : s.settings.saveAssignments}</Button>
           </div>
 

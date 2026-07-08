@@ -16,8 +16,8 @@ export type LlmRoleView = {
 /** ロール別チューニングの選択肢（サーバのホワイトリストと一致させる）。 */
 export type ClaudeModelOption = "haiku" | "sonnet" | "opus";
 export const CLAUDE_MODEL_OPTIONS: readonly ClaudeModelOption[] = ["haiku", "sonnet", "opus"];
-export type EffortOption = "low" | "medium" | "high" | "xhigh";
-export const EFFORT_OPTIONS: readonly EffortOption[] = ["low", "medium", "high", "xhigh"];
+export type EffortOption = "low" | "medium" | "high" | "xhigh" | "max";
+export const EFFORT_OPTIONS: readonly EffortOption[] = ["low", "medium", "high", "xhigh", "max"];
 export type ServiceTierOption = "fast" | "standard";
 export const SERVICE_TIER_OPTIONS: readonly ServiceTierOption[] = ["fast", "standard"];
 

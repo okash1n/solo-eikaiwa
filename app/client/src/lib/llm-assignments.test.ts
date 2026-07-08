@@ -1,9 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import type { LlmRoleInput, LlmRoleView, LlmSettingsInput, LlmSettingsView, LlmRole, RoleTuning } from "../api";
+import type { LlmRoleInput, LlmRoleView, LlmSettingsInput, LlmSettingsView, LlmRole, RoleTuning, CatalogResult } from "../api";
 import { LLM_ROLES } from "../api";
 import {
   PRESETS, isLocalDefined, presetEnabled, hydrateConnection, hydrateTargets, buildRolesPayload, matchPreset,
   presetTargets, defaultTuning, hydrateTuning, RECOMMENDED_TUNING, applyRecommendedTuning,
+  claudeModelSelectOptions, effortOptionsForClaudeAlias, codexModelSelectOptions, effortOptionsForCodexModel,
+  tierOptionsForCodexModel, codexDefaultEffortLabel, localModelSelectOptions, resolveEffective,
   type RoleTargets,
 } from "./llm-assignments";
 
@@ -344,5 +346,250 @@ describe("旧サーバ応答への後方互換（ロール行の欠落）", () =
     const result = hydrateTuning(view);
     expect(result.assist).toEqual({ claudeModel: null, effort: null, serviceTier: null });
     expect(result.conversation).toEqual({ claudeModel: "opus", effort: "high", serviceTier: null });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// モデルカタログ由来の選択肢・実効モデル解決（task-4-brief の実機カタログ所見に基づくフィクスチャ）
+// ---------------------------------------------------------------------------
+
+const CLAUDE_CATALOG: CatalogResult = {
+  available: true,
+  fetchedAt: "2026-07-08T00:00:00.000Z",
+  models: [
+    { id: "opus[1m]", displayName: "Opus", description: "Most capable", resolvedModel: "claude-opus-4-6",
+      efforts: [{ id: "low" }, { id: "medium" }, { id: "high" }, { id: "xhigh" }, { id: "max" }] },
+    { id: "sonnet", displayName: "Sonnet", description: "Balanced", resolvedModel: "claude-sonnet-5",
+      efforts: [{ id: "low" }, { id: "medium" }, { id: "high" }, { id: "xhigh" }, { id: "max" }] },
+    // haiku は effort 非対応（efforts フィールド自体が無い・実機所見）
+    { id: "haiku", displayName: "Haiku", description: "Fast", resolvedModel: "claude-haiku-4-5-20251001" },
+    { id: "claude-fable-5[1m]", displayName: "Claude Fable 5", description: "Latest", resolvedModel: "claude-fable-5",
+      efforts: [{ id: "low" }, { id: "medium" }, { id: "high" }, { id: "xhigh" }, { id: "max" }] },
+    // CLI 自身の推奨行。displayName が haiku/sonnet/opus のいずれとも一致しないため自然に除外される
+    { id: "default", displayName: "default", description: "CLI recommended", resolvedModel: "claude-opus-4-6" },
+  ],
+};
+
+const CODEX_CATALOG: CatalogResult = {
+  available: true,
+  fetchedAt: "2026-07-08T00:00:00.000Z",
+  models: [
+    { id: "gpt-5.5", displayName: "GPT-5.5", description: "Frontier", resolvedModel: "gpt-5.5",
+      isDefault: true, defaultEffort: "medium",
+      efforts: [{ id: "low" }, { id: "medium", description: "Balanced" }, { id: "high" }, { id: "xhigh" }],
+      tiers: [{ id: "priority", name: "Priority" }] },
+    { id: "gpt-5.4-mini", displayName: "GPT-5.4 mini", description: "Fast/cheap", resolvedModel: "gpt-5.4-mini",
+      defaultEffort: "medium", efforts: [{ id: "low" }, { id: "medium" }] },
+  ],
+};
+
+const LOCAL_CATALOG: CatalogResult = {
+  available: true,
+  fetchedAt: "2026-07-08T00:00:00.000Z",
+  models: [{ id: "qwen3:30b-instruct", displayName: "qwen3:30b-instruct", description: "" }],
+};
+
+const UNAVAILABLE_CATALOG: CatalogResult = { available: false, reason: "boom", models: [], fetchedAt: "2026-07-08T00:00:00.000Z" };
+
+describe("claudeModelSelectOptions / effortOptionsForClaudeAlias", () => {
+  test("カタログ一致時: 常に haiku/sonnet/opus の3件・実体を併記したラベル", () => {
+    expect(claudeModelSelectOptions(CLAUDE_CATALOG)).toEqual([
+      { value: "haiku", label: "Haiku — claude-haiku-4-5-20251001" },
+      { value: "sonnet", label: "Sonnet — claude-sonnet-5" },
+      { value: "opus", label: "Opus — claude-opus-4-6" },
+    ]);
+  });
+  test("カタログ不可時: エイリアスそのものをラベルにする（推測の具体IDを出さない）", () => {
+    expect(claudeModelSelectOptions(undefined)).toEqual([
+      { value: "haiku", label: "haiku" }, { value: "sonnet", label: "sonnet" }, { value: "opus", label: "opus" },
+    ]);
+    expect(claudeModelSelectOptions(UNAVAILABLE_CATALOG)).toEqual([
+      { value: "haiku", label: "haiku" }, { value: "sonnet", label: "sonnet" }, { value: "opus", label: "opus" },
+    ]);
+  });
+  test("sonnet は5段階(maxまで)・haiku は空（effort非対応）", () => {
+    expect(effortOptionsForClaudeAlias(CLAUDE_CATALOG, "sonnet")).toEqual(["low", "medium", "high", "xhigh", "max"]);
+    expect(effortOptionsForClaudeAlias(CLAUDE_CATALOG, "haiku")).toEqual([]);
+  });
+  test("カタログ不可時は空配列", () => {
+    expect(effortOptionsForClaudeAlias(undefined, "sonnet")).toEqual([]);
+  });
+});
+
+describe("codexModelSelectOptions / effortOptionsForCodexModel / tierOptionsForCodexModel", () => {
+  test("カタログ一致時: id/displayName/isDefault をそのまま選択肢化する", () => {
+    expect(codexModelSelectOptions(CODEX_CATALOG)).toEqual([
+      { value: "gpt-5.5", label: "GPT-5.5", isDefault: true },
+      { value: "gpt-5.4-mini", label: "GPT-5.4 mini", isDefault: false },
+    ]);
+  });
+  test("カタログ不可時は空配列（自由記述へフォールバック）", () => {
+    expect(codexModelSelectOptions(UNAVAILABLE_CATALOG)).toEqual([]);
+    expect(codexModelSelectOptions(undefined)).toEqual([]);
+  });
+  test("effort選択肢: 指定モデルのeffortsをdescription付きで返す。空文字は既定行(isDefault)を使う", () => {
+    expect(effortOptionsForCodexModel(CODEX_CATALOG, "gpt-5.5")).toEqual([
+      { id: "low" }, { id: "medium", description: "Balanced" }, { id: "high" }, { id: "xhigh" },
+    ]);
+    expect(effortOptionsForCodexModel(CODEX_CATALOG, "")).toEqual(CODEX_CATALOG.models[0]!.efforts!);
+    expect(effortOptionsForCodexModel(CODEX_CATALOG, "unknown-id")).toEqual([]);
+  });
+  test("tier選択肢: tiersを持つモデルはfast/standard、持たないモデルはstandardのみ（生のtier idは使わない）", () => {
+    expect(tierOptionsForCodexModel(CODEX_CATALOG, "gpt-5.5")).toEqual(["fast", "standard"]);
+    expect(tierOptionsForCodexModel(CODEX_CATALOG, "gpt-5.4-mini")).toEqual(["standard"]);
+    expect(tierOptionsForCodexModel(CODEX_CATALOG, "")).toEqual(["fast", "standard"]); // 既定行(gpt-5.5)はtiersあり
+    expect(tierOptionsForCodexModel(CODEX_CATALOG, "unknown-id")).toEqual(["standard"]); // 未マッチは保守的にstandardのみ
+  });
+  test("既定effortラベル: カタログのdefaultEffort優先・不一致/不可はコード既定medium", () => {
+    expect(codexDefaultEffortLabel(CODEX_CATALOG, "gpt-5.5")).toBe("medium");
+    expect(codexDefaultEffortLabel(CODEX_CATALOG, "unknown-id")).toBe("medium");
+    expect(codexDefaultEffortLabel(undefined, "gpt-5.5")).toBe("medium");
+  });
+});
+
+describe("localModelSelectOptions", () => {
+  test("カタログ一致時はid/displayNameをそのまま選択肢化する", () => {
+    expect(localModelSelectOptions(LOCAL_CATALOG)).toEqual([{ value: "qwen3:30b-instruct", label: "qwen3:30b-instruct" }]);
+  });
+  test("カタログ不可時は空配列", () => {
+    expect(localModelSelectOptions(UNAVAILABLE_CATALOG)).toEqual([]);
+    expect(localModelSelectOptions(undefined)).toEqual([]);
+  });
+});
+
+describe("resolveEffective", () => {
+  test("claude・tuning全null・カタログ未取得: エイリアスsonnet(未確認)・effortはSDK標準・tierはnull", () => {
+    const view = mkView({ provider: "env", envProvider: "claude" });
+    expect(resolveEffective("conversation", view)).toEqual({
+      provider: "claude",
+      model: { confirmed: false, text: "sonnet" },
+      effort: { value: "sdk-standard", isDefault: true },
+      tier: null,
+    });
+  });
+
+  test("claude・カタログ一致: 具体ID(claude-sonnet-5)が確認済みで返る", () => {
+    const view = mkView({ provider: "env", envProvider: "claude" });
+    const r = resolveEffective("conversation", view, { claude: CLAUDE_CATALOG, codex: UNAVAILABLE_CATALOG, local: UNAVAILABLE_CATALOG });
+    expect(r.model).toEqual({ confirmed: true, text: "claude-sonnet-5" });
+  });
+
+  test("claude・haikuモデル指定+カタログ一致: 具体IDが確認済み・effortはSDK標準のまま", () => {
+    const view = mkView({
+      provider: "env", envProvider: "claude",
+      tuning: { ...defaultTuning(), conversation: { claudeModel: "haiku", effort: null, serviceTier: null } },
+    });
+    const r = resolveEffective("conversation", view, { claude: CLAUDE_CATALOG, codex: UNAVAILABLE_CATALOG, local: UNAVAILABLE_CATALOG });
+    expect(r.model).toEqual({ confirmed: true, text: "claude-haiku-4-5-20251001" });
+    expect(r.effort).toEqual({ value: "sdk-standard", isDefault: true });
+  });
+
+  test("claude・effort明示指定はそのまま反映される(isDefault:false)", () => {
+    const view = mkView({
+      provider: "env", envProvider: "claude",
+      tuning: { ...defaultTuning(), assessment: { claudeModel: "opus", effort: "xhigh", serviceTier: null } },
+    });
+    const r = resolveEffective("assessment", view);
+    expect(r.effort).toEqual({ value: "xhigh", isDefault: false });
+  });
+
+  test("codex・tuning全null・codexModel空・カタログ未取得: model未確認(CLI既定)・effort/tierはコード既定", () => {
+    const view = mkView({ provider: "codex", codexModel: null });
+    expect(resolveEffective("conversation", view)).toEqual({
+      provider: "codex",
+      model: { confirmed: false, text: "", cliDefault: true },
+      effort: { value: "medium", isDefault: true },
+      tier: { value: "fast", isDefault: true },
+    });
+  });
+
+  test("codex・codexModel空+カタログのisDefault行が一致: 具体IDが確認済み・既定effortもcatalog由来", () => {
+    const view = mkView({ provider: "codex", codexModel: null });
+    const r = resolveEffective("conversation", view, { claude: UNAVAILABLE_CATALOG, codex: CODEX_CATALOG, local: UNAVAILABLE_CATALOG });
+    expect(r.model).toEqual({ confirmed: true, text: "gpt-5.5" });
+    expect(r.effort).toEqual({ value: "medium", isDefault: true });
+  });
+
+  test("codex・codexModel明示+カタログ一致: 具体IDが確認済み", () => {
+    const view = mkView({ provider: "codex", codexModel: "gpt-5.4-mini" });
+    const r = resolveEffective("conversation", view, { claude: UNAVAILABLE_CATALOG, codex: CODEX_CATALOG, local: UNAVAILABLE_CATALOG });
+    expect(r.model).toEqual({ confirmed: true, text: "gpt-5.4-mini" });
+  });
+
+  test("codex・codexModel明示だがカタログに無い: 設定値そのまま・未確認（CLI既定扱いにはしない）", () => {
+    const view = mkView({ provider: "codex", codexModel: "gpt-9-mystery" });
+    const r = resolveEffective("conversation", view, { claude: UNAVAILABLE_CATALOG, codex: CODEX_CATALOG, local: UNAVAILABLE_CATALOG });
+    expect(r.model).toEqual({ confirmed: false, text: "gpt-9-mystery" });
+  });
+
+  test("local: 常に確認済み（設定値がそのまま実効値のため、カタログ不要）・effort/tierはnull", () => {
+    const view = mkView({ provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3:30b-instruct" });
+    expect(resolveEffective("conversation", view)).toEqual({
+      provider: "local",
+      model: { confirmed: true, text: "qwen3:30b-instruct" },
+      effort: null,
+      tier: null,
+    });
+  });
+
+  test("env の envProvider が openai-compat のとき inherit ロールは local として解決される", () => {
+    const view = mkView({ provider: "env", envProvider: "openai-compat", model: "qwen3" });
+    expect(resolveEffective("conversation", view).provider).toBe("local");
+  });
+
+  test("assist連鎖: assistがinheritならcoachingの解決結果(プロバイダ・tuningとも)をそのまま使う", () => {
+    const view = mkView({
+      provider: "env", envProvider: "claude",
+      roles: {
+        conversation: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+        assist: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+        coaching: { provider: "codex", baseUrl: null, model: null, codexModel: "gpt-5.4-mini" },
+        generation: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+        assessment: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+      },
+      tuning: {
+        ...defaultTuning(),
+        // assist 自身の tuning は inherit の間は無視される（連鎖の一貫性）
+        assist: { claudeModel: "opus", effort: "xhigh", serviceTier: null },
+        coaching: { claudeModel: null, effort: "high", serviceTier: "standard" },
+      },
+    });
+    const coaching = resolveEffective("coaching", view, { claude: UNAVAILABLE_CATALOG, codex: CODEX_CATALOG, local: UNAVAILABLE_CATALOG });
+    const assist = resolveEffective("assist", view, { claude: UNAVAILABLE_CATALOG, codex: CODEX_CATALOG, local: UNAVAILABLE_CATALOG });
+    expect(assist).toEqual(coaching);
+    expect(assist.provider).toBe("codex");
+    expect(assist.effort).toEqual({ value: "high", isDefault: false });
+  });
+
+  test("assistが明示プロバイダを持つ場合はcoachingへ連鎖せず自分自身のtuningを使う", () => {
+    const view = mkView({
+      provider: "env", envProvider: "claude",
+      roles: {
+        conversation: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+        assist: { provider: "claude", baseUrl: null, model: null, codexModel: null },
+        coaching: { provider: "codex", baseUrl: null, model: null, codexModel: "gpt-5.4-mini" },
+        generation: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+        assessment: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+      },
+      tuning: { ...defaultTuning(), assist: { claudeModel: "haiku", effort: "low", serviceTier: null } },
+    });
+    const r = resolveEffective("assist", view);
+    expect(r.provider).toBe("claude");
+    expect(r.model).toEqual({ confirmed: false, text: "haiku" });
+    expect(r.effort).toEqual({ value: "low", isDefault: false });
+  });
+
+  test("tuningキー自体が無い旧応答でも壊れずコード既定で解決する", () => {
+    const view = mkView({ provider: "env", envProvider: "claude" });
+    delete (view as Record<string, unknown>).tuning;
+    expect(() => resolveEffective("conversation", view)).not.toThrow();
+    expect(resolveEffective("conversation", view).effort).toEqual({ value: "sdk-standard", isDefault: true });
+  });
+
+  test("assist行自体が無い旧応答でも壊れない（inherit扱いとして自ロール解決）", () => {
+    const view = mkView({ provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3" });
+    delete (view.roles as Record<string, unknown>).assist;
+    expect(() => resolveEffective("assist", view)).not.toThrow();
+    expect(resolveEffective("assist", view).provider).toBe("local");
   });
 });

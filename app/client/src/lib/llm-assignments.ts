@@ -1,4 +1,8 @@
-import { LLM_ROLES, type LlmRole, type LlmRoleInput, type LlmSettingsInput, type LlmSettingsView, type RoleTuning } from "../api";
+import {
+  LLM_ROLES, SERVICE_TIER_OPTIONS, CLAUDE_MODEL_OPTIONS,
+  type LlmRole, type LlmRoleInput, type LlmSettingsInput, type LlmSettingsView, type RoleTuning,
+  type ClaudeModelOption, type ServiceTierOption, type CatalogModel, type CatalogModelEffort, type CatalogResult,
+} from "../api";
 
 /** ロール割当の3値（UI が直接選ぶ）。inherit/env は UI に出さない。 */
 export type RoleTarget = "claude" | "local" | "codex";
@@ -192,4 +196,164 @@ export function matchPreset(targets: RoleTargets): { id: PresetId; cloud: CloudT
     }
   }
   return "custom";
+}
+
+// ---------------------------------------------------------------------------
+// モデルカタログ（GET /api/llm-models）由来の選択肢・実効モデル解決
+// ---------------------------------------------------------------------------
+
+/** 3プロバイダ分のカタログ（App 側の catalog state の形。未取得は undefined）。 */
+export type LlmModelCatalog = { claude: CatalogResult; codex: CatalogResult; local: CatalogResult };
+
+/** claude ロールの既定エイリアス（コード定数。catalog の isDefault 行は CLI 自身の既定であり別物のため使わない）。 */
+const CLAUDE_DEFAULT_ALIAS: ClaudeModelOption = "sonnet";
+/** codex ロールの既定チューニング（コード定数。selectRunner/resolveCodexConn と一致させる）。 */
+const CODEX_DEFAULT_EFFORT = "medium";
+const CODEX_DEFAULT_TIER: ServiceTierOption = "fast";
+
+/** エイリアス（haiku/sonnet/opus）に対応するカタログ行を displayName の小文字一致で解決する。
+ * id には `opus[1m]`・`default` 等の装飾があるため id 一致には頼らない。「default」行（CLI 自身の推奨）は
+ * どのエイリアスとも一致しないため自然に除外される。 */
+function findClaudeCatalogRow(catalog: CatalogResult | undefined, alias: string): CatalogModel | undefined {
+  if (!catalog?.available) return undefined;
+  return catalog.models.find((m) => m.displayName.toLowerCase() === alias);
+}
+
+function findCodexCatalogRowById(catalog: CatalogResult | undefined, id: string): CatalogModel | undefined {
+  if (!catalog?.available) return undefined;
+  return catalog.models.find((m) => m.id === id);
+}
+
+function findCodexDefaultRow(catalog: CatalogResult | undefined): CatalogModel | undefined {
+  if (!catalog?.available) return undefined;
+  return catalog.models.find((m) => m.isDefault === true);
+}
+
+/**
+ * claude モデル DD の選択肢（常に haiku/sonnet/opus の3件・保存値はエイリアスのまま）。
+ * カタログで一致すればラベルに実体（resolvedModel）を併記する（例:「Sonnet — claude-sonnet-5」）。
+ * カタログ不可・不一致時はエイリアスそのものを表示する（推測の具体IDは出さない）。
+ */
+export function claudeModelSelectOptions(catalog: CatalogResult | undefined): Array<{ value: ClaudeModelOption; label: string }> {
+  return CLAUDE_MODEL_OPTIONS.map((alias) => {
+    const row = findClaudeCatalogRow(catalog, alias);
+    return { value: alias, label: row?.resolvedModel ? `${row.displayName} — ${row.resolvedModel}` : alias };
+  });
+}
+
+/** 選択中の claude エイリアスに対応するカタログ行の effort 選択肢（id のみ）。無ければ空配列＝既定のみ選択可（haiku 等）。 */
+export function effortOptionsForClaudeAlias(catalog: CatalogResult | undefined, alias: string): string[] {
+  return findClaudeCatalogRow(catalog, alias)?.efforts?.map((e) => e.id) ?? [];
+}
+
+/** codexModel（接続タブ）DD の選択肢。isDefault はバッジ表示用。カタログ不可・空なら空配列（自由記述へフォールバック）。 */
+export function codexModelSelectOptions(catalog: CatalogResult | undefined): Array<{ value: string; label: string; isDefault: boolean }> {
+  if (!catalog?.available) return [];
+  return catalog.models.map((m) => ({ value: m.id, label: m.displayName, isDefault: m.isDefault === true }));
+}
+
+/** 指定 codexModel（空文字="CLI既定"）に対応するカタログ行の effort 選択肢（description 併記用に丸ごと返す）。 */
+export function effortOptionsForCodexModel(catalog: CatalogResult | undefined, codexModel: string): CatalogModelEffort[] {
+  const row = codexModel ? findCodexCatalogRowById(catalog, codexModel) : findCodexDefaultRow(catalog);
+  return row?.efforts ?? [];
+}
+
+/**
+ * 指定 codexModel に対応する配信(tier)選択肢。**カタログの生の tier id（例: "priority"）は使わない**
+ * — 保存語彙は {fast, standard} を維持する仕様（spec §7 実機所見）。tiers を持つモデルは fast/standard 両方、
+ * 持たないモデルは standard のみを返す（fast を選ばせても無効なため選択肢自体を絞る＝UI真実性）。
+ * 行が見つからない場合（未マッチ・カタログ不可）は保守的に standard のみを返す。
+ */
+export function tierOptionsForCodexModel(catalog: CatalogResult | undefined, codexModel: string): readonly ServiceTierOption[] {
+  const row = codexModel ? findCodexCatalogRowById(catalog, codexModel) : findCodexDefaultRow(catalog);
+  return row?.tiers?.length ? SERVICE_TIER_OPTIONS : (["standard"] as const);
+}
+
+/** codex effort の既定ラベル（catalog の defaultEffort 優先・不一致/不可はコード既定 "medium"）。 */
+export function codexDefaultEffortLabel(catalog: CatalogResult | undefined, codexModel: string): string {
+  const row = codexModel ? findCodexCatalogRowById(catalog, codexModel) : findCodexDefaultRow(catalog);
+  return row?.defaultEffort ?? CODEX_DEFAULT_EFFORT;
+}
+
+/** local モデル DD の選択肢（/models 由来）。カタログ不可・空なら空配列（自由記述へフォールバック）。 */
+export function localModelSelectOptions(catalog: CatalogResult | undefined): Array<{ value: string; label: string }> {
+  if (!catalog?.available) return [];
+  return catalog.models.map((m) => ({ value: m.id, label: m.displayName }));
+}
+
+/** 実効モデルの解決結果（表示用）。confirmed=true のときのみ text はカタログ確認済みの具体ID。 */
+export type EffectiveModelInfo =
+  | { confirmed: true; text: string }
+  | { confirmed: false; text: string; cliDefault?: boolean };
+
+/** 実効 effort/tier。null は「このプロバイダには概念自体が無い」（local）ことを表す。 */
+export type EffectiveTuningValue = { value: string; isDefault: boolean } | null;
+
+export type EffectiveResolution = {
+  provider: RoleTarget;
+  model: EffectiveModelInfo;
+  effort: EffectiveTuningValue;
+  tier: EffectiveTuningValue;
+};
+
+const EMPTY_ROLE_TUNING: RoleTuning = { claudeModel: null, effort: null, serviceTier: null };
+
+/** env 解決済み文字列 / ロールプロバイダ文字列を3値の RoleTarget へ正規化する（hydrateTargets と共通の写像）。 */
+function normalizeProviderKey(p: string): RoleTarget {
+  return p === "openai-compat" ? "local" : p === "codex" ? "codex" : "claude";
+}
+
+/**
+ * 用途タブの「実効」サマリ用の核関数（純粋）: 直近保存済みの view（GET/PUT応答）とカタログから、
+ * 1ロール分の実効プロバイダ・具体モデル・effort・配信を解決する。サーバ側 converse.ts の
+ * resolveRoleRunner / applyLlmRoleSettings と同じ優先順位を再現する:
+ * - assist が inherit のときは coaching の解決結果（プロバイダ・tuning とも）をそのまま使う（連鎖・binding）。
+ *   assist 自身に tuning 行があっても inherit の間は使われない（連鎖の一貫性）。
+ * - inherit はグローバル実効プロバイダ（provider="env" なら envProvider）へ解決する。
+ * - tuning null はコード既定へ（claude: sonnet・SDK標準／codex: medium・fast）。
+ * - カタログ不可・非マッチは「未確認」（推測の具体IDを出さない＝UI真実性の原則）。
+ * 注: 「現在実行中の挙動」を示すため、未保存の編集中 state ではなく view（サーバの現在解決状態）を読む。
+ */
+export function resolveEffective(
+  role: LlmRole,
+  view: LlmSettingsView,
+  catalog?: LlmModelCatalog,
+): EffectiveResolution {
+  const chainRole: LlmRole = role === "assist" && view.roles.assist?.provider === "inherit" ? "coaching" : role;
+  const roleSetting = view.roles[chainRole];
+  const tuning = view.tuning?.[chainRole] ?? EMPTY_ROLE_TUNING;
+  const globalProviderRaw = view.provider === "env" ? view.envProvider : view.provider;
+  const providerRaw = !roleSetting || roleSetting.provider === "inherit" ? globalProviderRaw : roleSetting.provider;
+  const provider = normalizeProviderKey(providerRaw);
+
+  if (provider === "local") {
+    const modelValue = roleSetting?.model ?? view.model ?? "";
+    return { provider, model: { confirmed: true, text: modelValue }, effort: null, tier: null };
+  }
+
+  if (provider === "codex") {
+    const codexModel = (roleSetting?.codexModel ?? view.codexModel ?? "").trim();
+    const row = codexModel ? findCodexCatalogRowById(catalog?.codex, codexModel) : findCodexDefaultRow(catalog?.codex);
+    const model: EffectiveModelInfo = row?.resolvedModel
+      ? { confirmed: true, text: row.resolvedModel }
+      : codexModel
+      ? { confirmed: false, text: codexModel }
+      : { confirmed: false, text: "", cliDefault: true };
+    return {
+      provider,
+      model,
+      effort: { value: tuning.effort ?? row?.defaultEffort ?? CODEX_DEFAULT_EFFORT, isDefault: tuning.effort === null },
+      tier: { value: tuning.serviceTier ?? CODEX_DEFAULT_TIER, isDefault: tuning.serviceTier === null },
+    };
+  }
+
+  // claude
+  const alias = tuning.claudeModel ?? CLAUDE_DEFAULT_ALIAS;
+  const row = findClaudeCatalogRow(catalog?.claude, alias);
+  const model: EffectiveModelInfo = row?.resolvedModel
+    ? { confirmed: true, text: row.resolvedModel }
+    : { confirmed: false, text: alias };
+  const effort: EffectiveTuningValue =
+    tuning.effort === null ? { value: "sdk-standard", isDefault: true } : { value: tuning.effort, isDefault: false };
+  return { provider, model, effort, tier: null };
 }
