@@ -4,6 +4,8 @@ import { localYmd } from "./dates";
 
 export const REPO_ROOT = path.resolve(import.meta.dir, "../..");
 export const DATA_DIR = path.join(REPO_ROOT, "data");
+// Tauri Phase 1: Caddy無しでも http://127.0.0.1:3111 で完結させるための直接配信先（vite build の出力）
+export const CLIENT_DIST_DIR = path.join(REPO_ROOT, "app", "client", "dist");
 export const SESSIONS_DIR = path.join(DATA_DIR, "sessions");
 export const RECORDINGS_DIR = path.join(DATA_DIR, "recordings");
 export const TTS_CACHE_DIR = path.join(DATA_DIR, "tts-cache");

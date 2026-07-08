@@ -1,4 +1,4 @@
-import { ensureDirs, LISTENING_DIR, RECORDINGS_DIR, sessionLogPath, TOPICS_DIR, TOPIC_ASSETS_DIR } from "./paths";
+import { CLIENT_DIST_DIR, ensureDirs, LISTENING_DIR, RECORDINGS_DIR, sessionLogPath, TOPICS_DIR, TOPIC_ASSETS_DIR } from "./paths";
 import { transcribeAudio } from "./stt";
 import { synthesize } from "./tts";
 import { converseTurn, applyLlmRoleSettings, runnerFor } from "./converse";
@@ -78,6 +78,7 @@ const realDeps: RouteDeps = {
   health: () => checkHealth(),
   logFile: () => sessionLogPath(new Date()),
   recordingsDir: RECORDINGS_DIR,
+  staticDir: CLIENT_DIST_DIR,
   buildMenu: (minutes) => buildTodayMenu(minutes, { level: progressStore.getLevel() }),
   aeFeedback: (args) => generateAeFeedback({ ...args, stage: stageOf(progressStore.getLevel()) }, runnerFor("coaching")),
   modelTalk: async (topicId) => {
