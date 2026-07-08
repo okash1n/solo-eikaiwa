@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import {
   ensureDirs, REPO_ROOT, DATA_DIR, SESSIONS_DIR, RECORDINGS_DIR, TTS_CACHE_DIR, MODELS_DIR,
-  CONTENT_DIR, TOPICS_DIR, SCENARIOS_DIR, PROGRESS_DIR, sessionLogPath,
+  CONTENT_DIR, TOPICS_DIR, SCENARIOS_DIR, PROGRESS_DIR, CLAUDE_PRINT_DIR, sessionLogPath,
 } from "../paths";
 
 describe("paths", () => {
@@ -14,7 +14,7 @@ describe("paths", () => {
 
   test("ensureDirs 後は全データディレクトリが存在する", () => {
     ensureDirs();
-    for (const d of [SESSIONS_DIR, RECORDINGS_DIR, TTS_CACHE_DIR, MODELS_DIR, PROGRESS_DIR]) {
+    for (const d of [SESSIONS_DIR, RECORDINGS_DIR, TTS_CACHE_DIR, MODELS_DIR, PROGRESS_DIR, CLAUDE_PRINT_DIR]) {
       expect(existsSync(d)).toBe(true);
     }
   });
@@ -33,5 +33,9 @@ describe("paths", () => {
 
   test("PROGRESS_DIR は DATA_DIR/progress", () => {
     expect(PROGRESS_DIR).toBe(path.join(DATA_DIR, "progress"));
+  });
+
+  test("CLAUDE_PRINT_DIR は DATA_DIR/claude-print", () => {
+    expect(CLAUDE_PRINT_DIR).toBe(path.join(DATA_DIR, "claude-print"));
   });
 });

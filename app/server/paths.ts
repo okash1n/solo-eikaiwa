@@ -18,9 +18,12 @@ export const BUNDLED_AUDIO_DIR = path.join(CONTENT_DIR, "sentences", "audio");
 // 暗記例文300の同梱解説（同上。都度生成はカスタム例文用のフォールバック）
 export const EXPLANATIONS_FILE = path.join(CONTENT_DIR, "sentences", "explanations.json");
 export const PROGRESS_DIR = path.join(DATA_DIR, "progress");
+// claude -p ランナーの固定作業ディレクトリ。--resume のセッション永続化が cwd にキーされるため、
+// mkdtemp 等で毎回変えず常にこのディレクトリを使う（providers/claude-print.ts）。
+export const CLAUDE_PRINT_DIR = path.join(DATA_DIR, "claude-print");
 
 export function ensureDirs(): void {
-  for (const d of [SESSIONS_DIR, RECORDINGS_DIR, TTS_CACHE_DIR, MODELS_DIR, PROGRESS_DIR]) {
+  for (const d of [SESSIONS_DIR, RECORDINGS_DIR, TTS_CACHE_DIR, MODELS_DIR, PROGRESS_DIR, CLAUDE_PRINT_DIR]) {
     mkdirSync(d, { recursive: true });
   }
 }
