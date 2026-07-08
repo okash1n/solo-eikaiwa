@@ -1,0 +1,97 @@
+# v0.24 プロバイダ大改修 Plan B（UI・認証・ドキュメント・リリース） Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Plan A のサーバ基盤の上に、ロール別チューニング UI・推奨チューニング適用・APIキー認証（隔離 CODEX_HOME）・ドキュメントを載せ、v0.24.0 をリリースする（spec §3-3・§4・§5・§6・§7）。
+
+**Architecture:** UI は用途ごとのモデルタブに「詳細」ディスクロージャ（tuning）と推奨適用ボタン、接続タブに認証モード select を追加。認証は新テーブル `llm_auth`（モードのみ・キーは env）で、codex api-key は `DATA_DIR/codex-home` の隔離 CODEX_HOME に `codex login --with-api-key` で auth.json を作る。
+
+**Tech Stack:** Plan A と同一。前提: Plan A 完了済み（5ロール・llm_role_tuning API・resolveClaudeRunner・per-thread パラメータ）。
+
+## Global Constraints
+
+- Plan A の Global Constraints をすべて継承（検証ゲート3種・挙動不変原則・TDD・i18n 3点同時・PUBLIC 衛生）
+- **キーは UI/DB に絶対に保存しない**。UI は env のキー検出状態のみ表示（値・部分文字列も出さない）
+- 認証モード語彙: `"subscription" | "api-key"`（行不在=subscription）。env キー名: claude=`ANTHROPIC_API_KEY` / codex=`CODEX_API_KEY`（OPENAI_API_KEY は codex 認証に使われない — 実測済み事実）
+- 隔離 CODEX_HOME: `DATA_DIR/codex-home`（data/ は gitignore 済み）。**ユーザーの ~/.codex には一切触れない**
+- 推奨マトリクス（spec §4 の表・逐語）: 会話 sonnet/low + GPT low/fast、支援 haiku/low + low/fast、コーチング sonnet/high + medium/fast、生成 sonnet/medium + medium/fast、測定 opus/xhigh + xhigh/standard
+- リリース: v0.24.0（CHANGELOG・README「できること」・タグ・デプロイ・実機スモーク5項目）
+
+---
+
+### Task 1: チューニング UI（詳細ディスクロージャ + i18n）
+
+**Files:**
+- Modify: `app/client/src/screens/SettingsScreen.tsx`（roles タブの各ロール行）
+- Modify: `app/client/src/api/llm-settings.ts`（LlmSettingsView/PUT payload に tuning 型追加）・`app/client/src/lib/llm-assignments.ts`（buildRolesPayload が tuning を常時含める）
+- Modify: `app/client/src/i18n.ts`（settings に tuning 系キー・EN/JA）
+- Test: `llm-assignments.test.ts`（payload に tuning が乗る・省略時全null）
+
+**Interfaces:**
+- Consumes: Plan A Task 7 の API（GET に tuning・PUT に tuning 受理）
+- UI 仕様: 各ロール行に `<details>` ベースの「詳細設定」— claude 割当時のみ「モデル: 既定(sonnet)/haiku/sonnet/opus」、共通「effort: 既定/low/medium/high/xhigh」、codex 割当時のみ「配信: 既定(fast)/fast/standard」。tuning state は `Record<LlmRole, RoleTuning>` を SettingsScreen 親に保持（タブ切替で消えない）
+- i18n 新キー（EN/JA・逐語で最終文言）: `tuningDetails`("Advanced"/「詳細設定」)、`tuningModel`("Model"/「モデル」)、`tuningEffort`("Effort"/「effort（思考の深さ）」)、`tuningTier`("Delivery"/「配信」)、`tuningDefault`("Default"/「既定」)、`tuningTierFast`("Fast (priority)"/「fast（優先配信）」)、`tuningTierStandard`("Standard"/「standard（標準・安価）」)
+
+- [ ] Steps: 純ロジック（buildRolesPayload の tuning 直列化）テスト先行 → API 型 → UI → i18n → 3ゲート → Commit `feat: ロール別チューニング（モデル/effort/配信）の詳細設定UIを追加`
+
+### Task 2: 推奨チューニング適用 + roleReason マトリクス整合
+
+**Files:**
+- Modify: `app/client/src/lib/llm-assignments.ts`（`RECOMMENDED_TUNING` 定数 + `applyRecommendedTuning(current, targets): Record<LlmRole, RoleTuning>`）+ Test
+- Modify: `app/client/src/screens/SettingsScreen.tsx`（プリセット節の下に「推奨チューニングを適用」ボタン）
+- Modify: `app/client/src/i18n.ts`（ボタン・説明・roleReason 5ロール分をマトリクス整合の文言へ EN/JA 更新）
+
+**Interfaces:**
+- `RECOMMENDED_TUNING: Record<LlmRole, { claude: RoleTuning; codex: RoleTuning }>`（spec §4 の表を逐語定数化。例 assessment: claude={claudeModel:"opus",effort:"xhigh",serviceTier:null} / codex={claudeModel:null,effort:"xhigh",serviceTier:"standard"}）
+- `applyRecommendedTuning`: **クラウド割当（claude/codex）のロールにのみ**該当側の推奨を書き、local 割当ロールは現値維持
+- roleReason 更新（JA・逐語）: 会話「推奨: ローカル — 応答が最も速いため。クラウドなら sonnet / low が目安。」支援「推奨: ローカル — 単純で即答が欲しいタスク。クラウドなら haiku / low で十分。」コーチング「推奨: Claude / Codex — 品質勝負（SRSに残る添削・恒久キャッシュされる解説）。sonnet / high が目安。」生成「推奨: ローカル — 定型的で要求低め。品質を上げるなら sonnet / medium。」測定「推奨: Claude / Codex — 月1未満で判断が全体に波及。opus / xhigh・急がないので standard 配信で十分。」（EN 対応文・コミット本文に文言変更列挙）
+
+- [ ] Steps: applyRecommendedTuning テスト先行（クラウドのみ書換・local不変・全ロール網羅）→ 実装 → UI/i18n → 3ゲート → Commit `feat: 推奨チューニングのワンタップ適用と用途別推奨文言のマトリクス整合`
+
+### Task 3: llm_auth テーブル + 認証モード配線（TDD）
+
+**Files:**
+- Create: `app/server/llm-auth-store.ts` / Test: `llm-auth-store.test.ts`
+- Modify: `app/server/db.ts`・`app/server/routes/llm-settings.ts`（GET/PUT に authModes additive）・`helpers/route-deps.ts`
+- Modify: `app/server/llm-provider.ts` + `providers/claude-print.ts` + `converse.ts` + `providers/codex-app-server.ts` + `providers/codex.ts`（spawn env 注入点）
+- Create: `app/server/codex-auth.ts`（隔離 CODEX_HOME 準備）/ Test: `codex-auth.test.ts`（spawn seam フェイク）
+
+**Interfaces:**
+- `llm_auth(provider TEXT PRIMARY KEY, mode TEXT NOT NULL, updated_at TEXT NOT NULL)`・`LlmAuthStore { getAll(): { claude: AuthMode; codex: AuthMode }; set(provider, mode): void }`・`AuthMode = "subscription" | "api-key"`
+- claude × api-key: SDK query の spawn env / claude-print exec に `ANTHROPIC_API_KEY`（`app/.env` 由来）を注入 + claude-print は `bare: true`。キー未設定でモード=api-key なら保存時 400（`anthropic api key not configured in app/.env`）
+- codex × api-key: `codex-auth.ts` の `ensureCodexApiKeyHome(spawnFn?): Promise<string>` — `DATA_DIR/codex-home/auth.json` が無ければ `CODEX_HOME=<dir> codex login --with-api-key`（stdin=env.CODEX_API_KEY）を実行して作成し、dir を返す。exec/app-server の spawn env に `CODEX_HOME` を注入。**モード切替時は codex app-server registry のプロセスを kill**（認証環境変更のため・次回 lazy spawn）
+- ルート: PUT body に `auth?: { claude?: AuthMode; codex?: AuthMode }`（2パス検証統合）。GET 応答に `authModes: { claude, codex }` と `authKeys: { anthropic: boolean; codex: boolean }`（env 検出のみ）
+
+- [ ] Steps: store テスト先行 → routes テスト先行（モード往復・キー未設定 api-key は 400・既定 subscription）→ codex-auth テスト（フェイク spawn で login 呼び出し形・auth.json 既存ならスキップ）→ 配線（spawn env 注入・registry kill）→ 3ゲート → Commit `feat: Claude/CodexのAPIキー認証モード（隔離CODEX_HOME・キーはenvのみ）を追加`
+
+### Task 4: 認証 UI（接続タブ）
+
+**Files:**
+- Modify: `app/client/src/screens/SettingsScreen.tsx`（接続タブ: Claude/Codex 各節に認証モード select + キー検出表示）・`app/client/src/api/llm-settings.ts`・`app/client/src/i18n.ts`
+
+**Interfaces:**
+- i18n 新キー（JA 逐語）: `authModeLabel`「認証」/ `authSubscription`「サブスクリプション（既定）」/ `authApiKey`「APIキー（従量課金）」/ `authKeyDetected`「APIキー: app/.env に設定済み」/ `authKeyMissing`「APIキー: 未設定（app/.env に追記してください）」/ `authApiKeyNote`「APIキーは api.openai.com / Anthropic API の従量課金です（サブスクの利用枠とは別）。キーは UI には保存されません。」（EN 対応文）
+- 保存は既存の接続保存ボタンに同乗（PUT payload に auth を含める）
+
+- [ ] Steps: UI + i18n → 3ゲート → Commit `feat: 認証モード（サブスク/APIキー）の選択UIを接続タブに追加`
+
+### Task 5: README / CHANGELOG
+
+**Files:**
+- Modify: `README.md`（①ロール表を5行に（クイック支援行追加）②推奨マトリクス表（モデル/effort/配信・「未指定=CLI最新既定」の思想含む）③env 表を「UIで設定可/envのみ(secrets・CLI)」2区分へ再編 + 優先順位（tuning>env>既定）④認証モード節（従量課金の注意・隔離 CODEX_HOME・~/.codex 不干渉）⑤「できること」該当節 ⑥CLI 教材生成の推奨 `LLM_PROVIDER=claude CLAUDE_MODEL=opus CLAUDE_EFFORT=high` ⑦Claude フォールバック（claude -p・再起動をまたぐ resume）をセッション継続節へ追記）
+- Modify: `CHANGELOG.md`（v0.24.0: クイック支援ロール / ロール別チューニング+推奨適用 / Claude フォールバックとタイムアウト統一 / APIキー認証 / env 整理）
+
+- [ ] Steps: 実コードを読んで正確に記述（実装との齟齬禁止）→ `bun test` 回帰 → Commit `docs: v0.24.0（5ロール・ロール別チューニング・APIキー認証・claude -pフォールバック）をREADMEとCHANGELOGに反映`
+
+### Task 6: 統合検証・手動スモーク・リリース v0.24.0
+
+- [ ] 3ゲート + `./scripts/check-codex-protocol.sh`
+- [ ] 最終 whole-branch レビュー（最上位モデル・spec 全節との照合・挙動不変の確認を重点）
+- [ ] 手動スモーク（コントローラ実施・デーモン一時停止の合図後）:
+  1. claude -p フォールバック: SDK を壊す shim（あるいは query 注入の一時 env）で会話 → フォールバック警告 + 応答 + 再起動後 `--resume` 継続
+  2. assist 分離: 訳ボタンが assist 経路（ログ/割当で確認）
+  3. ロール別 effort: 測定ロールに xhigh を設定し thread/start パラメータに乗ること（fake 検証済みのため実機は codex 1往復で config 反映をログ確認）
+  4. 推奨チューニング適用: クラウド割当ロールにのみ書き込まれること
+  5. codex api-key モード: `DATA_DIR/codex-home/auth.json` 生成・`~/.codex` の mtime 不変・subscription へ戻して復元
+  6. 設定をバックアップ→復元（v0.23 スモークと同手順）
+- [ ] マージ `git merge --no-ff feat/provider-overhaul` → CHANGELOG 最終確認 → タグ v0.24.0 → push → `cd app/client && bun run build && launchctl kickstart -k gui/$(id -u)/com.local.solo-eikaiwa.server` → health/https 200 → 台帳・メモリ更新 → Tauri Phase 1 へ
