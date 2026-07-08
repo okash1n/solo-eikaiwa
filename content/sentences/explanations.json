@@ -1198,5 +1198,365 @@
   {
     "no": 300,
     "text": "バグの再現条件のように「条件がそろえば毎回起きる」ことは、現在形 happens で述べるのが基本です。日本語から組み立てるときは、バグそのものを主語に据え、「〜のときだけ」は only を動詞の前に置き、条件を when 節で続ける、という順で考えます。この型は障害報告やバグチケットの説明文にそのまま使えます。\nwhen 節の中も edit という現在形でそろえる点に注意してください。\n使い回し例:\nThe app only crashes when the network is slow.（そのアプリはネットワークが遅いときにだけ落ちる。）\nThis alert only fires when disk usage goes over ninety percent.（このアラートはディスク使用率が90%を超えたときだけ発報する。）\nよくある間違い:\n誤）The bug is only happening when two people edit the same file. → 正）The bug only happens when two people edit the same file.\n進行形は「今まさに起きている最中」に限定されるので、いつでも成り立つ再現条件は現在形で述べます。"
+  },
+  {
+    "no": 301,
+    "text": "Could you〜? は「〜してもらえますか」という丁寧な依頼表現で、Can you より控えめで相手に選択の余地を残すニュアンスがあります。食事中など軽い頼み事でも失礼になりません。\n\n使い回し例:\nCould you close the window, please?（窓を閉めてもらえますか。）\nCould you help me with this bag, please?（このかばんを手伝ってもらえますか。）\n\nよくある間違い:\nCould you pass me the salt? に対して動詞を過去形にしてしまう誤り。\n誤: Could you passed me the salt? → 正: Could you pass me the salt?\nCould の後ろは必ず動詞の原形です。"
+  },
+  {
+    "no": 302,
+    "text": "Can you〜? は「〜してくれる?」という軽い依頼を表す形で、助動詞 can の後は動詞の原形(help)を置き、その後の「〜するのを手伝う」は help+人+動詞の原形でつなぎます。\n\n使い回し例:\nCan you help me move this table? (このテーブルを動かすのを手伝ってくれる?)\nCan you help me find my keys? (鍵を探すのを手伝ってくれる?)\n\nよくある間違い:\nhelp の後を to 不定詞や -ing にしがちです。\n誤: Can you help me to carrying this bag?\n正: Can you help me carry this bag?\n(help me の後は動詞の原形。to carry も可ですが carry が自然です)"
+  },
+  {
+    "no": 303,
+    "text": "Could you 〜? は「〜してもらえますか」と丁寧に頼む形で、Can you より控えめでビジネスの依頼に向きます。today のような時間表現は文末に置いて「いつまでに」を添えます。\n\n使い回し例:\nCould you call me back this afternoon?（今日の午後に折り返し電話をもらえますか。）\nCould you check the report by tomorrow?（明日までにその報告書を確認してもらえますか。）\n\nよくある間違い:\n×Could you to send me the file? → ○Could you send me the file?\n（Could you の後は動詞の原形。to は付けません。）"
+  },
+  {
+    "no": 304,
+    "text": "Would you〜? は Will you〜? より一歩引いた仮定のニュアンスで、相手に選択の余地を残す丁寧な依頼になります。for me を添えると「私のために」という気持ちが伝わり、より頼みやすい響きになります。\n\n使い回し例:\nWould you carry this bag for me? （このカバンを運んでもらえますか。）\nWould you explain this word for me? （この単語を説明してもらえますか。）\n\nよくある間違い:\nWould you to check this email? → Would you check this email? （Would you の後は動詞の原形。to は付けません。）"
+  },
+  {
+    "no": 305,
+    "text": "「Can you ~?」は相手に何かを依頼するときの定番の形で、please を添えると命令ではなく丁寧なお願いになります。IT操作を頼むときに便利です。\n\n使い回し例:\nCan you open the file, please? (そのファイルを開いてもらえますか。)\nCan you close this window, please? (このウィンドウを閉じてもらえますか。)\n\nよくある間違い:\nCan you to restart the computer? → Can you restart the computer?\n（can の後は動詞の原形。to は付けません。）"
+  },
+  {
+    "no": 306,
+    "text": "丁寧に依頼するとき、Could you 〜, please? は「〜していただけますか」と相手の意向を尋ねる形なので、Can you より控えめで、サポート窓口など相手に手間をかける場面に安全です。\n\n使い回し例:\nCould you send me the invoice, please?（請求書を送っていただけますか。）\nCould you check my account status, please?（アカウントの状態を確認していただけますか。）\n\nよくある間違い:\nCould you to reset my password?（誤）→ Could you reset my password?（正）\nCould you の後は動詞の原形をそのまま置き、to は付けません。"
+  },
+  {
+    "no": 307,
+    "text": "can't は「can not」の短縮で、能力・都合上「できない」を表す。誘いには先に Thanks とお礼を置くと、断りが柔らかく丁寧になる。\n\n使い回し例:\nThanks, but I can't join the meeting today.（ありがとう、でも今日は会議に参加できないんだ。）\nThanks, but I can't help you right now.（ありがとう、でも今は手伝えないんだ。）\n\nよくある間違い:\n誤: Thanks, but I don't come tonight.\n正: Thanks, but I can't come tonight.\ndon't は習慣的にしないことを表すので、「都合で行けない」には can't を使う。"
+  },
+  {
+    "no": 308,
+    "text": "「would love to」は仮定法で「（できるものなら）ぜひそうしたい」という気持ちを表し、but の後に断る理由を続けることで、行きたい気持ちと断る事実を両立させて丁寧に断れます。\n\n使い回し例:\nI'd love to join, but I have another meeting.（ぜひ参加したいけど、別の会議があるんだ。）\nShe'd love to help, but she's out of town.（彼女も手伝いたいけど、今は町を離れているの。）\n\nよくある間違い:\nI'd love it, but I'm busy.（×）→ I'd love to, but I'm busy.（○）\n※ 前の動詞（go/join など）の代わりは to で受け、it は付けません。"
+  },
+  {
+    "no": 309,
+    "text": "丁寧に頼みを断るとき、まず I'm sorry で相手への配慮を示し、but I can't help で「できない」ことを伝えます。can't は「能力・状況的に無理」を柔らかく表す言い方で、right now を添えると「今だけ」で角が立ちません。\n\n使い回し例:\nI'm sorry, but I can't talk right now.（すみません、今は話せないんです。）\nI'm sorry, but I can't join the meeting today.（すみません、今日は会議に参加できないんです。）\n\nよくある間違い:\nI'm sorry, but I don't help.（誤）→ I'm sorry, but I can't help.（正）\ndon't help だと「普段から手伝わない」という意味になり冷たく響きます。断りには can't を使いましょう。"
+  },
+  {
+    "no": 310,
+    "text": "「Thank you, but」で一度感謝を示してから断ると、丁寧で角が立ちません。no thanks は「結構です」の口語表現、for now は「今回は/今のところ」と一時的な断りを和らげる働きをします。\n\n使い回し例:\nThank you, but I'm good for now. （ありがとう、でも今は大丈夫です。）\nThanks for the offer, but maybe next time. （お誘いありがとう、でもまた次の機会に。）\n\nよくある間違い:\nNo, thank you. だけだと少し冷たく響く場面があります。誤: No. → 正: Thank you, but no thanks for now. のように感謝を先に置くと自然です。"
+  },
+  {
+    "no": 311,
+    "text": "can't は「能力的に〜できない」を表す can の否定形で、今日という条件下で対応が不可能だと伝えるときに使います。today を添えると「今日は無理だが別日なら可能」というニュアンスも出せます。\n\n使い回し例:\nSorry, I can't join the meeting this afternoon.（ごめん、今日の午後は会議に出られないよ。）\nSorry, I can't answer your email right now.（ごめん、今すぐメールに返信できないんだ。）\n\nよくある間違い:\n誤 Sorry, I don't can fix your PC today. → 正 Sorry, I can't fix your PC today.（can は助動詞なので don't を重ねず、can't のまま否定する）"
+  },
+  {
+    "no": 312,
+    "text": "Thanks を先に置くことで感謝を示しつつ、but I don't need... と続けて丁寧に断る型です。need を否定文で使うと「必要ない」とやわらかく伝えられます。\n\n使い回し例:\nThanks, but I don't need any help today.（ありがとう、でも今日は手伝いはいらないよ。）\nThanks, but I don't want more coffee.（ありがとう、でもコーヒーはもう欲しくないな。）\n\nよくある間違い:\nThanks, but I don't need not the new app.（誤）→ Thanks, but I don't need the new app.（正）\ndon't で否定は足りているので、no や not を重ねないよう注意しましょう。"
+  },
+  {
+    "no": 313,
+    "text": "聞き取れなかった直後は、過去の失敗を責めるより「もう一度お願い」と依頼する形が自然で、can you...? が丁寧で軽い依頼を作ります。again は「もう一度」を添える定番語です。\n\n使い回し例:\nSorry, can you speak more slowly? (ごめん、もう少しゆっくり話してくれる？)\nSorry, can you explain that again? (ごめん、それをもう一度説明してくれる？)\n\nよくある間違い:\n×Sorry, can you say again? → ○Sorry, can you say that again?\nsay は「何を」を必要とするので、that を入れて「それをもう一度言って」とします。"
+  },
+  {
+    "no": 314,
+    "text": "catch はここで「（音・言葉を）聞き取る」の意味で、didn't catch と過去形にすることで「今の発話が聞き取れなかった」という直前の出来事を丁寧に伝えられます。相手を責めず自分が拾えなかったという柔らかいニュアンスになります。\n\n使い回し例:\nI didn't catch the last part. (最後の部分が聞き取れませんでした。)\nSorry, I didn't catch what you said. (すみません、おっしゃったことが聞き取れませんでした。)\n\nよくある間違い:\n×I couldn't listen your name. → ○I didn't catch your name.\nlisten は「耳を傾ける」動作で、しかも listen to と to が要ります。「聞き取れた／取れない」の結果には catch や hear を使います。"
+  },
+  {
+    "no": 315,
+    "text": "「もっとゆっくり」と丁寧に頼む形です。Could you 〜? は Can you より控えめで、初対面や店員・先生など誰にでも使える依頼表現。more slowly は動詞 say を修飾する副詞比較級です。\n\n使い回し例:\nCould you speak a little louder?（もう少し大きな声で話してもらえますか？）\nCould you explain that again?（それをもう一度説明してもらえますか？）\n\nよくある間違い:\nCould you say more slow?（比較級で slow を使うのは誤り。動詞を説明する副詞が必要）→ Could you say that more slowly? が正しいです。"
+  },
+  {
+    "no": 316,
+    "text": "なぜこの形か: \"What do you mean by 〜?\" は相手の言葉の意味を尋ねる決まった形で、by の後に「聞き返したい対象」を置きます。文頭の Sorry は丁寧に会話を止めるクッションです。\n\n使い回し例:\nWhat do you mean by \"as soon as possible\"?（「できるだけ早く」ってどういう意味ですか？）\nSorry, what do you mean by \"it's complicated\"?（すみません、「複雑だ」ってどういう意味ですか？）\n\nよくある間違い:\n×What is the meaning of that? は文法的には正しいですが硬く辞書的です。会話では →What do you mean by that? が自然です。"
+  },
+  {
+    "no": 317,
+    "text": "この文は相手に「もう一度説明してほしい」と丁寧に頼む形です。Can you ~? は依頼の定番で、explain の後は目的語（that part など）を直接置きます。\n\n使い回し例:\nCan you say that again more slowly? (もう少しゆっくりもう一度言ってもらえますか？)\nCan you show me how it works? (それがどう動くか見せてもらえますか？)\n\nよくある間違い:\n説明の対象に about を付けがちです。\n誤: Can you explain about that part again?\n正: Can you explain that part again?\nexplain は about を挟まず、すぐ目的語を続けます。"
+  },
+  {
+    "no": 318,
+    "text": "過去形の疑問文では、疑問詞（which button）を文頭に置き、did + 主語 + 動詞の原形の語順にします。過去の具体的な動作を特定して確認する形です。\n\n使い回し例:\nWhich train did you take this morning? (今朝どの電車に乗ったの？)\nWhich file did you open just now? (今どのファイルを開いたの？)\n\nよくある間違い:\n誤 Which button you clicked? → 正 Which button did you click?\n疑問文なのに did を落とし、動詞も過去形のままにしてしまう誤りです。過去の疑問文は did を使い、動詞は原形（click）に戻します。"
+  },
+  {
+    "no": 319,
+    "text": "So you mean〜は、相手が言ったことを自分の言葉で言い直して「〜ってことだよね？」と確認する表現です。文末の right? で相手に同意を求め、理解のズレを防ぎます。\n\n使い回し例:\nSo you mean we should meet at the station first, right? （つまり最初に駅で待ち合わせってこと？）\nSo you mean you already finished the report, right? （つまりもうレポートは終わったってこと？）\n\nよくある間違い:\nSo you mean the party is on Friday? に対し、確認の付加疑問を「, right?」ではなく「, do you?」としてしまう誤り。\n誤: So you mean the party's on Friday, do you?\n正: So you mean the party's on Friday, right?"
+  },
+  {
+    "no": 320,
+    "text": "In other words は、直前に言ったことを別の言葉で短く言い直して要点を明確にする表現です。相手の理解を助けるためのつなぎ言葉として文頭に置きます。\n\n使い回し例:\nIn other words, you need to start over. (言い換えると、最初からやり直す必要があるということです。)\nIn other words, she doesn't want to come. (つまり、彼女は来たくないということです。)\n\nよくある間違い:\n誤: With other words, we're not done yet.\n正: In other words, we're not done yet.\n（前置詞は with ではなく in を使います。「言い換えると」は必ず in other words と覚えましょう。）"
+  },
+  {
+    "no": 321,
+    "text": "So basically は相手の長めの説明を「要するに〜ってこと？」と自分の言葉で短くまとめて確認するときの前置きで、後ろに確認したい内容を平叙文の形で続けます。keeps ＋ -ing は「〜し続ける／繰り返し起こる」を表します。\n\n使い回し例:\nSo basically you want a refund? （つまり返金してほしいということですね？）\nSo basically we need to leave earlier tomorrow? （要するに明日はもっと早く出発する必要があるってことですね？）\n\nよくある間違い:\nSo basically the app keep crashing? →  So basically the app keeps crashing?\n（主語 the app は三人称単数なので keep ではなく keeps にします。）"
+  },
+  {
+    "no": 322,
+    "text": "You're saying〜, right? は、相手の発言内容を自分の言葉で言い直して「そういうことだよね？」と確認する形です。saying の後に相手が言った内容を続け、文末の right? で同意を求めます。\n\n使い回し例:\nYou're saying you don't need it, right?（それは要らないって言ってるんだよね？）\nYou're saying we should leave now, right?（もう出発すべきって言ってるんだよね？）\n\nよくある間違い:\n誤: You're saying that you will late, right?\n正: You're saying you'll be late, right?\n（late は形容詞なので be動詞が必要。will の後に be を忘れやすいです）"
+  },
+  {
+    "no": 323,
+    "text": "put ~ another way は「別の言い方をする」という決まり文句で、Let me ... は「〜させてください」と相手に断ってから言い直すときの丁寧な前置きです。put を「置く」でなく「表現する」の意味で使うのがポイントです。\n\n使い回し例:\nLet me explain it more simply. (もっと簡単に説明させてください。)\nCan I say that in a different way? (別の言い方で言ってもいいですか？)\n\nよくある間違い:\nLet me say that another way. → Let me put that another way.\n「言い直す」でも say ではなく put を使うのが自然な英語です（say を使うなら Let me say that differently. のように副詞にします）。"
+  },
+  {
+    "no": 324,
+    "text": "「So you want me to ...?」は相手の指示を自分の言葉で言い直して確認する型です。So で始めて「つまり〜ということですね？」というニュアンスを出し、want me to の後に動詞の原形を続けます。\n\n使い回し例:\nSo you want me to call the client this afternoon?（つまり午後にお客さまへ電話すればいいんですね？）\nSo you want me to bring my laptop tomorrow?（つまり明日ノートパソコンを持ってくればいいんですね？）\n\nよくある間違い:\n誤: So you want me save the file first?\n正: So you want me to save the file first?\n（want me の後は「to + 動詞の原形」が必要で、to を落とさないよう注意します。）"
+  },
+  {
+    "no": 325,
+    "text": "なぜその形を使うのか: Oh really? は相手の話に軽く驚いて先を促す相づちで、That's so cool! は so で「すごく」と感情を強めた反応です。会話を温かく続けるための決まり文句です。\n\n使い回し例:\nOh really? That sounds fun!（え、ほんと？楽しそうだね！）\nWow, that's so nice!（わあ、それすごくいいね！）\n\nよくある間違い:\n×That's so coolice!（形容詞を重ねない）→ ○That's so cool!（so + 形容詞1つ）"
+  },
+  {
+    "no": 326,
+    "text": "なぜこの形か: know what you mean は「あなたの言いたいこと（の意味）が分かる」という定型表現で、what は「〜なこと」をまとめる関係詞。相手に共感するときの決まり文句です。\n\n使い回し例:\nI know what you're saying, but I still disagree.（言ってることは分かるけど、それでも反対だよ。）\nDo you know what I mean?（私の言いたいこと、分かる？）\n\nよくある間違い:\nI know what do you mean.（誤）→ I know what you mean.（正）\n※ what の後ろは普通の語順（主語+動詞）。疑問文の語順 do you にしないこと。"
+  },
+  {
+    "no": 327,
+    "text": "「make sense」は「筋が通る・理にかなっている」という意味で、相手の説明が自分の中でつながって納得できたときに使います。to me を付けると「私にとっては納得」と主観をやわらかく示せます。\n\n使い回し例:\nOkay, that makes sense now that you explained it.（なるほど、説明してもらった今なら納得です。）\nSorry, that doesn't make sense to me.（すみません、それは私には腑に落ちません。）\n\nよくある間違い:\n×It makes sense for me. → ○It makes sense to me.\n（「〜にとって納得」の相手は for ではなく to を使います。）"
+  },
+  {
+    "no": 328,
+    "text": "that's + 形容詞 + news は、相手の報告を受けて「それは〜な知らせだ」と評価・反応する定番の形です。That's で直前の内容を that として一語で受けられるので、うれしい報告に即座に反応できます。\n\n使い回し例:\nThat's terrible news, I'm so sorry.（それはひどい知らせだね、本当に残念です。）\nThat's surprising news, I didn't expect it.（それは驚きの知らせだね、思ってもみなかった。）\n\nよくある間違い:\n×It's great news!（すでに話に出た内容を指すときは it より that が自然）→ ○That's great news!\n\nNote: 全くの新情報を初めて口にするときは It's great news. も可ですが、相手の発言への反応では That's を使います。"
+  },
+  {
+    "no": 329,
+    "text": "なぜこの形か: so は「じゃあ/ということは」と、相手の話を受けて自分の理解をまとめ直す接続語です。文末を疑問形（it's ~?）にすることで「その理解で合ってる？」と確認する相づちになります。\n\n使い回し例:\nOh, so you're leaving early today? (へえ、じゃあ今日は早く帰るんですね？)\nSo it's not free? (じゃあ無料じゃないんですね？)\n\nよくある間違い: 「だから」の意味だけで覚えて理由の後にso を置いてしまう誤り。\n誤: So it's a bug, the app crashed.\n正: The app crashed, so it's a bug. (アプリが落ちた、だからバグですね)"
+  },
+  {
+    "no": 330,
+    "text": "相手の話を受けて「へえ、そうなんだ」と驚きと共感を同時に示す表現です。That sounds+形容詞で「（今聞いた内容が）〜そうだね」と、相手の状況への反応を表します。\n\n使い回し例:\nThat sounds fun!（それは楽しそうだね！）\nThat sounds difficult.（それは難しそうですね。）\n\nよくある間違い:\n形容詞の前に副詞を入れようとして「That sounds tricky-ly」などと副詞化するのは誤り。sound の後ろは形容詞なので、誤 That sounds trickily. → 正 That sounds tricky. が正しい形です。"
+  },
+  {
+    "no": 331,
+    "text": "丁寧に「〜してもらえますか」と頼むとき Could you ...? を使い、a bit（少し）を加えると要求が控えめで柔らかくなります。命令ではなく依頼のニュアンスになります。\n\n使い回し例:\nCould you speak a bit more slowly, please?（もう少しゆっくり話してもらえますか。）\nCould you move over a bit, please?（少し詰めてもらえますか。）\n\nよくある間違い:\nCould you turn down a bit the music? → Could you turn the music down a bit?（目的語が名詞のとき turn ... down の間に置き、a bit は文末に付けます）"
+  },
+  {
+    "no": 332,
+    "text": "Would you mind ...ing? は「〜するのは嫌ですか＝〜してもらえますか」と相手の負担を気づかう、とても丁寧な依頼表現です。mind の後ろは必ず動詞のing形（動名詞）を置きます。\n\n使い回し例:\nWould you mind opening the window? 窓を開けてもらえませんか。\nWould you mind waiting here for a moment? ここで少しの間待ってもらえませんか。\n\nよくある間違い:\nWould you mind to close the door? （誤）\n→ Would you mind closing the door? （正）\nmind の後は to不定詞ではなく ing形にします。\n\nなお承諾する返事は No（＝嫌ではない＝いいですよ）になる点も要注意です。"
+  },
+  {
+    "no": 333,
+    "text": "『Could you〜?』は「〜してもらえますか」と相手の意向を尋ねる丁寧な依頼で、canの過去形couldにより直接的な命令を避け、職場でも柔らかく響きます。let me knowは「私に知らせる」で、その後のwhen節は疑問詞のまとまり（when + 主語 + 動詞）を語順そのままで置きます。\n\n使い回し例:\nCould you let me know when the report is ready?（レポートがいつ仕上がるか教えてもらえますか。）\nCould you tell me where the station is?（駅がどこにあるか教えてもらえますか。）\n\nよくある間違い:\n間接疑問文の語順に注意。\n誤: Could you let me know when does the meeting start?\n正: Could you let me know when the meeting starts?\n（when以下は疑問文の語順doesを使わず、主語+動詞の平叙文の形にします。）"
+  },
+  {
+    "no": 334,
+    "text": "Would you ~? は依頼をやわらかく丁寧にする形で、before the client comes のように「期限・締め切り」を添えると、相手はいつまでにやればいいか分かり動きやすくなります。\n\n使い回し例:\nWould you reply to this email before the meeting starts? (会議が始まる前にこのメールに返信してもらえますか。)\nWould you check the numbers before we send the report? (レポートを送る前に数字を確認してもらえますか。)\n\nよくある間違い:\nbefore節を未来形にしてしまう誤り。before the client will come ではなく before the client comes が正しい（時・条件を表す副詞節では未来のことも現在形で表す）。"
+  },
+  {
+    "no": 335,
+    "text": "丁寧に依頼する時は Could you ~? を使います。Can you より控えめで、頼みごとを相手の意向を尋ねる形にできるので、IT サポートなど仕事の依頼に向いています。動詞は原形（install）が続きます。\n\n使い回し例:\nCould you reset my password? （パスワードをリセットしてもらえますか。）\nCould you check why my email isn't working? （メールが動かない理由を調べてもらえますか。）\n\nよくある間違い:\nCould you to install the app? → Could you install the app?\n（Could you の後は to を付けず、動詞の原形をそのまま置きます。）"
+  },
+  {
+    "no": 336,
+    "text": "Would you ~, please? は「~してもらえますか」という丁寧な依頼の形で、check why ... と間接疑問文を続けることで「なぜ~かを調べる」対象を柔らかく示せます。keeps freezing は「何度も固まる」という繰り返しを表す keep + ~ing です。\n\n使い回し例:\nWould you check why the app keeps crashing, please?（アプリがよく落ちる理由を調べてもらえますか。）\nWould you check why the door won't lock, please?（ドアが閉まらない理由を調べてもらえますか。）\n\nよくある間違い:\nWould you check why does my screen freeze?（誤）→ Would you check why my screen freezes?（正）\n間接疑問文では does を使わず、主語+動詞の語順に戻します。"
+  },
+  {
+    "no": 337,
+    "text": "pass はカードゲームで「自分の番を飛ばす」イメージから来ていて、no と言い切らずに「今回だけ見送る」と伝えるので、相手の親切を否定せず柔らかく断れます。this time があることで「次はあるかも」という含みも出ます。\n\n使い回し例:\nThanks for the invite, but I'll pass on the party tonight.（誘ってくれてありがとう、でも今夜のパーティーは遠慮しておくね。）\nThe dessert looks amazing, but I'll have to pass — I'm too full.（デザート美味しそうだけど、遠慮しておくね、お腹いっぱいで。）\n\nよくある間違い:\n×I'll pass it this time.（it を付けると「それを手渡す」の意味に取られやすい）\n○I'll pass this time. または I'll pass on it this time.（断る意味は on を使う）"
+  },
+  {
+    "no": 338,
+    "text": "appreciate は「〜をありがたく思う」という動詞で、まず相手の申し出に感謝を示すことで、その後の but による断りが柔らかく丁寧になります。感謝→逆接→断りの順が英語の丁寧な断り方の定番です。\n\n使い回し例:\nI appreciate your help, but I'd rather do it myself this time.（手伝ってくれて感謝しますが、今回は自分でやりたいです。）\nI appreciate the invitation, but I already have plans that day.（お誘いありがたいですが、その日はもう予定があります。）\n\nよくある間違い:\n×I appreciate you help.（appreciate の後は行為・物を置く）\n→○I appreciate your help. または I appreciate it."
+  },
+  {
+    "no": 339,
+    "text": "Thanks for the invite, but I can't join ~ は、感謝を先に述べてから but で丁寧に断る定型です。Thanks for ～ の後は名詞か動名詞、can't の後は動詞の原形を置きます。\n\n使い回し例:\nThanks for the offer, but I can't make it to the meeting.（お誘いありがとう、でも会議には出られません。）\nThanks for asking, but I can't help you this weekend.（聞いてくれてありがとう、でも今週末は手伝えません。）\n\nよくある間違い:\nThanks for invite の形にしがちですが、the が要ります。\n誤: Thanks for invite, but I can't join.\n正: Thanks for the invite, but I can't join."
+  },
+  {
+    "no": 340,
+    "text": "I wish I could は「今その能力・状況がない」現実に反する願望を表すため、過去形 could を使って丁寧に残念さをにじませます。誘いを断るときの定番クッション表現です。\n\n使い回し例:\nI wish I could help, but I'm busy right now.（手伝えたらいいんだけど、今は忙しくて。）\nI wish I could join you, but I have an early meeting tomorrow.（一緒に行けたらいいんだけど、明日は朝早く会議があるんだ。）\n\nよくある間違い:\nI wish I can go.（誤）→ I wish I could go.（正）。wish の後は現実と違う願望なので can ではなく could を使います。"
+  },
+  {
+    "no": 341,
+    "text": "「but」で相手の提案を一度受け止めてから理由を続けると、否定がやわらぎます。doesn't fit our budget は「予算に合わない」という客観的な事実を理由にでき、相手個人を責めない断り方になります。\n\n使い回し例:\nI'd love to join, but I already have plans that day.（ぜひ参加したいのですが、その日はもう予定があるんです。）\nIt looks nice, but it's a bit too big for our room.（素敵ですが、うちの部屋には少し大きすぎます。）\n\nよくある間違い:\n「but」の後にいきなり No, we can't. と言い切ると冷たく響きます。\n誤: That sounds great, but no.\n正: That sounds great, but it doesn't fit our budget right now."
+  },
+  {
+    "no": 342,
+    "text": "I'd rather not は「(気持ちとしては)〜しないでおきたい」と、相手を立てつつ自分の希望を控えめに述べる形で、直接的な No より角が立ちません。rather の後は動詞の原形、否定は not を rather の直後に置きます。\n\n使い回し例:\nI'd rather not talk about it right now.（今はそのことについて話したくないんです。）\nI'd rather not go out tonight, I'm tired.（今夜は出かけたくないな、疲れているので。）\n\nよくある間違い:\nI'd rather not to share it.（誤）→ I'd rather not share it.（正）\nrather の後は to を付けず動詞の原形を使います。"
+  },
+  {
+    "no": 343,
+    "text": "聞き取れなかったときは「Sorry, I missed that.」で聞き逃したことを伝え、そのうえで具体的な疑問を疑問文で続けると自然です。missed は「聞き逃した」の定番表現です。\n\n使い回し例:\nSorry, I missed that. What time does it start?（ごめん、聞き逃した。何時に始まるの？）\nSorry, I missed that. Which platform should I go to?（ごめん、聞き逃した。どのホームに行けばいいの？）\n\nよくある間違い:\nWhich bus I should take? → Which bus should I take?（疑問詞のあとは should I の語順にする）"
+  },
+  {
+    "no": 344,
+    "text": "Hang on は「ちょっと待って」と会話を一旦止めて確認・聞き返すときの口語表現で、直後に確認したい内容（ここでは did you say...）を続けます。\n\n使い回し例:\nHang on, did you say the party is on Friday?（待って、パーティーは金曜って言った？）\nHang on, are you saying you already paid?（待って、もう払ったって言ってるの？）\n\nよくある間違い:\nPlease wait, you said we're meeting at seven?（丁寧すぎて聞き返しの自然さがない）\n→ Hang on, did you say we're meeting at seven?\n確認の聞き返しでは wait/hang on を軽く使い、did you say ... と疑問文の語順にするのが自然です。"
+  },
+  {
+    "no": 345,
+    "text": "follow は「話の流れについていく＝理解する」の意味で、not sure I follow で「理解できているか自信がない」と婉曲に伝えられます。go over は「一通り説明し直す」で、丁寧に頼む定番です。\n\n使い回し例:\nSorry, I'm not sure I follow. Could you say that again more slowly?（すみません、ついていけてないかも。もう少しゆっくり言ってもらえますか？）\nI'm not sure I follow your point. Could you give me an example?（あなたの言いたいことが理解できていないかも。例を挙げてもらえますか？）\n\nよくある間違い:\n×Could you go over again? → 〇Could you go over that again?（go over は目的語が必要。that を入れる）"
+  },
+  {
+    "no": 346,
+    "text": "in charge of ~ing は「〜する担当・責任者である」という意味で、役割を尋ねるときに who's in charge of ...? の形にします。send は前置詞 of の後なので動名詞 sending にするのがポイントです。\n\n使い回し例:\nWho's in charge of booking the meeting room?（会議室を予約するのは誰の担当ですか？）\nSorry, who's in charge of answering customer emails?（すみません、お客様のメール対応は誰の担当ですか？）\n\nよくある間違い:\nWho's in charge of send the report? → Who's in charge of sending the report?（of の後は動詞の原形ではなく ing 形にする）"
+  },
+  {
+    "no": 347,
+    "text": "疑問詞whatを使い「そのものの意味」を問う形です。does that ... mean と do 疑問文にするのは、means が動詞（三単現）だからで、actually は「実際のところ」を添えて自然な口調にします。\n\n使い回し例:\nWhat does this word mean in English?（この単語は英語でどういう意味ですか？）\nSorry, what does that button actually do?（すみません、そのボタンって実際何をするんですか？）\n\nよくある間違い:\n誤 What means this word? → 正 What does this word mean?\n（mean は動詞なので、疑問文では does を使い、mean は原形に戻します。What is the meaning of ...? なら別の正しい言い方です）"
+  },
+  {
+    "no": 348,
+    "text": "「もう一度手順を教えて」と丁寧に頼む時、Can you...? で依頼を作り、walk 人 through 物 で「〜を一緒に順を追って案内する」を表します。step one more time は「もう一回その手順を」の意味です。\n\n使い回し例:\nCan you walk me through the setup process? (セットアップの手順を順を追って教えてもらえますか？)\nCould you walk me through how to submit the form? (フォームの提出方法を一緒にたどって教えてもらえますか？)\n\nよくある間違い:\n×Can you teach me through that step? → ○Can you walk me through that step? (teach me through とは言わず、walk me through が正しい決まり文句です)"
+  },
+  {
+    "no": 349,
+    "text": "「So what you're saying is + 文」は、相手の発言を自分の言葉でまとめて「つまり〜ってこと？」と確認する型です。文末の right? で相手に同意を求めます。\n\n使い回し例:\nSo what you're saying is we need to leave earlier tomorrow, right?（つまり、明日はもっと早く出発する必要があるってことだよね？）\nSo what you're saying is you already paid for it, right?（つまり、あなたはもうそれの支払いを済ませたってことだよね？）\n\nよくある間違い:\n誤: So what you're saying is the bus already left it, right?（不要な it を足す）\n正: So what you're saying is the bus already left, right?（leave が「出発する」の意味なら目的語は不要）"
+  },
+  {
+    "no": 350,
+    "text": "「Let me + 動詞の原形」は「〜させてください／〜しますね」と自分の次の行動を丁寧に申し出る形で、相手の許可を得るニュアンスを持ちます。ここでは説明を言い換える前置きとして使われています。\n\n使い回し例:\nLet me explain it one more time from the beginning.（最初からもう一度説明させてください。）\nLet me show you a quick example first.（まず簡単な例をお見せしますね。）\n\nよくある間違い:\nLet me to say that again.（誤）→ Let me say that again.（正）\n※ let の後の動詞に to は付けず、必ず原形を使います。"
+  },
+  {
+    "no": 351,
+    "text": "in short は「要するに・つまり」と、それまでの話を短くまとめて相手に確認するときの前置きです。so in short + 平叙文? と続けると、理解が合っているかを柔らかく確かめられます。\n\n使い回し例:\nSo in short, you want to cancel the meeting? 要するに、会議をキャンセルしたいってこと？\nSo in short, we lost the file? つまり、ファイルをなくしたってこと？\n\nよくある間違い:\nIn short of, the button doesn't work. → In short, the button doesn't work.（short の後ろに of は付けない。in short でひとまとまりの表現です）"
+  },
+  {
+    "no": 352,
+    "text": "is that it? は、相手の話を「つまりこういうこと？」と自分の言葉でまとめ直して確認する口語表現です。You mean...（つまり〜ということ）と組み合わせると、相手の真意を柔らかく念押しできます。\n\n使い回し例:\nSo you're saying we should cancel the trip, is that it?\n（つまり旅行はキャンセルすべきってこと、そういうこと？）\nYou'd rather stay quiet than tell the truth, is that it?\n（本当のことを言うより黙っていたいってこと、そういうこと？）\n\nよくある間違い:\nIs it that? → is that it?\n（語順を逆にしがち。確認の決まり文句は必ず is that it? の順で覚えましょう。）"
+  },
+  {
+    "no": 353,
+    "text": "So basically ...? は、相手の話を自分の言葉で要約し「つまりこういうことですね？」と念押しする形です。not A で対比を示すと、確認したい要点がくっきりします。\n\n使い回し例:\nSo basically you want me to call the client first, not send an email?（要するに、メールじゃなくて先にクライアントに電話してほしいってこと？）\nSo basically the meeting is online, not in the office?（要するに、会議はオフィスじゃなくてオンラインってこと？）\n\nよくある間違い:\n×So basically we need the report until Thursday? → 〇So basically we need the report by Thursday?\n「〜までに（期限）」は until ではなく by を使います（until は「〜までずっと」の継続）。"
+  },
+  {
+    "no": 354,
+    "text": "To put it another way は、直前に述べた内容を別の言葉で言い直すときの前置き表現です。相手に理解してもらうため要点を平易に「つまり」と換言する働きがあります。\n\n使い回し例:\nTo put it another way, we don't have enough money for this trip.\n言い換えると、この旅行に使えるお金が足りないということです。\nTo put it another way, she isn't interested in the job.\n言い換えると、彼女はその仕事に興味がないということです。\n\nよくある間違い:\n誤: To put in another way, ...\n正: To put it another way, ...\n（it を落としがちです。目的語の it が必須です。）"
+  },
+  {
+    "no": 355,
+    "text": "Oh no は、予期しない悪い知らせに対して「うわ、大変」という驚き・心配を即座に示す定番の相づちです。後ろに did you...? と疑問文を続けて、信じられない気持ちで確認できます。\n\n使い回し例:\nOh no, did you really miss the last train home? (えっ、本当に終電を逃したの？)\nOh no, did she really forget her passport at home? (えっ、彼女は本当にパスポートを家に忘れたの？)\n\nよくある間違い:\n過去のことなのに現在形で疑問文を作ってしまう誤り。\n誤: Oh no, did you really lost your phone?\n正: Oh no, did you really lose your phone?\n（did を使ったら動詞は原形 lose に戻します）"
+  },
+  {
+    "no": 356,
+    "text": "No way は驚きの相づちで、直訳の「道がない」ではなく「まさか」「うそでしょ」という決まり文句です。後ろに you finished...? と平叙文の語順のまま上げ調子で言うことで、信じられない気持ちを込めた確認になります。\n\n使い回し例:\nNo way, you met him in person? (うそ、彼に直接会ったの？)\nNo way, it's already midnight? (まさか、もう真夜中なの？)\n\nよくある間違い:\nNo way, did you finish it? （疑問文の語順にしてしまう）→ No way, you finished it?\n相づちの No way の後は、平叙文の語順のまま語尾を上げるのが自然です。"
+  },
+  {
+    "no": 357,
+    "text": "なぜこの形を使うのか: I see は相手の話を聞いて「なるほど、理解した」と示す表現で、so を続けると理解した内容を自分の言葉で確認できます。got moved は「（誰かによって）動かされた」という受け身で、動かした主体を言わずに変化した事実だけを伝えます。\n\n使い回し例:\nAh, I see, so the deadline got pushed to next week. (ああ、なるほど、締め切りが来週に延びたんですね。)\nOh, I see, so the class got cancelled today. (へえ、なるほど、今日の授業が中止になったんですね。)\n\nよくある間違い:\n誤: the meeting got moved on Friday\n正: the meeting got moved to Friday\n「〜へ動く」という移動先には to を使います。on Friday だと「金曜日に動かした」という時点の意味になり、ニュアンスがずれます。"
+  },
+  {
+    "no": 358,
+    "text": "相づちの Uh-huh は「聞いてるよ、続けて」という合図で、and then で相手に続きを促しています。過去の出来事を語る流れなので asked（過去形）を使います。\n\n使い回し例:\nUh-huh, and then you told him the truth? （うんうん、それで彼に本当のことを言ったの？）\nUh-huh, and then the train just left without us? （うんうん、それで電車は私たちを置いて行っちゃったの？）\n\nよくある間違い:\nUh-huh, and then the client asked more time?（誤）→ Uh-huh, and then the client asked for more time?（正）。「〜を求める」は ask のあとに for が必要です。"
+  },
+  {
+    "no": 359,
+    "text": "「Got it」は相手の説明を理解したという相づちで、その後に「so + 要約」を続けると「つまり〜ということですね？」と自分の理解を確認できます。上げ調子の疑問で相手に確認を求めるのがポイントです。\n\n使い回し例:\nGot it, so you want to leave earlier tomorrow?（なるほど、明日は早めに出たいってことですね？）\nGot it, so the meeting is moved to Friday?（わかりました、会議は金曜に変更ってことですね？）\n\nよくある間違い:\nGot it, so the app crashes when you will save?（誤）→ Got it, so the app crashes when you save?（正）\nwhen 節では未来のことでも will を使わず現在形にします。"
+  },
+  {
+    "no": 360,
+    "text": "なぜこの形か: Seriously? は相手の発言に驚いたとき、「本当に？」と確認しながら感情も乗せる短い相づちです。その後に相手の言った内容を疑問文（ここでは平叙文＋上げ調子）で繰り返すと、驚きと確認を自然に一度で表せます。\n\n使い回し例:\nSeriously? You finished the whole report in one day?（まじで？レポート丸ごと1日で終わらせたの？）\nSeriously? The train was delayed again this morning?（うそでしょ？今朝また電車遅れたの？）\n\nよくある間違い:\nSeriously? に do を足しがちです。誤: Seriously? Did the whole server was down? → 正: Seriously? The whole server was down all morning?（相手の言葉をそのまま繰り返すので did は不要）"
+  },
+  {
+    "no": 361,
+    "text": "Could you ~? は「~していただけますか？」という丁寧な依頼で、Can you より控えめに相手の都合を尋ねる形です。drop 人 off は「（車から）人を降ろす」という句動詞です。\n\n使い回し例:\nCould you drop me off at the airport tomorrow morning? （明日の朝、空港で降ろしてもらえますか？）\nCould you pick me up at the station after work? （仕事のあと、駅まで迎えに来てもらえますか？）\n\nよくある間違い:\n×Could you drop off me at the station? → ○Could you drop me off at the station?\n代名詞（me / him など）は drop と off の間に入れます。名詞なら drop off the box でも drop the box off でも可です。"
+  },
+  {
+    "no": 362,
+    "text": "Would you mind 〜ing は「〜するのを気にしますか？」が直訳で、遠回しに頼むことで丁寧さと軽さを両立させる口語表現です。動詞は必ず ing 形にします。\n\n使い回し例:\nWould you mind closing the window? (窓を閉めてもらえますか？)\nWould you mind waiting here for a moment? (ここで少し待っていてもらえますか？)\n\nよくある間違い:\n返事で「いいですよ」のつもりで Yes と答えると「気にする＝断る」の意味になります。承諾は No や Not at all、Sure を使いましょう。\n誤: Yes.（→断りの意味になる）\n正: Not at all.／Sure.（快諾の意味）"
+  },
+  {
+    "no": 363,
+    "text": "Could you 〜? は「〜してもらえますか」と丁寧に依頼する形で、Can より控えめで相手に配慮した頼み方になります。double-check（再確認する）＋ before + 主語+動詞で「〜する前に」という時間の枠組みを作れます。\n\n使い回し例:\nCould you review this email before I reply to the client? (クライアントに返信する前に、このメールを見てもらえますか？)\nCould you check the slides before we start the meeting? (会議を始める前に、スライドを確認してもらえますか？)\n\nよくある間違い:\nbefore の後を未来形にしがちです。誤: before I will send them → 正: before I send them（before など時の副詞節では未来のことも現在形で表します）。"
+  },
+  {
+    "no": 364,
+    "text": "Would you cover my shift on Friday if you're free? は「Would you...?」で丁寧な依頼、「if you're free」で相手に断る余地を残す柔らかい頼み方になります。条件節は if + 現在形で「もし〜なら」を表します。\n\n使い回し例:\nCould you water my plants if you have time this weekend?（今週末もし時間があれば、植物に水をやってもらえますか？）\nWould you check this email if you're not too busy?（もしそんなに忙しくなければ、このメールを確認してもらえますか？）\n\nよくある間違い:\n誤: Would you cover my shift if you will be free?\n正: Would you cover my shift if you're free?\n（if の後は will を使わず現在形にします）"
+  },
+  {
+    "no": 365,
+    "text": "Could you ~? は相手に何かを丁寧に依頼する形で、Can you より控えめで職場でも角が立ちません。so (that) I can ~ は「〜できるように」という目的を表し、依頼の理由を添えられます。\n\n使い回し例:\nCould you share the file so I can review it? （レビューできるようにファイルを共有してもらえますか？）\nCould you turn on the light so I can see better? （よく見えるように電気をつけてもらえますか？）\n\nよくある間違い:\nCould you to push your changes? （誤）→ Could you push your changes? （正）\nCould の後の動詞は原形で、to は付けません。"
+  },
+  {
+    "no": 366,
+    "text": "Would you 〜? は相手の意志を尋ねる形で、May I 〜?（自分がしてよいか）より「相手にお願いする」ニュアンスが出る丁寧な依頼です。give me admin access to 〜 で「〜への管理者権限を私に付与する」を表します。\n\n使い回し例:\nWould you give me edit access to this document? (このドキュメントの編集権限をもらえますか？)\nWould you grant me permission to view the report? (そのレポートの閲覧許可をもらえますか？)\n\nよくある間違い:\n誤 Would you give me admin access of that folder?\n正 Would you give me admin access to that folder?\naccess は前置詞 to と組みます。of は使いません。"
+  },
+  {
+    "no": 367,
+    "text": "「I'll pass on ～」は「今回は～を遠慮する」という控えめな断り方で、相手の好意（That's sweet of you）を先にほめてから断ると角が立ちません。willは「その場で決めた意思」を表します。\n\n使い回し例:\nThanks for the invite, but I'll pass on the party this time.（誘ってくれてありがとう、でも今回のパーティーはやめておくね。）\nThat coffee looks great, but I'll pass on it for now.（そのコーヒーおいしそうだね、でも今はやめておくよ。）\n\nよくある間違い:\nI'll pass the dessert.（×通り過ぎる意味になる）→ I'll pass on the dessert.（○デザートは遠慮する）"
+  },
+  {
+    "no": 368,
+    "text": "なぜこの形か: appreciate + 動名詞（you thinking of me）で「〜してくれたこと」に感謝を表し、but I've got to say no で丁寧さを保ちつつ明確に断る型です。感謝を先に置くことで、断りが冷たく響かず礼儀正しくなります。\n\n使い回し例:\nI really appreciate you inviting me, but I've got to pass this weekend. (誘ってくれて本当にうれしいです。でも今週末は遠慮しておきます。)\nI really appreciate you offering to help, but I've got to handle this on my own. (手伝うと言ってくれて感謝します。でもこれは自分で対処しないといけません。)\n\nよくある間違い: appreciate の後に不定詞を使う誤り。\n誤 I appreciate you to invite me. → 正 I appreciate you inviting me.（appreciate の後は動名詞）"
+  },
+  {
+    "no": 369,
+    "text": "would rather ～ は「（他と比べて）むしろ～したい」という控えめな希望を表し、相手の申し出を否定せず自分の選択をやわらかく伝えられるので、断りの場面で角が立ちません。\n\n使い回し例:\nThanks for the ride, but I'd rather walk today.（乗せてくれてありがとう。でも今日は歩きたいな。）\nThat's a kind offer, but we'd rather wait until next week.（親切な申し出だけど、来週まで待ちたいんです。）\n\nよくある間違い:\nI'd rather to handle it myself.（誤）→ I'd rather handle it myself.（正）\nwould rather の後は to を付けず動詞の原形をそのまま置きます。"
+  },
+  {
+    "no": 370,
+    "text": "would love to は「本当は行きたい」という気持ちを丁寧かつ強めに伝える表現で、but 以下で断ることで「行きたいのに残念」という柔らかい断り方になります。honestly は本心であることを添えて誠実さを出す枕詞です。\n\n使い回し例:\nI'd honestly love to help, but I'm swamped with work right now.（正直すごく手伝いたいんだけど、今は仕事で手一杯なんだ。）\nI'd love to join, but I really can't afford it this month.（ぜひ参加したいんだけど、今月は本当に金銭的に厳しいんだ。）\n\nよくある間違い:\nI'd love to go, but I can't make it this weekend so I'm sorry too much.\n→ I'd honestly love to, but I really can't make it this weekend. I'm so sorry.\n（too much を副詞的に付けず、so sorry と自然に言うのが正解です。）"
+  },
+  {
+    "no": 371,
+    "text": "commit to は「（案・計画に）本腰を入れて取り組むと約束する」という重い関与を表す動詞句で、断りたいときに使うと「反対」ではなく「今はそこまでの余力・確約がない」というやわらかい保留になります。まず It's a great idea と肯定してから but でつなぐことで、相手の顔を立てつつ距離を取れます。\n\n使い回し例:\nI love the plan, but I can't commit to a start date yet.（その計画、すごくいいと思います。でも開始日はまだ確約できません。）\nShe's very talented, but we can't commit to hiring right now.（彼女はとても優秀です。でも今すぐ採用を確約はできません。）\n\nよくある間違い:\n× I don't think we can commit it right now.\n〇 I don't think we can commit to it right now.\n（commit は「取り組む」の意味では to が必要。commit it だと意味が変わります。）"
+  },
+  {
+    "no": 372,
+    "text": "I'm not comfortable ～ing は「～するのは気が進まない／抵抗がある」と、自分の心情を理由に相手を責めずやんわり断る言い方です。前半の I get why ～ で相手の気持ちを認めてから断ると、より角が立ちません。\n\n使い回し例:\nI get why you want the file, but I'm not comfortable sharing it without approval.\n（ファイルが欲しいのは分かりますが、承認なしに共有するのは気が引けます。）\nI know it's urgent, but I'm not comfortable skipping the review.\n（急ぎなのは分かりますが、レビューを飛ばすのは抵抗があります。）\n\nよくある間違い:\nI'm not comfortable to give admin access. → I'm not comfortable giving admin access.\n（comfortable の後は to不定詞でなく ～ing を使います。）"
+  },
+  {
+    "no": 373,
+    "text": "相手の声が途切れて聞き取れなかった時、trail off（だんだん小さくなって消える）で状況を伝え、againで「もう一度」と聞き直します。全部ではなく聞き逃した部分だけを尋ねるのが自然です。\n\n使い回し例:\nSorry, you cut out for a second. What time did you say? (ごめん、一瞬音が途切れて。何時って言った?)\nSorry, I didn't catch that. What was the name again? (ごめん、聞き取れなくて。名前もう一回何だっけ?)\n\nよくある間違い:\n「もう一度」をつい repeat one more again と重ねがち。\n誤: What was the address one more again?\n正: What was the address again?"
+  },
+  {
+    "no": 374,
+    "text": "「Hang on, I lost you for a sec」は電話や通信の状況が悪く「相手の声が途切れた／わからなくなった」と伝える定番表現で、\"lose someone\"（相手を見失う・聞き逃す）を過去形で使っています。文末の疑問詞 where を残す言い方は、聞き取れなかった部分だけをピンポイントで問い返す自然な形です。\n\n使い回し例:\nSorry, you cut out. You want me to send it to who? (ごめん、声が途切れた。誰に送ればいいって?)\nWait, I missed that. We're meeting at what time? (待って、聞き逃した。何時に集合だっけ?)\n\nよくある間違い:\n×「Where did you say to turn left?」と毎回律儀に語順を作り直すより、会話では ○「You said turn left where?」のように、聞き取れた文をそのまま繰り返して疑問詞を末尾に置くほうが自然です。"
+  },
+  {
+    "no": 375,
+    "text": "なぜこの形を使うか: unpack は「荷ほどき」から転じて、複雑な内容をかみ砕いて説明することを表します。Could you 〜? と組み合わせると、相手を責めずに丁寧に説明を求められます。I'm not with you. は「話についていけていない」という定番の口語表現です。\n\n使い回し例:\nCould you unpack the second point a bit? I want to make sure I got it right.\n（2つ目の点をもう少し詳しく説明してもらえますか。ちゃんと理解できているか確認したくて。）\n\nSorry, I'm not quite with you — could you give me an example?\n（すみません、ちょっとついていけていなくて。例を挙げてもらえますか。）\n\nよくある間違い:\n誤 I'm not quite understand you.\n正 I'm not quite with you.（understand は動詞なので be 動詞と並べられません。with you なら形容詞句として使えます。）"
+  },
+  {
+    "no": 376,
+    "text": "なぜこの形を使うか: \"Just so I'm clear\" は「自分の理解を明確にするために」という前置きで、続く \"are you saying (that) ~?\" で相手の発言を自分の言葉で言い直して確認します。丁寧に念押しでき、誤解を防ぐ表現です。\n\n使い回し例:\nJust so I'm clear, are you saying the meeting starts at 10, not 11?（確認なんですが、会議は11時ではなく10時開始ということですか?）\nJust so I'm clear, are you saying I don't need to submit the report today?（念のため確認ですが、今日はレポートを出さなくていいということですか?）\n\nよくある間違い:\nAre you saying push the launch to next month?（動詞の形が抜ける）→ Are you saying we push the launch to next month?（saying のあとは「主語+動詞」の文が必要）"
+  },
+  {
+    "no": 377,
+    "text": "「back up」は「戻る」という動作の比喩で、会話や説明を少し前の時点に巻き戻して確認したいときに使います。命令形なので「ちょっと戻って（説明して）」と相手に頼むニュアンスです。\n\n使い回し例:\nBack up a second — who told you to delete the branch?（ちょっと待って、誰がそのブランチを消せと言ったの?）\nCan you back up? I didn't follow that last part.（少し戻ってくれる? 最後のところが分からなかった。）\n\nよくある間違い:\nBack to a second.（誤）→ Back up a second.（正）\n「back」だけでは動詞にならず、up が必要です。「戻る」は go back / back up で表します。"
+  },
+  {
+    "no": 378,
+    "text": "聞き逃したときは「didn't quite get 〜」で正直に伝え、「before or after 〜?」で二択を示すと、相手が答えを一語で返せて確認がスムーズになります。「quite」は「完全には〜ない」の柔らかい否定です。\n\n使い回し例:\nSorry, I didn't quite get your name. Is it Kate or Kathy? (すみません、お名前がよく聞き取れませんでした。ケイトさんですか、キャシーさんですか?)\nI didn't quite catch the time. Do we start at nine or ten? (時間がよく聞き取れませんでした。始まりは9時ですか10時ですか?)\n\nよくある間違い:\nI didn't quite understand it. (間違いではないが硬い) → I didn't quite get that. の方が会話では自然。\nなお強い否定にしたい時の I don't get it at all. は「全然わからない」で角が立つので、確認場面では quite を使うのが無難です。"
+  },
+  {
+    "no": 379,
+    "text": "So if I've got this right は「（話をまとめると）私の理解で合っていれば」と、相手の意図を確認・要約する前置きです。got this right（現在完了）で「今この時点で正しく把握できているか」を示します。\n\n使い回し例:\nSo if I've got this right, you want to change the meeting to Friday? （つまり、会議を金曜に変更したいってことですか？）\nSo if I've got this right, you're not coming to the party? （要するに、パーティーには来ないってこと？）\n\nよくある間違い:\nSo if I get this right, ... (誤) → So if I've got this right, ... (正)\n「今すでに理解できている状態」を表すので現在完了 I've got を使います。"
+  },
+  {
+    "no": 380,
+    "text": "Let me me は「〜させてください」と丁寧に申し出る表現で、rephrase（言い換える）と組み合わせて「言い直しますね」という前置きになります。so (that) we're all on the same page は「全員の認識をそろえるために」という目的を表す決まり文句です。\n\n使い回し例:\nLet me summarize the plan so we're all on the same page. (計画をまとめますね、みんなの認識をそろえられるように。)\nLet me explain it again so we're on the same page before we start. (始める前に認識を合わせられるよう、もう一度説明しますね。)\n\nよくある間違い:\n誤 Let me to rephrase that. → 正 Let me rephrase that. (let me の後の動詞は原形で、to は付けません。)"
+  },
+  {
+    "no": 381,
+    "text": "「what you're getting at is ～」は相手の発言の要点を自分の言葉で言い換えて「つまり言いたいのは～ですよね」と確認する型です。get at は「言おうとしている核心」を指し、後ろに that 節や名詞的な内容を置きます。\n\n使い回し例:\nSo what you're getting at is we need more time, right? (つまり言いたいのは、もっと時間が必要ってことですよね?)\nWhat you're getting at is that the price is too high. (あなたが言いたいのは、値段が高すぎるということですね。)\n\nよくある間違い:\n×What you're getting is the bug only shows up on mobile.\n○What you're getting at is the bug only shows up on mobile.\n（at を落とすと「受け取っている物」の意味になり、要点確認の意味が消えます。）"
+  },
+  {
+    "no": 382,
+    "text": "In other words は、相手の発言を自分の言葉で要約し「＝つまりこういうことですね」と確認するための決まり文句です。ここでは push ... back（予定を後ろにずらす）と組み合わせて要望を言い換えています。\n\n使い回し例:\nIn other words, you'd like me to send the report by Friday. (言い換えると、金曜までに報告書を送ってほしいということですね。)\nIn other words, we should cancel the meeting. (つまり、会議は中止すべきということですね。)\n\nよくある間違い:\npush back を「押し返す＝断る」の意味と混同しがちです。\n誤: We want to push back the launch, so we refuse it.\n正: We want to push the launch back a week. (ローンチを1週間遅らせたい、の意味)"
+  },
+  {
+    "no": 383,
+    "text": "文末に is that it? を付けるのは、自分の理解した内容を相手に「そういう認識で合ってますか？」と軽く確認するためです。So basically ...で要約し、その要約が正しいか尋ねる自然な会話表現です。\n\n使い回し例1: So basically you want me to redo the whole report, is that it?（つまり私にレポート全体をやり直してほしい、そういうことですか？）\n使い回し例2: So basically we're canceling the trip because of the weather, is that it?（つまり天気のせいで旅行を中止する、そういうことですか？）\n\nよくある間違い: 誤 Is it that? / 正 Is that it? （語順が逆になりやすいので注意。「そういうことですか」は is that it? が定型です）"
+  },
+  {
+    "no": 384,
+    "text": "確認の復唱を表す文です。Let me + 動詞の原形で「〜させてください」と丁寧に申し出て、say ... back to you で相手の言葉をそのまま返して確認します。後半は Yes/No 疑問文を平叙文の語順のまま語尾上げにし、「〜ってことですよね？」と柔らかく念押しする口語形です。\n\n使い回し例:\nLet me repeat that back to you. You want the meeting moved to Friday? （確認で言い直しますね。会議を金曜に動かしたいってことですか？）\nLet me read that back to you. Your phone number ends in 4-5-6-7? （読み返して確認しますね。電話番号の下4桁は4567ですね？）\n\nよくある間違い: Let me to say that back. → Let me say that back.（Let me の後の動詞に to は付けず、原形のまま置きます）"
+  },
+  {
+    "no": 385,
+    "text": "なぜこの形か: 現在完了「have known」は「高校時代から今もずっと知り合い」という過去から現在まで続く状態を表します。since+起点（時点）で「〜から今まで」を示し、状態動詞knowと相性が良い形です。\n\n使い回し例:\nWe have lived in Tokyo since 2015.（私たちは2015年から東京に住んでいます）\nShe has worked here since last spring.（彼女は去年の春からここで働いています）\n\nよくある間違い:\n×I know him since high school. → ○I have known him since high school.\n（「〜から今まで」の継続は現在形ではなく現在完了で表す）"
+  },
+  {
+    "no": 386,
+    "text": "「knew」と過去形なのは、今まさに聞いて「知った」瞬間の直前まで「知らなかった」状態を振り返っているからです。I never knew that は驚きの相づちとして定番です。\n\n使い回し例:\nWow, I never knew you could speak French. Tell me more about it.（へえ、フランス語話せるなんて知らなかった。もっと聞かせて。）\nReally? I never knew this place existed. Show me around.（ほんと？こんな場所があるなんて知らなかった。案内して。）\n\nよくある間違い:\n×I never know that. → ○I never knew that.\n「今知った」文脈では過去形 knew を使います。現在形 know だと「習慣的にずっと知らない」意味になり不自然です。"
+  },
+  {
+    "no": 387,
+    "text": "1. 相手の話を「Right, right」で受け止めつつ、自分の言葉で要点を言い換え、「〜ってこと？」と確認する言い回しです。相手の発話を確認・整理する会話術です。\n\n2. 使い回し例:\nRight, right, so you're moving to Osaka next month? (うんうん、じゃあ来月大阪に引っ越すってこと？)\nRight, right, so we need to finish this by Friday? (なるほど、つまり金曜までに終わらせなきゃいけないってこと？)\n\n3. よくある間違い:\n誤 Right, right, so the budget cut at the last minute? → 正 Right, right, so the budget got cut at the last minute? （予算は「削られる」側なので受け身 got cut が必要。got を落とすと能動になり不自然です）"
+  },
+  {
+    "no": 388,
+    "text": "didn't ... at all? は「まったく〜しなかったの？」と変化のなさを強調する否定疑問。相手のつらい状況に that's rough で共感してから、状況を掘り下げるための質問です。\n\n使い回し例:\nAnd the price didn't go down at all? （で、値段は全然下がらなかったの？）\nSo he didn't apologize at all? （じゃあ彼は一切謝らなかったの？）\n\nよくある間違い:\ndidn't は過去の否定なので動詞は原形。change に -d を付けないよう注意。\n誤: The deadline didn't changed at all?\n正: The deadline didn't change at all?"
+  },
+  {
+    "no": 389,
+    "text": "なぜこの形か: Hang on は「ちょっと待って」と話を一旦止め、信じがたい内容を確認する口語表現です。so ...? で相手の話を要約して聞き返し、驚きを表します。\n\n使い回し例:\nHang on, so you actually quit your job without telling anyone?\n（ちょっと待って、じゃあ誰にも言わずに本当に仕事を辞めたの？）\nHang on, so the flight got cancelled and nobody called us?\n（ちょっと待って、じゃあ便が欠航になったのに誰も連絡してこなかったの？）\n\nよくある間違い:\nHang up, so the database wiped itself?（誤）→ Hang on, so the database wiped itself?（正）\n※ hang up は「電話を切る」。聞き返しの「待って」は hang on / hold on です。"
+  },
+  {
+    "no": 390,
+    "text": "Gotchaは「わかった／了解」という口語表現で、rightを文末に付けて「〜だよね？」と相手に確認します。技術的なやりとりでの軽い相づちに便利です。\n\n使い回し例:\nSo the error only shows up when I'm offline, right?（じゃあエラーはオフラインのときだけ出るんだよね？）\nGotcha, so I should push to the main branch after review, right?（なるほど、レビューのあとにmainブランチへpushすればいいんだよね？）\n\nよくある間違い:\n文末のrightをisn't itなどに置き換えようとして \"it only breaks in the mobile version, isn't it?\" とすると動詞が合いません。動詞がbreak（一般動詞）なので、誤 isn't it? → 正 right?（またはdoesn't it?）が自然です。"
   }
 ]

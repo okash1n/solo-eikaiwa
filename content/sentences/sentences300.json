@@ -2698,5 +2698,905 @@
     "en": "The bug only happens when two people edit the same file.",
     "ja": "そのバグは、2人が同じファイルを編集したときにだけ起きるんです。",
     "note": "状況説明の only happens when ~。発生条件を when 節で示す"
+  },
+  {
+    "no": 301,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "daily",
+    "en": "Could you pass me the salt, please?",
+    "ja": "塩を取ってもらえますか。",
+    "note": "食事中に近くの物を取ってほしいときの定番。Could you〜?は丁寧",
+    "band": "foundation"
+  },
+  {
+    "no": 302,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "daily",
+    "en": "Can you help me carry this bag?",
+    "ja": "このかばんを運ぶのを手伝ってくれる?",
+    "note": "Can you〜?は親しい相手への軽いお願い",
+    "band": "foundation"
+  },
+  {
+    "no": 303,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "business",
+    "en": "Could you send me the file today?",
+    "ja": "今日中にそのファイルを送ってもらえますか。",
+    "note": "仕事で期限つきの依頼。todayで時間を添える",
+    "band": "foundation"
+  },
+  {
+    "no": 304,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "business",
+    "en": "Would you check this email for me?",
+    "ja": "このメールを確認してもらえますか。",
+    "note": "Would you〜?も丁寧な依頼。for meで自分のためと示す",
+    "band": "foundation"
+  },
+  {
+    "no": 305,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "it",
+    "en": "Can you restart the computer, please?",
+    "ja": "パソコンを再起動してもらえますか。",
+    "note": "IT操作を頼むとき。pleaseで柔らかくなる",
+    "band": "foundation"
+  },
+  {
+    "no": 306,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "it",
+    "en": "Could you reset my password, please?",
+    "ja": "パスワードをリセットしてもらえますか。",
+    "note": "サポートへの依頼。Could you〜, please?が安全",
+    "band": "foundation"
+  },
+  {
+    "no": 307,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "daily",
+    "en": "Thanks, but I can't come tonight.",
+    "ja": "ありがとう、でも今夜は行けないんだ。",
+    "note": "誘いを断る基本形。まずお礼を言うと丁寧",
+    "band": "foundation"
+  },
+  {
+    "no": 308,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "daily",
+    "en": "Sorry, I'd love to, but I'm busy.",
+    "ja": "ごめん、行きたいけど忙しいんだ。",
+    "note": "「行きたいけど」で残念な気持ちを伝える",
+    "band": "foundation"
+  },
+  {
+    "no": 309,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "business",
+    "en": "I'm sorry, but I can't help right now.",
+    "ja": "すみません、今は手伝えないんです。",
+    "note": "仕事で頼みを断るときの丁寧な言い方",
+    "band": "foundation"
+  },
+  {
+    "no": 310,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "business",
+    "en": "Thank you, but no thanks for now.",
+    "ja": "ありがとうございます、でも今回は結構です。",
+    "note": "提案をやんわり断る定番フレーズ",
+    "band": "foundation"
+  },
+  {
+    "no": 311,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "it",
+    "en": "Sorry, I can't fix your PC today.",
+    "ja": "ごめん、今日はパソコンを直せないよ。",
+    "note": "IT関連の頼みを日付を添えて断る",
+    "band": "foundation"
+  },
+  {
+    "no": 312,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "it",
+    "en": "Thanks, but I don't need the new app.",
+    "ja": "ありがとう、でも新しいアプリは要らないよ。",
+    "note": "すすめられたものを断る言い方",
+    "band": "foundation"
+  },
+  {
+    "no": 313,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "daily",
+    "en": "Sorry, can you say that again?",
+    "ja": "ごめん、もう一回言ってくれる？",
+    "note": "聞き取れなかったとき一番よく使う定番フレーズ",
+    "band": "foundation"
+  },
+  {
+    "no": 314,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "daily",
+    "en": "I didn't catch your name.",
+    "ja": "お名前が聞き取れませんでした。",
+    "note": "名前を聞き返すときの自然な言い方",
+    "band": "foundation"
+  },
+  {
+    "no": 315,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "business",
+    "en": "Could you say that more slowly?",
+    "ja": "もう少しゆっくり言ってもらえますか？",
+    "note": "早口で聞き取れないとき丁寧に頼む",
+    "band": "foundation"
+  },
+  {
+    "no": 316,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "business",
+    "en": "Sorry, what do you mean by that?",
+    "ja": "すみません、それはどういう意味ですか？",
+    "note": "意味がわからないとき説明を求める",
+    "band": "foundation"
+  },
+  {
+    "no": 317,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "it",
+    "en": "Can you explain that part again?",
+    "ja": "その部分をもう一度説明してもらえますか？",
+    "note": "IT説明で一部だけわからないとき使える",
+    "band": "foundation"
+  },
+  {
+    "no": 318,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "it",
+    "en": "Wait, which button did you click?",
+    "ja": "待って、どのボタンを押したの？",
+    "note": "手順が追えないとき具体的に確認する",
+    "band": "foundation"
+  },
+  {
+    "no": 319,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "daily",
+    "en": "So you mean the party's on Friday, right?",
+    "ja": "つまりパーティーは金曜だってこと？",
+    "note": "So you mean〜で相手の話を自分の言葉で確認する定番",
+    "band": "foundation"
+  },
+  {
+    "no": 320,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "business",
+    "en": "In other words, we're not done yet.",
+    "ja": "言い換えると、まだ終わってないんですね。",
+    "note": "In other words で要点を短く言い直す",
+    "band": "foundation"
+  },
+  {
+    "no": 321,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "it",
+    "en": "So basically the app keeps crashing?",
+    "ja": "つまりアプリが落ち続けるってことですね？",
+    "note": "So basically で相手の説明をざっくりまとめて確認",
+    "band": "foundation"
+  },
+  {
+    "no": 322,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "daily",
+    "en": "You're saying you'll be late, right?",
+    "ja": "遅れるって言ってるんだよね？",
+    "note": "You're saying〜, right? で確認する言い方",
+    "band": "foundation"
+  },
+  {
+    "no": 323,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "business",
+    "en": "Let me put that another way for you.",
+    "ja": "別の言い方でもう一度言いますね。",
+    "note": "自分の説明を言い直すときの前置き",
+    "band": "foundation"
+  },
+  {
+    "no": 324,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "it",
+    "en": "So you want me to save the file first?",
+    "ja": "つまり先にファイルを保存すればいいんですね？",
+    "note": "指示を自分の言葉で確認し直す",
+    "band": "foundation"
+  },
+  {
+    "no": 325,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "daily",
+    "en": "Oh really? That's so cool!",
+    "ja": "え、ほんと？それすごくいいね！",
+    "note": "驚きと興味を示す軽い相づち",
+    "band": "foundation"
+  },
+  {
+    "no": 326,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "daily",
+    "en": "Yeah, I know what you mean.",
+    "ja": "うん、言いたいことわかるよ。",
+    "note": "共感を伝える定番の相づち",
+    "band": "foundation"
+  },
+  {
+    "no": 327,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "business",
+    "en": "Right, that makes sense to me.",
+    "ja": "なるほど、それは納得です。",
+    "note": "相手の話に納得したときに使う",
+    "band": "foundation"
+  },
+  {
+    "no": 328,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "business",
+    "en": "Wow, that's great news!",
+    "ja": "わあ、それはいい知らせですね！",
+    "note": "うれしい報告に反応するとき",
+    "band": "foundation"
+  },
+  {
+    "no": 329,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "it",
+    "en": "Oh, so it's a bug?",
+    "ja": "へえ、じゃあバグなんですね？",
+    "note": "聞きながら内容を確認する相づち",
+    "band": "foundation"
+  },
+  {
+    "no": 330,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "it",
+    "en": "Really? That sounds tricky.",
+    "ja": "ほんとに？それは大変そうですね。",
+    "note": "驚きつつ共感を示す言い方",
+    "band": "foundation"
+  },
+  {
+    "no": 331,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "daily",
+    "en": "Could you turn the music down a bit, please?",
+    "ja": "音楽を少し下げてもらえますか。",
+    "note": "a bit で控えめに頼む定番の言い方",
+    "band": "development"
+  },
+  {
+    "no": 332,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "daily",
+    "en": "Would you mind watering my plants while I'm away?",
+    "ja": "留守の間、植物に水をあげてもらえませんか。",
+    "note": "Would you mind で丁寧に依頼する",
+    "band": "development"
+  },
+  {
+    "no": 333,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "business",
+    "en": "Could you let me know when the meeting starts?",
+    "ja": "会議がいつ始まるか教えてもらえますか。",
+    "note": "職場で情報を頼むときの柔らかい言い方",
+    "band": "development"
+  },
+  {
+    "no": 334,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "business",
+    "en": "Would you print these papers before the client comes?",
+    "ja": "お客様が来る前にこの書類を印刷してもらえますか。",
+    "note": "期限を添えて頼むと伝わりやすい",
+    "band": "development"
+  },
+  {
+    "no": 335,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "it",
+    "en": "Could you install the new app on my laptop?",
+    "ja": "私のノートパソコンに新しいアプリを入れてもらえますか。",
+    "note": "IT のサポートを頼む場面",
+    "band": "development"
+  },
+  {
+    "no": 336,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "it",
+    "en": "Would you check why my screen keeps freezing, please?",
+    "ja": "画面がよく固まる理由を調べてもらえますか。",
+    "note": "問題の調査を丁寧に依頼する",
+    "band": "development"
+  },
+  {
+    "no": 337,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "daily",
+    "en": "That's really kind, but I'll have to pass this time.",
+    "ja": "本当にありがとう、でも今回は遠慮しておくね。",
+    "note": "pass は「今回は見送る」の柔らかい断り",
+    "band": "development"
+  },
+  {
+    "no": 338,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "business",
+    "en": "I appreciate the offer, but we can't take it on now.",
+    "ja": "お申し出はありがたいですが、今は引き受けられません。",
+    "note": "appreciate で感謝を示してから断る丁寧型",
+    "band": "development"
+  },
+  {
+    "no": 339,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "it",
+    "en": "Thanks for the invite, but I can't join the beta test.",
+    "ja": "お誘いありがとう、でもベータテストには参加できません。",
+    "note": "IT の招待を礼を添えて断る言い方",
+    "band": "development"
+  },
+  {
+    "no": 340,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "daily",
+    "en": "I wish I could, but my weekend's already full.",
+    "ja": "できたらいいんだけど、週末はもう予定でいっぱいなんだ。",
+    "note": "I wish I could は残念さを伝える定番",
+    "band": "development"
+  },
+  {
+    "no": 341,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "business",
+    "en": "That sounds great, but it doesn't fit our budget right now.",
+    "ja": "良さそうですが、今の予算には合わないんです。",
+    "note": "理由を添えて断ると角が立たない",
+    "band": "development"
+  },
+  {
+    "no": 342,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "it",
+    "en": "I'd rather not share my password, if that's okay.",
+    "ja": "できればパスワードは共有したくないんです、いいですか。",
+    "note": "I'd rather not で穏やかに拒否する",
+    "band": "development"
+  },
+  {
+    "no": 343,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "daily",
+    "en": "Sorry, I missed that. Which bus should I take?",
+    "ja": "ごめん、聞き逃した。どのバスに乗ればいいの？",
+    "note": "聞き逃した部分を具体的に聞き返す言い方",
+    "band": "development"
+  },
+  {
+    "no": 344,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "daily",
+    "en": "Hang on, did you say we're meeting at seven?",
+    "ja": "待って、7時に会うって言った？",
+    "note": "Hang onで一旦止めて確認する自然な口語",
+    "band": "development"
+  },
+  {
+    "no": 345,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "business",
+    "en": "Sorry, I'm not sure I follow. Could you go over that?",
+    "ja": "すみません、ついていけてないかも。もう一度説明してもらえますか？",
+    "note": "follow=理解する。丁寧に説明を頼む定番表現",
+    "band": "development"
+  },
+  {
+    "no": 346,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "business",
+    "en": "Wait, who's in charge of sending the report?",
+    "ja": "待って、報告書を送るのは誰の担当ですか？",
+    "note": "担当や役割を聞き直すときの言い方",
+    "band": "development"
+  },
+  {
+    "no": 347,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "it",
+    "en": "Sorry, what does that error message actually mean?",
+    "ja": "すみません、そのエラーメッセージって実際どういう意味ですか？",
+    "note": "意味そのものを尋ねる。actuallyで自然さを出す",
+    "band": "development"
+  },
+  {
+    "no": 348,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "it",
+    "en": "Can you walk me through that step one more time?",
+    "ja": "その手順をもう一回、順を追って教えてもらえますか？",
+    "note": "walk me through=手順を一緒にたどってもらう頼み方",
+    "band": "development"
+  },
+  {
+    "no": 349,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "daily",
+    "en": "So what you're saying is the bus already left, right?",
+    "ja": "つまり、バスはもう出ちゃったってことだよね？",
+    "note": "相手の話を要約して確認する定番の言い方",
+    "band": "development"
+  },
+  {
+    "no": 350,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "business",
+    "en": "Let me say that again in a simpler way for everyone.",
+    "ja": "みんなのために、もっと簡単に言い直しますね。",
+    "note": "自分の説明を分かりやすく言い換えるときの前置き",
+    "band": "development"
+  },
+  {
+    "no": 351,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "it",
+    "en": "So in short, the login button just doesn't work now?",
+    "ja": "要するに、ログインボタンが今は動かないってこと？",
+    "note": "in short で短くまとめて確認する",
+    "band": "development"
+  },
+  {
+    "no": 352,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "daily",
+    "en": "You mean you'd rather eat at home tonight, is that it?",
+    "ja": "つまり今夜は家で食べたいってこと、そういうこと？",
+    "note": "is that it? で確認を促す口語表現",
+    "band": "development"
+  },
+  {
+    "no": 353,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "business",
+    "en": "So basically we need the report by Thursday, not Friday?",
+    "ja": "要するに、金曜じゃなくて木曜までにレポートが要るってこと？",
+    "note": "要点を絞って念押しする確認",
+    "band": "development"
+  },
+  {
+    "no": 354,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "it",
+    "en": "To put it another way, the server can't handle that many users.",
+    "ja": "言い換えると、サーバーがそんなに多くのユーザーをさばけないってこと。",
+    "note": "to put it another way で言い換えを示す",
+    "band": "development"
+  },
+  {
+    "no": 355,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "daily",
+    "en": "Oh no, did you really lose your phone on the train?",
+    "ja": "えっ、本当に電車でスマホをなくしたの？",
+    "note": "驚きを示す相づち。Oh no で心配や驚きを表す",
+    "band": "development"
+  },
+  {
+    "no": 356,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "daily",
+    "en": "No way, you finished the whole thing in one day?",
+    "ja": "うそ、一日で全部終わらせたの？",
+    "note": "No way は「まさか」という軽い驚きの相づち",
+    "band": "development"
+  },
+  {
+    "no": 357,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "business",
+    "en": "Ah, I see, so the meeting got moved to Friday.",
+    "ja": "ああ、なるほど、会議が金曜に動いたんですね。",
+    "note": "I see で理解を示しながら内容を確認する言い方",
+    "band": "development"
+  },
+  {
+    "no": 358,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "business",
+    "en": "Uh-huh, and then the client asked for more time?",
+    "ja": "うんうん、それでお客さんがもっと時間をくれって言ったの？",
+    "note": "Uh-huh は話を聞き続けている合図。先を促す",
+    "band": "development"
+  },
+  {
+    "no": 359,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "it",
+    "en": "Oh, got it, so the app crashes when you save?",
+    "ja": "ああ、わかった、保存すると落ちるんだね？",
+    "note": "Got it は理解を示す相づち。状況を要約して確認",
+    "band": "development"
+  },
+  {
+    "no": 360,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "it",
+    "en": "Seriously? The whole server was down all morning?",
+    "ja": "まじで？サーバーが午前中ずっと止まってたの？",
+    "note": "Seriously? は驚きと確認を同時に示すカジュアルな相づち",
+    "band": "development"
+  },
+  {
+    "no": 361,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "daily",
+    "en": "Could you drop me off at the station on your way?",
+    "ja": "行きがけに駅で降ろしてもらえますか？",
+    "note": "車で送ってほしい時の丁寧な頼み方",
+    "band": "fluency"
+  },
+  {
+    "no": 362,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "daily",
+    "en": "Would you mind grabbing some milk while you're out?",
+    "ja": "出かけたついでに牛乳を買ってきてもらえますか？",
+    "note": "Would you mind〜で軽く頼む口語表現",
+    "band": "fluency"
+  },
+  {
+    "no": 363,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "business",
+    "en": "Could you double-check these numbers before I send them?",
+    "ja": "送る前にこの数字を確認してもらえますか？",
+    "note": "提出前チェックを頼む定番フレーズ",
+    "band": "fluency"
+  },
+  {
+    "no": 364,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "business",
+    "en": "Would you cover my shift on Friday if you're free?",
+    "ja": "もし空いてたら金曜のシフトを代わってもらえますか？",
+    "note": "同僚に交代を頼む柔らかい言い方",
+    "band": "fluency"
+  },
+  {
+    "no": 365,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "it",
+    "en": "Could you push your changes so I can pull them?",
+    "ja": "取り込めるように変更をプッシュしてもらえますか？",
+    "note": "開発現場でのGit操作の依頼",
+    "band": "fluency"
+  },
+  {
+    "no": 366,
+    "category_no": 26,
+    "category": "会話機能: 依頼する",
+    "domain": "it",
+    "en": "Would you give me admin access to that shared folder?",
+    "ja": "あの共有フォルダの管理者権限をもらえますか？",
+    "note": "権限付与を頼む時の丁寧な依頼",
+    "band": "fluency"
+  },
+  {
+    "no": 367,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "daily",
+    "en": "That's really sweet of you, but I'll pass on dessert tonight.",
+    "ja": "本当に優しいね。でも今夜はデザートはやめておくよ。",
+    "note": "pass on ～で軽くやんわり断る。相手の好意を先にほめる",
+    "band": "fluency"
+  },
+  {
+    "no": 368,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "business",
+    "en": "I really appreciate you thinking of me, but I've got to say no this time.",
+    "ja": "声をかけてくれて本当に感謝します。でも今回は見送らせてください。",
+    "note": "感謝→明確な断りの順。仕事の依頼断りで丁寧かつはっきり",
+    "band": "fluency"
+  },
+  {
+    "no": 369,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "it",
+    "en": "Thanks for offering to migrate our data, but we'd rather handle it ourselves.",
+    "ja": "データ移行を申し出てくれてありがとう。でも自分たちでやりたいんです。",
+    "note": "we'd rather ～で「むしろ～したい」と角を立てず断る",
+    "band": "fluency"
+  },
+  {
+    "no": 370,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "daily",
+    "en": "I'd honestly love to, but I really can't make it this weekend.",
+    "ja": "正直すごく行きたいんだけど、今週末はどうしても無理なんだ。",
+    "note": "honestlyで残念さを強調。誘いを断るときの定番の枕",
+    "band": "fluency"
+  },
+  {
+    "no": 371,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "business",
+    "en": "It's a great idea, but I don't think we can commit to it right now.",
+    "ja": "いいアイデアだと思います。でも今はそこまで踏み込めないですね。",
+    "note": "提案をまず肯定してからcommit toで踏み込みを断る",
+    "band": "fluency"
+  },
+  {
+    "no": 372,
+    "category_no": 27,
+    "category": "会話機能: 断る",
+    "domain": "it",
+    "en": "I get why you're asking, but I'm not comfortable giving admin access.",
+    "ja": "聞きたい気持ちは分かるんですが、管理者権限を渡すのは気が引けます。",
+    "note": "I'm not comfortable ～ingでセキュリティ絡みを柔らかく拒否",
+    "band": "fluency"
+  },
+  {
+    "no": 373,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "daily",
+    "en": "Sorry, you kind of trailed off there. What was the address again?",
+    "ja": "ごめん、そこで声が小さくなっちゃって。住所もう一回何だっけ?",
+    "note": "相手の声が途切れた時に、聞き取れなかった部分だけ具体的に聞き直す言い方",
+    "band": "fluency"
+  },
+  {
+    "no": 374,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "daily",
+    "en": "Hang on, I lost you for a sec. You said turn left where?",
+    "ja": "ちょっと待って、一瞬わからなくなった。どこで左に曲がるって?",
+    "note": "道案内などで一部を聞き逃した時の自然な確認",
+    "band": "fluency"
+  },
+  {
+    "no": 375,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "business",
+    "en": "Sorry, could you unpack that a bit? I'm not quite with you.",
+    "ja": "すみません、もう少し詳しく説明してもらえますか。ちょっとついていけてなくて。",
+    "note": "unpack=かみ砕いて説明する。ビジネスで丁寧に説明を求める",
+    "band": "fluency"
+  },
+  {
+    "no": 376,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "business",
+    "en": "Just so I'm clear, are you saying we push the launch to next month?",
+    "ja": "確認なんですが、ローンチを来月に延ばすってことですか?",
+    "note": "自分の理解が合っているか復唱して確認する定番の切り出し",
+    "band": "fluency"
+  },
+  {
+    "no": 377,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "it",
+    "en": "Wait, back up a second. Which config file did you edit?",
+    "ja": "待って、ちょっと戻って。どの設定ファイルをいじったの?",
+    "note": "back up=話を巻き戻す。技術説明で対象を聞き直す",
+    "band": "fluency"
+  },
+  {
+    "no": 378,
+    "category_no": 28,
+    "category": "会話機能: 聞き返す",
+    "domain": "it",
+    "en": "Sorry, I didn't quite get that last part. Do we deploy before or after the merge?",
+    "ja": "すみません、最後のところがよくわからなくて。デプロイはマージの前ですか後ですか?",
+    "note": "聞き逃した箇所を挙げて二択で確認する明確なやり方",
+    "band": "fluency"
+  },
+  {
+    "no": 379,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "daily",
+    "en": "So if I've got this right, you'd rather skip dinner and just grab drinks?",
+    "ja": "つまり僕の理解が正しければ、夕食は抜きで飲みに行きたいってこと？",
+    "note": "So if I've got this right で相手の意図を確認する言い方",
+    "band": "fluency"
+  },
+  {
+    "no": 380,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "business",
+    "en": "Let me rephrase that so we're all on the same page here.",
+    "ja": "みんなで認識を合わせられるように、言い方を変えてみますね。",
+    "note": "自分の説明を言い換えて全員の理解をそろえる前置き",
+    "band": "fluency"
+  },
+  {
+    "no": 381,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "it",
+    "en": "So what you're getting at is the bug only shows up on mobile, right?",
+    "ja": "つまり言いたいのは、そのバグはモバイルでだけ出るってことですよね？",
+    "note": "What you're getting at is で相手の要点を確認する",
+    "band": "fluency"
+  },
+  {
+    "no": 382,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "business",
+    "en": "In other words, you want us to push the launch back a week.",
+    "ja": "言い換えると、ローンチを1週間後ろにずらしたいってことですね。",
+    "note": "In other words で相手の要望を要約して確認",
+    "band": "fluency"
+  },
+  {
+    "no": 383,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "it",
+    "en": "So basically the API times out whenever the load spikes, is that it?",
+    "ja": "つまり負荷が急に上がるたびにAPIがタイムアウトする、そういうことですか？",
+    "note": "is that it? を末尾に付けて確認する軽い言い方",
+    "band": "fluency"
+  },
+  {
+    "no": 384,
+    "category_no": 29,
+    "category": "会話機能: 言い換える",
+    "domain": "daily",
+    "en": "Let me say that back to you. You need the car by noon tomorrow?",
+    "ja": "確認のために言い直しますね。明日の正午までに車が必要ってこと？",
+    "note": "Let me say that back to you で聞いた内容を復唱して確認",
+    "band": "fluency"
+  },
+  {
+    "no": 385,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "daily",
+    "en": "Oh wow, so you two have known each other since high school?",
+    "ja": "えっ、じゃあ二人は高校の頃からの知り合いなんだ？",
+    "note": "驚きつつ相手の話を確認する相づち。Oh wow, so...で受ける",
+    "band": "fluency"
+  },
+  {
+    "no": 386,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "daily",
+    "en": "Huh, I never knew that. Tell me more about it.",
+    "ja": "へえ、それ全然知らなかった。もっと聞かせてよ。",
+    "note": "興味を示して話を促す。Huhは軽い驚きの相づち",
+    "band": "fluency"
+  },
+  {
+    "no": 387,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "business",
+    "en": "Right, right, so the budget got cut at the last minute?",
+    "ja": "うんうん、じゃあ予算が土壇場で削られたってこと？",
+    "note": "Right, rightで理解を示しつつ内容を言い換え確認する",
+    "band": "fluency"
+  },
+  {
+    "no": 388,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "business",
+    "en": "Oh, that's rough. And the deadline didn't change at all?",
+    "ja": "うわ、それは大変だね。で、締め切りは全然変わってないの？",
+    "note": "共感を示してから続きを引き出す。that's roughは同情の相づち",
+    "band": "fluency"
+  },
+  {
+    "no": 389,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "it",
+    "en": "Hang on, so the whole database just wiped itself overnight?",
+    "ja": "ちょっと待って、じゃあ一晩でデータベースが全部消えたの？",
+    "note": "Hang onで驚いて聞き返す。信じがたい話への反応",
+    "band": "fluency"
+  },
+  {
+    "no": 390,
+    "category_no": 30,
+    "category": "会話機能: 相槌を打つ",
+    "domain": "it",
+    "en": "Ah, gotcha, so it only breaks in the mobile version, right?",
+    "ja": "ああ、なるほど、モバイル版だけで壊れるってことね？",
+    "note": "gotchaで理解を示し、rightで確認するIT寄りの相づち",
+    "band": "fluency"
   }
 ]
