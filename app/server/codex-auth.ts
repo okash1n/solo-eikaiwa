@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { DATA_DIR } from "./paths";
 import type { AuthMode } from "./llm-auth-store";
@@ -16,17 +16,33 @@ export type CodexLoginSpawn = (args: {
 }) => Promise<void>;
 
 /**
+ * auth.json が「有効」かどうかを判定する。存在しない、または存在しても JSON として壊れている
+ * （書き込み途中でプロセスが落ちた等）場合は無効＝false とし、呼び出し元に再ログインさせる
+ * （codex login --with-api-key は auth.json を上書きするため、壊れたファイルを消さずとも再実行で直る）。
+ */
+function hasValidAuthJson(authPath: string): boolean {
+  if (!existsSync(authPath)) return false;
+  try {
+    JSON.parse(readFileSync(authPath, "utf8"));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * codex api-key モード用の隔離 CODEX_HOME に auth.json を用意する（冪等）。
- * 既に auth.json があれば何もせず dir をそのまま返す。無ければ CODEX_API_KEY（app/.env 由来）を
- * stdin で渡して `CODEX_HOME=<dir> codex login --with-api-key` を実行し、作成した dir を返す。
- * dir 引数はテスト用（既定 CODEX_HOME_DIR）— 実運用の呼び出し（route 経由）は常に引数省略で呼ぶ。
+ * 既に有効な auth.json があれば何もせず dir をそのまま返す。無い、または壊れていれば
+ * CODEX_API_KEY（app/.env 由来）を stdin で渡して `CODEX_HOME=<dir> codex login --with-api-key` を
+ * 実行し、作成した dir を返す。dir 引数はテスト用（既定 CODEX_HOME_DIR）— 実運用の呼び出し
+ * （route 経由）は常に引数省略で呼ぶ。
  */
 export async function ensureCodexApiKeyHome(
   spawnFn: CodexLoginSpawn = realCodexLoginSpawn,
   dir: string = CODEX_HOME_DIR,
 ): Promise<string> {
   const authPath = path.join(dir, "auth.json");
-  if (existsSync(authPath)) return dir;
+  if (hasValidAuthJson(authPath)) return dir;
 
   const apiKey = Bun.env.CODEX_API_KEY;
   if (!apiKey || !apiKey.trim()) {

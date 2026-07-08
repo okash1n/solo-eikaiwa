@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test, afterEach } from "bun:test";
 import { Database } from "bun:sqlite";
 import {
   ensureLlmAuthSchema, makeLlmAuthStore, claudeSpawnEnv,
@@ -50,14 +50,17 @@ describe("claudeSpawnEnv", () => {
 });
 
 describe("getActiveAuthModes / setActiveAuthModes", () => {
+  afterEach(() => {
+    // 他テストファイルへの汚染防止（グローバルなランタイムキャッシュのため。assertion 失敗時も必ず走る）
+    setActiveAuthModes({ claude: "subscription", codex: "subscription" });
+  });
+
   test("既定は subscription/subscription", () => {
-    setActiveAuthModes({ claude: "subscription", codex: "subscription" }); // 他テストの汚染からの防御的リセット
     expect(getActiveAuthModes()).toEqual({ claude: "subscription", codex: "subscription" });
   });
 
   test("setActiveAuthModes で反映した値が getActiveAuthModes に見える（再起動不要のためのランタイムキャッシュ）", () => {
     setActiveAuthModes({ claude: "api-key", codex: "subscription" });
     expect(getActiveAuthModes()).toEqual({ claude: "api-key", codex: "subscription" });
-    setActiveAuthModes({ claude: "subscription", codex: "subscription" }); // 他テストへの汚染防止
   });
 });

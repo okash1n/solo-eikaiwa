@@ -273,7 +273,16 @@ async function handlePutRoles(req: Request, deps: LlmSettingsRoutesDeps): Promis
     parsedAuth = a.value;
   }
 
-  // 第2パス: 全検証通過後にまとめて保存する。
+  // codex を api-key へ切替える場合、global/roles/tuning/auth のどれか1つでも保存する前に隔離 CODEX_HOME の
+  // 準備（実行時に codex login を spawn しうる）を待つ。ここで失敗したら例外がハンドラの外側 catch-all まで
+  // 伝播し、以降の保存パスへは進まない＝何も保存されない。第2パスの内側（auth 保存の直前）に置くと、
+  // 実行時のログイン失敗時に global/roles/tuning は既に保存済みという部分適用を許してしまうため、
+  // 検証パス（400 判定）と同じ「何も保存しない」原子性の範囲に含める。
+  if (parsedAuth?.codex === "api-key") {
+    await deps.ensureCodexApiKeyHome();
+  }
+
+  // 第2パス: 全検証（+ 上記の codex ログイン確認）通過後にまとめて保存する。
   if (parsedGlobal) {
     deps.saveLlmSettings({
       provider: parsedGlobal.provider as LlmProvider,
@@ -296,11 +305,6 @@ async function handlePutRoles(req: Request, deps: LlmSettingsRoutesDeps): Promis
     deps.saveLlmRoleTuning(patch);
   }
   if (parsedAuth) {
-    // codex を api-key へ切替える場合、保存前に隔離 CODEX_HOME の準備を試みる。ここで失敗したら
-    // 何も保存しない（「保存したのに使えないモード」を残さないため、DB書き込みより前に置く）。
-    if (parsedAuth.codex === "api-key") {
-      await deps.ensureCodexApiKeyHome();
-    }
     const before = deps.getLlmAuthModes();
     let codexChanged = false;
     for (const provider of Object.keys(parsedAuth) as LlmAuthProvider[]) {

@@ -489,6 +489,22 @@ describe("llm-settings auth API", () => {
     expect(order).toEqual(["ensure", "save", "kill"]);
   });
 
+  test("PUT /roles: codex を api-key から subscription へ戻す場合も registry を kill する（両方向）", async () => {
+    const killCalls: unknown[] = [];
+    const { deps } = makeTestDeps({
+      getLlmSettings: () => null,
+      getLlmAuthModes: (): LlmAuthModes => ({ claude: "subscription", codex: "api-key" }),
+      getAuthKeysConfigured: () => ({ anthropic: false, codex: true }),
+      killCodexAppServerRegistry: () => killCalls.push(true),
+      llmEnv: () => ({ provider: "claude", apiKeyConfigured: false }),
+    });
+    const res = await makeFetchHandler(deps)(putJson("/api/llm-settings/roles", {
+      auth: { codex: "subscription" },
+    }));
+    expect(res.status).toBe(200);
+    expect(killCalls).toHaveLength(1);
+  });
+
   test("PUT /roles: codex の値が変わらない場合は registry を kill しない", async () => {
     const killCalls: unknown[] = [];
     const { deps } = makeTestDeps({
@@ -532,6 +548,36 @@ describe("llm-settings auth API", () => {
       auth: { claude: "trial" },
     }));
     expect(res.status).toBe(400);
+    expect(savedModes).toHaveLength(0);
+  });
+
+  test("PUT /roles: codex ログイン（ensureCodexApiKeyHome）が実行時に失敗したら global/roles/tuning/auth のいずれも保存しない（原子性）", async () => {
+    const savedGlobals: LlmSettings[] = [];
+    const savedRoles: string[] = [];
+    const savedTuning: unknown[] = [];
+    const savedModes: unknown[] = [];
+    const { deps } = makeTestDeps({
+      getLlmSettings: () => null,
+      getAuthKeysConfigured: () => ({ anthropic: false, codex: true }),
+      saveLlmSettings: (s) => savedGlobals.push(s),
+      saveLlmRoleSettings: (role) => savedRoles.push(role),
+      saveLlmRoleTuning: (t) => savedTuning.push(t),
+      saveLlmAuthMode: (provider, mode) => savedModes.push({ provider, mode }),
+      ensureCodexApiKeyHome: async () => {
+        throw new Error("codex login --with-api-key failed (exit 1): boom");
+      },
+      llmEnv: () => ({ provider: "claude", apiKeyConfigured: false }),
+    });
+    const res = await makeFetchHandler(deps)(putJson("/api/llm-settings/roles", {
+      roles: { generation: { provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3" } },
+      tuning: { assessment: { effort: "high" } },
+      auth: { codex: "api-key" },
+    }));
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toMatch(/boom/);
+    expect(savedGlobals).toHaveLength(0);
+    expect(savedRoles).toHaveLength(0);
+    expect(savedTuning).toHaveLength(0);
     expect(savedModes).toHaveLength(0);
   });
 

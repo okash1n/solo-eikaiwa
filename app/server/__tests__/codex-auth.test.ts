@@ -107,6 +107,24 @@ describe("ensureCodexApiKeyHome", () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  test("auth.json が壊れている（JSON.parse失敗）場合は無効扱いにして再ログインする（login が上書きする）", async () => {
+    const dir = freshDir();
+    try {
+      writeFileSync(path.join(dir, "auth.json"), "{not valid json,,,");
+      const calls: Array<{ env: Record<string, string | undefined>; stdin: string }> = [];
+      const spawnFn: CodexLoginSpawn = async (args) => { calls.push(args); };
+
+      await withEnvKey("sk-recover", async () => {
+        const result = await ensureCodexApiKeyHome(spawnFn, dir);
+        expect(result).toBe(dir);
+        expect(calls).toHaveLength(1);
+        expect(calls[0].stdin).toBe("sk-recover");
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("codexSpawnEnv", () => {
