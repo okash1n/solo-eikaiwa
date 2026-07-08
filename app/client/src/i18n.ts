@@ -396,7 +396,7 @@ export const STR: Record<Lang, Strings> = {
     intensive: { label: "Intensive sessions", note: "1–2 times a week" },
     drills: {
       warmup: { title: "Read-Aloud Warm-up", minutes: "6 min", desc: "Read today's phrases out loud" },
-      "ftt-mini": { title: "4/3/2 Mini", minutes: "8 min", desc: "Tell the same story twice, faster" },
+      "ftt-mini": { title: "Repeat Talk (4/3/2)", minutes: "8 min", desc: "Tell the same story twice, faster each time" },
       shadowing: { title: "Shadowing", minutes: "5 min", desc: "Listen and repeat in real time" },
       "roleplay-daily": { title: "Daily Role-play", minutes: "10 min", desc: "Restaurants, travel, small talk" },
       "roleplay-business": { title: "Business Role-play", minutes: "10 min", desc: "Meetings, scheduling, workplace talk" },
@@ -617,7 +617,7 @@ export const STR: Record<Lang, Strings> = {
   },
   ja: {
     nav: {
-      home: "ホーム", placement: "レベル測定", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300", listening: "多聴", progress: "進捗", feedback: "フィードバック", settings: "設定",
+      home: "ホーム", placement: "レベル測定", free: "自由会話", library: "ライブラリ", sentences: "暗記例文300", listening: "リスニング（多聴）", progress: "進捗", feedback: "フィードバック", settings: "設定",
       sectionToday: "今日の練習", sectionSelf: "自主練", sectionRecords: "記録・測定",
       selfStudyHint: "メインは「今日の練習」。自主練はすきま時間に。目安の順番: 聞く(多聴) → 覚える(暗記例文) → 話す(自由会話)。",
     },
@@ -723,14 +723,14 @@ export const STR: Record<Lang, Strings> = {
     intensive: { label: "強化セッション", note: "週1〜2回おすすめ" },
     drills: {
       warmup: { title: "音読ウォームアップ", minutes: "6分", desc: "今日の表現を声に出して準備" },
-      "ftt-mini": { title: "4/3/2ミニ", minutes: "8分", desc: "同じ話を2回、時間圧で流暢に" },
+      "ftt-mini": { title: "くり返しトーク（4/3/2）", minutes: "8分", desc: "同じ話を2回、制限時間を短くしながら流暢に" },
       shadowing: { title: "シャドーイング", minutes: "5分", desc: "聞こえた英語に重ねて言う" },
       "roleplay-daily": { title: "日常ロールプレイ", minutes: "10分", desc: "レストラン・旅行・雑談の場面練習" },
       "roleplay-business": { title: "ビジネスロールプレイ", minutes: "10分", desc: "会議・日程調整・職場の会話" },
       "roleplay-it": { title: "ITロールプレイ", minutes: "10分", desc: "技術討議・障害対応・ベンダー対応" },
     },
     fullSession: { title: "通しセッション", minutes: "60分", desc: "5ブロックで総合的にしっかり練習" },
-    shortSession: { title: "短縮版", minutes: "30分", desc: "時間がある日の集中トレーニング" },
+    shortSession: { title: "短縮セッション", minutes: "30分", desc: "時間がある日の集中トレーニング" },
     calendar: { title: "練習日", legendLess: "少", legendMore: "多" },
     freeTalk: { title: "自由会話", desc: "英語でなんでも話しかけてください — 録音ボタンで開始・停止" },
     progress: {
