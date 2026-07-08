@@ -356,29 +356,41 @@ export function matchPreset(targets: RoleTargets): PresetId | "custom" {
   import に `matchPreset` を追加。`presetBalancedBadge` キーは未使用になるが**残置**（他画面流用の可能性より削除は Task 8 の文言整理と切り離す。未使用キーは無害）。
 - [ ] **Step 4: 検証 + Commit** — `cd app && bun test && cd app/client && bun run build` → 緑。`git commit -m "feat: プリセットを現在値表示つきドロップダウンに変更し適用失敗時に巻き戻す"`
 
-### Task 5: 設定画面のタブ分割
+### Task 5: 設定画面のタブ分割（4タブ・2026-07-08 ユーザー指示で改訂）
+
+> 改訂: 当初は「言語モデル（接続+割当）/音声/表示」の3タブだったが、ユーザー指示「モデルのURLを指定する画面と用途ごとのモデルを設定する画面はタブで分ける」により **接続 / 用途ごとのモデル / 音声 / 表示 の4タブ**に変更。state は全て親（SettingsScreen）にあるため接続⇔割当の結合は保存ロジック側で完結しており、タブ分割は表示だけの問題。
 
 **Files:**
 - Modify: `app/client/src/screens/SettingsScreen.tsx:66-73,169-290`
 - Modify: `app/client/src/styles/app.css`（`.settings-tabs` 追加）
+- Modify: `app/client/src/i18n.ts`（`presetLocalRequired` / `targetLocalDisabled` の文言をタブ参照に更新・EN/JA同時）
 
 **Interfaces:**
-- Consumes: 既存キー `settings.llmSection` / `settings.ttsSection` / `settings.displaySection`（タブラベルに流用・新キー不要）
+- Consumes: 既存キー `settings.connectionSection` / `settings.roleAssignSection` / `settings.ttsSection` / `settings.displaySection`（タブラベルに流用・新キー不要）
 
-- [ ] **Step 1: タブ state と result 分離** — `result` を `llmResult` / `ttsResult` の2つに分離（`persist`/`applyResult` は `setLlmResult`、`onSaveTts`/`onResetTts` は `setTtsResult` を使う）。タブ state を追加: `const [tab, setTab] = useState<"llm" | "voice" | "display">("llm");`
+- [ ] **Step 1: タブ state と result 分離** — `result` を `llmResult` / `ttsResult` の2つに分離（`persist`/`applyResult` は `setLlmResult`、`onSaveTts`/`onResetTts` は `setTtsResult` を使う）。タブ state を追加: `const [tab, setTab] = useState<"conn" | "roles" | "voice" | "display">("conn");`
 - [ ] **Step 2: タブバー描画** — hero 直下に:
 
 ```tsx
       <div className="lang-toggle settings-tabs" role="tablist" aria-label={s.settings.title}>
-        <button role="tab" aria-selected={tab === "llm"} className={tab === "llm" ? "is-active" : ""} onClick={() => setTab("llm")}>{s.settings.llmSection}</button>
+        <button role="tab" aria-selected={tab === "conn"} className={tab === "conn" ? "is-active" : ""} onClick={() => setTab("conn")}>{s.settings.connectionSection}</button>
+        <button role="tab" aria-selected={tab === "roles"} className={tab === "roles" ? "is-active" : ""} onClick={() => setTab("roles")}>{s.settings.roleAssignSection}</button>
         <button role="tab" aria-selected={tab === "voice"} className={tab === "voice" ? "is-active" : ""} onClick={() => setTab("voice")}>{s.settings.ttsSection}</button>
         <button role="tab" aria-selected={tab === "display"} className={tab === "display" ? "is-active" : ""} onClick={() => setTab("display")}>{s.settings.displaySection}</button>
       </div>
 ```
 
-  3つの `<section className="support-panel stack">` をそれぞれ `{tab === "llm" && (...)}` / `{tab === "voice" && (...)}` / `{tab === "display" && (...)}` で条件レンダリング（**state は全て親にあるためタブ切替で入力は消えない**）。`{llmResult && <div className="info-pop" role="status">{llmResult}</div>}` は言語モデル section 末尾、`{ttsResult && ...}` を音声 section 末尾に追加（既存バグ修正）。
-- [ ] **Step 3: CSS** — `app.css` の `.lang-toggle` 定義群の後に: `.settings-tabs { align-self: flex-start; }`（幅いっぱいに伸びるのを防ぐ。色・寸法は `.lang-toggle` を継承）
-- [ ] **Step 4: 検証 + Commit** — `cd app/client && bun run build` → 緑。目視: タブ切替で入力保持・TTS保存結果が音声タブに出る。`git commit -m "feat: 設定画面を言語モデル/音声/表示の3タブに分割し保存結果表示をタブ別に修正"`
+  セクション構成を再編する（**state は全て親にあるためタブ切替で入力は消えない**）:
+  - `{tab === "conn" && ...}`: 接続セクション（claudeNoSetup 注記・ローカルLLM入力・Codex入力・APIキー注記・help・「接続を保存」ボタン）+ 末尾に `{llmResult && <div className="info-pop" role="status">{llmResult}</div>}`
+  - `{tab === "roles" && ...}`: **プリセット（Task 4 のドロップダウン）を最上部**に置き、続けて用途別割当（4ロールのトグル + roleDesc）+「割当を保存」ボタン + 末尾に llmResult 表示（接続タブと同じ式を両タブに描画してよい）
+  - `{tab === "voice" && ...}`: 音声（TTS）セクション + 末尾に `{ttsResult && ...}`（既存バグ修正: TTS の保存結果がタブ内に出る）
+  - `{tab === "display" && ...}`: 表示セクション
+  - 旧「言語モデル」見出し（`s.settings.llmSection` の `stat-title`）は不要になるが、**キーは残置**（削除しない）
+- [ ] **Step 3: タブまたぎ案内文の更新（EN/JA同時・コミットに明示）** — 接続と割当が別タブになるため位置参照が壊れる:
+  - `presetLocalRequired` EN: `"Set up a local LLM connection in the Connections tab to enable the local presets."` / JA: `"「接続」タブでローカル LLM の接続先を設定すると、ローカルを使うプリセットが選べます。"`
+  - `targetLocalDisabled` EN: `"Set up a local LLM connection in the Connections tab to choose Local."` / JA: `"「接続」タブでローカル LLM の接続先を設定すると「ローカル」を選べます。"`
+- [ ] **Step 4: CSS** — `app.css` の `.lang-toggle` 定義群の後に: `.settings-tabs { align-self: flex-start; }`（幅いっぱいに伸びるのを防ぐ。色・寸法は `.lang-toggle` を継承）
+- [ ] **Step 5: 検証 + Commit** — `cd app/client && bun run build` → 緑。目視: タブ切替で入力保持・TTS保存結果が音声タブに出る・プリセット適用が用途ごとのモデルタブで完結する。`git commit -m "feat: 設定画面を接続/用途ごとのモデル/音声/表示の4タブに分割し保存結果表示をタブ別に修正"`
 
 ### Task 6: サイドバーに言語・文字サイズ切替を常設
 
