@@ -1,10 +1,11 @@
 /**
  * ClaudeRunner を包むデコレータ群。
  *
- * - withTimeout（このファイルで定義・テスト済み）: このタスクではまだどの経路にも適用しない。
- *   実際の配線（どの runner に何 ms で適用するか）は Task 5/8 でまとめて行う。
- * - withFallback（Task 5 で追加予定）: transport 起因の失敗（TransportError）に限り
- *   別 runner へフォールバックするデコレータ。まだ実装しない。
+ * - withTimeout: runner の呼び出しにタイムアウトを課す。
+ * - withFallback: transport 起因の失敗（TransportError）に限り別 runner へフォールバックする。
+ *
+ * どの runner にどう適用するか（配線）は llm-provider.ts の selectRunner に集約する
+ * （claude 経路への適用は Task 8 の resolveClaudeRunner に集約）。
  */
 import { TransportError } from "./errors";
 import type { ClaudeRunner } from "../converse";
@@ -40,4 +41,23 @@ export function withTimeout(runner: ClaudeRunner, ms = 180_000): ClaudeRunner {
         },
       );
     });
+}
+
+/**
+ * primary runner が TransportError で reject したときに限り、同一引数 (prompt, resumeId, opts) で
+ * fallback runner へ委譲する。TransportError 以外（モデル起因の失敗等）はそのまま rethrow し、
+ * fallback は呼ばない。
+ * primary の reject は必ず try/await で捕捉してから fallback を呼ぶため、fallback 実行中に
+ * primary 側の rejected promise が unhandled rejection として残ることはない。
+ */
+export function withFallback(primary: ClaudeRunner, fallback: ClaudeRunner): ClaudeRunner {
+  return async (prompt, resumeId, opts) => {
+    try {
+      return await primary(prompt, resumeId, opts);
+    } catch (err) {
+      if (!(err instanceof TransportError)) throw err;
+      console.warn("primary runner unavailable, falling back:", err);
+      return fallback(prompt, resumeId, opts);
+    }
+  };
 }

@@ -2,6 +2,7 @@ import type { ClaudeRunner } from "./converse";
 import { makeOpenAICompatRunner } from "./providers/openai-compat";
 import { makeCodexRunner } from "./providers/codex";
 import { getCodexAppServerRunner } from "./providers/codex-app-server";
+import { withFallback, withTimeout } from "./providers/decorators";
 
 /** サイドバー設定UIで選べる LLM プロバイダ。"env" は「環境変数に従う」リセット用センチネル。 */
 export type LlmProvider = "env" | "claude" | "openai-compat" | "codex";
@@ -68,34 +69,36 @@ export function selectRunner(args: SelectRunnerArgs): ClaudeRunner {
   switch (provider) {
     case "":
     case "claude":
+      // タスク境界（Task 5 では触らない）: claude 経路への withFallback/withTimeout 合成は
+      // Task 8 の resolveClaudeRunner に集約する。ここで先に配線すると二重改変になる。
       return args.claudeRunner;
 
     case "openai-compat":
-      return makeOpenAICompatRunner({
-        baseUrl: requireEnv(env, "OPENAI_COMPAT_BASE_URL"),
-        apiKey: env.OPENAI_COMPAT_API_KEY?.trim() || undefined,
-        model: requireEnv(env, "OPENAI_COMPAT_MODEL"),
-        defaultSystemPrompt: args.defaultSystemPrompt,
-      });
+      // ハング検出のため withTimeout を適用する（従来は無限待ちだった。挙動変更）。
+      // openai-compat には exec 相当の代替経路が無いため withFallback は適用しない。
+      return withTimeout(
+        makeOpenAICompatRunner({
+          baseUrl: requireEnv(env, "OPENAI_COMPAT_BASE_URL"),
+          apiKey: env.OPENAI_COMPAT_API_KEY?.trim() || undefined,
+          model: requireEnv(env, "OPENAI_COMPAT_MODEL"),
+          defaultSystemPrompt: args.defaultSystemPrompt,
+        }),
+      );
 
     case "codex": {
-      // codex app-server（常駐プロセス）を既定経路にし、transport 障害時のみ codex exec（ワンショット）へ
-      // フォールバックする。接続設定（model/reasoningEffort/serviceTier）はどちらの経路でも同一値を渡す。
-      const codexConnection = {
+      // codex app-server（常駐プロセス）を既定経路にし、withTimeout でハングを打ち切り、
+      // transport 障害（TransportError）時のみ withFallback で codex exec（ワンショット）へ委譲する。
+      // 接続設定（model/reasoningEffort/serviceTier）はどちらの経路でも同一値を渡す
+      // （conn オブジェクトを1箇所で組み立てて両方へ展開する＝設定ドリフト防止）。
+      const conn = {
         model: env.CODEX_MODEL?.trim() || undefined,
         // 会話用途では xhigh 級の長考がレイテンシに直撃するため、既定を medium に固定（env で変更可）
         reasoningEffort: env.CODEX_REASONING_EFFORT?.trim() || "medium",
         // Fast サービスティアを既定に（無効な環境ではサーバ側で黙って無視されるため安全）
         serviceTier: env.CODEX_SERVICE_TIER?.trim() || "fast",
-      };
-      return getCodexAppServerRunner({
-        ...codexConnection,
         defaultSystemPrompt: args.defaultSystemPrompt,
-        execFallback: makeCodexRunner({
-          ...codexConnection,
-          defaultSystemPrompt: args.defaultSystemPrompt,
-        }),
-      });
+      };
+      return withFallback(withTimeout(getCodexAppServerRunner(conn)), makeCodexRunner(conn));
     }
 
     default:

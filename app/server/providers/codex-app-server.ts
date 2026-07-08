@@ -397,7 +397,6 @@ export type CodexAppServerConfig = {
   serviceTier?: string;
   defaultSystemPrompt: string;
   spawn?: SpawnAppServer;          // テスト注入。既定 realSpawnAppServer
-  execFallback?: ClaudeRunner;     // transport障害時のフォールバック（既定なし=そのままthrow）
 };
 
 /**
@@ -434,9 +433,12 @@ function foldPrompt(history: CodexMsg[], prompt: string): string {
  * 2. 未知の threadId / 世代が古い threadId（サーバ・プロセス再起動後）→ thread/resume
  *    （ディスク rollout からの復元 = パリティ経路）
  * 3. resume がリクエストレベルで失敗 / systemPrompt が変わった → 新 thread/start + 保険トランスクリプトの畳み込み
- * 4. transport 障害（spawn 失敗・exit・timeout・handshake 失敗 = TransportError）→ cfg.execFallback があれば
- *    同じ (prompt, resumeId, opts) で exec アダプタへフォールバック。無ければそのまま throw
- * モデル起因の失敗（turn failed・空応答）はフォールバックせず throw（exec アダプタと同じ挙動）。
+ * 4. transport 障害（spawn 失敗・exit・timeout・handshake 失敗 = TransportError）→ 死んだスレッド記憶を
+ *    threads.clear() で掃除した上でそのまま rethrow する（この runner 自体はもう exec アダプタへ
+ *    フォールバックしない。フォールバックの合成は呼び出し側 llm-provider.ts の selectRunner が
+ *    providers/decorators.ts の withFallback を使って行う）。
+ * モデル起因の失敗（turn failed・空応答）は TransportError ではないため、withFallback 側でも
+ * フォールバック対象にならず、そのまま呼び出し元へ伝播する（exec アダプタと同じ挙動）。
  */
 export function makeCodexAppServerRunner(cfg: CodexAppServerConfig): ClaudeRunner {
   return buildRunner(new CodexAppServerClient(cfg.spawn ?? realSpawnAppServer), cfg);
@@ -532,12 +534,9 @@ function buildRunner(
       if (err instanceof TransportError) {
         // プロセスは死んだ（または起動できなかった）。世代比較でも遅延検出されるが、死んだ記憶を
         // eager に掃除しておく（次の呼び出しは thread/resume＝ディスク復元から入り直す）。
-        // transcript は保険として残す。
+        // transcript は保険として残す。フォールバックの合成はここでは行わない
+        // （呼び出し側 selectRunner が withFallback で担う）。
         threads.clear();
-        if (cfg.execFallback) {
-          console.warn("codex app-server unavailable, falling back to exec:", err);
-          return cfg.execFallback(prompt, resumeId, opts);
-        }
       }
       throw err;
     }
@@ -583,7 +582,7 @@ type CodexAppServerRegistryEntry = {
  * を再実行しても、接続設定が変わらない限り既存プロセスを使い回すための唯一の保持場所。 */
 let registry: CodexAppServerRegistryEntry | null = null;
 
-/** 接続設定（プロセスの起動条件そのもの）だけをキーにする。defaultSystemPrompt/spawn/execFallback は
+/** 接続設定（プロセスの起動条件そのもの）だけをキーにする。defaultSystemPrompt/spawn は
  * ロール設定の変更では変わらない値、またはプロセス寿命に無関係な値なのでキーに含めない。
  * JSON.stringify は値が undefined のキーを省略するため、未指定と明示 undefined は同じキーになる（正規化）。 */
 function connectionKey(cfg: CodexAppServerConfig): string {
@@ -596,7 +595,7 @@ function connectionKey(cfg: CodexAppServerConfig): string {
  *   （=既に spawn 済みかもしれない常駐プロセスと、そのセッション記憶）をそのまま使う新しい runner を返す
  *   （新規プロセスは spawn されず、設定保存のたびの再解決でも保険トランスクリプトはリセットされない。Fix 1）。
  * - キーが変わった場合は旧 client を kill() し、threads/transcript も新規の空 Map から作り直す。
- * - defaultSystemPrompt/execFallback は呼び出しごとの cfg をそのまま使う（値は実運用では固定だが、
+ * - defaultSystemPrompt は呼び出しごとの cfg をそのまま使う（値は実運用では固定だが、
  *   仮に変わっても次回呼び出しの runner に反映される）。
  */
 export function getCodexAppServerRunner(cfg: CodexAppServerConfig): ClaudeRunner {
