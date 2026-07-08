@@ -111,13 +111,12 @@ export function makeClaudeRunner(
 }
 
 /**
- * claude 経路既定チューニング（env 由来・優先順位: env.CLAUDE_MODEL/CLAUDE_EFFORT > 既定）。
+ * claude 経路既定チューニング（純コード定数）。サーバは env のチューニング（CLAUDE_MODEL/CLAUDE_EFFORT）を
+ * 一切読まない — UI の既定表示（既定（sonnet）/ 既定（SDK標準））と実挙動の乖離を機構的に防ぐため。
+ * env の解釈は CLI エントリポイント（scripts/generate-content.ts）だけが行い、resolveCliRunner へ明示的に渡す。
  * module-level claudeRunner を1度だけ組み立てる際に使う。ロール別の優先順位式は resolveClaudeTuning が担う。
  */
-const CLAUDE_DEFAULT_TUNING = {
-  model: Bun.env.CLAUDE_MODEL?.trim() || "sonnet",
-  effort: Bun.env.CLAUDE_EFFORT?.trim() || undefined,
-};
+const CLAUDE_DEFAULT_TUNING: { model: string; effort?: string } = { model: "sonnet" };
 
 /**
  * 全ドメイン共有の claude ランナー（唯一の module-level 単一インスタンス）。
@@ -141,19 +140,16 @@ export const claudeRunner: ClaudeRunner = withFallback(
 );
 
 /**
- * ロール別チューニングの優先順位式（binding）: tuning.claudeModel > env.CLAUDE_MODEL > "sonnet" /
- * tuning.effort > env.CLAUDE_EFFORT > 未指定。rt が claudeModel/effort とも null（未カスタマイズ）なら
- * undefined を返す — 呼び出し側（resolveClaudeRunner）はこれを「空」トリガーとして module-level
- * claudeRunner の単一参照を返す（回帰基準）。
+ * ロール別チューニングの優先順位式（binding）: tuning.claudeModel > "sonnet" / tuning.effort > 未指定（SDK標準）。
+ * env のチューニング（CLAUDE_MODEL/CLAUDE_EFFORT）は読まない（UI の既定表示と実挙動の乖離を機構的に防ぐ）。
+ * rt が claudeModel/effort とも null（未カスタマイズ）なら undefined を返す — 呼び出し側
+ * （resolveClaudeRunner）はこれを「空」トリガーとして module-level claudeRunner の単一参照を返す（回帰基準）。
  */
-export function resolveClaudeTuning(
-  rt: RoleTuning,
-  env: Record<string, string | undefined> = Bun.env,
-): { model?: string; effort?: string } | undefined {
+export function resolveClaudeTuning(rt: RoleTuning): { model?: string; effort?: string } | undefined {
   if (rt.claudeModel === null && rt.effort === null) return undefined;
   return {
-    model: rt.claudeModel ?? (env.CLAUDE_MODEL?.trim() || "sonnet"),
-    effort: rt.effort ?? (env.CLAUDE_EFFORT?.trim() || undefined),
+    model: rt.claudeModel ?? "sonnet",
+    effort: rt.effort ?? undefined,
   };
 }
 
@@ -195,7 +191,7 @@ function resolveRoleRunner(
   const roleEnv = settingsToEnv(settings, env);
   const provider = resolveProviderKey(roleEnv);
   if (provider === "" || provider === "claude") {
-    return resolveClaudeRunner(resolveClaudeTuning(rt, env));
+    return resolveClaudeRunner(resolveClaudeTuning(rt));
   }
   return selectRunner({
     claudeRunner,
@@ -203,6 +199,16 @@ function resolveRoleRunner(
     env: roleEnv,
     tuning: { effort: rt.effort ?? undefined, serviceTier: rt.serviceTier ?? undefined },
   });
+}
+
+/**
+ * CLI（scripts/generate-content.ts 等のヘッドレス実行）用: env によるプロバイダ解決（LLM_PROVIDER・接続 env）に
+ * 明示チューニングを重ねて runner を1つ解決する。サーバ/UI 経路は env チューニングを一切読まないため、
+ * CLI プロセスは自分の env（CLAUDE_MODEL / CLAUDE_EFFORT / CODEX_REASONING_EFFORT / CODEX_SERVICE_TIER）を
+ * エントリポイントで検証・解釈し、RoleTuning としてここへ渡す（CLI プロセスの env はそのプロセスのインターフェース）。
+ */
+export function resolveCliRunner(rt: RoleTuning, env: Record<string, string | undefined> = Bun.env): ClaudeRunner {
+  return resolveRoleRunner(ENV_SETTINGS, rt, env);
 }
 
 /**

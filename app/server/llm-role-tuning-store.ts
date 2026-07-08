@@ -19,6 +19,11 @@ export function ensureLlmRoleTuningSchema(db: Database): void {
 /** ロール別チューニングの値。null は「既定へ従う（未指定）」を表す。妥当性(ホワイトリスト)は route が保証する。 */
 export type RoleTuning = { claudeModel: string | null; effort: string | null; serviceTier: string | null };
 
+/** チューニング値のホワイトリスト（route 検証と CLI の env 解釈で共有する単一定義。クライアントの *_OPTIONS と一致させる）。 */
+export const CLAUDE_MODELS = ["haiku", "sonnet", "opus"] as const;
+export const EFFORTS = ["low", "medium", "high", "xhigh"] as const;
+export const SERVICE_TIERS = ["fast", "standard"] as const;
+
 export type LlmRoleTuningStore = {
   /** 全ロール分（LLM_ROLES）を必ず返す。行不在のロールは全項目 null を埋める。 */
   getAll(): Record<LlmRole, RoleTuning>;

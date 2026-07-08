@@ -75,8 +75,10 @@ export function resolveProviderKey(env: Record<string, string | undefined>): str
 }
 
 /**
- * codex 接続設定を組み立てる純関数（優先順位・binding）:
- * tuning.effort > env.CODEX_REASONING_EFFORT > "medium" / tuning.serviceTier > env.CODEX_SERVICE_TIER > "fast"。
+ * codex 接続設定を組み立てる純関数（優先順位・binding）: tuning.effort > "medium" / tuning.serviceTier > "fast"。
+ * env のチューニング（CODEX_REASONING_EFFORT/CODEX_SERVICE_TIER）は読まない（UI の既定表示と実挙動の乖離を
+ * 機構的に防ぐ。CLI は scripts/generate-content.ts がエントリポイントで env を検証・解釈して tuning に渡す）。
+ * CODEX_MODEL は接続レベル設定（チューニングではない）のため env のまま。
  * selectRunner と単体テストで共有する（実プロセスに依存しないため直接テスト可能）。
  */
 export function resolveCodexConn(
@@ -86,10 +88,10 @@ export function resolveCodexConn(
 ): { model?: string; reasoningEffort: string; serviceTier: string; defaultSystemPrompt: string } {
   return {
     model: env.CODEX_MODEL?.trim() || undefined,
-    // 会話用途では xhigh 級の長考がレイテンシに直撃するため、既定を medium に固定（tuning/env で変更可）
-    reasoningEffort: tuning?.effort ?? (env.CODEX_REASONING_EFFORT?.trim() || "medium"),
+    // 会話用途では xhigh 級の長考がレイテンシに直撃するため、既定を medium に固定（UI の用途別詳細設定で変更可）
+    reasoningEffort: tuning?.effort ?? "medium",
     // Fast サービスティアを既定に（無効な環境ではサーバ側で黙って無視されるため安全）
-    serviceTier: tuning?.serviceTier ?? (env.CODEX_SERVICE_TIER?.trim() || "fast"),
+    serviceTier: tuning?.serviceTier ?? "fast",
     defaultSystemPrompt,
   };
 }

@@ -1,6 +1,6 @@
 import { json, parseJsonBody, exact, type RouteEntry } from "./http";
 import { LLM_ROLES, type LlmSettings, type LlmProvider, type LlmRole, type LlmRoleProvider, type LlmRoleSetting } from "../llm-provider";
-import type { RoleTuning } from "../llm-role-tuning-store";
+import { CLAUDE_MODELS, EFFORTS, SERVICE_TIERS, type RoleTuning } from "../llm-role-tuning-store";
 
 export type LlmSettingsRoutesDeps = {
   getLlmSettings: () => LlmSettings | null;
@@ -19,9 +19,6 @@ export type LlmSettingsRoutesDeps = {
 
 const PROVIDERS = ["env", "claude", "openai-compat", "codex"] as const;
 const ROLE_PROVIDERS = ["inherit", "claude", "openai-compat", "codex"] as const;
-const CLAUDE_MODELS = ["haiku", "sonnet", "opus"] as const;
-const EFFORTS = ["low", "medium", "high", "xhigh"] as const;
-const SERVICE_TIERS = ["fast", "standard"] as const;
 
 function isHttpUrl(v: string): boolean {
   try {

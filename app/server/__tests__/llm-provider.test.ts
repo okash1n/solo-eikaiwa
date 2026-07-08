@@ -122,34 +122,28 @@ describe("resolveProviderKey", () => {
   });
 });
 
-describe("resolveCodexConn（優先順位・binding: tuning > env > 既定）", () => {
-  test("tuning・envとも未指定はeffort=medium/serviceTier=fastの既定", () => {
+describe("resolveCodexConn（優先順位・binding: tuning > コード既定。envチューニングは読まない）", () => {
+  test("tuning未指定はeffort=medium/serviceTier=fastのコード既定", () => {
     expect(resolveCodexConn({}, "SYS")).toEqual({
       model: undefined, reasoningEffort: "medium", serviceTier: "fast", defaultSystemPrompt: "SYS",
     });
   });
 
-  test("tuning.effort が env.CODEX_REASONING_EFFORT より優先される", () => {
+  test("env.CODEX_REASONING_EFFORT/CODEX_SERVICE_TIERは読まない（無視してコード既定）", () => {
     expect(
-      resolveCodexConn({ CODEX_REASONING_EFFORT: "high" }, "SYS", { effort: "low" }).reasoningEffort,
-    ).toBe("low");
+      resolveCodexConn({ CODEX_REASONING_EFFORT: "xhigh", CODEX_SERVICE_TIER: "standard" }, "SYS"),
+    ).toEqual({
+      model: undefined, reasoningEffort: "medium", serviceTier: "fast", defaultSystemPrompt: "SYS",
+    });
   });
 
-  test("tuning.effort未指定はenv.CODEX_REASONING_EFFORTへフォールバック", () => {
-    expect(resolveCodexConn({ CODEX_REASONING_EFFORT: "high" }, "SYS").reasoningEffort).toBe("high");
+  test("tuning.effort/serviceTier指定はそのまま使われる", () => {
+    expect(resolveCodexConn({}, "SYS", { effort: "low", serviceTier: "standard" })).toEqual({
+      model: undefined, reasoningEffort: "low", serviceTier: "standard", defaultSystemPrompt: "SYS",
+    });
   });
 
-  test("tuning.serviceTier が env.CODEX_SERVICE_TIER より優先される", () => {
-    expect(
-      resolveCodexConn({ CODEX_SERVICE_TIER: "standard" }, "SYS", { serviceTier: "fast" }).serviceTier,
-    ).toBe("fast");
-  });
-
-  test("tuning.serviceTier未指定はenv.CODEX_SERVICE_TIERへフォールバック", () => {
-    expect(resolveCodexConn({ CODEX_SERVICE_TIER: "standard" }, "SYS").serviceTier).toBe("standard");
-  });
-
-  test("CODEX_MODELはenv由来のまま（tuningにmodelは無い＝全ロール単一モデル方針）", () => {
+  test("CODEX_MODELはenv由来のまま（接続レベル設定・tuningにmodelは無い＝全ロール単一モデル方針）", () => {
     expect(resolveCodexConn({ CODEX_MODEL: "gpt-5.5" }, "SYS").model).toBe("gpt-5.5");
   });
 });

@@ -348,7 +348,8 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                           disabled={saving || !view}
                           onChange={(e) => setTuningField(role, "claudeModel", (e.target.value || null) as RoleTuning["claudeModel"])}
                         >
-                          <option value="">{s.settings.tuningDefault}</option>
+                          {/* 既定はコード定数（サーバは env チューニングを読まない）ため、静的表記が常に真 */}
+                          <option value="">{s.settings.tuningDefaultWith("sonnet")}</option>
                           {CLAUDE_MODEL_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
                         </select>
                       </label>
@@ -361,7 +362,14 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                         disabled={saving || !view}
                         onChange={(e) => setTuningField(role, "effort", (e.target.value || null) as RoleTuning["effort"])}
                       >
-                        <option value="">{s.settings.tuningDefault}</option>
+                        {/* claude の既定effortはSDK標準（未指定）、codex はコード既定 medium。local は対応項目なしのため実効値を併記しない */}
+                        <option value="">
+                          {targets[role] === "claude"
+                            ? s.settings.tuningDefaultWith(s.settings.tuningSdkStandard)
+                            : targets[role] === "codex"
+                            ? s.settings.tuningDefaultWith("medium")
+                            : s.settings.tuningDefault}
+                        </option>
                         {EFFORT_OPTIONS.map((ef) => <option key={ef} value={ef}>{ef}</option>)}
                       </select>
                     </label>
@@ -374,7 +382,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                           disabled={saving || !view}
                           onChange={(e) => setTuningField(role, "serviceTier", (e.target.value || null) as RoleTuning["serviceTier"])}
                         >
-                          <option value="">{s.settings.tuningDefault}</option>
+                          <option value="">{s.settings.tuningDefaultWith("fast")}</option>
                           {SERVICE_TIER_OPTIONS.map((t) => <option key={t} value={t}>{tierLabels[t]}</option>)}
                         </select>
                       </label>

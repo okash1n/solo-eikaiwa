@@ -105,6 +105,8 @@ type SettingsStrings = {
     tuningEffort: string;
     tuningTier: string;
     tuningDefault: string;
+    tuningDefaultWith: (v: string) => string;
+    tuningSdkStandard: string;
     tuningTierFast: string;
     tuningTierStandard: string;
     saveConnection: string;
@@ -394,6 +396,8 @@ export const STR: Record<Lang, Strings> = {
       tuningEffort: "Effort",
       tuningTier: "Delivery",
       tuningDefault: "Default",
+      tuningDefaultWith: (v) => `Default (${v})`,
+      tuningSdkStandard: "SDK standard",
       tuningTierFast: "Fast (priority)",
       tuningTierStandard: "Standard",
       saveConnection: "Save connections",
@@ -744,6 +748,8 @@ export const STR: Record<Lang, Strings> = {
       tuningEffort: "effort（思考の深さ）",
       tuningTier: "配信",
       tuningDefault: "既定",
+      tuningDefaultWith: (v) => `既定（${v}）`,
+      tuningSdkStandard: "SDK標準",
       tuningTierFast: "fast（優先配信）",
       tuningTierStandard: "standard（標準・安価）",
       saveConnection: "接続を保存",
