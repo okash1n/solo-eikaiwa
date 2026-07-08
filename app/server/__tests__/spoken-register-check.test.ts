@@ -13,6 +13,8 @@ import {
   THRESHOLDS_BY_BAND,
   PREP_CHUNK_WORD_RANGE,
 } from "../spoken-register-check";
+import { loadContent } from "../content";
+import { SCENARIOS_DIR } from "../paths";
 
 describe("splitSentences", () => {
   test("., !, ? の直後の空白で文を分割する", () => {
@@ -293,24 +295,63 @@ describe("checkScenarioStarter", () => {
     expect(result.hasContraction).toBe(true);
   });
 
-  test("短縮形が無くても十分短い発話はPASS（短さの救済）", () => {
+  test("短縮形が無くても、書き言葉調の定型句や語数超過が無ければPASS（短縮形は必須要件にしない）", () => {
     const result = checkScenarioStarter("Excuse me, is this seat taken?");
     expect(result.hasContraction).toBe(false);
     expect(result.pass).toBe(true);
   });
 
-  test("短縮形が無く、かつ長い発話はFAIL（書き言葉調の可能性）", () => {
-    const result = checkScenarioStarter(
-      "I am wondering if it would be possible for you to help me with this particular issue today.",
-    );
+  test("丁寧な依頼表現は短縮形が無くても自然な話しことばとしてPASSする（実データ較正のポイント）", () => {
+    // 実在starterの典型例（"Hi, could I see the menu, please?"型）。短縮形の有無ではなく
+    // 定型句/語数/書き言葉語彙のみで判定するため、丁寧表現がそのままFAILすることはない。
+    const result = checkScenarioStarter("Could you tell me a bit about your background?");
     expect(result.hasContraction).toBe(false);
-    expect(result.pass).toBe(false);
-    expect(result.reasons.some((r) => r.includes("短縮形"))).toBe(true);
+    expect(result.pass).toBe(true);
   });
 
   test("書き言葉語彙は長さに関わらずFAILする", () => {
     const result = checkScenarioStarter("Moreover, I'd like to start.");
     expect(result.pass).toBe(false);
     expect(result.reasons.some((r) => r.includes("書き言葉語彙"))).toBe(true);
+  });
+});
+
+describe("checkScenarioStarter: 書き言葉調の定型句・語数超過で構成したFAIL例文（固定ピン留め）", () => {
+  test("'I would like to inquire ...' はFAIL", () => {
+    const result = checkScenarioStarter("I would like to inquire about the possibility of moving our meeting.");
+    expect(result.pass).toBe(false);
+    expect(result.reasons.some((r) => r.includes("定型句"))).toBe(true);
+  });
+
+  test("'It is necessary that ...' はFAIL", () => {
+    const result = checkScenarioStarter("It is necessary that we discuss this matter before the deadline.");
+    expect(result.pass).toBe(false);
+    expect(result.reasons.some((r) => r.includes("定型句"))).toBe(true);
+  });
+
+  test("'Please be advised ...' はFAIL", () => {
+    const result = checkScenarioStarter("Please be advised that the meeting has been rescheduled.");
+    expect(result.pass).toBe(false);
+    expect(result.reasons.some((r) => r.includes("定型句"))).toBe(true);
+  });
+
+  test("極端に長い単一発話(20語超)はFAIL", () => {
+    const long =
+      "I would really appreciate it if you could possibly find some time in your schedule to meet with me sometime this week or next.";
+    const result = checkScenarioStarter(long);
+    expect(result.pass).toBe(false);
+    expect(result.reasons.some((r) => r.includes("語数"))).toBe(true);
+  });
+});
+
+describe("checkScenarioStarter: 実データ較正（実在するシナリオ起点セリフが全てPASSすること）", () => {
+  test("content/scenarios/*.md の starters が1件残らずPASSする（旧実装は28/54でFAILしていた）", () => {
+    const scenarios = loadContent(SCENARIOS_DIR);
+    const starters = scenarios.flatMap((s) => s.starters);
+    expect(starters.length).toBeGreaterThanOrEqual(54);
+    const failures = starters
+      .map((starter) => ({ starter, result: checkScenarioStarter(starter) }))
+      .filter(({ result }) => !result.pass);
+    expect(failures).toEqual([]);
   });
 });

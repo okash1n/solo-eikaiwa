@@ -235,19 +235,30 @@ export type ScenarioStarterResult = {
 };
 
 /**
- * starter（シナリオ冒頭セリフ）の短さ許容閾値。これ以下の語数なら短縮形が無くてもFAILにしない。
- * 設計doc §5「hints/setupには短縮形率を要求しない」を受け、starters自体にも「短すぎて短縮形の
- * 入り込む余地がない」単一発話（例: "Excuse me." "Sounds good!"）を誤ってFAILさせないための救済。
- * 6語は THRESHOLDS_BY_BAND.beginner の文長下限帯（6-10語ガイド）の下端に合わせた値。
+ * starter（シナリオ冒頭セリフ）1件あたりの語数上限。単一の話しことば発話としては明らかに長すぎる
+ * （手紙・案内文調に流れている）ことを検出するための粗い外枠。実在54件の起点セリフの最大語数は13語
+ * （__tests__/spoken-register-check.test.ts の較正コーパスで実証）のため、十分な余裕を持たせている。
  */
-const STARTER_SHORT_LENGTH_TOLERANCE = 6;
+const STARTER_MAX_WORDS = 20;
+
+/**
+ * starter の書き言葉調 定型句パターン（非網羅的なキーワードリスト）。
+ * レビュー指摘（実データ較正）: 旧実装は「短縮形が無ければ書き言葉調」という単一発話への短縮形要求を
+ * 課しており、実在54件の起点セリフ中28件（52%）を誤ってFAILさせていた（"Hi, could I see the menu,
+ * please?" 等、丁寧な依頼・挨拶は短縮形が無くても自然な話しことば — 単一発話に短縮形を要求するのは
+ * 言語学的に誤り）。短縮形は「あれば自然さの一つの手がかり」という positive signal に留め、
+ * 必須要件にはしない。代わりに、手紙・ビジネス文書調であることが明確な定型句だけを狙い撃ちで検出する。
+ */
+const FORMAL_STARTER_RE =
+  /\bI would like to inquire\b|\bit is necessary\b|\bI am writing (?:to|in regard to|regarding)\b|\bplease be advised\b|\bkindly\b|\bat your earliest convenience\b|\bthis is to inform you\b|\bwould it be possible for you to\b|\bI am contacting you regarding\b|\bwe regret to inform\b|\bpursuant to\b/i;
 
 /**
  * シナリオ starters のみを対象にした口語検証（hints/setupのナラティブ文には適用しない — 呼び出し側の責務）。
  * 設計doc §5: 「scenarios: starters（冒頭セリフ）のみ口語検証。hints/setupには短縮形率を要求しない」。
- * 単一の短い発話は文全体で短縮形の機会が無いことがあるため、「短縮形あり」または
- * 「短縮形が無くても十分に短い（STARTER_SHORT_LENGTH_TOLERANCE語以下）」のいずれかを満たせばPASSとする。
- * 書き言葉語彙の禁止は長さに関わらず適用する。
+ * hard-fail条件: ①書き言葉語彙ヒット ②語数超過（STARTER_MAX_WORDS） ③書き言葉調の定型句ヒット。
+ * 短縮形の有無はpass/failに影響しない情報用フィールド（hasContraction）としてのみ返す。
+ * 較正根拠: 実在54件の起点セリフ全件PASS・書き言葉調で構成したFAIL例文がFAILすることを
+ * __tests__/spoken-register-check.test.ts で固定している。
  */
 export function checkScenarioStarter(text: string): ScenarioStarterResult {
   const trimmed = text.trim();
@@ -255,10 +266,12 @@ export function checkScenarioStarter(text: string): ScenarioStarterResult {
   const hasContraction = countContractions(trimmed) > 0;
   const reasons: string[] = [];
 
-  if (!hasContraction && wordCount > STARTER_SHORT_LENGTH_TOLERANCE) {
-    reasons.push(
-      `短縮形が無く、${wordCount}語（>${STARTER_SHORT_LENGTH_TOLERANCE}語の短文許容を超過）のため書き言葉調の可能性があります: "${trimmed}"`,
-    );
+  if (wordCount > STARTER_MAX_WORDS) {
+    reasons.push(`語数 ${wordCount} 語が上限 ${STARTER_MAX_WORDS} 語を超えています（単一発話として長すぎる可能性）`);
+  }
+  const formalMatch = trimmed.match(FORMAL_STARTER_RE);
+  if (formalMatch) {
+    reasons.push(`書き言葉調の定型句を検出: "${formalMatch[0]}"`);
   }
   const vocabHits = findWrittenVocabHits(trimmed);
   if (vocabHits.length > 0) {

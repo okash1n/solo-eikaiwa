@@ -6,6 +6,8 @@ import {
   BANNED_CATEGORIES,
   type TopicAnchorCandidate,
 } from "../topic-anchor-check";
+import { loadContent } from "../content";
+import { TOPICS_DIR } from "../paths";
 
 const validCandidate: TopicAnchorCandidate = {
   title: "My Morning Coffee Routine",
@@ -129,15 +131,36 @@ describe("detectBannedCategories", () => {
 });
 
 describe("looksAbstractTitle", () => {
-  test("具体名詞ヒントを含むタイトルはfalse(抽象ではない)", () => {
+  test("通常の具体的なタイトルはfalse（既定はfalse — 誤検出を避ける設計）", () => {
     expect(looksAbstractTitle("My Morning Coffee Routine")).toBe(false);
     expect(looksAbstractTitle("Fixing a Small Bug")).toBe(false);
     expect(looksAbstractTitle("A Meeting With My Manager")).toBe(false);
+    // 実データ較正: 旧実装（no concrete noun heuristic）はここをfalse positiveしていた
+    expect(looksAbstractTitle("Data governance in the AI era")).toBe(false);
+    expect(looksAbstractTitle("Food you love")).toBe(false);
   });
 
-  test("具体名詞ヒントを含まないタイトルはtrue(抽象の可能性)", () => {
+  test("抽象概念1語のみのタイトルはtrue", () => {
+    expect(looksAbstractTitle("Success")).toBe(true);
+    expect(looksAbstractTitle("Motivation")).toBe(true);
+  });
+
+  test("'The Future of X'型の抽象概念フレーズはtrue", () => {
     expect(looksAbstractTitle("The Meaning of Existence")).toBe(true);
-    expect(looksAbstractTitle("Freedom and Justice")).toBe(true);
+    expect(looksAbstractTitle("The Future of Work")).toBe(true);
+  });
+
+  test("複合タイトル('Freedom and Justice')は単語1語一致のパターンに当たらないためfalse（狭いヒューリスティックの既知の限界・false negative）", () => {
+    expect(looksAbstractTitle("Freedom and Justice")).toBe(false);
+  });
+});
+
+describe("looksAbstractTitle: 実データ較正（実在するtopicタイトルが全てPASSすること）", () => {
+  test("content/topics/*.md のtitleが1件残らず抽象判定されない（旧実装は14/26でfalse positiveしていた）", () => {
+    const topics = loadContent(TOPICS_DIR);
+    expect(topics.length).toBeGreaterThanOrEqual(26);
+    const flagged = topics.filter((t) => looksAbstractTitle(t.title));
+    expect(flagged.map((t) => t.title)).toEqual([]);
   });
 });
 

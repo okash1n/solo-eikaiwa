@@ -80,29 +80,27 @@ export function detectBannedCategories(text: string): BannedCategory[] {
 }
 
 /**
- * 具体名詞ヒントの代表例（daily/business/itドメインで頻出する語彙のごく一部・非網羅）。
- * 「no concrete noun heuristic」: タイトルにこれらの語が1つも含まれなければ「抽象的かもしれない」と判定する。
- * 限界: この一覧に無いことは「非具体」を意味しない — 固有名詞や個別のモノ・場所・役割等を含む正当な
- * タイトルを誤って抽象判定してしまう（false positive）。逆に抽象語がこの一覧の語と偶然共起する
- * タイトル（例: "The Philosophy of Coffee"）は見逃す（false negative）。あくまで粗い一次シグナルであり、
- * 単独の確定判定には使わない（FAIL時は再生成でカバーする前提）。
+ * 抽象タイトル検出（実データ較正済み・縮小版）。
+ * 旧実装（「具体名詞ヒントが1つも無ければ抽象」= no concrete noun heuristic）は実在26タイトル中14件
+ * （54%）を誤って抽象判定していた（"Data governance in the AI era" "Food you love" 等、具体的で
+ * 一般的な話題でも、たまたまホワイトリストの語を含まないだけでFAILしてしまう欠陥設計）。
+ * レビュー方針（v0.25較正原則: 実データに勝てないvalidatorは再生成churnと不自然な出力への圧力を生む）
+ * を受け、「具体性の保証」は checkTopicAnchor 側の experienceAnchor/commonObjectsOrActions 必須化と
+ * detectBannedCategories の abstract カテゴリが担うという前提に変更し、本関数は「タイトル全体が
+ * 抽象名詞1語、または"The Future of X"のような抽象概念の定型フレーズだけで構成されている」という
+ * 明確なケースだけを拾う狭いセーフティネットに縮小した。
+ * 限界: 非網羅的なパターンリストであり、リスト外の抽象タイトル（例: "The Value of Silence"）は
+ * 見逃す（false negative）。false positiveを避けることを優先した設計（実在26タイトル全件PASSを
+ * __tests__/topic-anchor-check.test.ts で較正済み）。
  */
-const CONCRETE_NOUN_HINTS: readonly string[] = [
-  // daily
-  "coffee", "tea", "breakfast", "lunch", "dinner", "kitchen", "grocery", "restaurant", "apartment",
-  "bus", "train", "weekend", "phone", "laptop", "gym", "closet", "laundry", "neighbor", "hobby",
-  "travel", "vacation", "pet", "dog", "cat", "morning", "commute",
-  // business
-  "meeting", "email", "manager", "colleague", "client", "customer", "office", "deadline", "interview",
-  "resume", "salary", "presentation", "budget", "invoice", "schedule", "project", "team", "coworker",
-  // it
-  "code", "bug", "server", "database", "app", "software", "password", "network", "deployment",
-  "test", "keyboard", "screen", "file", "backup", "ticket", "incident", "review",
-];
+const ABSTRACT_CONCEPT_TITLE_RE =
+  /^(?:success|motivation|happiness|freedom|justice|failure|ambition|productivity|leadership|creativity|resilience|mindset|passion|purpose)\.?$/i;
+const ABSTRACT_CONCEPT_PHRASE_RE =
+  /^the future of\b|^the meaning of\b|^the philosophy of\b|^the nature of\b|^the concept of\b|^the value of\b/i;
 
 export function looksAbstractTitle(title: string): boolean {
-  const lower = title.toLowerCase();
-  return !CONCRETE_NOUN_HINTS.some((w) => lower.includes(w));
+  const trimmed = title.trim();
+  return ABSTRACT_CONCEPT_TITLE_RE.test(trimmed) || ABSTRACT_CONCEPT_PHRASE_RE.test(trimmed);
 }
 
 export type TopicAnchorCandidate = {
