@@ -250,7 +250,10 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
           <div className="stack">
             <div className="stat-title">{s.settings.presetSection}</div>
             {(() => {
-              const current = matchPreset(targets);
+              // Task 5 で matchPreset は { id, cloud } | "custom" を返すようになった（優先クラウド対応）。
+              // Task 6 で cloud を UI に反映するまでは id のみを使い、表示は従来どおり（claude 想定）に保つ。
+              const m = matchPreset(targets);
+              const current = m === "custom" ? "custom" : m.id;
               return (
                 <>
                   <select
