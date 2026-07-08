@@ -279,6 +279,12 @@ LLM_PROVIDER=claude CLAUDE_MODEL=opus CLAUDE_EFFORT=high bun scripts/generate-co
 
 `CLAUDE_MODEL`（haiku/sonnet/opus）・`CLAUDE_EFFORT`（low/medium/high/xhigh/max）、`LLM_PROVIDER=codex` のときは `CODEX_REASONING_EFFORT` / `CODEX_SERVICE_TIER` を、この CLI 自身がホワイトリスト検証つきで解釈します（サーバ本体はこれらの env を読みません — 前述「env の役割」参照）。
 
+生成した話し言葉系の教材（多聴など）は、口語として自然か（短縮形率・平均文長・書き言葉語彙）を機械検証できます。AI 生成教材は手で直さず、検証 NG なら再生成してください:
+
+```bash
+bun scripts/check-spoken-register.ts   # 多聴素材の全件検証（1件でも不合格なら非ゼロ終了）
+```
+
 **編集・生成したあとの反映のさせ方**（ここだけ覚えれば大丈夫です）:
 
 | 何を変えた | やること |

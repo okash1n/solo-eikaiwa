@@ -1,6 +1,7 @@
 import { defaultRunner, type ClaudeRunner } from "./converse";
 import { syntaxConstraint, vocabConstraint, type HintLang } from "./progression";
 import type { SessionEvent } from "./session-log";
+import { SPOKEN_STYLE_BLOCK } from "./spoken-style";
 
 export type AeItem = { quote: string; issue: string; better: string; why_ja: string };
 export type AeFeedback = { items: AeItem[]; praise: string };
@@ -34,6 +35,7 @@ You receive the transcript of the learner's spoken monologue (round 1 of a 4/3/2
 Pick the 3-5 most impactful language problems (grammar, word choice, unnatural phrasing). Ignore filler words and small slips.
 ${constraintLine}Reply with STRICT JSON only — no markdown fences, no commentary — exactly this shape:
 {"items":[{"quote":"<the learner's exact words>","issue":"<short English label>","better":"<corrected natural version>","why_ja":"<1〜2文の簡潔な日本語解説>"}],"praise":"<one short encouraging sentence in English>"}
+For "better": ${SPOKEN_STYLE_BLOCK}
 Do not use any tools — reply directly with text only.`;
 }
 
@@ -109,6 +111,7 @@ Do NOT correct the learner and do NOT judge their level. Only provide the wordin
 Reply with STRICT JSON only — no markdown fences, no commentary — exactly this shape:
 {"suggestions":[{"en":"<natural, speakable English phrase or short sentence>","ja":"<日本語で使い方やニュアンスを1文>"}]}
 Give 2 or 3 suggestions.
+${SPOKEN_STYLE_BLOCK}
 Do not use any tools — reply directly with text only.`;
 
 /** 言い方ヒント: 言いたい日本語＋直近履歴から英語表現を2〜3個提案する（キャッシュしない） */
@@ -223,6 +226,7 @@ Rules:
   learner can reuse that same frame with their own content in the next exercise.
 - ja: the natural full-sentence Japanese translation of "en" (not a fragment).
 - outline: 3-4 bullets forming a simple talk skeleton (opening → 1-2 points → wrap-up), tied to the given hints.
+- ${SPOKEN_STYLE_BLOCK}
 Do not use any tools — reply directly with text only.`;
 }
 

@@ -1,0 +1,154 @@
+/**
+ * 口語レジスター検証の純ロジック。
+ * 英文テキストから ①短縮形率 ②平均文長（語/文） ③書き言葉語彙ヒットを算出し、帯別閾値で PASS/FAIL を返す。
+ * 較正根拠（docs/superpowers/plans/2026-07-09-spoken-register-pack.md の監査事実）:
+ *   例文300 = 平均9.58語/文・短縮形37%・書き言葉語彙ほぼ0 → PASS基準のコーパス
+ *   多聴6本（旧版） = 初級2本 短縮形0%の教科書調 / 上級3本 平均17.8〜19.4語/文のエッセイ調 → FAIL現物
+ * 閾値の具体値は __tests__/spoken-register-check.test.ts で実データ較正して固定している。
+ */
+import type { SpokenBand } from "./spoken-style";
+
+export type SpokenRegisterMetrics = {
+  sentenceCount: number;
+  wordCount: number;
+  avgWordsPerSentence: number;
+  contractionCount: number;
+  /** 短縮形出現数/文数（短縮可能位置の分母を厳密に数えない簡易近似。ブリーフで明示許容） */
+  contractionsPerSentence: number;
+  writtenVocabHits: Array<{ term: string; count: number }>;
+};
+
+export type SpokenRegisterResult = {
+  band: SpokenBand;
+  metrics: SpokenRegisterMetrics;
+  pass: boolean;
+  reasons: string[];
+};
+
+/**
+ * 文分割で短縮形と誤認しないよう保護する略語（ピリオドを伴うもの）。
+ * プレースホルダー文字での退避/復元は使わない（過去に制御文字(NULバイト)が紛れ込みファイルがgit上binary扱いになった事故があるため）。
+ * 代わりに「直前が [.!?] かつ、直前が『略語+ピリオド』ではない」ことを否定後読みで判定し、その位置でのみ分割する。
+ */
+const ABBREVIATIONS = ["Mr", "Mrs", "Ms", "Dr", "Prof", "Jr", "Sr", "St", "vs", "etc"];
+const SENTENCE_SPLIT_RE = new RegExp(`(?<=[.!?])(?<!\\b(?:${ABBREVIATIONS.join("|")})\\.)\\s+`);
+
+/** .!? の直後の空白で分割する（Mr./Dr. などの略語のピリオドでは分割しない） */
+export function splitSentences(text: string): string[] {
+  return text
+    .split(SENTENCE_SPLIT_RE)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
+const WORD_RE = /[A-Za-z0-9]+(?:'[A-Za-z]+)?/g;
+
+/** 語数（短縮形 don't 等は1語として数える） */
+export function countWords(text: string): number {
+  return text.match(WORD_RE)?.length ?? 0;
+}
+
+/**
+ * 短縮形の出現数。
+ * - n't / 'm / 're / 've / 'll / 'd は所有格と綴りが衝突しないため常にカウントする（don't, I'm, we're, we've, we'll, I'd 等）。
+ * - 's は所有格（例: the manager's desk）と綴りが同じため、既知の短縮形ホスト（it/that/there/here/he/she/what/who/let/how）
+ *   に続く場合のみカウントする（it's, that's, there's, here's, he's, she's, what's, who's, let's, how's）。
+ *   固有名詞+'s（例: James's）は所有格・短縮形の判別がつかず稀なため対象外とする。
+ */
+const NT_OR_SUFFIX_CONTRACTION_RE = /\b[A-Za-z]+'(?:m|re|ve|ll|d)\b|\b[A-Za-z]+n't\b/gi;
+const S_CONTRACTION_HOSTS = ["it", "that", "there", "here", "he", "she", "what", "who", "let", "how"];
+const S_CONTRACTION_RE = new RegExp(`\\b(?:${S_CONTRACTION_HOSTS.join("|")})'s\\b`, "gi");
+
+export function countContractions(text: string): number {
+  const suffixCount = text.match(NT_OR_SUFFIX_CONTRACTION_RE)?.length ?? 0;
+  const sCount = text.match(S_CONTRACTION_RE)?.length ?? 0;
+  return suffixCount + sCount;
+}
+
+/**
+ * 書き言葉語彙の禁止リスト（Task1 spoken-style.ts のブロック内の禁止例に、監査で指摘された語を加えたもの）。
+ * 活用形（s/ed/ing/ly等）でのすり抜けを防ぐため、語ごとに活用形をカバーする正規表現を対で持つ。
+ * 不変の談話標識（moreover等）は活用しないためそのまま。
+ */
+const BAN_TERM_PATTERNS: ReadonlyArray<{ term: string; pattern: string }> = [
+  { term: "moreover", pattern: "moreover" },
+  { term: "furthermore", pattern: "furthermore" },
+  { term: "therefore", pattern: "therefore" },
+  { term: "consequently", pattern: "consequently" },
+  { term: "nevertheless", pattern: "nevertheless" },
+  { term: "in addition", pattern: "in\\s+addition" },
+  { term: "utilize", pattern: "utiliz(?:e|es|ed|ing|ation)" },
+  { term: "individual", pattern: "individual(?:s|ly)?" },
+  { term: "numerous", pattern: "numerous(?:ly)?" },
+  { term: "approximately", pattern: "approximat(?:e|es|ed|ely|ing)" },
+];
+
+export const WRITTEN_VOCAB_BAN_LIST: readonly string[] = BAN_TERM_PATTERNS.map((p) => p.term);
+
+/** 禁止語彙の出現をヒット語ごとに数える（活用形込み・大文字小文字を問わない単語/フレーズ一致） */
+export function findWrittenVocabHits(text: string): Array<{ term: string; count: number }> {
+  const hits: Array<{ term: string; count: number }> = [];
+  for (const { term, pattern } of BAN_TERM_PATTERNS) {
+    const re = new RegExp(`\\b${pattern}\\b`, "gi");
+    const count = text.match(re)?.length ?? 0;
+    if (count > 0) hits.push({ term, count });
+  }
+  return hits;
+}
+
+export function computeSpokenRegisterMetrics(text: string): SpokenRegisterMetrics {
+  const sentenceCount = splitSentences(text).length;
+  const wordCount = countWords(text);
+  const contractionCount = countContractions(text);
+  return {
+    sentenceCount,
+    wordCount,
+    avgWordsPerSentence: sentenceCount === 0 ? 0 : wordCount / sentenceCount,
+    contractionCount,
+    contractionsPerSentence: sentenceCount === 0 ? 0 : contractionCount / sentenceCount,
+    writtenVocabHits: findWrittenVocabHits(text),
+  };
+}
+
+export type BandThresholds = {
+  /** これを超えたら FAIL（エッセイ調の長文化を検出） */
+  maxAvgWordsPerSentence: number;
+  /** これを下回ったら FAIL（短縮形0%の教科書調を検出） */
+  minContractionsPerSentence: number;
+  /** これを超えたら FAIL（書き言葉語彙ヒット件数の上限。既定0） */
+  maxWrittenVocabHits: number;
+};
+
+/**
+ * 帯別閾値。spoken-style.ts の LENGTH_CAP_BY_BAND（各帯の文長上限ガイド: 6-10 / 9-13 / 10-15 語）に
+ * 1語の余裕を足した値を上限とし、短縮形率の下限は全帯 0.2（短縮形数/文数）で統一。
+ * __tests__/spoken-register-check.test.ts の較正テストで実データに対して固定している値:
+ *   例文300（抜粋） PASS / 多聴6本（旧版・抜粋） FAIL が両立するように調整済み。
+ */
+export const THRESHOLDS_BY_BAND: Record<SpokenBand, BandThresholds> = {
+  beginner: { maxAvgWordsPerSentence: 11, minContractionsPerSentence: 0.2, maxWrittenVocabHits: 0 },
+  intermediate: { maxAvgWordsPerSentence: 14, minContractionsPerSentence: 0.2, maxWrittenVocabHits: 0 },
+  advanced: { maxAvgWordsPerSentence: 16, minContractionsPerSentence: 0.2, maxWrittenVocabHits: 0 },
+};
+
+export function checkSpokenRegister(text: string, band: SpokenBand): SpokenRegisterResult {
+  const metrics = computeSpokenRegisterMetrics(text);
+  const th = THRESHOLDS_BY_BAND[band];
+  const reasons: string[] = [];
+  if (metrics.avgWordsPerSentence > th.maxAvgWordsPerSentence) {
+    reasons.push(
+      `平均文長 ${metrics.avgWordsPerSentence.toFixed(2)} 語/文が上限 ${th.maxAvgWordsPerSentence} 語/文を超えています（エッセイ調の可能性）`,
+    );
+  }
+  if (metrics.contractionsPerSentence < th.minContractionsPerSentence) {
+    reasons.push(
+      `短縮形率 ${metrics.contractionsPerSentence.toFixed(2)}（短縮形数/文数）が下限 ${th.minContractionsPerSentence} 未満です（教科書調の可能性）`,
+    );
+  }
+  if (metrics.writtenVocabHits.length > th.maxWrittenVocabHits) {
+    reasons.push(
+      `書き言葉語彙を検出: ${metrics.writtenVocabHits.map((h) => `${h.term}×${h.count}`).join(", ")}`,
+    );
+  }
+  return { band, metrics, pass: reasons.length === 0, reasons };
+}

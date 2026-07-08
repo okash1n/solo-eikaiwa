@@ -5,6 +5,7 @@ import {
 } from "../coach";
 import type { ClaudeRunner } from "../converse";
 import type { SessionEvent } from "../session-log";
+import { SPOKEN_STYLE_BLOCK } from "../spoken-style";
 
 function runnerReturning(text: string): { runner: ClaudeRunner; seen: Array<{ prompt: string; systemPrompt?: string }> } {
   const seen: Array<{ prompt: string; systemPrompt?: string }> = [];
@@ -52,8 +53,8 @@ describe("generateAeFeedback", () => {
     expect(result.items[0].why_ja).toContain("prose feedback");
   });
 
-  // stage4+ 不変ロック: 変更前の実出力(AE_SYSTEM)をそのまま転記（回帰基準）
-  test("stage 4+ の systemPrompt は現行文字列と完全一致する（回帰ロック）", async () => {
+  // stage4+ 不変ロック: 変更前の実出力(AE_SYSTEM)+口語スタイルブロック注入をそのまま転記（回帰基準）
+  test("stage 4+ の systemPrompt は現行文字列(+口語スタイルブロック)と完全一致する（回帰ロック）", async () => {
     const { runner, seen } = runnerReturning(JSON.stringify(valid));
     await generateAeFeedback({ transcript: "t", topicTitle: "x", stage: 5 }, runner);
     expect(seen[0].systemPrompt).toBe(
@@ -62,6 +63,7 @@ describe("generateAeFeedback", () => {
       "Pick the 3-5 most impactful language problems (grammar, word choice, unnatural phrasing). Ignore filler words and small slips.\n" +
       "Reply with STRICT JSON only — no markdown fences, no commentary — exactly this shape:\n" +
       '{"items":[{"quote":"<the learner\'s exact words>","issue":"<short English label>","better":"<corrected natural version>","why_ja":"<1〜2文の簡潔な日本語解説>"}],"praise":"<one short encouraging sentence in English>"}\n' +
+      `For "better": ${SPOKEN_STYLE_BLOCK}\n` +
       "Do not use any tools — reply directly with text only.",
     );
   });
@@ -71,6 +73,12 @@ describe("generateAeFeedback", () => {
     await generateAeFeedback({ transcript: "t", topicTitle: "x", stage: 1 }, runner);
     expect(seen[0].systemPrompt).toContain("word families");
     expect(seen[0].systemPrompt).toContain("one clause");
+  });
+
+  test("systemPrompt は better欄向けに口語スタイルブロックを含む（stage不問）", async () => {
+    const { runner, seen } = runnerReturning(JSON.stringify(valid));
+    await generateAeFeedback({ transcript: "t", topicTitle: "x", stage: 5 }, runner);
+    expect(seen[0].systemPrompt).toContain(SPOKEN_STYLE_BLOCK);
   });
 });
 
@@ -164,6 +172,12 @@ describe("generatePrepPack", () => {
     expect(seen[0].systemPrompt).toContain("No ellipses");
   });
 
+  test("systemPrompt は口語スタイルブロックを含む", async () => {
+    const { runner, seen } = runnerReturning(JSON.stringify(valid));
+    await generatePrepPack({ topicTitle: "t", hints: [], stage: 3 }, runner);
+    expect(seen[0].systemPrompt).toContain(SPOKEN_STYLE_BLOCK);
+  });
+
   test("```フェンス付きJSONでも取り出す", async () => {
     const { runner } = runnerReturning("```json\n" + JSON.stringify(valid) + "\n```");
     const result = await generatePrepPack({ topicTitle: "t", hints: [], stage: 3 }, runner);
@@ -227,8 +241,8 @@ describe("generatePrepPack", () => {
     expect(seen[0].systemPrompt).not.toContain("No rare idioms");
   });
 
-  // stage4+ 不変ロック: 変更前の実出力(chunkCount既定6)をそのまま転記（回帰基準）
-  test("stage 4+ の systemPrompt は現行文字列と完全一致する（回帰ロック）", async () => {
+  // stage4+ 不変ロック: 変更前の実出力(chunkCount既定6)+口語スタイルブロック注入をそのまま転記（回帰基準）
+  test("stage 4+ の systemPrompt は現行文字列(+口語スタイルブロック)と完全一致する（回帰ロック）", async () => {
     const { runner, seen } = runnerReturning(JSON.stringify(valid));
     await generatePrepPack({ topicTitle: "t", hints: [], stage: 5 }, runner);
     expect(seen[0].systemPrompt).toBe(
@@ -244,6 +258,7 @@ describe("generatePrepPack", () => {
       "  learner can reuse that same frame with their own content in the next exercise.\n" +
       '- ja: the natural full-sentence Japanese translation of "en" (not a fragment).\n' +
       "- outline: 3-4 bullets forming a simple talk skeleton (opening → 1-2 points → wrap-up), tied to the given hints.\n" +
+      `- ${SPOKEN_STYLE_BLOCK}\n` +
       "Do not use any tools — reply directly with text only.",
     );
   });
@@ -282,6 +297,12 @@ describe("generatePhraseHints", () => {
     expect(seen[0].prompt).toContain("Learner: Not yet.");
     expect(seen[0].prompt).toContain("その機能はまだ試していません");
     expect(seen[0].systemPrompt).toContain("STRICT JSON");
+  });
+
+  test("systemPrompt は口語スタイルブロックを含む", async () => {
+    const { runner, seen } = runnerReturning(JSON.stringify(valid));
+    await generatePhraseHints({ jaText: "はい" }, runner);
+    expect(seen[0].systemPrompt).toContain(SPOKEN_STYLE_BLOCK);
   });
 
   test("history省略時は会話部分を含めずjaTextのみプロンプトに入る", async () => {

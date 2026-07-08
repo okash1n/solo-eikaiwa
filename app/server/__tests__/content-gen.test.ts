@@ -15,6 +15,7 @@ import {
   genListening, listeningToMarkdown, validateListeningCandidate,
 } from "../content-gen";
 import { pickWorstCategories, type CategoryRate } from "../srs-analytics";
+import { SPOKEN_STYLE_BLOCK, spokenStyleFor } from "../spoken-style";
 
 /** 呼び出し順にレスポンスを返す fake ClaudeRunner（実Claude呼び出し・実content/への書き込みは一切しない） */
 function makeRunner(responses: string[]): ClaudeRunner {
@@ -788,6 +789,35 @@ describe("content-gen / genListening", () => {
     expect(seen[0].systemPrompt).toContain("word families");
     expect(seen[3].systemPrompt).not.toContain("word families");
     expect(seen[3].systemPrompt).not.toMatch(/\bnull\b/);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("下帯・上帯とも systemPrompt に口語スタイルブロックを含み、帯別の文長ガイドが異なる", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "gen-listen-spoken-"));
+    const { runner, seen } = makeCapturingRunner(SIX);
+    await genListening({ runner, listeningDir: dir, dry: true });
+    // 下帯(seen[0])はbeginner、上帯(seen[3])はadvancedの文長ガイド付きで注入される
+    expect(seen[0].systemPrompt).toContain(SPOKEN_STYLE_BLOCK);
+    expect(seen[3].systemPrompt).toContain(SPOKEN_STYLE_BLOCK);
+    expect(seen[0].systemPrompt).toContain(spokenStyleFor("beginner"));
+    expect(seen[3].systemPrompt).toContain(spokenStyleFor("advanced"));
+    expect(seen[0].systemPrompt).not.toContain(spokenStyleFor("advanced"));
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  // T3差し戻し(2回目): it×beginner が「手順書調（I check the code. I run the test.）」に収束し
+  // 短縮形が入らなかったため、itドメインのみマニュアル調回避の指示を追加する。
+  test("it ドメインの systemPrompt のみマニュアル調回避の指示を含み、daily/business は不変", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "gen-listen-it-casual-"));
+    const { runner, seen } = makeCapturingRunner(SIX);
+    await genListening({ runner, listeningDir: dir, dry: true });
+    // LISTENING_PLAN 順: [0]daily-lo [1]business-lo [2]it-lo [3]daily-hi [4]business-hi [5]it-hi
+    expect(seen[2].systemPrompt).toContain("NOT like a manual or tutorial");
+    expect(seen[5].systemPrompt).toContain("NOT like a manual or tutorial"); // it は全帯(advancedも)対象でよい
+    expect(seen[0].systemPrompt).not.toContain("NOT like a manual or tutorial");
+    expect(seen[1].systemPrompt).not.toContain("NOT like a manual or tutorial");
+    expect(seen[3].systemPrompt).not.toContain("NOT like a manual or tutorial");
+    expect(seen[4].systemPrompt).not.toContain("NOT like a manual or tutorial");
     rmSync(dir, { recursive: true, force: true });
   });
 
