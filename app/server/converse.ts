@@ -38,28 +38,41 @@ export function makeClaudeRunner(queryFn: typeof query): ClaudeRunner {
     let sessionId = resumeId ?? "";
     let text = "";
     // 2相エラー分類（binding、providers/decorators.ts の withFallback の判定基盤）:
-    // SDK の async iterator から最初のメッセージを受け取る前に throw した例外はプロセス起動・
-    // ハンドシェイク等の transport 起因とみなし TransportError に包む（cause 保持）。
+    // SDK から最初のメッセージを受け取る前に throw した例外はプロセス起動・ハンドシェイク等の
+    // transport 起因とみなし TransportError に包む（cause 保持）。query() 呼び出し自体の同期 throw
+    // （例: ネイティブ CLI バイナリ欠損の起動前バリデーション）も iterator 以前の失敗として同じ扱い。
     // 最初のメッセージ以後の失敗（下の result subtype エラー・末尾の空 text）はモデル起因として
     // 現行どおり plain Error のまま投げる。メッセージ文字列の sniffing はしない — 「最初のメッセージを
     // 受け取ったかどうか」という時系列だけで分岐する。
+    const asTransportError = (err: unknown) =>
+      new TransportError(
+        `Claude SDK failed before first message: ${err instanceof Error ? err.message : String(err)}`,
+        { cause: err },
+      );
+
     let receivedFirstMessage = false;
-    const iterator = queryFn({
-      prompt,
-      options: {
-        systemPrompt: opts?.systemPrompt ?? PARTNER_SYSTEM_PROMPT,
-        model: "sonnet",
-        // `allowedTools` only controls auto-allow/permission-prompt behavior; per the SDK's own
-        // sdk.d.ts docs it does NOT restrict which tools the model can see ("To restrict which
-        // tools are available, use the `tools` option instead."). An empty allowedTools array
-        // still leaves every built-in tool in the model's context, so it could still emit a
-        // tool_use and burn our single maxTurns budget → error_max_turns. `tools: []` is the
-        // option sdk.d.ts documents as "Disable all built-in tools", which is what we want here.
-        tools: [],
-        maxTurns: 1,
-        ...(resumeId ? { resume: resumeId } : {}),
-      },
-    })[Symbol.asyncIterator]();
+    const iterator = (() => {
+      try {
+        return queryFn({
+          prompt,
+          options: {
+            systemPrompt: opts?.systemPrompt ?? PARTNER_SYSTEM_PROMPT,
+            model: "sonnet",
+            // `allowedTools` only controls auto-allow/permission-prompt behavior; per the SDK's own
+            // sdk.d.ts docs it does NOT restrict which tools the model can see ("To restrict which
+            // tools are available, use the `tools` option instead."). An empty allowedTools array
+            // still leaves every built-in tool in the model's context, so it could still emit a
+            // tool_use and burn our single maxTurns budget → error_max_turns. `tools: []` is the
+            // option sdk.d.ts documents as "Disable all built-in tools", which is what we want here.
+            tools: [],
+            maxTurns: 1,
+            ...(resumeId ? { resume: resumeId } : {}),
+          },
+        })[Symbol.asyncIterator]();
+      } catch (err) {
+        throw asTransportError(err);
+      }
+    })();
 
     while (true) {
       let step: Awaited<ReturnType<typeof iterator.next>>;
@@ -67,10 +80,7 @@ export function makeClaudeRunner(queryFn: typeof query): ClaudeRunner {
         step = await iterator.next();
       } catch (err) {
         if (receivedFirstMessage) throw err;
-        throw new TransportError(
-          `Claude SDK failed before first message: ${err instanceof Error ? err.message : String(err)}`,
-          { cause: err },
-        );
+        throw asTransportError(err);
       }
       if (step.done) break;
       receivedFirstMessage = true;

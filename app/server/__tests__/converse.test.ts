@@ -107,6 +107,26 @@ describe("makeClaudeRunner", () => {
     expect(((caught as TransportError).cause as Error).message).toBe("spawn ENOENT");
   });
 
+  test("query() 自体が同期 throw した場合（ネイティブバイナリ欠損等）も TransportError に分類する", async () => {
+    // 実 SDK の query() は iterator を返す前に同期バリデーションで throw しうる
+    // （例: "Native CLI binary for ${platform}-${arch} not found..."）。これも transport 障害。
+    const syncThrowingQuery = (() => {
+      throw new Error("Native CLI binary for darwin-arm64 not found");
+    }) as unknown as typeof query;
+
+    const runner = makeClaudeRunner(syncThrowingQuery);
+    let caught: unknown;
+    try {
+      await runner("hi");
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).toBeInstanceOf(TransportError);
+    expect(((caught as TransportError).cause as Error).message).toBe(
+      "Native CLI binary for darwin-arm64 not found",
+    );
+  });
+
   test("最初のメッセージ以後の失敗（result subtype エラー）は plain Error のまま（TransportError ではない）", async () => {
     const runner = makeClaudeRunner(
       fakeQuery([
