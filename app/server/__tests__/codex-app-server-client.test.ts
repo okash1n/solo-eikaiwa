@@ -207,4 +207,35 @@ describe("CodexAppServerClient", () => {
     fakes[1]!.emit({ id: fakes[1]!.sent[2]!.id, result: { thread: { id: "t-2" } } });
     expect((await second).thread).toEqual({ id: "t-2" });
   });
+
+  test("プロセス生存のままinitializeがエラー応答でも汚染されず、次のrequestで再spawnして自己修復する", async () => {
+    const fakes: ReturnType<typeof makeFakeProc>[] = [];
+    const spawn: SpawnAppServer = () => {
+      const f = makeFakeProc();
+      fakes.push(f);
+      return f.proc;
+    };
+    const client = new CodexAppServerClient(spawn);
+
+    const first = client.request("thread/start", {});
+    await Bun.sleep(0);
+    expect(fakes.length).toBe(1);
+    // initialize にエラー応答（プロセスは exit せず生存したまま）
+    fakes[0]!.emit({ id: fakes[0]!.sent[0]!.id, error: { message: "nope" } });
+    await expect(first).rejects.toThrow(/handshake failed/);
+    // 生きていたプロセスは孤児にせず kill される（fake の kill は realSpawnAppServer と同様 exit を発火する）
+    expect(fakes[0]!.killCount).toBe(1);
+
+    // 失敗した handshakePromise を再利用せず、新プロセスを spawn してハンドシェイクをやり直す
+    const second = client.request("thread/start", {});
+    await Bun.sleep(0);
+    expect(fakes.length).toBe(2);
+    expect(fakes[1]!.sent[0]?.method).toBe("initialize");
+    fakes[1]!.emit({ id: fakes[1]!.sent[0]!.id, result: {} });
+    await Bun.sleep(0);
+    expect(fakes[1]!.sent[1]).toEqual({ method: "initialized" });
+    expect(fakes[1]!.sent[2]?.method).toBe("thread/start");
+    fakes[1]!.emit({ id: fakes[1]!.sent[2]!.id, result: { thread: { id: "t-heal" } } });
+    expect((await second).thread).toEqual({ id: "t-heal" });
+  });
 });

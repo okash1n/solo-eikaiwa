@@ -35,7 +35,9 @@ type TurnCollector = {
  * codex app-server（`codex app-server`）と改行区切り JSON-RPC で対話するクライアント。
  * - 初回 request で lazy に spawn + initialize/initialized ハンドシェイクを行う（並行初回 request は1回のハンドシェイクを共有）
  * - **自己修復設計**: プロセスが exit すると保留中の request/turn を全て reject した上で内部状態（proc/handshake）を
- *   リセットする。次に `request()` が呼ばれた時点で新プロセスを lazy に再 spawn し、initialize/initialized から
+ *   リセットする。プロセスが生きたままハンドシェイクに失敗した場合（initialize の error 応答・timeout）も、
+ *   そのプロセスを kill（孤児化防止）して同様に内部状態をリセットする（失敗した handshakePromise を再利用しない）。
+ *   いずれも次に `request()` が呼ばれた時点で新プロセスを lazy に再 spawn し、initialize/initialized から
  *   ハンドシェイクをやり直す。バックオフは行わない（呼び出しは常にユーザー起点であり、失敗時は TransportError が
  *   呼び出し元まで伝播して runner 側の exec フォールバックへ自然に間隔があくため）。よって1回の失敗が
  *   インスタンスを永久に汚染することはない。
@@ -148,6 +150,10 @@ export class CodexAppServerClient {
             capabilities: {},
           });
         } catch (err) {
+          // 失敗した handshakePromise を永久にキャッシュしない: プロセスが生きたまま initialize が
+          // error 応答/timeout した場合はプロセスを kill して内部状態をリセットし、次の request() が
+          // 再spawn + 再ハンドシェイクできるようにする（exit 経由の失敗は handleExit がリセット済みで no-op）。
+          this.resetAfterHandshakeFailure();
           // 例外（error応答・exit・timeout）はすべて transport 起因として TransportError に揃える。
           throw err instanceof TransportError
             ? err
@@ -158,6 +164,24 @@ export class CodexAppServerClient {
       })();
     }
     return this.handshakePromise;
+  }
+
+  /**
+   * ハンドシェイク失敗時の自己回復。exit を経由しない失敗（プロセス生存のままの initialize error 応答・
+   * timeout）では handleExit が走らないため、ここで生きているプロセスを kill（孤児化防止）した上で
+   * 内部状態をリセットする。先に this.proc を undefined にして世代ガードを外すことで、kill に伴う
+   * exit イベントが handleExit を二重実行しないようにする。exit 経由の失敗では handleExit が
+   * リセット済み（proc undefined）なので何もしない（二重リセットガード）。
+   */
+  private resetAfterHandshakeFailure(): void {
+    const proc = this.proc;
+    if (!proc) return;
+    this.proc = undefined;
+    this.isAlive = false;
+    this.gen++; // このプロセス世代の終了（handleExit と同じ意味論）
+    this.handshakeDone = false;
+    this.handshakePromise = undefined;
+    proc.kill();
   }
 
   private sendRequest(method: string, params: Record<string, unknown> | undefined): Promise<Record<string, unknown>> {
@@ -336,7 +360,10 @@ export const realSpawnAppServer: SpawnAppServer = () => {
         }
       }
     }
-  })();
+  })().catch((err) => {
+    // stdout ストリームの異常終了を unhandled rejection にしない（プロセス自体の終了は onExit が扱う）。
+    console.warn("codex app-server stdout reader failed:", err);
+  });
 
   proc.exited.then((code) => onExit(code));
 

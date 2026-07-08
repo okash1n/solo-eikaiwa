@@ -3,18 +3,30 @@ import type { AppServerProc } from "../../providers/codex-app-server";
 /**
  * codex app-server transport の代替フェイク。送信メッセージを記録し（sent）、
  * 応答・通知はテストから emit で手動発火、プロセス終了は exit で発火できる。
+ * kill() は realSpawnAppServer と同じ意味論（プロセスが終了し exit イベントが発火する）を再現し、
+ * 呼び出し回数を killCount で検査できる（従来どおり proc.kill を上書きしてカスタム挙動にもできる）。
  */
 export function makeFakeProc() {
   const sent: Record<string, unknown>[] = [];
   let onMsg: (m: Record<string, unknown>) => void = () => {};
   let onExit: (c: number | null) => void = () => {};
+  let killCount = 0;
   const proc: AppServerProc = {
     send: (m) => sent.push(m),
     onMessage: (cb) => { onMsg = cb; },
     onExit: (cb) => { onExit = cb; },
-    kill: () => {},
+    kill: () => {
+      killCount++;
+      onExit(null);
+    },
   };
-  return { proc, sent, emit: (m: Record<string, unknown>) => onMsg(m), exit: (c: number | null) => onExit(c) };
+  return {
+    proc,
+    sent,
+    emit: (m: Record<string, unknown>) => onMsg(m),
+    exit: (c: number | null) => onExit(c),
+    get killCount() { return killCount; },
+  };
 }
 
 export type FakeProcHandle = ReturnType<typeof makeFakeProc>;
