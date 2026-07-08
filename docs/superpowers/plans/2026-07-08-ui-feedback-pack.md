@@ -359,6 +359,8 @@ export function matchPreset(targets: RoleTargets): PresetId | "custom" {
 ### Task 5: 設定画面のタブ分割（4タブ・2026-07-08 ユーザー指示で改訂）
 
 > 改訂: 当初は「言語モデル（接続+割当）/音声/表示」の3タブだったが、ユーザー指示「モデルのURLを指定する画面と用途ごとのモデルを設定する画面はタブで分ける」により **接続 / 用途ごとのモデル / 音声 / 表示 の4タブ**に変更。state は全て親（SettingsScreen）にあるため接続⇔割当の結合は保存ロジック側で完結しており、タブ分割は表示だけの問題。
+>
+> 再改訂（ユーザー指示2・Task 5 実装後のフォローアップとして適用）: 音声（TTS）は独立タブにせず**接続タブへ統合**し、最終形は **接続（LLM+Codex+TTS）/ 用途ごとのモデル / 表示 の3タブ**。TTS の設定内容（baseUrl/モデル/声）は接続情報そのもののため。tab union は `"conn" | "roles" | "display"`、TTS ブロックは接続タブ内のサブ見出し（`ttsSection` の stat-title）として置き、ttsResult は TTS ブロック末尾に表示。
 
 **Files:**
 - Modify: `app/client/src/screens/SettingsScreen.tsx:66-73,169-290`
