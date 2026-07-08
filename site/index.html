@@ -4,133 +4,197 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>solo-eikaiwa — ひとりで回す、自分専用の英会話ジム</title>
-<meta name="description" content="毎日5分から回せる、研究ベースの英会話セルフトレーニングアプリ。録音・文字起こし・AI会話・音声合成まで、すべて自分の Mac の上で。">
+<meta name="description" content="毎日5分から回せる、研究ベースの英会話セルフトレーニングアプリ。録音・文字起こし・AI会話・音声合成まで、すべて自分の Mac の上で。完全ローカル構成にも対応。">
+<link rel="canonical" href="https://okash1n.github.io/solo-eikaiwa/">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f4f2ee">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#181716">
+<meta property="og:type" content="website">
+<meta property="og:title" content="solo-eikaiwa — ひとりで回す、自分専用の英会話ジム">
+<meta property="og:description" content="録音・文字起こし・AI会話・音声合成まで、すべて自分の Mac の上で。完全ローカル構成にも対応する研究ベースの英会話セルフトレーニング。">
+<meta property="og:url" content="https://okash1n.github.io/solo-eikaiwa/">
+<meta property="og:image" content="https://okash1n.github.io/solo-eikaiwa/og.png">
+<meta name="twitter:card" content="summary_large_image">
 <style>
+  /* 配色はアプリの tokens.css と同一（ライト既定・OS設定でダーク） */
   :root {
-    --bg: #0e1512; --panel: #16211c; --panel2: #1c2a23;
-    --text: #e8f2ec; --muted: #9db8aa; --accent: #4ade80; --accent-dim: #22c55e;
-    --border: #2a3a31; --radius: 14px;
+    --bg: #f4f2ee; --surface: #ffffff; --border: #e5e1da;
+    --text: #1f1e1c; --muted: #6f6b64;
+    --accent: #1e9c5a; --accent-deep: #157a46; --accent-soft: #e4f4ea;
+    --on-accent: #ffffff; --radius: 14px;
+    --cal-l1: color-mix(in srgb, var(--accent) 25%, var(--surface));
+    --cal-l2: color-mix(in srgb, var(--accent) 50%, var(--surface));
+    --cal-l3: color-mix(in srgb, var(--accent) 75%, var(--surface));
+    --cal-l4: var(--accent);
   }
-  @media (prefers-color-scheme: light) {
+  @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #f6faf7; --panel: #ffffff; --panel2: #eef6f0;
-      --text: #14201a; --muted: #55705f; --accent: #16a34a; --accent-dim: #15803d;
-      --border: #d8e6dc;
+      --bg: #181716; --surface: #201f1d; --border: #363330;
+      --text: #edeae5; --muted: #a29d95;
+      --accent: #4ec584; --accent-deep: #6fd49c; --accent-soft: #1d3527;
+      --on-accent: #0c1f14;
     }
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     background: var(--bg); color: var(--text);
-    font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
-    line-height: 1.75; -webkit-font-smoothing: antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    line-height: 1.8; -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
-  header { padding: 88px 0 56px; text-align: center; }
+  .wrap { max-width: 880px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+  h1, h2, h3 { text-wrap: balance; }
+
+  /* ヒーロー */
+  .hero { padding-top: 96px; padding-bottom: 64px; text-align: center; }
   .badge {
-    display: inline-block; font-size: 13px; color: var(--accent);
-    border: 1px solid var(--border); border-radius: 999px; padding: 4px 14px;
-    margin-bottom: 24px; letter-spacing: .04em;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: var(--accent-deep);
+    border: 1px solid var(--border); background: var(--surface);
+    border-radius: 999px; padding: 6px 16px; margin-bottom: 28px; letter-spacing: .04em;
   }
-  h1 { font-size: clamp(34px, 6vw, 52px); line-height: 1.25; letter-spacing: .01em; }
-  h1 .en { display: block; font-size: clamp(15px, 2.4vw, 18px); color: var(--muted); font-weight: 500; margin-top: 14px; letter-spacing: .02em; }
-  .lead { color: var(--muted); font-size: 17px; max-width: 620px; margin: 24px auto 0; }
-  .cta { margin-top: 36px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .badge svg { display: block; border-radius: 4px; }
+  h1 { font-size: clamp(34px, 6vw, 54px); line-height: 1.28; letter-spacing: .01em; font-weight: 750; }
+  h1 .en { display: block; font-size: clamp(14px, 2.2vw, 17px); color: var(--muted); font-weight: 500; margin-top: 16px; letter-spacing: .02em; }
+  .lead { color: var(--muted); font-size: 17px; max-width: 620px; margin: 26px auto 0; }
+  .cta-row { margin-top: 36px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
   .btn {
-    display: inline-block; padding: 12px 26px; border-radius: 10px; font-weight: 700;
-    text-decoration: none; font-size: 15px;
+    display: inline-block; padding: 13px 28px; border-radius: 10px; font-weight: 700;
+    text-decoration: none; font-size: 15px; transition: filter 150ms ease-out;
   }
-  .btn-primary { background: var(--accent); color: #06130b; }
-  .btn-ghost { color: var(--text); border: 1px solid var(--border); }
-  .btn:hover { filter: brightness(1.08); }
-  section { padding: 44px 0; }
-  h2 { font-size: 24px; margin-bottom: 22px; }
-  h2 span { color: var(--accent); margin-right: 10px; }
+  .btn-primary { background: var(--accent); color: var(--on-accent); }
+  .btn-ghost { color: var(--text); border: 1px solid var(--border); background: var(--surface); }
+  .btn:hover { filter: brightness(1.05); }
+  .btn:focus-visible { outline: 2px solid var(--accent-deep); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+
+  /* 草モチーフ（アプリの練習カレンダーと同じ濃淡スケール） */
+  .grass { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 48px; max-width: 100%; }
+  .grass span { width: 14px; height: 14px; border-radius: 4px; background: var(--border); flex: none; }
+  .grass [data-l="1"] { background: var(--cal-l1); }
+  .grass [data-l="2"] { background: var(--cal-l2); }
+  .grass [data-l="3"] { background: var(--cal-l3); }
+  .grass [data-l="4"] { background: var(--cal-l4); }
+  @media (max-width: 560px) { .grass span:nth-child(n+15) { display: none; } }
+
+  /* セクション */
+  section { padding: 52px 0; }
+  .eyebrow {
+    font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent-deep); margin-bottom: 10px;
+  }
+  h2 { font-size: clamp(22px, 3.4vw, 27px); margin-bottom: 20px; font-weight: 750; line-height: 1.4; }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
   .card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     padding: 22px;
   }
-  .card h3 { font-size: 16px; margin-bottom: 8px; }
+  .card h3 { font-size: 16px; margin-bottom: 8px; font-weight: 700; }
   .card p { color: var(--muted); font-size: 14px; }
   .card .emoji { font-size: 22px; display: block; margin-bottom: 10px; }
+  .flow-scroll { overflow-x: auto; }
   .flow {
-    background: var(--panel2); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 20px 22px; overflow-x: auto; white-space: nowrap;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px 22px; white-space: nowrap; display: inline-block; min-width: 100%;
     font-family: ui-monospace, "SF Mono", monospace; font-size: 13.5px; color: var(--muted);
   }
-  .flow b { color: var(--accent); font-weight: 600; }
-  ul.plain { list-style: none; }
+  .flow b { color: var(--accent-deep); font-weight: 650; }
+  ul.plain { list-style: none; margin-top: 18px; }
   ul.plain li { padding: 10px 0 10px 30px; position: relative; color: var(--muted); font-size: 15px; }
-  ul.plain li::before { content: "✓"; position: absolute; left: 4px; color: var(--accent); font-weight: 700; }
+  ul.plain li::before { content: "✓"; position: absolute; left: 4px; color: var(--accent-deep); font-weight: 700; }
   ul.plain li b { color: var(--text); }
   .note {
-    border-left: 3px solid var(--accent-dim); background: var(--panel);
-    padding: 14px 18px; border-radius: 0 10px 10px 0; color: var(--muted); font-size: 14px;
+    border-left: 3px solid var(--accent); background: var(--surface);
+    padding: 14px 18px; border-radius: 0 10px 10px 0; color: var(--muted); font-size: 14px; margin-top: 16px;
   }
-  footer { padding: 56px 0 72px; text-align: center; color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--border); margin-top: 40px; }
-  footer a { color: var(--accent); text-decoration: none; }
-  code.inline { background: var(--panel2); border: 1px solid var(--border); border-radius: 6px; padding: 1px 7px; font-size: .9em; }
+  .section-lead { color: var(--muted); font-size: 15px; margin-bottom: 16px; }
+  .cta-left { margin-top: 24px; display: flex; gap: 14px; flex-wrap: wrap; }
+  code.inline { background: var(--accent-soft); border: 1px solid var(--border); border-radius: 6px; padding: 1px 7px; font-size: .9em; }
+
+  footer { border-top: 1px solid var(--border); margin-top: 48px; }
+  .footer-inner { padding-top: 56px; padding-bottom: 72px; text-align: center; color: var(--muted); font-size: 13.5px; }
+  footer a { color: var(--accent-deep); text-decoration: none; }
+  footer a:hover, footer a:focus-visible { text-decoration: underline; }
 </style>
 </head>
 <body>
 
-<header class="wrap">
-  <div class="badge">macOS · local-first · MIT License</div>
+<header class="wrap hero">
+  <p class="badge">
+    <svg viewBox="0 0 64 64" width="18" height="18" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#1e9c5a"/><rect x="10" y="14" width="44" height="28" rx="9" fill="#ffffff"/><path d="M20 42 L20 54 L33 42 Z" fill="#ffffff"/><rect x="20" y="24" width="6" height="9" rx="3" fill="#1e9c5a"/><rect x="29" y="19" width="6" height="18" rx="3" fill="#1e9c5a"/><rect x="38" y="22" width="6" height="12" rx="3" fill="#1e9c5a"/></svg>
+    macOS · local-first · MIT License
+  </p>
   <h1>ひとりで回す、<br>自分専用の英会話ジム。
-    <span class="en">solo-eikaiwa — a research-grounded English speaking gym for daily self-study</span>
+    <span class="en" lang="en">solo-eikaiwa — a research-grounded English speaking gym for daily self-study</span>
   </h1>
   <p class="lead">毎日5分から。録音した声をローカルで文字起こしし、AI が会話相手とコーチを務め、練習履歴が貯まっていく — 誰にも聞かれず、すべて自分の Mac の上で。</p>
-  <div class="cta">
+  <div class="cta-row">
     <a class="btn btn-primary" href="https://github.com/okash1n/solo-eikaiwa">GitHub で始める</a>
-    <a class="btn btn-ghost" href="https://github.com/okash1n/solo-eikaiwa#はじめる">セットアップ手順</a>
+    <a class="btn btn-ghost" href="#はじめる">セットアップ手順</a>
+  </div>
+  <div class="grass" aria-hidden="true">
+    <span></span><span data-l="1"></span><span data-l="2"></span><span data-l="2"></span><span data-l="3"></span><span></span><span data-l="1"></span><span data-l="3"></span><span data-l="4"></span><span data-l="2"></span><span data-l="3"></span><span></span><span data-l="2"></span><span data-l="4"></span><span data-l="4"></span><span data-l="3"></span><span data-l="1"></span><span data-l="2"></span><span data-l="4"></span><span data-l="3"></span><span data-l="4"></span><span data-l="2"></span><span data-l="4"></span><span data-l="4"></span>
   </div>
 </header>
 
 <main class="wrap">
 
 <section>
-  <h2><span>◆</span>毎日のメニュー</h2>
-  <div class="grid">
-    <div class="card"><span class="emoji">🔊</span><h3>クイックドリル（5〜10分）</h3><p>音読ウォームアップ・4/3/2 流暢性トレーニング・ロールプレイ・シャドーイングから1日1本。「頻度と完了」が上達に効くという研究知見どおり、短くても毎日回せる設計。</p></div>
-    <div class="card"><span class="emoji">🗣️</span><h3>AI ロールプレイ & 自由会話</h3><p>レストラン・会議・障害対応など、場面別シナリオで AI と役割練習。詰まったら日本語で「言い方ヒント」。相手は AI だから、間違えても恥ずかしくない。</p></div>
-    <div class="card"><span class="emoji">📖</span><h3>暗記例文300 + 間隔反復</h3><p>会話でそのまま使える300文を「日本語を見て声に出す→答え合わせ→自己評価」の産出リトリーバルで。評価に応じた間隔反復（SRS）が次の出題日を決める。</p></div>
-    <div class="card"><span class="emoji">🎧</span><h3>多聴ライブラリ</h3><p>レベルに合った2〜4分の英語をスクリプトを隠したまま通しで聴く。日本語訳と表現解説つき。ノルマなし。</p></div>
-    <div class="card"><span class="emoji">📐</span><h3>レベル連動の難易度</h3><p>4/3/2 の持ち時間、モデルトークの語彙と構文、お題の帯域までレベルに自動追従。レベルは XP で自動で上がり、ステージ境界の昇格・降格だけは実績根拠つきの「提案 + あなたの承認」。XP は減らない。</p></div>
-    <div class="card"><span class="emoji">📈</span><h3>進捗と月次レビュー</h3><p>調音速度・練習カレンダー・レベル履歴。30日ごとに練習データから日本語の振り返りレポートを生成。ノルマや判定はなし — 情報として見せるだけ。</p></div>
-  </div>
-</section>
-
-<section>
-  <h2><span>◆</span>音声とデータは、あなたの Mac から出ない</h2>
-  <div class="flow">ブラウザ録音 → <b>whisper.cpp</b>（ローカルSTT） → <b>Claude / Ollama / Codex</b>（会話相手・コーチ） → <b>OpenAI TTS / Kokoro</b>（音声合成）</div>
-  <ul class="plain" style="margin-top:18px">
-    <li><b>音声はマシンから出ません。</b>学習データ・録音・進捗はすべてローカルファイル。API サーバは 127.0.0.1 バインドのみ</li>
-    <li><b>既定構成で外部に出るのは「テキスト」だけ。</b>発話の文字起こしと AI 応答のテキストが Claude / TTS に送られます。フルローカル構成にすればそれもゼロに</li>
-    <li><b>LLM は用途別に切替可能。</b>会話はローカル LLM（Ollama 等）で速く・無料に、添削や測定は Claude に — 設定画面からワンタップ</li>
-    <li><b>音声合成もローカル対応。</b>kokoro-fastapi を立てれば TTS も API キー不要。女性/男性ボイスも選択可能</li>
-    <li><b>フル構成なら追加コストゼロ。</b>STT・LLM・TTS すべてローカルで完結する運用ができます</li>
+  <p class="eyebrow">Local-first</p>
+  <h2>マイクの音も会話も、Mac から一歩も出ない</h2>
+  <div class="flow-scroll"><div class="flow">ブラウザ録音 → <b>whisper.cpp</b>（ローカルSTT） → <b>Ollama などローカルLLM</b>（会話相手・コーチ） → <b>Kokoro / macOS say</b>（音声合成）</div></div>
+  <ul class="plain">
+    <li><b>完全ローカル構成なら、音声もテキストも外部に出ません。</b>STT・LLM・TTS のすべてをローカルで完結でき、API キー不要・追加コストゼロ</li>
+    <li><b>音声で喋るところまで動きます。</b>マイクで話し、AI の返事を音声で聞く — その全部が自分の Mac の中</li>
+    <li><b>品質が欲しい用途だけクラウドへ。</b>既定は Claude 併用。コーチングや月次レビューだけ Claude / Codex、会話はローカル、のような用途別の切替が設定画面からワンタップ</li>
   </ul>
 </section>
 
 <section>
-  <h2><span>◆</span>思いつきではなく、研究ベース</h2>
-  <p style="color:var(--muted); font-size:15px; margin-bottom:16px">セッション構成は、第二言語習得（SLA）研究のメタ分析・原典を敵対的に検証したリサーチレポートに基づいています。</p>
+  <p class="eyebrow">Daily menu</p>
+  <h2>毎日のメニュー</h2>
+  <div class="grid">
+    <div class="card"><span class="emoji" aria-hidden="true">🔊</span><h3>クイックドリル（5〜10分）</h3><p>音読ウォームアップ・くり返しトーク（4/3/2）・ロールプレイ・シャドーイングから1日1本。「頻度と完了」が上達に効くという研究知見どおり、短くても毎日回せる設計。</p></div>
+    <div class="card"><span class="emoji" aria-hidden="true">🗣️</span><h3>AI ロールプレイ & 自由会話</h3><p>レストラン・会議・障害対応など、場面別シナリオで AI と役割練習。詰まったら日本語で「言い方ヒント」。相手は AI だから、間違えても恥ずかしくない。</p></div>
+    <div class="card"><span class="emoji" aria-hidden="true">📖</span><h3>暗記例文300 + 間隔反復</h3><p>会話でそのまま使える300文を「日本語を見て声に出す→答え合わせ→自己評価」の産出リトリーバルで。評価に応じた間隔反復（SRS）が次の出題日を決める。</p></div>
+    <div class="card"><span class="emoji" aria-hidden="true">🎧</span><h3>多聴ライブラリ</h3><p>レベルに合った2〜4分の英語をスクリプトを隠したまま通しで聴く。日本語訳と表現解説つき。ノルマなし。</p></div>
+    <div class="card"><span class="emoji" aria-hidden="true">📐</span><h3>レベル連動の難易度</h3><p>4/3/2 の持ち時間、モデルトークの語彙と構文、お題の帯域までレベルに自動追従。レベルは XP で自動で上がり、ステージ境界の昇格・降格だけは実績根拠つきの「提案 + あなたの承認」。XP は減らない。</p></div>
+    <div class="card"><span class="emoji" aria-hidden="true">📈</span><h3>進捗と月次レビュー</h3><p>調音速度・練習カレンダー（練習量で濃くなる草）・レベル履歴。30日ごとに練習データから日本語の振り返りレポートを生成。ノルマや判定はなし — 情報として見せるだけ。</p></div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Privacy</p>
+  <h2>データはローカルに貯まる。外に出るのは、選んだ分だけ</h2>
+  <ul class="plain">
+    <li><b>音声はマシンから出ません。</b>学習データ・録音・進捗はすべてローカルファイル。API サーバは 127.0.0.1 バインドのみ</li>
+    <li><b>既定構成で外部に出るのは「テキスト」だけ。</b>発話の文字起こしと AI 応答のテキストが Claude / TTS に送られます。フルローカル構成にすればそれもゼロに</li>
+    <li><b>LLM は用途別に切替可能。</b>会話はローカル LLM（Ollama 等）で速く・無料に、添削や測定は Claude / Codex に — 設定画面からワンタップ</li>
+    <li><b>音声合成もローカル対応。</b>kokoro-fastapi を立てれば TTS も API キー不要。女性/男性ボイスも選択可能</li>
+  </ul>
+</section>
+
+<section>
+  <p class="eyebrow">Research-based</p>
+  <h2>思いつきではなく、研究ベース</h2>
+  <p class="section-lead">セッション構成は、第二言語習得（SLA）研究のメタ分析・原典を敵対的に検証したリサーチレポートに基づいています。</p>
   <div class="grid">
     <div class="card"><h3>4/3/2 時間圧反復</h3><p>同じ話を制限時間を縮めながら繰り返すと発話速度と流暢性が向上する。準備フェーズと明示的フィードバックの併用でさらに効果。</p></div>
     <div class="card"><h3>産出リトリーバル</h3><p>「思い出して口に出す」は受容型の学習より記憶定着に有効。例文練習・聴覚起点モードの核。</p></div>
     <div class="card"><h3>頻度 &gt; 総時間</h3><p>1日サボっても無害、1週間空くと有害。だから「短くても毎日」を最優先する導線設計。連続日数を煽る演出は意図的に不採用。</p></div>
   </div>
-  <p class="note" style="margin-top:16px">動機づけ研究の知見に沿って、ノルマ・警告・喪失演出は一切ありません。フィードバックはすべて「情報」として提示され、判断は常にあなたに委ねられます。</p>
+  <p class="note">動機づけ研究の知見に沿って、ノルマ・警告・喪失演出は一切ありません。フィードバックはすべて「情報」として提示され、判断は常にあなたに委ねられます。</p>
 </section>
 
-<section>
-  <h2><span>◆</span>はじめる</h2>
+<section id="はじめる">
+  <p class="eyebrow">Get started</p>
+  <h2>はじめる</h2>
   <ul class="plain">
     <li>macOS（Apple Silicon 推奨）+ <code class="inline">Bun</code> + Homebrew</li>
     <li><code class="inline">./scripts/setup.sh</code> で依存導入 → <code class="inline">./scripts/install-daemon.sh</code> で常駐化</li>
-    <li>既定の AI は Claude（Claude Pro/Max サブスクで動作・API キー不要）。Ollama / Codex / OpenAI 互換への切替は設定画面から</li>
+    <li>既定の AI は Claude（Claude Pro/Max サブスクで動作）。Ollama / Codex / OpenAI 互換への切替は設定画面から</li>
   </ul>
-  <div class="cta" style="justify-content:flex-start">
+  <div class="cta-left">
     <a class="btn btn-primary" href="https://github.com/okash1n/solo-eikaiwa#はじめる">README の手順へ</a>
   </div>
 </section>
@@ -138,9 +202,10 @@
 </main>
 
 <footer>
-  <p>solo-eikaiwa は個人開発の OSS です（<a href="https://github.com/okash1n/solo-eikaiwa/blob/main/LICENSE">MIT License</a>）。</p>
-  <p style="margin-top:6px"><a href="https://github.com/okash1n/solo-eikaiwa">github.com/okash1n/solo-eikaiwa</a></p>
+  <div class="wrap footer-inner">
+    <p>solo-eikaiwa は個人開発の OSS です（<a href="https://github.com/okash1n/solo-eikaiwa/blob/main/LICENSE">MIT License</a>）。</p>
+    <p><a href="https://github.com/okash1n/solo-eikaiwa">github.com/okash1n/solo-eikaiwa</a></p>
+  </div>
 </footer>
-
 </body>
 </html>
