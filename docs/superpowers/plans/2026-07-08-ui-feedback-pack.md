@@ -227,6 +227,8 @@ export async function fetchPracticeDays(): Promise<PracticeDaysView> {
 - [ ] **Step 9: i18n** — 型 `:119` を `type CalendarStrings = { calendar: { title: string; legendLess: string; legendMore: string } };` に変更。EN `:394` → `calendar: { title: "Practice days", legendLess: "Less", legendMore: "More" },`。JA `:712` → `calendar: { title: "練習日", legendLess: "少", legendMore: "多" },`（旧 `practiced`/`notYet` は EN/JA とも削除。コミットメッセージに文言変更を明示）
 - [ ] **Step 10: 検証** — Run: `cd app && bun test && cd app && bun run typecheck && cd app/client && bun run build` → 全緑。Commit: `feat: 練習カレンダーを日別XPの濃淡5段階にし SRSのみの日も草を表示`
 
+> 再改訂（2026-07-08 ユーザー再判断・Task 3 実装後にフォローアップ適用）: 性能要求の序列（測定>コーチング>生成）を確認のうえ、**バランスの generation は `"local"` に差し戻し**（= v0.21.0 定義を維持）。presetBalancedDesc も v0.21.0 原文を復元。Task 7 の生成の推奨理由は「推奨: ローカル（品質を上げたいときは Claude）」に変更。README:162 は変更不要になり、CHANGELOG にプリセット変更は載せない。
+
 ### Task 3: matchPreset 純関数 + バランス変更（TDD）
 
 **Files:**
@@ -435,7 +437,7 @@ export function matchPreset(targets: RoleTargets): PresetId | "custom" {
       roleReason: {
         conversation: "Recommended: local — fastest responses. Switch to Claude or Codex if quality falls short.",
         coaching: "Recommended: Claude or Codex — writing quality matters more than speed.",
-        generation: "Recommended: Claude — runs infrequently and quality matters most.",
+        generation: "Recommended: local — fairly templated output with modest quality demands. Switch to Claude for higher quality.",
         assessment: "Recommended: Claude — runs infrequently and quality matters most.",
       },
 ```
@@ -446,10 +448,16 @@ export function matchPreset(targets: RoleTargets): PresetId | "custom" {
       roleReason: {
         conversation: "推奨: ローカル — 応答が最も速いため。品質が物足りなければ Claude や Codex へ。",
         coaching: "推奨: Claude / Codex — 速度より文章の品質が重要なため。",
-        generation: "推奨: Claude — 実行頻度が低く、質の高さが最優先のため。",
+        generation: "推奨: ローカル — 出力が定型的で要求性能は低め。品質を上げたいときは Claude へ。",
         assessment: "推奨: Claude — 実行頻度が低く、質の高さが最優先のため。",
       },
 ```
+
+  さらに「性能が効く順」の目立つ表示（ユーザー指示・2026-07-08）: 新キー `roleQualityNote` を追加し、用途ごとのモデルタブの最上部（プリセットの上）に `.info-pop` で表示する:
+  - 型: `roleQualityNote: string;`（roleReason の下）
+  - EN: `"Where model quality matters most: Assessment > Coaching > Content generation. Conversation benefits more from response speed."`
+  - JA: `"モデル性能が効く順: 測定 > コーチング > 教材生成。会話は性能より応答の速さが効きます。"`
+  - JSX（roles タブ先頭・プリセットの stat-title の直前）: `<div className="info-pop">{s.settings.roleQualityNote}</div>`
 
 - [ ] **Step 2: 表示** — `SettingsScreen.tsx` の `roleDesc` 行直後に: `<div className="text-sm text-muted">{s.settings.roleReason[role]}</div>`
 - [ ] **Step 3: README** — ロール表に「推奨」列を追加（会話=ローカル / コーチング=Claude・Codex / 教材生成=Claude / 測定=Claude、理由を1行ずつ）。`:162` のバランス説明を「会話=ローカル、コーチング・教材生成・測定=Claude」に更新。`:192` の使い分けの目安を同内容に更新。Codex の但し書き（手動割当のみ・プロンプトは Claude 向け調整）は既存記述を維持

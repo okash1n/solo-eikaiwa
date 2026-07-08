@@ -151,7 +151,7 @@ bunx @resvg/resvg-cli --width 1200 --height 630 site/og.svg site/og.png
 - Modify: `README.md`（「できること」整合の最終チェック）
 
 - [ ] **Step 1: マージ** — `git checkout main && git merge --no-ff feat/lp-favicon -m "Merge branch 'feat/lp-favicon': LP刷新とファビコン統一"`
-- [ ] **Step 2: CHANGELOG** — Keep a Changelog 形式・日本語・ユーザー視点で v0.22.0 を追記。含める項目: 練習カレンダーのXP濃淡（SRSのみの日も表示）/ 設定3タブ化 / サイドバーの言語・文字サイズ切替 / プリセットのドロップダウン化と現在値表示 / バランスの生成=Claude 化 / 用途別推奨理由 / メニュー文言改善 / LP刷新 / ファビコン刷新。バランス定義変更で旧割当が「カスタム」表示になる旨も明記
+- [ ] **Step 2: CHANGELOG** — Keep a Changelog 形式・日本語・ユーザー視点で v0.22.0 を追記。含める項目: 練習カレンダーのXP濃淡（SRSのみの日も表示）/ 設定タブ化（モデル接続設定[LLM+Codex+音声] / 用途ごとのモデル / 表示）/ サイドバーの言語・文字サイズ切替 / プリセットのドロップダウン化と現在値表示 / 用途別推奨理由の表示 / メニュー文言改善 / LP刷新 / ファビコン刷新。（バランスプリセットの定義は v0.21.0 から変更なし — 記載不要）
 - [ ] **Step 3: README 差分チェック** — 「できること」に濃淡カレンダー・設定タブ・推奨理由の記述が反映されているか確認（パックA Task 7 の更新と重複しない範囲で追記）
 - [ ] **Step 4: タグ + デプロイ** — `git tag v0.22.0 && git push origin main --tags`。アプリ: `cd app/client && bun run build && launchctl kickstart -k gui/$(id -u)/com.local.solo-eikaiwa.server`。LP: push により Pages が自動デプロイ（Actions の完了を `gh run list --workflow=pages.yml -L 1` で確認）
 - [ ] **Step 5: 事後確認** — `https://solo-eikaiwa/` でアプリ新機能、`https://okash1n.github.io/solo-eikaiwa/` で LP（メタタグは `curl -s | grep og:` で確認）

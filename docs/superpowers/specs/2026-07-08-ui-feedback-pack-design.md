@@ -50,12 +50,12 @@
 - バランスの option ラベルは既存キー結合「`presetBalanced`（`presetBalancedBadge`）」= 「バランス（推奨）」/ "Balanced (Recommended)"。select 下に選択中プリセットの説明（既存 Desc キー）と、ローカル未定義時は `presetLocalRequired` を表示。ローカル系 option は `presetEnabled` で disabled
 - 既存問題の修正: `applyPreset` の保存失敗時に楽観更新が残る → catch で `fetchLlmSettings` を再取得して実状態へ再 hydrate（`saveFailed` 表示は維持）
 
-## A-5. バランスプリセットの割当変更
+## A-5. バランスプリセットの割当（2026-07-08 再改訂: 変更を取り消し v0.21.0 定義を維持）
 
-- `PRESETS.balanced.generation: "local" → "claude"`（`llm-assignments.ts:19` + 14–15行の根拠コメント更新）。**テスト先行**: `llm-assignments.test.ts` の balanced 期待値を先に更新して赤→緑
-- i18n `presetBalancedDesc` を書き換え（EN/JA 同時）: JA「会話はローカルで速さを、コーチング・教材生成・測定は品質を優先して Claude を使います。」/ EN "Conversation runs locally for speed; coaching, content generation, and assessment use Claude for quality."
-- README のバランス説明（162行付近・189・192行付近の使い分け）と CHANGELOG を追随
-- 明記する仕様: 定義変更後、旧バランス相当の割当（生成=ローカル）は「カスタム」表示になる（正しい挙動）
+- 経緯: 当初ユーザー推奨（生成=Claude）に合わせて `generation: local → claude` を実装したが、性能要求の序列（測定 > コーチング > 教材生成 — 生成は定型的出力で要求が最も低い）を確認したうえでユーザーが再判断し、**バランスは v0.21.0 の元定義（会話・教材生成=ローカル / コーチング・測定=Claude）に差し戻す**
+- 実装: `PRESETS.balanced.generation` を `"local"` に戻し、コメント・`presetBalancedDesc`（EN/JA）も v0.21.0 の原文を復元。テストの balanced 期待値と「旧バランス=カスタム」ケースを追随（後者は削除）
+- README のバランス説明（162行付近）は v0.21.0 記述が正に戻るため**変更不要**。CHANGELOG にプリセット定義変更の項目は載せない（正味変更ゼロ）
+- A-6 の生成の推奨理由はこの定義と整合する文言にする（「推奨: ローカル — 定型的で要求性能低め。品質を上げたいときは Claude」）
 
 ## A-6. 用途ごとの推奨と理由の表示 + README
 
@@ -65,7 +65,7 @@
 | --- | --- | --- |
 | conversation | 推奨: ローカル — 応答が最も速いため。品質が物足りなければ Claude や Codex へ。 | Recommended: local — fastest responses. Switch to Claude or Codex if quality falls short. |
 | coaching | 推奨: Claude / Codex — 速度より文章の品質が重要なため。 | Recommended: Claude or Codex — writing quality matters more than speed. |
-| generation | 推奨: Claude — 実行頻度が低く、質の高さが最優先のため。 | Recommended: Claude — runs infrequently and quality matters most. |
+| generation | 推奨: ローカル — 出力が定型的で要求性能は低め。品質を上げたいときは Claude へ。 | Recommended: local — fairly templated output with modest quality demands. Switch to Claude for higher quality. |
 | assessment | 推奨: Claude — 実行頻度が低く、質の高さが最優先のため。 | Recommended: Claude — runs infrequently and quality matters most. |
 
 - README: ロール表（153–158行）に「推奨」列を追加し、「使い分けの目安」（192行）を同内容に更新。Codex は「プリセットには含まれず手動割当のみ・プロンプトは Claude 向け調整という品質の前提あり」の但し書きを維持
