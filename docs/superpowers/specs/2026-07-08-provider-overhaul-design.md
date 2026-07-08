@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS llm_role_tuning (
 ```
 
 - 行不在 = 既定継承センチネル（assist→coaching 連鎖は §2 と同一規則）
-- 優先順位（binding）: **ロール tuning > env（CODEX_REASONING_EFFORT/CODEX_SERVICE_TIER・新設 CLAUDE_MODEL/CLAUDE_EFFORT）> コード既定（claude: sonnet+SDK既定 / codex: medium+fast）**
+- 優先順位（binding・2026-07-08 ユーザー指示で改定）: **ロール tuning > コード既定（claude: sonnet+SDK既定 / codex: medium+fast）**。~~env 中間層（CODEX_REASONING_EFFORT/CODEX_SERVICE_TIER/CLAUDE_MODEL/CLAUDE_EFFORT）~~ は**サーバでは読まない**（UI に見えない裏設定の禁止 — UI の「既定」表示が常に真実であること）。CLI（generate-content.ts）のみ自エントリポイントで env を明示解釈してランナーへ渡す（CLI プロセスの env はその CLI のインターフェースであり、UI が説明責任を負う対象外）
 
 ### 3-2. 配線
 
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS llm_role_tuning (
 
 - 精査メモ: 月次レビュー単体なら effort=medium で足りる可能性が高い（定型日本語化）が、頻度からコスト差は誤差のため測定ロールごと opus/xhigh に单純化
 - 適用方式: **既定は変えない**。用途タブに「推奨チューニングを適用」ボタン（クラウド割当のロールにのみ上表を書き込む・ローカル割当ロールは対象外）。roleReason 文言をマトリクス整合に更新（EN/JA）
-- CLI content-gen: README のカスタマイズ節に「恒久教材の生成は `LLM_PROVIDER=claude CLAUDE_MODEL=opus CLAUDE_EFFORT=high` 推奨」を明記（env は CLI/ヘッドレスのブートストラップ用途として正当）
+- CLI content-gen: README のカスタマイズ節に「恒久教材の生成は `LLM_PROVIDER=claude CLAUDE_MODEL=opus CLAUDE_EFFORT=high` 推奨」を明記。これらの env は **generate-content.ts が自エントリポイントで明示解釈**してランナーへ渡す（whitelist 検証つき・サーバ本体は読まない — §3-1 の改定に整合）
 
 ## 5. APIキー認証の選択
 
@@ -91,17 +91,32 @@ CREATE TABLE IF NOT EXISTS llm_role_tuning (
 
 ## 6. env 最小化
 
-- UI 化されていない非 secret 設定は CODEX_REASONING_EFFORT / CODEX_SERVICE_TIER の2つだけ（棚卸し確定）→ §3 で UI 化され、env の役割は **secrets（OPENAI_API_KEY / OPENAI_COMPAT_API_KEY / TTS_API_KEY / ANTHROPIC_API_KEY / CODEX_API_KEY）+ ヘッドレス/CLI ブートストラップ（LLM_PROVIDER・OPENAI_COMPAT_*・CODEX_*・CLAUDE_*・TTS_*）** に純化
-- README の env 表を「UI で設定可（DB が env を上書き）/ env のみ（secrets・CLI）」の2区分で再編。優先順位（tuning > env > 既定）を明文化
+- UI 化されていない非 secret 設定は CODEX_REASONING_EFFORT / CODEX_SERVICE_TIER の2つだけ（棚卸し確定）→ §3 で UI 化され、**サーバはチューニング系 env（CLAUDE_MODEL/CLAUDE_EFFORT/CODEX_REASONING_EFFORT/CODEX_SERVICE_TIER）を読まない**（2026-07-08 ユーザー指示: UI に見えない裏設定の禁止）。env の役割は **secrets（OPENAI_API_KEY / OPENAI_COMPAT_API_KEY / TTS_API_KEY / ANTHROPIC_API_KEY / CODEX_API_KEY）+ ヘッドレス/CLI ブートストラップ（LLM_PROVIDER・OPENAI_COMPAT_*・TTS_*、チューニング系4変数は CLI エントリポイントのみが解釈）** に純化
+- README の env 表を「UI で設定（サーバの唯一の真実 = DB）/ env のみ（secrets・CLI 専用）」の2区分で再編。優先順位（tuning > コード既定・env 中間層なし）を明文化
+- **UI 真実性の原則（binding）**: 画面に見える設定と実際の挙動は常に一致する。UI が「既定」と表示するものの実体はコード定数であり、env や隠れた設定で変わらない。§7 の実効モデル可視化もこの原則の適用
 
-## 7. 不変条件・検証
+## 7. 実効モデルの可視化・選択（2026-07-08 ユーザー要件追加）
+
+要件（binding・ユーザー指示逐語ベース）: **①ユーザーがしっかり選択できる ②現在何が使われているかが明確に分かる**（Codex が GPT-5.5 か 5.4 か Codex 5.3 か / Claude の sonnet の実体がバージョン何か）**③既定・推奨の設定がすべて一目で分かる**。
+
+- **モデルカタログ API（新設 `GET /api/llm-models`）**: 3ソースを統一形 `{ provider, available, reason?, models: [...], fetchedAt }` で返す。models 要素: `{ id, displayName, description, resolvedModel?, efforts?, defaultEffort?, tiers?, defaultTier?, isDefault? }`
+  - claude: Agent SDK `query().supportedModels()` — ModelInfo に `value` / **`resolvedModel`**（'sonnet'→'claude-sonnet-5' 形式の canonical wire id）/ `displayName` / `description` / `supportedEffortLevels`（sdk.d.ts 実在確認済み）。CLI メタデータでありトークン消費なし・spawn 1回のコスト
+  - codex: app-server v2 **`model/list`** — `Model` に `id` / `model` / `displayName` / `description` / `supportedReasoningEfforts`（各 effort に description つき）/ `defaultReasoningEffort` / `serviceTiers`（id/name/description）/ `defaultServiceTier` / **`isDefault`**（codex-rs protocol 実在確認済み・非 experimental）。常駐プロセスへの追加リクエスト1本
+  - local: OpenAI 互換 `GET {baseUrl}/models`（Ollama / LM Studio 標準エンドポイント）
+  - サーバ内 TTL キャッシュ（1h 目安）+ `?refresh=1` 強制再取得。**取得失敗は `{available:false, reason}`** — UI は現行の静的選択肢へ劣化し「実体未確認」を明示（**嘘の表示をしない**）
+- **選択（要件①）**: claude ロール tuning のモデル DD = カタログ由来選択肢（「Sonnet — claude-sonnet-4-5」形式で実体併記・**保存値はエイリアスのまま** = 最新自動追従の維持）。codexModel（接続タブ）= 自由記述 → カタログ DD 化（isDefault 行に「CLI 既定」バッジ・カタログ不可時は自由記述フォールバック）。local model = /models 由来 DD + 自由記述フォールバック。effort DD の選択肢は選択中モデルの supported efforts に絞る
+- **実効表示（要件②）**: 用途タブの各ロール行に常時「実効」サマリ1行 = 実効プロバイダ + 具体モデル ID（カタログ解決値）+ effort + tier。inherit 連鎖（assist→coaching）も解決後の値で表示。カタログ不可時は「未確認」明示
+- **既定・推奨（要件③）**: 「既定（…）」ラベルはコード定数とカタログ既定（isDefault / defaultReasoningEffort / defaultServiceTier）で具体化。codex effort 選択肢にカタログの description を併記。推奨は §4 の適用ボタン + roleReason（既存）で提示
+- §5 との関係: codex api-key モードではモデル一覧配信が無くなる可能性 → available:false 劣化パスで吸収
+
+## 8. 不変条件・検証
 
 - `ClaudeRunner` 型・消費側ドメインモジュールの呼び出し形: 不変（runnerFor の引数に "assist" が増えるのみ）
 - **設定を変えなければ挙動完全同一**（5ロール連鎖・tuning センチネル・authMode 既定 subscription がこれを保証）。工場既定の Claude モデルは sonnet のまま
 - サーバ新ロジック TDD / 検証ゲート3種 / PUBLIC 衛生 / 研究制約 / i18n EN・JA 同時
-- 手動スモーク: ①claude -p フォールバック発火（SDK を壊す shim）と resume 継続 ②ロール別 effort が thread/start パラメータに乗ること（fake 検証+実機1回）③assist 分離後の訳ボタンが assist 経路で動くこと ④codex api-key モードの隔離 CODEX_HOME 作成と ~/.codex 不干渉 ⑤「推奨チューニングを適用」の書き込み内容
+- 手動スモーク: ①claude -p フォールバック発火（SDK を壊す shim）と resume 継続 ②ロール別 effort が thread/start パラメータに乗ること（fake 検証+実機1回）③assist 分離後の訳ボタンが assist 経路で動くこと ④codex api-key モードの隔離 CODEX_HOME 作成と ~/.codex 不干渉 ⑤「推奨チューニングを適用」の書き込み内容 ⑥モデルカタログ実機（claude supportedModels の resolvedModel / codex model/list の isDefault が UI に出ること・ソース停止時の「実体未確認」劣化）
 - リリース: v0.24.0（CHANGELOG・README「できること」・タグ・デプロイ）。完了後 Tauri Phase 1 へ
 
-## 8. 将来課題（本改修で作らないもの）
+## 9. 将来課題（本改修で作らないもの）
 
 - Claude の thinking 予算 UI（SDK 既定 adaptive のまま）/ GPT のロール別モデル（ユーザー方針で不要）/ openai-compat へのフォールバック / 認証状態のリッチ表示（account/read 連携）
