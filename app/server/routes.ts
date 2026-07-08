@@ -16,6 +16,7 @@ import { makeAssessmentRoutes, type AssessmentRoutesDeps } from "./routes/assess
 import { makeListeningRoutes, type ListeningRoutesDeps } from "./routes/listening";
 import { makeFeedbackRoutes, type FeedbackRoutesDeps } from "./routes/feedback";
 import { makeLlmSettingsRoutes, type LlmSettingsRoutesDeps } from "./routes/llm-settings";
+import { makeLlmModelsRoutes, type LlmModelsRoutesDeps } from "./routes/llm-models";
 import { makeTtsSettingsRoutes, type TtsSettingsRoutesDeps } from "./routes/tts-settings";
 
 /**
@@ -29,7 +30,7 @@ export type RouteDeps =
   SettingsRoutesDeps & LibraryRoutesDeps & CoachRoutesDeps & SentenceRoutesDeps &
   ChunkRoutesDeps & ProgressRoutesDeps & PlacementRoutesDeps & MetricsRoutesDeps &
   AssessmentRoutesDeps & ListeningRoutesDeps & FeedbackRoutesDeps & LlmSettingsRoutesDeps &
-  TtsSettingsRoutesDeps;
+  LlmModelsRoutesDeps & TtsSettingsRoutesDeps;
 
 /** 現在の index.ts の全ルーティング・ハンドラをソケットを開かずにテストできる形に切り出したもの */
 export function makeFetchHandler(deps: RouteDeps): (req: Request) => Promise<Response> {
@@ -50,6 +51,7 @@ export function makeFetchHandler(deps: RouteDeps): (req: Request) => Promise<Res
     ...makeListeningRoutes(deps),
     ...makeFeedbackRoutes(deps),
     ...makeLlmSettingsRoutes(deps),
+    ...makeLlmModelsRoutes(deps),
     ...makeTtsSettingsRoutes(deps),
   ];
   return async function fetch(req: Request): Promise<Response> {

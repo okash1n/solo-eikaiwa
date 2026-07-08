@@ -26,6 +26,9 @@ import { makeLlmRoleSettingsStore } from "./llm-role-settings-store";
 import { makeLlmRoleTuningStore } from "./llm-role-tuning-store";
 import { conversationWarmup } from "./llm-warmup";
 import { LLM_ROLES } from "./llm-provider";
+import { query } from "@anthropic-ai/claude-agent-sdk";
+import { getCodexAppServerClient } from "./providers/codex-app-server";
+import { makeClaudeCatalogFetcher, makeCodexCatalogFetcher, makeLocalCatalogFetcher, makeModelCatalogCache } from "./providers/model-catalog";
 
 ensureDirs();
 const PORT = 3111;
@@ -46,6 +49,15 @@ const llmSettingsStore = makeLlmSettingsStore(db);
 const ttsSettingsStore = makeTtsSettingsStore(db);
 const llmRoleSettingsStore = makeLlmRoleSettingsStore(db);
 const llmRoleTuningStore = makeLlmRoleTuningStore(db);
+// モデルカタログ（GET /api/llm-models）: 3ソースを TTL キャッシュ付きで束ねる。
+// codex はカタログ取得も runner と同じ常駐プロセスを共有する（getCodexAppServerClient・exec フォールバックなし）。
+// local の baseUrl は「保存済み openai-compat 設定 → 無ければ env」の順で解決する（グローバル設定に閉じる。
+// ロール別 baseUrl は対象外＝カタログは接続単位ではなくプロバイダ単位の一覧のため）。
+const modelCatalogCache = makeModelCatalogCache({
+  claude: makeClaudeCatalogFetcher(query),
+  codex: makeCodexCatalogFetcher(() => getCodexAppServerClient()),
+  local: makeLocalCatalogFetcher(() => (llmSettingsStore.get()?.baseUrl ?? Bun.env.OPENAI_COMPAT_BASE_URL)?.trim() || null),
+});
 const assembleMonthData = makeAssembleMonthData({
   db,
   sentences,
@@ -123,6 +135,7 @@ const realDeps: RouteDeps = {
     apiKeyConfigured: Boolean(Bun.env.OPENAI_COMPAT_API_KEY?.trim()),
   }),
   warmLlm: () => conversationWarmup.maybeWarm(),
+  getModelCatalog: (provider, refresh) => modelCatalogCache.get(provider, refresh),
   getTtsSettings: () => ttsSettingsStore.get(),
   saveTtsSettings: (s) => ttsSettingsStore.save(s),
   // env 由来。TTS の APIキーは有無のみ開示（TTS_API_KEY 優先・無ければ OPENAI_API_KEY）。値は絶対に返さない。

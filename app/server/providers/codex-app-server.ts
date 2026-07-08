@@ -98,6 +98,16 @@ export class CodexAppServerClient {
     return this.sendRequest(method, params);
   }
 
+  /**
+   * モデルカタログ取得（Task 3）用: 常駐プロセスへ `model/list` を投げ、result.data をそのまま返す。
+   * プロトコルのマッピング（CatalogModel への写像）はこのクライアントの責務ではなく呼び出し側
+   * （providers/model-catalog.ts）が担う。exec フォールバックは経由しない（呼び出し元が available:false に変換する）。
+   */
+  async listModels(): Promise<Record<string, unknown>[]> {
+    const res = await this.request("model/list", {});
+    return Array.isArray(res.data) ? (res.data as Record<string, unknown>[]) : [];
+  }
+
   /** turn/start を送り、turn/completed まで通知を収集して最終 agentMessage テキストを返す */
   async runTurn(threadId: string, text: string): Promise<string> {
     if (this.turnCollectors.has(threadId)) {
@@ -579,35 +589,55 @@ let registry: CodexAppServerRegistryEntry | null = null;
 /** 接続識別用のキー。Task 8 時点では model/reasoningEffort/serviceTier が per-thread パラメータへ
  * 移行したため接続の同一性には関与せず、区別すべき接続属性が他に無いので実質定数を返す
  * （Plan B で API キー認証の隔離 CODEX_HOME 等が入れば、その時点でキーに含める）。 */
-function connectionKey(_cfg: CodexAppServerConfig): string {
+function connectionKey(): string {
   return "default";
 }
 
 /**
- * codex app-server 常駐プロセスを接続単位でデデュープする ClaudeRunner ファクトリ。
- * - 通常呼び出しでは常に同一キー（実質定数）になるため、既存の client と threads/transcript
- *   （=既に spawn 済みかもしれない常駐プロセスと、そのセッション記憶）をそのまま使う新しい runner を返す
- *   （新規プロセスは spawn されず、設定保存のたびの再解決でも保険トランスクリプトはリセットされない。Fix 1）。
- *   ロールごとに異なる model/reasoningEffort/serviceTier を渡しても、この共有は維持される
- *   （各呼び出しの cfg は buildRunner のクロージャに個別に残るため、thread/start・thread/resume には
- *   呼び出し元の cfg がそのまま per-thread に反映される。プロセス自体は1本のまま＝Task 8）。
- * - __resetCodexAppServerRegistry() 呼び出し後や、将来キーが接続属性を持つようになった場合のみ
- *   旧 client を kill() し、threads/transcript も新規の空 Map から作り直す。
- * - defaultSystemPrompt は呼び出しごとの cfg をそのまま使う（値は実運用では固定だが、
- *   仮に変わっても次回呼び出しの runner に反映される）。
+ * registry の spawn-or-reuse 本体。同一キー（実質定数）である限り、既存の client と threads/transcript
+ * （=既に spawn 済みかもしれない常駐プロセスと、そのセッション記憶）をそのまま返す（新規プロセスは
+ * spawn されない。Fix 1）。キーが変わった場合（将来 API キー認証の隔離 CODEX_HOME 等が入った場合）や
+ * __resetCodexAppServerRegistry() 後だけ、旧 client を kill() して新規の空 Map から作り直す。
+ * getCodexAppServerRunner（ClaudeRunner 合成）と getCodexAppServerClient（Task 3: カタログ直接アクセス）
+ * の両方がこの唯一の spawn-or-reuse ロジックを共有する。
  */
-export function getCodexAppServerRunner(cfg: CodexAppServerConfig): ClaudeRunner {
-  const key = connectionKey(cfg);
+function ensureRegistryEntry(spawn?: SpawnAppServer): CodexAppServerRegistryEntry {
+  const key = connectionKey();
   if (!registry || registry.key !== key) {
     registry?.client.kill();
     registry = {
       key,
-      client: new CodexAppServerClient(cfg.spawn ?? realSpawnAppServer),
+      client: new CodexAppServerClient(spawn ?? realSpawnAppServer),
       threads: new Map(),
       transcript: new Map(),
     };
   }
-  return buildRunner(registry.client, cfg, { threads: registry.threads, transcript: registry.transcript });
+  return registry;
+}
+
+/**
+ * codex app-server 常駐プロセスを接続単位でデデュープする ClaudeRunner ファクトリ。
+ * - 通常呼び出しでは常に同一キー（実質定数）になるため、既存の client と threads/transcript を
+ *   そのまま使う新しい runner を返す（設定保存のたびの再解決でも保険トランスクリプトはリセットされない）。
+ *   ロールごとに異なる model/reasoningEffort/serviceTier を渡しても、この共有は維持される
+ *   （各呼び出しの cfg は buildRunner のクロージャに個別に残るため、thread/start・thread/resume には
+ *   呼び出し元の cfg がそのまま per-thread に反映される。プロセス自体は1本のまま＝Task 8）。
+ * - defaultSystemPrompt は呼び出しごとの cfg をそのまま使う（値は実運用では固定だが、
+ *   仮に変わっても次回呼び出しの runner に反映される）。
+ */
+export function getCodexAppServerRunner(cfg: CodexAppServerConfig): ClaudeRunner {
+  const entry = ensureRegistryEntry(cfg.spawn);
+  return buildRunner(entry.client, cfg, { threads: entry.threads, transcript: entry.transcript });
+}
+
+/**
+ * モデルカタログ取得（Task 3）専用: getCodexAppServerRunner と同じ常駐プロセスをそのまま共有して返す
+ * （新規 spawn を増やさない）。runner 合成（withFallback による exec フォールバック）は経由しない直接
+ * アクセスのため、呼び出し元（providers/model-catalog.ts）は request 失敗もそのまま available:false へ
+ * 変換するだけで、フォールバックの対象にはしない（カタログは app-server 専用というプロダクト仕様）。
+ */
+export function getCodexAppServerClient(spawn?: SpawnAppServer): CodexAppServerClient {
+  return ensureRegistryEntry(spawn).client;
 }
 
 /** テスト用: registry をリセットする（現在の client があれば kill してから破棄）。テスト間の分離用。 */

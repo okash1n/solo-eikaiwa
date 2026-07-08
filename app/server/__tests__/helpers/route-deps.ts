@@ -14,6 +14,7 @@ import type { ListeningStore } from "../../listening-store";
 import type { FeedbackStore } from "../../feedback-store";
 import type { LlmRole, LlmRoleSetting } from "../../llm-provider";
 import type { RoleTuning } from "../../llm-role-tuning-store";
+import type { CatalogResult, LlmCatalogProvider } from "../../providers/model-catalog";
 
 export const FAKE_HEALTH = { ok: true, whisper: true, ffmpeg: true, claude: true, ttsKey: true, modelFile: true };
 export const FAKE_MENU = {
@@ -213,6 +214,9 @@ export function makeTestDeps(overrides: Partial<RouteDeps> = {}): {
     applyLlmSettings: (_s) => {},
     llmEnv: () => ({ provider: "claude", apiKeyConfigured: false }),
     warmLlm: () => {},
+    getModelCatalog: async (_provider: LlmCatalogProvider, _refresh: boolean): Promise<CatalogResult> => ({
+      available: true, models: [], fetchedAt: "2026-07-08T00:00:00.000Z",
+    }),
     getTtsSettings: () => null,
     saveTtsSettings: (_s) => {},
     ttsEnv: () => ({ apiKeyConfigured: false }),

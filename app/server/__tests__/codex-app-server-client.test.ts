@@ -238,4 +238,30 @@ describe("CodexAppServerClient", () => {
     fakes[1]!.emit({ id: fakes[1]!.sent[2]!.id, result: { thread: { id: "t-heal" } } });
     expect((await second).thread).toEqual({ id: "t-heal" });
   });
+
+  test("listModelsはmodel/listをparams:{}で送りresult.dataを返す（モデルカタログ取得・Task 3）", async () => {
+    const f = makeFakeProc();
+    const client = new CodexAppServerClient((() => f.proc) as SpawnAppServer);
+    const p = client.listModels();
+    await Bun.sleep(0);
+    expect(f.sent[0]?.method).toBe("initialize");
+    f.emit({ id: f.sent[0]!.id, result: {} });
+    await Bun.sleep(0);
+    const req = f.sent.find((m) => m.method === "model/list")!;
+    expect(req.params).toEqual({});
+    f.emit({ id: req.id, result: { data: [{ id: "gpt-5.6-codex" }] } });
+    expect(await p).toEqual([{ id: "gpt-5.6-codex" }]);
+  });
+
+  test("listModelsはresult.dataが配列でなければ空配列を返す", async () => {
+    const f = makeFakeProc();
+    const client = new CodexAppServerClient((() => f.proc) as SpawnAppServer);
+    const p = client.listModels();
+    await Bun.sleep(0);
+    f.emit({ id: f.sent[0]!.id, result: {} });
+    await Bun.sleep(0);
+    const req = f.sent.find((m) => m.method === "model/list")!;
+    f.emit({ id: req.id, result: {} });
+    expect(await p).toEqual([]);
+  });
 });
