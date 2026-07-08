@@ -13,6 +13,7 @@ import {
   buildRolesPayload, defaultTuning, applyRecommendedTuning,
   claudeModelSelectOptions, effortOptionsForClaudeAlias, codexModelSelectOptions, effortOptionsForCodexModel,
   tierOptionsForCodexModel, codexDefaultEffortLabel, localModelSelectOptions, resolveEffective, clampClaudeEffort,
+  CODEX_EFFORT_OPTIONS,
   type RoleTarget, type RoleTargets, type Connection, type PresetId, type CloudTarget, type EffectiveResolution,
 } from "../lib/llm-assignments";
 import { loadPreferredCloud, savePreferredCloud } from "../lib/preferred-cloud";
@@ -467,7 +468,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                 : [...EFFORT_OPTIONS];
               const codexEffortOptions: CatalogModelEffort[] = catalogCodex?.available
                 ? effortOptionsForCodexModel(catalogCodex, connCodex)
-                : EFFORT_OPTIONS.map((id) => ({ id }));
+                : CODEX_EFFORT_OPTIONS.map((id) => ({ id }));
               const codexTierOptions = catalogCodex?.available
                 ? tierOptionsForCodexModel(catalogCodex, connCodex)
                 : SERVICE_TIER_OPTIONS;
