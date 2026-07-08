@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { makeFetchHandler } from "../routes";
@@ -95,6 +95,30 @@ describe("routes: static (client dist 直接配信)", () => {
 
     const res = serveStatic("GET", "/../secret.txt", distDir);
     expect(res.status).toBe(404);
+  });
+
+  test("dist内のsymlinkがdist外を指す場合はrealpathでcontainmentを検証し404で拒否する（レキシカルチェックだけでは防げないケース）", async () => {
+    const staticDir = makeDistFixture();
+    const outsideDir = mkdtempSync(path.join(tmpdir(), "outside-"));
+    const secretPath = path.join(outsideDir, "secret.txt");
+    writeFileSync(secretPath, "SECRET-OUTSIDE-DIST");
+    symlinkSync(secretPath, path.join(staticDir, "evil-link.txt"));
+
+    const { deps } = makeTestDeps({ staticDir });
+    const handler = makeFetchHandler(deps);
+
+    const res = await handler(getReq("/evil-link.txt"));
+    expect(res.status).toBe(404);
+    expect(await res.text()).not.toContain("SECRET-OUTSIDE-DIST");
+
+    // symlink防御を追加してもdist内の正当なファイル配信・SPAフォールバックは影響を受けない
+    const legit = await handler(getReq("/assets/x-abc123.js"));
+    expect(legit.status).toBe(200);
+    expect(await legit.text()).toBe("console.log('hi')");
+
+    const spa = await handler(getReq("/nonexistent-page"));
+    expect(spa.status).toBe(200);
+    expect(await spa.text()).toContain("root");
   });
 
   test("POST / は405（静的配信はGETのみ）", async () => {

@@ -1,5 +1,5 @@
 import path from "node:path";
-import { existsSync, statSync } from "node:fs";
+import { existsSync, realpathSync, statSync } from "node:fs";
 
 /** 静的配信の依存。省略時は実 dist（paths.ts の CLIENT_DIST_DIR）を使う。テストでは temp dir を注入する。 */
 export type StaticRoutesDeps = {
@@ -31,6 +31,12 @@ function isRegularFile(p: string): boolean {
   }
 }
 
+/** target が root と同一、または root 配下にあるか（path.sep境界を尊重した prefix 判定） */
+function isWithin(root: string, target: string): boolean {
+  const rootWithSep = root.endsWith(path.sep) ? root : root + path.sep;
+  return target === root || target.startsWith(rootWithSep);
+}
+
 const DIST_MISSING_HINT = "client dist not built — run: cd app/client && bun run build\n";
 
 /**
@@ -55,9 +61,22 @@ export function serveStatic(method: string, pathname: string, distDir: string): 
 
   const relative = decoded.replace(/^\/+/, "");
   const resolved = path.resolve(distDir, relative);
-  const distRootWithSep = distDir.endsWith(path.sep) ? distDir : distDir + path.sep;
-  if (resolved !== distDir && !resolved.startsWith(distRootWithSep)) {
+  if (!isWithin(distDir, resolved)) {
     return new Response("Not Found", { status: 404 });
+  }
+
+  // レキシカルな containment（上記）だけでは、dist内のシンボリックリンクが dist 外を指している場合に
+  // すり抜けてしまう（path.resolve は lexical、statSync/Bun.file は symlink を追跡して実体を読む）。
+  // 実体（realpath）側でも同じ containment を検証する。resolved が存在しない場合（realpathSync が
+  // ENOENT で例外）は「存在しないパス」として後続の isRegularFile 判定・SPAフォールバックに委ねる。
+  try {
+    const realResolved = realpathSync(resolved);
+    const realDistDir = realpathSync(distDir);
+    if (!isWithin(realDistDir, realResolved)) {
+      return new Response("Not Found", { status: 404 });
+    }
+  } catch {
+    // ENOENT等: 存在しないファイル/リンク切れ — 後続処理に委ねる（未存在は SPA フォールバック対象）
   }
 
   const indexPath = path.join(distDir, "index.html");
