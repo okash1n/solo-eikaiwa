@@ -62,6 +62,7 @@ type LlmPanelStrings = {
     applied: string;
     notApplied: (msg: string) => string;
     saveFailed: string;
+    saveFailedWithReason: (reason: string) => string;
     apiKeyConfigured: string; apiKeyMissing: string;
     help: string; helpAria: string;
     envNote: (envProvider: string) => string;
@@ -347,6 +348,7 @@ export const STR: Record<Lang, Strings> = {
       applied: "Applied to the running app.",
       notApplied: (msg) => `Saved, but not applied: ${msg}`,
       saveFailed: "Could not save settings.",
+      saveFailedWithReason: (reason) => `Could not save settings: ${reason}`,
       apiKeyConfigured: "API key: set in app/.env", apiKeyMissing: "API key: not set (app/.env)",
       help: "The API key is read from app/.env only and is never stored here. Reply quality depends on the model you choose; Claude is the tested baseline.",
       helpAria: "About the LLM provider setting",
@@ -712,6 +714,7 @@ export const STR: Record<Lang, Strings> = {
       applied: "実行中のアプリに適用しました。",
       notApplied: (msg) => `保存しましたが適用できませんでした: ${msg}`,
       saveFailed: "設定を保存できませんでした。",
+      saveFailedWithReason: (reason) => `設定を保存できませんでした: ${reason}`,
       apiKeyConfigured: "APIキー: app/.env に設定済み", apiKeyMissing: "APIキー: 未設定（app/.env）",
       help: "APIキーは app/.env からのみ読み込み、ここには保存しません。応答品質は選んだモデルに依存します。Claude は動作確認済みの基準です。",
       helpAria: "LLM プロバイダ設定の説明",

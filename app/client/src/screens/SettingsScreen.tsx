@@ -5,11 +5,11 @@ import {
   fetchLlmModels,
   EFFORT_OPTIONS, SERVICE_TIER_OPTIONS, AUTH_MODE_OPTIONS,
   type LlmRole, type LlmSettingsView, type TtsSettingsView, type RoleTuning, type LlmModelsResponse, type CatalogModelEffort,
-  type AuthMode,
+  type AuthMode, type LlmAuthProvider,
 } from "../api";
 import {
   isLocalDefined, presetEnabled, presetTargets, matchPreset, hydrateConnection, hydrateTargets, hydrateTuning,
-  hydrateAuthModes, hydrateAuthKeys,
+  hydrateAuthModes, hydrateAuthKeys, buildAuthPatch,
   buildRolesPayload, defaultTuning, applyRecommendedTuning,
   claudeModelSelectOptions, effortOptionsForClaudeAlias, codexModelSelectOptions, effortOptionsForCodexModel,
   tierOptionsForCodexModel, codexDefaultEffortLabel, localModelSelectOptions, resolveEffective, clampClaudeEffort,
@@ -104,6 +104,10 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
   // 認証モードの編集状態（claude/codex）。キー検出状態は view から都度導出する（読み取り専用のため state 化しない）。
   const [authClaude, setAuthClaude] = useState<AuthMode>("subscription");
   const [authCodex, setAuthCodex] = useState<AuthMode>("subscription");
+  // 直近 hydrate 済み（=サーバ保存済み）の認証モード。保存時はここからの差分だけを PUT に含める
+  // （auth を変更していない保存で毎回両方を再送すると、api-key 保存後に env キーを削除した状態で
+  // 無関係の保存まで 400 になりロックアウトする — buildAuthPatch 参照）。
+  const [authBaseline, setAuthBaseline] = useState<Record<LlmAuthProvider, AuthMode>>({ claude: "subscription", codex: "subscription" });
   const authKeys = view ? hydrateAuthKeys(view) : { anthropic: false, codex: false };
   // 音声（TTS）の編集状態
   const [ttsView, setTtsView] = useState<TtsSettingsView | null>(null);
@@ -122,6 +126,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
     const authModes = hydrateAuthModes(v);
     setAuthClaude(authModes.claude);
     setAuthCodex(authModes.codex);
+    setAuthBaseline(authModes);
   }
 
   function hydrateTts(v: TtsSettingsView) {
@@ -168,13 +173,20 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
     setSaving(true); setLlmResult(null);
     try {
       // cloud はローカル未定義時のフォールバック先にのみ影響する（優先クラウドが唯一の妥当な出典）。
-      // tuning・auth は割当・プリセットとは独立に現在の編集状態をそのまま乗せる（プリセット適用はどちらも変更しない）。
+      // tuning は割当・プリセットとは独立に現在の編集状態をそのまま乗せる（プリセット適用は変更しない）。
+      // auth はベースラインからの差分のみを乗せる（buildAuthPatch 参照）。未変更なら auth フィールド自体を省略する
+      // ＝ auth を一切触っていない保存が、無関係な理由（例: 保存済みAPIキーの失効）で 400 になるのを防ぐ。
+      const authPatch = buildAuthPatch(authBaseline, { claude: authClaude, codex: authCodex });
       applyResult(await saveLlmRoleSettings({
         ...buildRolesPayload(nextTargets, nextConn, preferredCloud, tuning),
-        auth: { claude: authClaude, codex: authCodex },
+        ...(authPatch ? { auth: authPatch } : {}),
       }));
       return true;
-    } catch { setLlmResult(s.llm.saveFailed); return false; } finally { setSaving(false); }
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : String(err);
+      setLlmResult(reason ? s.llm.saveFailedWithReason(reason) : s.llm.saveFailed);
+      return false;
+    } finally { setSaving(false); }
   }
 
   async function applyPreset(id: PresetId) {
@@ -261,7 +273,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
         <section className="support-panel stack">
           <div className="stat-title">{s.settings.connectionSection}</div>
           <div className="llm-fields stack">
-            <div className="text-sm">Claude</div>
+            <div className="text-sm">{s.settings.targetClaude}</div>
             <div className="text-sm text-muted">{s.settings.claudeNoSetup}</div>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.settings.authModeLabel}</span>

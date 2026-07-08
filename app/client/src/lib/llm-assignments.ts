@@ -84,6 +84,24 @@ export function hydrateAuthKeys(view: LlmSettingsView): { anthropic: boolean; co
 }
 
 /**
+ * 認証モードの PUT ペイロード用パッチを組み立てる。ベースライン（直近 hydrate 済みの値）から
+ * 変更された provider のみを含める（両方未変更なら undefined＝PUT payload に auth フィールド自体を含めない）。
+ * これが無いと、api-key で保存済みのまま後から app/.env のキーを削除した状態で、auth を一切変更していない
+ * 他の保存（接続保存・割当保存・プリセット適用）まで毎回 auth を再送し、サーバ側の
+ * 「api-key 指定時に env キー未設定なら 400」検証に毎回引っかかって設定変更が一切保存できなくなる
+ * （ロックアウト）。「本当に auth を変更した保存だけが 400 になり得る」を保証するための差分抽出。
+ */
+export function buildAuthPatch(
+  baseline: Record<LlmAuthProvider, AuthMode>,
+  current: Record<LlmAuthProvider, AuthMode>,
+): Partial<Record<LlmAuthProvider, AuthMode>> | undefined {
+  const patch: Partial<Record<LlmAuthProvider, AuthMode>> = {};
+  if (current.claude !== baseline.claude) patch.claude = current.claude;
+  if (current.codex !== baseline.codex) patch.codex = current.codex;
+  return Object.keys(patch).length > 0 ? patch : undefined;
+}
+
+/**
  * ロール別の推奨チューニング（spec §4 推奨マトリクスの逐語定数）。
  * クラウド割当（claude/codex）のロールにのみ適用する想定 — local 割当ロールは対象外（applyRecommendedTuning 参照）。
  */

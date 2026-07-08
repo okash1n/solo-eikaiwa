@@ -6,7 +6,7 @@ import {
   presetTargets, defaultTuning, hydrateTuning, RECOMMENDED_TUNING, applyRecommendedTuning,
   claudeModelSelectOptions, effortOptionsForClaudeAlias, codexModelSelectOptions, effortOptionsForCodexModel,
   tierOptionsForCodexModel, codexDefaultEffortLabel, localModelSelectOptions, resolveEffective, clampClaudeEffort,
-  hydrateAuthModes, hydrateAuthKeys,
+  hydrateAuthModes, hydrateAuthKeys, buildAuthPatch,
   type RoleTargets,
 } from "./llm-assignments";
 
@@ -377,6 +377,32 @@ describe("旧サーバ応答への後方互換（ロール行の欠落）", () =
   test("authKeysが有るときhydrateAuthKeysはそのまま復元する", () => {
     const view = mkView({ authKeys: { anthropic: true, codex: false } });
     expect(hydrateAuthKeys(view)).toEqual({ anthropic: true, codex: false });
+  });
+});
+
+describe("buildAuthPatch（ロックアウト防止のための差分抽出）", () => {
+  test("両方未変更ならundefined（authフィールド自体をPUTに含めない）", () => {
+    const baseline = { claude: "api-key" as const, codex: "subscription" as const };
+    expect(buildAuthPatch(baseline, { claude: "api-key", codex: "subscription" })).toBeUndefined();
+  });
+  test("claudeだけ変更ならclaudeのみを含む", () => {
+    const baseline = { claude: "subscription" as const, codex: "subscription" as const };
+    expect(buildAuthPatch(baseline, { claude: "api-key", codex: "subscription" })).toEqual({ claude: "api-key" });
+  });
+  test("codexだけ変更ならcodexのみを含む", () => {
+    const baseline = { claude: "subscription" as const, codex: "subscription" as const };
+    expect(buildAuthPatch(baseline, { claude: "subscription", codex: "api-key" })).toEqual({ codex: "api-key" });
+  });
+  test("両方変更なら両方を含む", () => {
+    const baseline = { claude: "subscription" as const, codex: "subscription" as const };
+    expect(buildAuthPatch(baseline, { claude: "api-key", codex: "api-key" })).toEqual({ claude: "api-key", codex: "api-key" });
+  });
+  test("api-keyで保存済み・後からenvキー削除の状態でも他providerの変更だけをパッチにできる（ロックアウト再現シナリオ）", () => {
+    // baseline = サーバ保存済み値（api-key で保存した直後の状態を再現）。キー削除後もサーバ値は変わらない。
+    const baseline = { claude: "api-key" as const, codex: "subscription" as const };
+    // ユーザーは claude の auth を一切触らず、codex だけ api-key に変更して保存しようとする。
+    const patch = buildAuthPatch(baseline, { claude: "api-key", codex: "api-key" });
+    expect(patch).toEqual({ codex: "api-key" }); // claude は変更なしのため含まれない＝キー削除後でも400にならない
   });
 });
 
