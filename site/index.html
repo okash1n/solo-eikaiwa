@@ -69,13 +69,13 @@
   @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
 
   /* 草モチーフ（アプリの練習カレンダーと同じ濃淡スケール） */
-  .grass { display: flex; gap: 5px; justify-content: center; margin-top: 48px; }
-  .grass span { width: 14px; height: 14px; border-radius: 4px; background: var(--border); }
+  .grass { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 48px; max-width: 100%; }
+  .grass span { width: 14px; height: 14px; border-radius: 4px; background: var(--border); flex: none; }
   .grass [data-l="1"] { background: var(--cal-l1); }
   .grass [data-l="2"] { background: var(--cal-l2); }
   .grass [data-l="3"] { background: var(--cal-l3); }
   .grass [data-l="4"] { background: var(--cal-l4); }
-  @media (max-width: 560px) { .grass span:nth-child(n+19) { display: none; } }
+  @media (max-width: 560px) { .grass span:nth-child(n+15) { display: none; } }
 
   /* セクション */
   section { padding: 52px 0; }
