@@ -157,3 +157,25 @@ export function settingsToEnv(
     CODEX_MODEL: s.codexModel ?? undefined,
   };
 }
+
+/**
+ * health.llmReady 集約判定（Tauri Phase 2 T3 fix）が使う純関数: グローバル設定（DB行。無ければ
+ * provider="env"としてsettingsToEnvの既定挙動＝env直接運用に委ねる）を反映した「有効env」上で、
+ * openai-compatが実際に選択され、かつ接続に必要なbaseUrl/modelが揃っているかを判定する。
+ * selectRunner/resolveRoleRunnerが実際に使うのと同じ resolveProviderKey/settingsToEnv を再利用する
+ * ことで、判定ロジックの二重実装（＝ドリフト）を避ける。
+ */
+export function isOpenAiCompatReady(
+  settings: LlmSettings | null,
+  env: Record<string, string | undefined> = Bun.env,
+): boolean {
+  const effectiveEnv = settingsToEnv(
+    settings ?? { provider: "env", baseUrl: null, model: null, codexModel: null },
+    env,
+  );
+  return (
+    resolveProviderKey(effectiveEnv) === "openai-compat" &&
+    Boolean(effectiveEnv.OPENAI_COMPAT_BASE_URL?.trim()) &&
+    Boolean(effectiveEnv.OPENAI_COMPAT_MODEL?.trim())
+  );
+}

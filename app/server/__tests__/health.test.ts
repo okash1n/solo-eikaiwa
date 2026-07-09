@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { checkHealth } from "../health";
 import pkg from "../../package.json";
+import type { LlmSettings } from "../llm-provider";
 
 describe("health", () => {
   test("全依存が揃っていれば ok=true", () => {
@@ -11,7 +12,7 @@ describe("health", () => {
     });
     expect(h).toEqual({
       ok: true, whisper: true, ffmpeg: true, claude: true, ttsKey: true, modelFile: true,
-      app: "solo-eikaiwa", version: pkg.version,
+      app: "solo-eikaiwa", version: pkg.version, llmReady: true,
     });
   });
 
@@ -37,5 +38,34 @@ describe("health", () => {
     });
     expect(h.whisper).toBe(false);
     expect(h.ok).toBe(false);
+  });
+});
+
+describe("health.llmReady（claude/codex/openai-compatのいずれかが実際に使えるかの集約判定。health.claude単体だと local-only/codex-only構成で偽陽性の「LLM未導入」通知が出るため追加）", () => {
+  test("claudeのみ利用可能 → llmReady=true", () => {
+    const h = checkHealth({
+      whichFn: (bin) => (bin === "claude" ? "/bin/claude" : null),
+      env: {}, modelExists: () => true,
+    });
+    expect(h.llmReady).toBe(true);
+  });
+
+  test("codexのみ利用可能（claudeもopenai-compatも無し） → llmReady=true", () => {
+    const h = checkHealth({
+      whichFn: (bin) => (bin === "codex" ? "/bin/codex" : null),
+      env: {}, modelExists: () => true,
+    });
+    expect(h.llmReady).toBe(true);
+  });
+
+  test("openai-compatのみ設定済み（DB設定・claude/codexとも無し） → llmReady=true", () => {
+    const settings: LlmSettings = { provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null };
+    const h = checkHealth({ whichFn: () => null, env: {}, modelExists: () => true, llmSettings: settings });
+    expect(h.llmReady).toBe(true);
+  });
+
+  test("いずれも無し → llmReady=false", () => {
+    const h = checkHealth({ whichFn: () => null, env: {}, modelExists: () => true, llmSettings: null });
+    expect(h.llmReady).toBe(false);
   });
 });

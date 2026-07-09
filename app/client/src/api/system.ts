@@ -4,6 +4,8 @@ export type Health = {
   ok: boolean; whisper: boolean; ffmpeg: boolean; claude: boolean; ttsKey: boolean; modelFile: boolean;
   /** Tauri Phase 2: サーバの身元確認用（デスクトップの attach-first が別アプリに繋がっていないかの検証等）。既存フィールドへの additive 追加。 */
   app: string; version: string;
+  /** Tauri Phase 2 T3 fix: claude/codex/openai-compatのいずれかの会話系ルートが実際に使えるかの集約判定（claude単体だとlocal-only/codex-only構成で偽陽性になるため追加）。 */
+  llmReady: boolean;
 };
 
 export async function getHealth(): Promise<Health> {

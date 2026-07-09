@@ -19,7 +19,7 @@ import type { LlmAuthModes } from "../../llm-auth-store";
 
 export const FAKE_HEALTH = {
   ok: true, whisper: true, ffmpeg: true, claude: true, ttsKey: true, modelFile: true,
-  app: "solo-eikaiwa" as const, version: "0.0.0-test",
+  app: "solo-eikaiwa" as const, version: "0.0.0-test", llmReady: true,
 };
 export const FAKE_MENU = {
   minutes: 60 as const,

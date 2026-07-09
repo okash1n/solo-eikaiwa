@@ -162,7 +162,7 @@ export function App() {
       {!serverDown && health && health.ok && !health.ttsKey && (
         <Banner kind="warn">OPENAI_API_KEY 未設定のため TTS は say フォールバックです</Banner>
       )}
-      {!serverDown && health && !health.claude && !llmNoticeDismissed && (
+      {!serverDown && health && !health.llmReady && !llmNoticeDismissed && (
         <Banner
           kind="info"
           action={

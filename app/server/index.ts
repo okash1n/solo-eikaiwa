@@ -78,7 +78,9 @@ const realDeps: RouteDeps = {
   transcribe: transcribeAudio,
   synthesize,
   converse: (args) => converseTurn({ ...args, runner: runnerFor("conversation") }),
-  health: () => checkHealth(),
+  // llmSettings: health.llmReady（claude/codex/openai-compatのいずれかが実際に使えるかの集約判定）が
+  // openai-compat経路の判定に使う。DB未設定時はcheckHealth側でenv直接運用として扱う。
+  health: () => checkHealth({ llmSettings: llmSettingsStore.get() }),
   logFile: () => sessionLogPath(new Date()),
   recordingsDir: RECORDINGS_DIR,
   staticDir: CLIENT_DIST_DIR,

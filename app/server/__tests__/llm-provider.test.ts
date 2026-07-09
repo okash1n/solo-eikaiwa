@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   selectRunner, settingsToEnv, LLM_ROLES, isInheritRole, roleSettingToSettings,
-  resolveProviderKey, resolveCodexConn,
+  resolveProviderKey, resolveCodexConn, isOpenAiCompatReady,
 } from "../llm-provider";
 import type { ClaudeRunner } from "../converse";
 import type { LlmSettings, LlmRoleSetting } from "../llm-provider";
@@ -163,5 +163,39 @@ describe("role settings helpers", () => {
   test("roleSettingToSettings は provider/フィールドをそのまま LlmSettings へ写す", () => {
     const rs: LlmRoleSetting = { provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null };
     expect(roleSettingToSettings(rs)).toEqual({ provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null });
+  });
+});
+
+describe("isOpenAiCompatReady（health.llmReady集約判定が使う純関数: グローバル設定を反映した有効envでopenai-compatが実際に選択され、接続情報も揃っているか）", () => {
+  test("DB設定でprovider=openai-compat・baseUrl/modelとも有り→true", () => {
+    const settings: LlmSettings = { provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null };
+    expect(isOpenAiCompatReady(settings, {})).toBe(true);
+  });
+
+  test("DB設定なし(null)でも、envに直接LLM_PROVIDER=openai-compat+BASE_URL+MODELがあれば→true（pure-env運用）", () => {
+    expect(isOpenAiCompatReady(null, {
+      LLM_PROVIDER: "openai-compat",
+      OPENAI_COMPAT_BASE_URL: "http://localhost:11434/v1",
+      OPENAI_COMPAT_MODEL: "llama3",
+    })).toBe(true);
+  });
+
+  test("DB設定がprovider=claude等openai-compat以外→false(baseUrl/modelが残っていても)", () => {
+    const settings: LlmSettings = { provider: "claude", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null };
+    expect(isOpenAiCompatReady(settings, {})).toBe(false);
+  });
+
+  test("provider=openai-compatでもbaseUrl欠落→false", () => {
+    const settings: LlmSettings = { provider: "openai-compat", baseUrl: null, model: "llama3", codexModel: null };
+    expect(isOpenAiCompatReady(settings, {})).toBe(false);
+  });
+
+  test("provider=openai-compatでもmodel欠落→false", () => {
+    const settings: LlmSettings = { provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: null, codexModel: null };
+    expect(isOpenAiCompatReady(settings, {})).toBe(false);
+  });
+
+  test("設定なし・env未設定→false", () => {
+    expect(isOpenAiCompatReady(null, {})).toBe(false);
   });
 });
