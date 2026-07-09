@@ -122,9 +122,31 @@ pub(crate) fn check_menu_label(lang: Lang) -> &'static str {
     }
 }
 
+use std::sync::atomic::{AtomicBool, Ordering};
+
 use tauri::AppHandle;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 use tauri_plugin_updater::UpdaterExt;
+
+/// 更新フローの単一実行ガード。起動時チェックとメニューの手動チェックが同時に走って
+/// `download_and_install` が二重実行されるのを防ぐ（`sidecar::SidecarState.starting` と同型の
+/// CAS + Drop解放パターン）。install 成功時は restart() でプロセスごと消えるため解放不要。
+static UPDATE_FLOW_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
+
+struct FlowGuard;
+
+impl Drop for FlowGuard {
+    fn drop(&mut self) {
+        UPDATE_FLOW_IN_FLIGHT.store(false, Ordering::SeqCst);
+    }
+}
+
+fn try_begin_flow() -> Option<FlowGuard> {
+    UPDATE_FLOW_IN_FLIGHT
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .ok()
+        .map(|_| FlowGuard)
+}
 
 /// 現在のシステムロケールからダイアログ言語を決める。
 pub(crate) fn current_lang() -> Lang {
@@ -170,6 +192,12 @@ fn auto_confirm_forced() -> bool {
 }
 
 async fn check_and_prompt(app: AppHandle, manual: bool) -> tauri_plugin_updater::Result<()> {
+    let Some(_flow_guard) = try_begin_flow() else {
+        // 既に別の更新フロー（起動時チェックのDL中など）が進行中。二重DL・二重installを避けて
+        // 何もしない（手動起点でも同様: 進行中フローの結果がまもなくダイアログで現れるため）。
+        log::info!("updater: another update flow is already in flight; skipping this trigger");
+        return Ok(());
+    };
     let lang = current_lang();
     let Some(update) = app.updater()?.check().await? else {
         if manual {
@@ -265,6 +293,15 @@ mod tests {
     fn manual_latest_text_mentions_current_version() {
         assert!(manual_latest_text(Lang::Ja, "0.29.0").body.contains("0.29.0"));
         assert!(manual_latest_text(Lang::En, "0.29.0").body.contains("0.29.0"));
+    }
+
+    #[test]
+    fn update_flow_guard_prevents_concurrent_entry() {
+        // 起動時チェックと手動チェックの同時実行で download_and_install が二重に走らないこと。
+        let g = try_begin_flow().expect("first acquire should succeed");
+        assert!(try_begin_flow().is_none(), "second concurrent acquire must fail");
+        drop(g);
+        assert!(try_begin_flow().is_some(), "acquire after release should succeed");
     }
 
     #[test]

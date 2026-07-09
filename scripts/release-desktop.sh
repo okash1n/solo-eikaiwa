@@ -60,7 +60,30 @@ unset APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID APPLE_CERTIFICATE APPLE_CERTIFICATE_
 
 echo "== solo-eikaiwa desktop release v$VERSION =="
 
-# 1. バージョン整合（3ファイル + CHANGELOG + タグ未使用）
+# 1a. Git 前提チェック: push 済みの main からのみリリースできる。
+#     gh release create はタグをリモートに新規作成するため、ローカルのビルド元コミットが
+#     origin/main の HEAD と一致していないと「タグ・Source アーカイブと配布バイナリの不一致」
+#     という壊れたリリースになる（レビュー指摘 2026-07-10）。
+BRANCH="$(git -C "$REPO_DIR" branch --show-current)"
+[[ "$BRANCH" == "main" ]] || { echo "ERROR: リリースは main ブランチから実行してください（現在: $BRANCH）" >&2; exit 1; }
+[[ -z "$(git -C "$REPO_DIR" status --porcelain)" ]] || { echo "ERROR: 作業ツリーに未コミットの変更があります" >&2; exit 1; }
+git -C "$REPO_DIR" fetch origin main --quiet
+HEAD_SHA="$(git -C "$REPO_DIR" rev-parse HEAD)"
+[[ "$HEAD_SHA" == "$(git -C "$REPO_DIR" rev-parse origin/main)" ]] || {
+  echo "ERROR: ローカル main が origin/main と一致しません。先に git push してください" >&2; exit 1
+}
+
+# 1b. updater 鍵ペア整合: 秘密鍵の隣の .pub と tauri.conf.json の pubkey が一致すること。
+#     不一致でも tauri-cli は警告のみでビルドが通り、配布後に全ユーザーの更新が
+#     署名不一致で拒否される事故になるため、ここで強制する。
+PUB_FILE="${TAURI_SIGNING_PRIVATE_KEY}.pub"
+[[ -f "$PUB_FILE" ]] || { echo "ERROR: 公開鍵ファイルがありません: $PUB_FILE" >&2; exit 1; }
+CONF_PUBKEY="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['plugins']['updater']['pubkey'])" "$REPO_DIR/desktop/src-tauri/tauri.conf.json")"
+[[ "$(tr -d '[:space:]' < "$PUB_FILE")" == "$(printf %s "$CONF_PUBKEY" | tr -d '[:space:]')" ]] || {
+  echo "ERROR: tauri.conf.json の pubkey と ${PUB_FILE} が一致しません（このままだと配布後の自動更新が全ユーザーで拒否されます）" >&2; exit 1
+}
+
+# 1c. バージョン整合（3ファイル + CHANGELOG + タグ未使用）
 json_ver() { python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['version'])" "$1"; }
 [[ "$(json_ver "$REPO_DIR/app/package.json")" == "$VERSION" ]] || { echo "ERROR: app/package.json の version が $VERSION ではありません" >&2; exit 1; }
 [[ "$(json_ver "$REPO_DIR/desktop/src-tauri/tauri.conf.json")" == "$VERSION" ]] || { echo "ERROR: tauri.conf.json の version が $VERSION ではありません" >&2; exit 1; }
@@ -136,7 +159,7 @@ text = open(sys.argv[1]).read()
 m = re.search(rf"^## \[{re.escape(sys.argv[2])}\][^\n]*\n(.*?)(?=^## \[|\Z)", text, re.S | re.M)
 print(m.group(1).strip() if m else "")
 PY
-gh release create "v$VERSION" --draft --title "v$VERSION" --notes-file "$NOTES_FILE" \
+gh release create "v$VERSION" --draft --target "$HEAD_SHA" --title "v$VERSION" --notes-file "$NOTES_FILE" \
   "$DMG" "$TARGZ" "$LATEST_JSON"
 gh release edit "v$VERSION" --draft=false
 rm -f "$NOTES_FILE"

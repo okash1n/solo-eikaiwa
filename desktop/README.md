@@ -76,7 +76,8 @@ cd desktop/src-tauri && cargo tauri build
 
 ## 署名・公証・リリース（v0.29.0〜）
 
-配布リリースは `../scripts/release-desktop.sh <version>` の一括実行:
+配布リリースは `../scripts/release-desktop.sh <version>` の一括実行（**push 済みの main からのみ**実行可能。
+タグはリモートに作られるため、未 push だとタグ・Source とバイナリが食い違う — スクリプトが強制チェックする）:
 検証ゲート → build-sidecar → **whisper-bin プレ署名** → `cargo tauri build`（Developer ID 署名 +
 公証を bundler が env から自動実行・updater アーティファクト生成）→ 署名/公証の機械検証 →
 dmg の公証 + staple → `latest.json` 生成 → GitHub Release（draft→publish）。
