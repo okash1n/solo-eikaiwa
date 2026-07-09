@@ -125,6 +125,36 @@ const NO_TUNING: RoleTuning = { claudeModel: null, effort: null, serviceTier: nu
 const allNullTuning = (): Record<LlmRole, RoleTuning> =>
   Object.fromEntries(LLM_ROLES.map((r) => [r, NO_TUNING])) as Record<LlmRole, RoleTuning>;
 
+describe("グローバルチューニング（llm_role_tuning の global 行・解決順: ロール別 > global > コード既定）", () => {
+  afterAll(() => applyLlmSettings(CLAUDE, emptyEnv));
+
+  test("globalTuning の claudeModel 指定で全 inherit ロールが既定参照から変わり、クリアで既定参照へ戻る", () => {
+    applyLlmSettings(CLAUDE, emptyEnv);
+    const claudeRef = getCurrentRunner("conversation");
+    applyLlmRoleSettings(CLAUDE, allInherit(), emptyEnv, allNullTuning(), {
+      claudeModel: "claude-fable-5", effort: null, serviceTier: null,
+    });
+    const tuned = getCurrentRunner("conversation");
+    expect(tuned).not.toBe(claudeRef);
+    // inherit + ロール別 tuning 無しの全ロールは global 解決結果を共有参照する
+    for (const role of LLM_ROLES) expect(getCurrentRunner(role)).toBe(tuned);
+    applyLlmRoleSettings(CLAUDE, allInherit(), emptyEnv, allNullTuning(), {
+      claudeModel: null, effort: null, serviceTier: null,
+    });
+    expect(getCurrentRunner("conversation")).toBe(claudeRef);
+  });
+
+  test("ロール別チューニングは global より優先される（設定ありロールだけ独立解決）", () => {
+    applyLlmRoleSettings(CLAUDE, allInherit(), emptyEnv, {
+      ...allNullTuning(),
+      assessment: { claudeModel: "opus", effort: null, serviceTier: null },
+    }, { claudeModel: "haiku", effort: null, serviceTier: null });
+    // assessment はロール別（opus）で独立解決・他ロールは global（haiku）を共有
+    expect(getCurrentRunner("assessment")).not.toBe(getCurrentRunner("conversation"));
+    expect(getCurrentRunner("coaching")).toBe(getCurrentRunner("conversation"));
+  });
+});
+
 describe("ロール別チューニング配線（Task 8）", () => {
   afterAll(() => applyLlmSettings(CLAUDE, emptyEnv));
 

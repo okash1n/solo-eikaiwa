@@ -230,6 +230,7 @@ export function makeTestDeps(overrides: Partial<RouteDeps> = {}): {
       generation: { claudeModel: null, effort: null, serviceTier: null },
       assessment: { claudeModel: null, effort: null, serviceTier: null },
     }),
+    getLlmGlobalTuning: (): RoleTuning => ({ claudeModel: null, effort: null, serviceTier: null }),
     saveLlmRoleTuning: (_t) => {},
     applyLlmSettings: (_s) => {},
     llmEnv: () => ({ apiKeyConfigured: false }),

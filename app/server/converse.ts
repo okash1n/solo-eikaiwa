@@ -203,6 +203,15 @@ function isEmptyTuning(rt: RoleTuning): boolean {
   return rt.claudeModel === null && rt.effort === null && rt.serviceTier === null;
 }
 
+/** 解決順（binding）: ロール別 > global（llm_role_tuning の "global" 行）> コード既定。フィールド単位で合成する。 */
+function mergeTuning(rt: RoleTuning, globalRt: RoleTuning): RoleTuning {
+  return {
+    claudeModel: rt.claudeModel ?? globalRt.claudeModel,
+    effort: rt.effort ?? globalRt.effort,
+    serviceTier: rt.serviceTier ?? globalRt.serviceTier,
+  };
+}
+
 /**
  * CLI（ヘッドレス実行）専用: プロセス env から LlmSettings を組み立てる。
  * サーバ/UI 経路はこの関数を使わない（設定の真実は UI/DB のみ・env フォールバック廃止 v0.29）。
@@ -301,8 +310,12 @@ export function applyLlmRoleSettings(
   roles: Record<LlmRole, LlmRoleSetting>,
   env: Record<string, string | undefined> = Bun.env,
   tuning?: Record<LlmRole, RoleTuning>,
+  globalTuning?: RoleTuning,
 ): void {
-  const globalRunner = resolveRoleRunner(global, EMPTY_TUNING, env);
+  // globalRunner は globalTuning 込みで解決する。inherit + ロール別 tuning 無しのロールは
+  // これを共有参照するため、「global のモデル/effort 変更が全ロールへ効く」が1点で成立する。
+  const globalRt = globalTuning ?? EMPTY_TUNING;
+  const globalRunner = resolveRoleRunner(global, globalRt, env);
   for (const role of LLM_ROLES) {
     const rs = roles[role];
     const rt = tuning?.[role] ?? EMPTY_TUNING;
@@ -310,7 +323,7 @@ export function applyLlmRoleSettings(
       role,
       isInheritRole(rs) && isEmptyTuning(rt)
         ? globalRunner
-        : resolveRoleRunner(isInheritRole(rs) ? global : roleSettingToSettings(rs), rt, env),
+        : resolveRoleRunner(isInheritRole(rs) ? global : roleSettingToSettings(rs), mergeTuning(rt, globalRt), env),
     );
   }
   // assist の連鎖規則（binding）: assist の設定行が inherit のとき、assist は coaching の解決済み

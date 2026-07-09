@@ -24,6 +24,7 @@ describe("llm-settings API", () => {
         generation: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
         assessment: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
       },
+      globalTuning: { claudeModel: null, effort: null, serviceTier: null },
       tuning: {
         conversation: { claudeModel: null, effort: null, serviceTier: null },
         assist: { claudeModel: null, effort: null, serviceTier: null },
@@ -52,6 +53,7 @@ describe("llm-settings API", () => {
         generation: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
         assessment: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
       },
+      globalTuning: { claudeModel: null, effort: null, serviceTier: null },
       tuning: {
         conversation: { claudeModel: null, effort: null, serviceTier: null },
         assist: { claudeModel: null, effort: null, serviceTier: null },
@@ -323,7 +325,8 @@ describe("llm-settings tuning API", () => {
   });
 
   test.each([
-    ["claudeModel", { claudeModel: "gpt-5" }],
+    // claudeModel はホワイトリスト廃止（v0.29）: 形式違反（空白のみ）だけを拒否する
+    ["claudeModel", { claudeModel: "   " }],
     ["effort", { effort: "urgent" }],
     ["serviceTier", { serviceTier: "priority" }],
   ])("PUT /roles 400: tuning.%s の不正値は 400（保存しない）", async (_field, patch) => {
@@ -469,6 +472,48 @@ describe("llm-settings tuning API", () => {
     }));
     expect(res.status).toBe(200);
     expect(savedPatches).toHaveLength(1);
+  });
+
+  test("PUT /roles: tuning.global を保存できる（claudeModel は任意のモデルID・カタログ由来の値をそのまま受ける）", async () => {
+    const savedPatches: unknown[] = [];
+    const { deps } = makeTestDeps({
+      getLlmSettings: () => null,
+      saveLlmRoleTuning: (t) => savedPatches.push(t),
+      llmEnv: () => ({ apiKeyConfigured: false }),
+    });
+    const res = await makeFetchHandler(deps)(putJson("/api/llm-settings/roles", {
+      tuning: { global: { claudeModel: "claude-fable-5", effort: "high" } },
+    }));
+    expect(res.status).toBe(200);
+    expect(savedPatches).toEqual([{ global: { claudeModel: "claude-fable-5", effort: "high" } }]);
+  });
+
+  test("PUT /roles 400: claudeModel の形式違反（空白のみ・200字超・非文字列）は拒否し何も保存しない", async () => {
+    const savedPatches: unknown[] = [];
+    const { deps } = makeTestDeps({
+      getLlmSettings: () => null,
+      saveLlmRoleTuning: (t) => savedPatches.push(t),
+      llmEnv: () => ({ apiKeyConfigured: false }),
+    });
+    const h = makeFetchHandler(deps);
+    expect((await h(putJson("/api/llm-settings/roles", { tuning: { global: { claudeModel: "   " } } }))).status).toBe(400);
+    expect((await h(putJson("/api/llm-settings/roles", { tuning: { global: { claudeModel: "x".repeat(201) } } }))).status).toBe(400);
+    expect((await h(putJson("/api/llm-settings/roles", { tuning: { conversation: { claudeModel: 42 } } }))).status).toBe(400);
+    expect(savedPatches).toHaveLength(0);
+  });
+
+  test("PUT /roles 400: global provider=codex のとき tuning.global.effort \"max\" は拒否する", async () => {
+    const savedPatches: unknown[] = [];
+    const { deps } = makeTestDeps({
+      getLlmSettings: () => ({ provider: "codex", baseUrl: null, model: null, codexModel: null }),
+      saveLlmRoleTuning: (t) => savedPatches.push(t),
+      llmEnv: () => ({ apiKeyConfigured: false }),
+    });
+    const res = await makeFetchHandler(deps)(putJson("/api/llm-settings/roles", {
+      tuning: { global: { effort: "max" } },
+    }));
+    expect(res.status).toBe(400);
+    expect(savedPatches).toHaveLength(0);
   });
 
   test("PUT /roles 400: assist=inherit は coaching の実効プロバイダへ連鎖して解決する（coaching=codex・global=claude でも assist の effort \"max\" は拒否される）", async () => {
