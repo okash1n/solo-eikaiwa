@@ -3,6 +3,7 @@ import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { localYmd } from "../dates";
 import { makeFetchHandler } from "../routes";
+import { UnsupportedAudioContainerError } from "../stt";
 import { FAKE_HEALTH, makeTestDeps } from "./helpers/route-deps";
 import { getReq, postJson } from "./helpers/http";
 
@@ -72,6 +73,40 @@ describe("routes: stt", () => {
     const day = localYmd();
     const files = readdirSync(path.join(recordingsDir, day));
     expect(files[0]).toMatch(/^\d+\.wav$/);
+  });
+
+  test("content-typeにmp4を含むと拡張子はmp4", async () => {
+    const { deps, recordingsDir } = makeTestDeps();
+    const handler = makeFetchHandler(deps);
+    await handler(
+      new Request("http://localhost/api/stt", {
+        method: "POST",
+        headers: { "content-type": "audio/mp4" },
+        body: new Uint8Array([1, 2, 3, 4]),
+      }),
+    );
+    const day = localYmd();
+    const files = readdirSync(path.join(recordingsDir, day));
+    expect(files[0]).toMatch(/^\d+\.mp4$/);
+  });
+
+  test("この環境で使える変換器が無い（UnsupportedAudioContainerError）場合は500ではなく400を返す", async () => {
+    const { deps } = makeTestDeps({
+      transcribe: async () => {
+        throw new UnsupportedAudioContainerError("webm");
+      },
+    });
+    const handler = makeFetchHandler(deps);
+    const res = await handler(
+      new Request("http://localhost/api/stt", {
+        method: "POST",
+        headers: { "content-type": "audio/webm" },
+        body: new Uint8Array([1, 2, 3, 4]),
+      }),
+    );
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toMatch(/mp4 録音が必要/);
   });
 });
 

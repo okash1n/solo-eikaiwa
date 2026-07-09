@@ -15,7 +15,8 @@
         "height": 860,
         "resizable": true,
         "fullscreen": false,
-        "center": true
+        "center": true,
+        "userAgent": "solo-eikaiwa-desktop"
       }
     ],
     "security": {

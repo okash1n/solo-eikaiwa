@@ -1,6 +1,36 @@
+/**
+ * Tauri（WKWebView）実行時に tauri.conf.json の `app.windows[].userAgent` で埋め込んでいるマーカー。
+ * window.__TAURI__ はリモートoriginではIPCが閉じているため使えず（withGlobalTauri=falseかつ
+ * サーバ側originにIPCブリッジが無い）、代わりに UA 文字列で「デスクトップシェル内で動いているか」
+ * を判定する。ブラウザで通常アクセスした場合はこのマーカーを含まないため false になる。
+ */
+const DESKTOP_UA_MARKER = "solo-eikaiwa-desktop";
+
+export function isDesktopContext(ua: string = navigator.userAgent): boolean {
+  return ua.includes(DESKTOP_UA_MARKER);
+}
+
+/**
+ * MediaRecorder の mimeType 交渉。ブラウザ（Chrome/Firefox 等）は現行どおり audio/webm 固定
+ * （挙動不変）。Tauri デスクトップシェルでは ffmpeg 非同梱を見込み、macOS 標準の afconvert が
+ * 扱える audio/mp4 を優先する（WKWebView は実測で audio/mp4 録音に対応済み・未対応なら webm に
+ * フォールバック）。
+ */
+export function pickRecorderMimeType(opts: {
+  isDesktop?: boolean;
+  isTypeSupported?: (mimeType: string) => boolean;
+} = {}): string {
+  const isDesktop = opts.isDesktop ?? isDesktopContext();
+  if (!isDesktop) return "audio/webm";
+  const isSupported = opts.isTypeSupported
+    ?? ((t: string) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(t));
+  return isSupported("audio/mp4") ? "audio/mp4" : "audio/webm";
+}
+
 export class Recorder {
   private mediaRecorder: MediaRecorder | null = null;
   private chunks: BlobPart[] = [];
+  private mimeType = "audio/webm";
 
   async start(): Promise<void> {
     if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
@@ -8,8 +38,11 @@ export class Recorder {
     }
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     this.chunks = [];
-    this.mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+    this.mimeType = pickRecorderMimeType();
+    this.mediaRecorder = new MediaRecorder(stream, { mimeType: this.mimeType });
     this.mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) this.chunks.push(e.data); };
+    // timeslice を渡さないため ondataavailable は stop() 時に1回だけ発火する（単一Blob録音）。
+    // STT変換（サーバ側 afconvert/ffmpeg）は録音完了後のこの単一Blobのみを対象にする前提。
     this.mediaRecorder.start();
   }
 
@@ -17,9 +50,10 @@ export class Recorder {
     return new Promise((resolve, reject) => {
       const mr = this.mediaRecorder;
       if (!mr) return reject(new Error("not recording"));
+      const mimeType = this.mimeType;
       mr.onstop = () => {
         mr.stream.getTracks().forEach((t) => t.stop());
-        resolve(new Blob(this.chunks, { type: "audio/webm" }));
+        resolve(new Blob(this.chunks, { type: mimeType }));
       };
       mr.stop();
     });

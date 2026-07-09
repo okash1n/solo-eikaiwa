@@ -3,7 +3,7 @@ import { mkdirSync } from "node:fs";
 import { localYmd } from "../dates";
 import { RECORDINGS_DIR } from "../paths";
 import { appendEvent } from "../session-log";
-import { transcribeAudio } from "../stt";
+import { detectAudioContainer, transcribeAudio, UnsupportedAudioContainerError, type Transcription } from "../stt";
 import { synthesize } from "../tts";
 import type { TtsSettings } from "../tts";
 import { checkHealth } from "../health";
@@ -24,13 +24,25 @@ export type SystemRoutesDeps = {
 async function handleStt(req: Request, deps: SystemRoutesDeps): Promise<Response> {
   const bytes = new Uint8Array(await req.arrayBuffer());
   if (bytes.length === 0) return json({ error: "empty audio body" }, 400);
+  const contentType = req.headers.get("content-type");
+  const container = detectAudioContainer(contentType, bytes);
+  // 実値ログ（情報提供のみ）: ffmpeg 不在環境での afconvert 経路切り分けや、クライアントの
+  // mimeType 交渉が意図どおり動いているかの確認に使う。
+  console.log(`[stt] received content-type=${contentType ?? "(none)"} container=${container}`);
   const day = localYmd();
   const dir = path.join(deps.recordingsDir ?? RECORDINGS_DIR, day);
   mkdirSync(dir, { recursive: true });
-  const ext = (req.headers.get("content-type") ?? "").includes("wav") ? "wav" : "webm";
+  const ext = container === "unknown" ? "webm" : container;
   const file = path.join(dir, `${Date.now()}.${ext}`);
   await Bun.write(file, bytes);
-  const { text, segments } = await deps.transcribe(file);
+  let result: Transcription;
+  try {
+    result = await deps.transcribe(file, { container });
+  } catch (err) {
+    if (err instanceof UnsupportedAudioContainerError) return json({ error: err.message }, 400);
+    throw err;
+  }
+  const { text, segments } = result;
   // メトリクスは補助情報 — 計算・記録の失敗で文字起こし自体を失敗させない
   let metrics: UtteranceMetrics | undefined;
   bestEffort("[metrics] compute/record failed, continuing:", () => {
