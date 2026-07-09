@@ -4,6 +4,7 @@ import {
   sessionEnd, sessionEndKeepalive, sessionStart,
   type Health, type ProgressSummary,
 } from "./api";
+import { isDesktopContext } from "./audio";
 import { loadLang, saveLang, STR, type Lang } from "./i18n";
 import { AboutScreen } from "./screens/AboutScreen";
 import { FeedbackScreen } from "./screens/FeedbackScreen";
@@ -23,13 +24,20 @@ import { SetupBanner } from "./ui/SetupBanner";
 import { localYmd } from "./dates";
 import { saveSupport, useSupport, type SupportToggle } from "./support";
 import { dismissLlmNotice, isLlmNoticeDismissed, shouldShowLlmNotice } from "./lib/llm-notice";
+import { missingDeps } from "./lib/dep-banner";
 import { dismissSetupBanner, isSetupBannerDismissed, shouldShowSetupBanner } from "./lib/whisper-setup";
 
 type Mode = { kind: "start" } | { kind: "free" } | { kind: "session"; source: MenuSource } | { kind: "library" } | { kind: "sentences" } | { kind: "listening" } | { kind: "placement" } | { kind: "progress" } | { kind: "feedback" } | { kind: "settings" } | { kind: "about" };
 
+/** 依存不足バナー（dev文脈）での表示名。health のフィールド名と実際のバイナリ名が異なるもののみ変換する */
+const DEP_DISPLAY_NAME: Record<string, string> = { whisper: "whisper-cli" };
+
 export function App() {
   const [health, setHealth] = useState<Health | null>(null);
   const [serverDown, setServerDown] = useState(false);
+  // Tauri配布アプリ内かどうか（UAマーカー判定・audio.ts参照）。バナー文言・依存判定の文脈分岐に使う
+  const desktop = isDesktopContext();
+  const missing = missingDeps(health, desktop);
   // Claude/Codex/ローカルLLM未導入時の一度きりの案内バナー（研究制約: 情報的トーンのみ・ブロックしない）。
   // 既読状態はユーザーが実際に閉じるまで再訪のたびに出る（lib/llm-notice.ts 参照）
   const [llmNoticeDismissed, setLlmNoticeDismissed] = useState(() => isLlmNoticeDismissed());
@@ -162,13 +170,17 @@ export function App() {
       </aside>
       <main className="app">
       {serverDown && (
-        <Banner kind="error">APIサーバに接続できません — `cd app && bun run dev` で起動してください</Banner>
+        <Banner kind="error">{desktop ? t.banners.serverDownDesktop : t.banners.serverDownDev}</Banner>
       )}
-      {!serverDown && health && !health.ok && (
-        <Banner kind="error">依存が不足しています: {JSON.stringify(health)} — `scripts/setup.sh` を実行してください</Banner>
+      {!serverDown && missing.length > 0 && (
+        <Banner kind="error">
+          {desktop
+            ? t.banners.depsMissingDesktop
+            : t.banners.depsMissingDev(missing.map((d) => DEP_DISPLAY_NAME[d] ?? d).join(", "))}
+        </Banner>
       )}
-      {!serverDown && health && health.ok && !health.ttsKey && (
-        <Banner kind="warn">OPENAI_API_KEY 未設定のため TTS は say フォールバックです</Banner>
+      {!serverDown && !desktop && health && health.ok && !health.ttsKey && (
+        <Banner kind="warn">{t.banners.ttsKeyMissing}</Banner>
       )}
       {!serverDown && shouldShowLlmNotice(health, llmNoticeDismissed) && (
         <Banner
