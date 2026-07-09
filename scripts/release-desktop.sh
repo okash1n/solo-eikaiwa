@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+# solo-eikaiwa デスクトップアプリのリリース（署名・公証・updaterアーティファクト・GitHub Release）。
+# 使い方: ./scripts/release-desktop.sh 0.29.0
+# 前提: ~/.config/solo-eikaiwa/release.env（無ければテンプレートを生成して終了する）
+#
+# やること（順に・失敗したら即中断）:
+#   1. バージョン整合チェック（app/package.json・tauri.conf.json・Cargo.toml・CHANGELOG・タグ未使用）
+#   2. 検証ゲート3種（bun test / typecheck / client build）
+#   3. build-sidecar.sh（サーバcompile・resources収集）
+#   4. whisper-bin の Mach-O プレ署名
+#      - tauri-bundler は Resources 配下を署名対象にしない（bundler 2.9.4 app.rs 実測）ため、
+#        ここで署名しないと公証が unsigned binary で必ず落ちる。whisper-cli は JIT 不要なので
+#        エンタイトルメント無しの hardened runtime 署名でよい（dylib/.so は同一 Team ID に
+#        なるため library validation も通る）
+#   5. cargo tauri build（Developer ID 署名・公証は bundler が env から自動実行。
+#      updater アーティファクト(.app.tar.gz/.sig)は overlay で有効化）
+#   6. 生成物の存在・署名・公証を検証（公証は env 不備だと警告のみでスキップされるため必ず検証）
+#   7. dmg 自体の公証 + staple（Tauri が staple するのは .app のみ）
+#   8. latest.json 生成（signature には .sig ファイルの中身を埋め込む）
+#   9. GitHub Release（draft で全アセットを揃えてから publish = 原子的公開）
+set -euo pipefail
+
+VERSION="${1:?使い方: $0 <version 例: 0.29.0>}"
+REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." >/dev/null 2>&1 && pwd -P)"
+ENV_FILE="${SOLO_EIKAIWA_RELEASE_ENV:-$HOME/.config/solo-eikaiwa/release.env}"
+BUNDLE_DIR="$REPO_DIR/desktop/src-tauri/target/release/bundle"
+
+# 0. release.env（無ければテンプレート生成して人間に返す）
+if [[ ! -f "$ENV_FILE" ]]; then
+  mkdir -p "$(dirname -- "$ENV_FILE")"
+  cat > "$ENV_FILE" <<'TMPL'
+# solo-eikaiwa リリース用シークレット（このファイルはリポジトリ外に置く・chmod 600）
+# --- Apple 署名（`security find-identity -v -p codesigning` の表示をそのまま） ---
+APPLE_SIGNING_IDENTITY="Developer ID Application: YOUR ORG (TEAMID)"
+# --- 公証（App Store Connect API キー方式） ---
+APPLE_API_KEY="ABC123DEFG"                                    # Key ID（10桁）
+APPLE_API_ISSUER="00000000-0000-0000-0000-000000000000"       # Issuer ID（UUID）
+APPLE_API_KEY_PATH="$HOME/.appstoreconnect/private_keys/AuthKey_ABC123DEFG.p8"
+# --- updater 署名（Tauri minisign 鍵。Apple とは別物） ---
+TAURI_SIGNING_PRIVATE_KEY="$HOME/.tauri/solo-eikaiwa-updater.key"
+TAURI_SIGNING_PRIVATE_KEY_PASSWORD=""                          # 鍵にパスワードが無ければ空のまま
+TMPL
+  chmod 600 "$ENV_FILE"
+  echo "release.env のテンプレートを生成しました: $ENV_FILE"
+  echo "値を埋めてから再実行してください。"
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$ENV_FILE"
+for v in APPLE_SIGNING_IDENTITY APPLE_API_KEY APPLE_API_ISSUER APPLE_API_KEY_PATH TAURI_SIGNING_PRIVATE_KEY; do
+  [[ -n "${!v:-}" ]] || { echo "ERROR: $ENV_FILE の $v が未設定です" >&2; exit 1; }
+done
+[[ -f "$APPLE_API_KEY_PATH" ]] || { echo "ERROR: APPLE_API_KEY_PATH が存在しません: $APPLE_API_KEY_PATH" >&2; exit 1; }
+[[ -f "$TAURI_SIGNING_PRIVATE_KEY" ]] || { echo "ERROR: TAURI_SIGNING_PRIVATE_KEY が存在しません: $TAURI_SIGNING_PRIVATE_KEY" >&2; exit 1; }
+export APPLE_SIGNING_IDENTITY APPLE_API_KEY APPLE_API_ISSUER APPLE_API_KEY_PATH TAURI_SIGNING_PRIVATE_KEY
+export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-}"
+# Apple ID 方式（APPLE_ID/APPLE_PASSWORD/APPLE_TEAM_ID）が API キー方式より先に評価される
+# （tauri-cli 実装）ため、環境に混入していたら外して API キー方式に固定する。
+unset APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD 2>/dev/null || true
+
+echo "== solo-eikaiwa desktop release v$VERSION =="
+
+# 1a. Git 前提チェック: push 済みの main からのみリリースできる。
+#     gh release create はタグをリモートに新規作成するため、ローカルのビルド元コミットが
+#     origin/main の HEAD と一致していないと「タグ・Source アーカイブと配布バイナリの不一致」
+#     という壊れたリリースになる（レビュー指摘 2026-07-10）。
+BRANCH="$(git -C "$REPO_DIR" branch --show-current)"
+[[ "$BRANCH" == "main" ]] || { echo "ERROR: リリースは main ブランチから実行してください（現在: $BRANCH）" >&2; exit 1; }
+[[ -z "$(git -C "$REPO_DIR" status --porcelain)" ]] || { echo "ERROR: 作業ツリーに未コミットの変更があります" >&2; exit 1; }
+git -C "$REPO_DIR" fetch origin main --quiet
+HEAD_SHA="$(git -C "$REPO_DIR" rev-parse HEAD)"
+[[ "$HEAD_SHA" == "$(git -C "$REPO_DIR" rev-parse origin/main)" ]] || {
+  echo "ERROR: ローカル main が origin/main と一致しません。先に git push してください" >&2; exit 1
+}
+
+# 1b. updater 鍵ペア整合: 秘密鍵の隣の .pub と tauri.conf.json の pubkey が一致すること。
+#     不一致でも tauri-cli は警告のみでビルドが通り、配布後に全ユーザーの更新が
+#     署名不一致で拒否される事故になるため、ここで強制する。
+PUB_FILE="${TAURI_SIGNING_PRIVATE_KEY}.pub"
+[[ -f "$PUB_FILE" ]] || { echo "ERROR: 公開鍵ファイルがありません: $PUB_FILE" >&2; exit 1; }
+CONF_PUBKEY="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['plugins']['updater']['pubkey'])" "$REPO_DIR/desktop/src-tauri/tauri.conf.json")"
+[[ "$(tr -d '[:space:]' < "$PUB_FILE")" == "$(printf %s "$CONF_PUBKEY" | tr -d '[:space:]')" ]] || {
+  echo "ERROR: tauri.conf.json の pubkey と ${PUB_FILE} が一致しません（このままだと配布後の自動更新が全ユーザーで拒否されます）" >&2; exit 1
+}
+
+# 1c. バージョン整合（3ファイル + CHANGELOG + タグ未使用）
+json_ver() { python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['version'])" "$1"; }
+[[ "$(json_ver "$REPO_DIR/app/package.json")" == "$VERSION" ]] || { echo "ERROR: app/package.json の version が $VERSION ではありません" >&2; exit 1; }
+[[ "$(json_ver "$REPO_DIR/desktop/src-tauri/tauri.conf.json")" == "$VERSION" ]] || { echo "ERROR: tauri.conf.json の version が $VERSION ではありません" >&2; exit 1; }
+grep -q "^version = \"$VERSION\"" "$REPO_DIR/desktop/src-tauri/Cargo.toml" || { echo "ERROR: desktop/src-tauri/Cargo.toml の version が $VERSION ではありません" >&2; exit 1; }
+grep -q "^## \[$VERSION\]" "$REPO_DIR/CHANGELOG.md" || { echo "ERROR: CHANGELOG.md に [$VERSION] 節がありません" >&2; exit 1; }
+if git -C "$REPO_DIR" rev-parse "v$VERSION" >/dev/null 2>&1; then
+  echo "ERROR: タグ v$VERSION は既に存在します" >&2; exit 1
+fi
+
+# 2. 検証ゲート3種
+echo "-- 検証ゲート"
+(cd "$REPO_DIR/app" && bun test && bun run typecheck)
+(cd "$REPO_DIR/app/client" && bun run build)
+
+# 3. sidecar・resources 構築
+"$REPO_DIR/desktop/build-sidecar.sh"
+
+# 4. whisper-bin の Mach-O をプレ署名（理由はヘッダコメント参照）
+echo "-- whisper-bin プレ署名"
+find "$REPO_DIR/desktop/src-tauri/resources/whisper-bin" -type f | while read -r f; do
+  if file "$f" | grep -q "Mach-O"; then
+    codesign --force --options runtime --timestamp --sign "$APPLE_SIGNING_IDENTITY" "$f"
+  fi
+done
+
+# 5. ビルド（署名・公証は bundler が env から自動実行）
+echo "-- cargo tauri build（公証込み・数分かかります）"
+(cd "$REPO_DIR/desktop/src-tauri" && cargo tauri build --config tauri.updater-artifacts.conf.json)
+
+# 6. 生成物の存在・署名・公証を検証
+APP="$BUNDLE_DIR/macos/solo-eikaiwa.app"
+DMG="$BUNDLE_DIR/dmg/solo-eikaiwa_${VERSION}_aarch64.dmg"
+TARGZ="$BUNDLE_DIR/macos/solo-eikaiwa.app.tar.gz"
+SIG="$TARGZ.sig"
+for p in "$APP" "$DMG" "$TARGZ" "$SIG"; do
+  [[ -e "$p" ]] || { echo "ERROR: 生成物がありません: $p（.sig 欠落なら TAURI_SIGNING_PRIVATE_KEY を確認）" >&2; exit 1; }
+done
+echo "-- 署名・公証の検証"
+codesign --verify --deep --strict "$APP"
+xcrun stapler validate "$APP"
+spctl -a -t exec -vv "$APP"
+
+# 7. dmg 自体の公証 + staple
+echo "-- dmg 公証（数分かかります）"
+xcrun notarytool submit "$DMG" --key "$APPLE_API_KEY_PATH" --key-id "$APPLE_API_KEY" --issuer "$APPLE_API_ISSUER" --wait
+xcrun stapler staple "$DMG"
+
+# 8. latest.json 生成（signature は .sig の中身）
+LATEST_JSON="$BUNDLE_DIR/latest.json"
+SIG_CONTENT="$(cat "$SIG")" \
+ASSET_URL="https://github.com/btajp/solo-eikaiwa/releases/download/v${VERSION}/solo-eikaiwa.app.tar.gz" \
+REL_VERSION="$VERSION" PUB_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+python3 - "$LATEST_JSON" <<'PY'
+import json, os, sys
+json.dump({
+    "version": os.environ["REL_VERSION"],
+    "pub_date": os.environ["PUB_DATE"],
+    "platforms": {
+        "darwin-aarch64": {
+            "signature": os.environ["SIG_CONTENT"],
+            "url": os.environ["ASSET_URL"],
+        }
+    },
+}, open(sys.argv[1], "w"), indent=2)
+PY
+
+# 9. GitHub Release（draft で全アセットを揃えてから publish）
+echo "-- GitHub Release 作成"
+NOTES_FILE="$(mktemp)"
+python3 - "$REPO_DIR/CHANGELOG.md" "$VERSION" > "$NOTES_FILE" <<'PY'
+import re, sys
+text = open(sys.argv[1]).read()
+m = re.search(rf"^## \[{re.escape(sys.argv[2])}\][^\n]*\n(.*?)(?=^## \[|\Z)", text, re.S | re.M)
+print(m.group(1).strip() if m else "")
+PY
+gh release create "v$VERSION" --draft --target "$HEAD_SHA" --title "v$VERSION" --notes-file "$NOTES_FILE" \
+  "$DMG" "$TARGZ" "$LATEST_JSON"
+gh release edit "v$VERSION" --draft=false
+rm -f "$NOTES_FILE"
+git -C "$REPO_DIR" fetch --tags
+
+echo ""
+echo "== リリース完了: https://github.com/btajp/solo-eikaiwa/releases/tag/v$VERSION =="
+echo "事後スモーク:"
+echo "  1. ブラウザで dmg を実ダウンロード → マウント → /Applications へコピー → ダブルクリックで警告なしに起動すること"
+echo "  2. 旧バージョンのアプリを起動 → 更新ダイアログ →「更新する」→ 新バージョンで自動再起動すること"
