@@ -24,6 +24,7 @@ import { makeListeningStore } from "./listening-store";
 import { makeFeedbackStore } from "./feedback-store";
 import { makeLlmSettingsStore } from "./llm-settings-store";
 import { makeTtsSettingsStore } from "./tts-settings-store";
+import { makeTtsProviderStore } from "./tts-provider-store";
 import { makeLlmRoleSettingsStore } from "./llm-role-settings-store";
 import { makeLlmRoleTuningStore } from "./llm-role-tuning-store";
 import { makeLlmAuthStore, setActiveAuthModes } from "./llm-auth-store";
@@ -53,6 +54,7 @@ const topicAssetCacheStore = makeTopicAssetCacheStore(db);
 const feedbackStore = makeFeedbackStore(db);
 const llmSettingsStore = makeLlmSettingsStore(db);
 const ttsSettingsStore = makeTtsSettingsStore(db);
+const ttsProviderStore = makeTtsProviderStore(db);
 const llmRoleSettingsStore = makeLlmRoleSettingsStore(db);
 const llmRoleTuningStore = makeLlmRoleTuningStore(db);
 const llmAuthStore = makeLlmAuthStore(db);
@@ -173,6 +175,8 @@ const realDeps: RouteDeps = {
   getModelCatalog: (provider, refresh) => modelCatalogCache.get(provider, refresh),
   getTtsSettings: () => ttsSettingsStore.get(),
   saveTtsSettings: (s) => ttsSettingsStore.save(s),
+  getTtsProvider: () => ttsProviderStore.get(),
+  saveTtsProvider: (p) => ttsProviderStore.save(p),
   // env 由来。TTS の APIキーは有無のみ開示（TTS_API_KEY 優先・無ければ OPENAI_API_KEY）。値は絶対に返さない。
   ttsEnv: () => ({ apiKeyConfigured: Boolean((Bun.env.TTS_API_KEY ?? Bun.env.OPENAI_API_KEY)?.trim()) }),
   modelDownload: modelDownloadManager,

@@ -245,6 +245,8 @@ export function makeTestDeps(overrides: Partial<RouteDeps> = {}): {
       available: true, models: [], fetchedAt: "2026-07-08T00:00:00.000Z",
     }),
     getTtsSettings: () => null,
+    getTtsProvider: () => "auto" as const,
+    saveTtsProvider: (_p) => {},
     saveTtsSettings: (_s) => {},
     ttsEnv: () => ({ apiKeyConfigured: false }),
     modelDownload: makeFakeModelDownloadManager(),
