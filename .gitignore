@@ -7,3 +7,6 @@ dist/
 
 # Claude Code 個人設定（hook等）
 .claude/settings.local.json
+
+# bun build --compile が中断時に残す一時ファイル（63MB級・PUBLIC履歴に入れない）
+*.bun-build
