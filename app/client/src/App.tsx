@@ -21,7 +21,7 @@ import { Button } from "./ui/Button";
 import { LevelChip } from "./ui/LevelChip";
 import { localYmd } from "./dates";
 import { saveSupport, useSupport, type SupportToggle } from "./support";
-import { dismissLlmNotice, isLlmNoticeDismissed } from "./lib/llm-notice";
+import { dismissLlmNotice, isLlmNoticeDismissed, shouldShowLlmNotice } from "./lib/llm-notice";
 
 type Mode = { kind: "start" } | { kind: "free" } | { kind: "session"; source: MenuSource } | { kind: "library" } | { kind: "sentences" } | { kind: "listening" } | { kind: "placement" } | { kind: "progress" } | { kind: "feedback" } | { kind: "settings" } | { kind: "about" };
 
@@ -162,7 +162,7 @@ export function App() {
       {!serverDown && health && health.ok && !health.ttsKey && (
         <Banner kind="warn">OPENAI_API_KEY 未設定のため TTS は say フォールバックです</Banner>
       )}
-      {!serverDown && health && !health.llmReady && !llmNoticeDismissed && (
+      {!serverDown && shouldShowLlmNotice(health, llmNoticeDismissed) && (
         <Banner
           kind="info"
           action={

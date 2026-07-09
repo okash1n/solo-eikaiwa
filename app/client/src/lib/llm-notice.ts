@@ -12,3 +12,18 @@ export function isLlmNoticeDismissed(): boolean {
 export function dismissLlmNotice(): void {
   localStorage.setItem(KEY, "1");
 }
+
+/**
+ * バナー表示条件の純関数（App.tsxから抽出・単体テスト対象）。
+ * `health.llmReady === false` で厳密比較する（`!health.llmReady` ではない）: 型上は必須の boolean だが、
+ * 実際にはネットワーク境界を越えたJSONであり、旧バージョンのサーバ（このフィールド追加前）が返す
+ * health応答には `llmReady` キー自体が存在せず `undefined` になりうる。`!undefined` は `true` になるため
+ * 素朴な否定条件だと「旧サーバ＝LLM未導入」という偽の通知が出てしまう（AGENTS.mdが警告する「旧サーバ」
+ * シナリオそのもの）。`=== false` なら `undefined`/欠落時は非表示側にフォールバックする（安全側に倒す）。
+ */
+export function shouldShowLlmNotice(
+  health: { llmReady?: boolean } | null,
+  dismissed: boolean,
+): boolean {
+  return health != null && health.llmReady === false && !dismissed;
+}
