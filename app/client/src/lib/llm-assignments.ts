@@ -320,6 +320,12 @@ export function tierOptionsForCodexModel(catalog: CatalogResult | undefined, cod
   return row?.tiers?.length ? SERVICE_TIER_OPTIONS : (["standard"] as const);
 }
 
+/** codex カタログの CLI 既定行の表示名。不可・不在は null（呼び出し側が静的文言へ劣化する）。
+ * 「空欄で既定」のような表示に実際のモデル名を併記するために使う（UI 真実性）。 */
+export function codexDefaultModelLabel(catalog: CatalogResult | undefined): string | null {
+  return findCodexDefaultRow(catalog)?.displayName ?? null;
+}
+
 /** codex effort の既定ラベル（catalog の defaultEffort 優先・不一致/不可はコード既定 "medium"）。 */
 export function codexDefaultEffortLabel(catalog: CatalogResult | undefined, codexModel: string): string {
   const row = codexModel ? findCodexCatalogRowById(catalog, codexModel) : findCodexDefaultRow(catalog);

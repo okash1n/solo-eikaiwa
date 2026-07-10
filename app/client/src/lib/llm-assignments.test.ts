@@ -5,7 +5,7 @@ import {
   PRESETS, isLocalDefined, presetEnabled, hydrateConnection, hydrateTargets, buildRolesPayload, matchPreset,
   presetTargets, defaultTuning, hydrateTuning, RECOMMENDED_TUNING, applyRecommendedTuning,
   claudeModelSelectOptions, effortOptionsForClaudeAlias, codexModelSelectOptions, effortOptionsForCodexModel,
-  tierOptionsForCodexModel, codexDefaultEffortLabel, localModelSelectOptions, resolveEffective, clampClaudeEffort,
+  tierOptionsForCodexModel, codexDefaultEffortLabel, codexDefaultModelLabel, localModelSelectOptions, resolveEffective, clampClaudeEffort,
   hydrateAuthModes, hydrateAuthKeys, buildAuthPatch, CODEX_EFFORT_OPTIONS,
   type RoleTargets,
 } from "./llm-assignments";
@@ -501,6 +501,12 @@ describe("codexModelSelectOptions / effortOptionsForCodexModel / tierOptionsForC
   test("既定effortラベル: カタログのdefaultEffort優先・不一致/不可はコード既定medium", () => {
     expect(codexDefaultEffortLabel(CODEX_CATALOG, "gpt-5.5")).toBe("medium");
     expect(codexDefaultEffortLabel(CODEX_CATALOG, "unknown-id")).toBe("medium");
+  });
+
+  test("codexDefaultModelLabel: カタログの CLI 既定行の表示名（不可時は null＝呼び出し側が静的文言へ劣化）", () => {
+    expect(codexDefaultModelLabel(CODEX_CATALOG)).toBe("GPT-5.5");
+    expect(codexDefaultModelLabel(undefined)).toBe(null);
+    expect(codexDefaultModelLabel(UNAVAILABLE_CATALOG)).toBe(null);
     expect(codexDefaultEffortLabel(undefined, "gpt-5.5")).toBe("medium");
   });
 });

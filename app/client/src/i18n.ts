@@ -100,6 +100,7 @@ type LlmPanelStrings = {
     baseUrlLabel: string; baseUrlPlaceholder: string;
     modelLabel: string; modelPlaceholder: string;
     codexModelLabel: string; codexModelPlaceholder: string;
+    codexModelPlaceholderWith: (name: string) => string;
     save: string; saving: string;
     applied: string;
     notApplied: (msg: string) => string;
@@ -172,7 +173,9 @@ type SettingsStrings = {
     ttsSection: string;
     ttsDesc: string;
     ttsProviderLabel: string;
-    ttsProviderAuto: string; ttsProviderSay: string; ttsProviderHttp: string;
+    ttsProviderAutoWith: (resolved: string) => string;
+    ttsProviderShortSay: string; ttsProviderShortHttp: string;
+    ttsProviderSay: string; ttsProviderHttp: string;
     ttsProviderNote: string;
     ttsBaseUrlLabel: string; ttsBaseUrlPlaceholder: string;
     ttsModelLabel: string; ttsModelPlaceholder: string;
@@ -181,7 +184,7 @@ type SettingsStrings = {
     ttsVoiceFemale: string; ttsVoiceMale: string; ttsVoiceCustom: string;
     ttsVoicePresetNote: string;
     ttsReset: string;
-    ttsResetDesc: string;
+    ttsResetDescWith: (model: string, voice: string) => string;
     ttsApiKeyConfigured: string; ttsApiKeyOptional: string;
   };
 };
@@ -417,6 +420,7 @@ export const STR: Record<Lang, Strings> = {
       baseUrlLabel: "Base URL", baseUrlPlaceholder: "http://localhost:11434/v1",
       modelLabel: "Model", modelPlaceholder: "llama3.1",
       codexModelLabel: "Model (optional)", codexModelPlaceholder: "blank = Codex default",
+      codexModelPlaceholderWith: (name) => `blank = default (${name})`,
       save: "Save", saving: "Saving…",
       applied: "Applied to the running app.",
       notApplied: (msg) => `Saved, but not applied: ${msg}`,
@@ -508,7 +512,9 @@ export const STR: Record<Lang, Strings> = {
       ttsSection: "Voice (TTS)",
       ttsDesc: "Point speech synthesis at an OpenAI-compatible endpoint. Leave blank to use the default (OpenAI when a key is set, otherwise macOS say). A local server such as kokoro-fastapi needs no API key.",
       ttsProviderLabel: "Engine",
-      ttsProviderAuto: "Auto (recommended)", ttsProviderSay: "macOS say (offline)", ttsProviderHttp: "OpenAI-compatible (HTTP)",
+      ttsProviderAutoWith: (resolved) => `Auto — currently: ${resolved}`,
+      ttsProviderShortSay: "macOS say", ttsProviderShortHttp: "OpenAI-compatible (HTTP)",
+      ttsProviderSay: "macOS say (offline)", ttsProviderHttp: "OpenAI-compatible (HTTP)",
       ttsProviderNote: "Auto uses HTTP when a key or custom Base URL is set, otherwise macOS say. Fixing to HTTP still falls back to say if the request fails.",
       ttsBaseUrlLabel: "Base URL",
       ttsBaseUrlPlaceholder: "https://api.openai.com/v1",
@@ -522,7 +528,7 @@ export const STR: Record<Lang, Strings> = {
       ttsVoiceCustom: "Custom",
       ttsVoicePresetNote: "Presets pick a matching voice for the current Base URL (OpenAI / Kokoro).",
       ttsReset: "Reset to default",
-      ttsResetDesc: "Clear the overrides and fall back to the environment / default endpoint.",
+      ttsResetDescWith: (model, voice) => `Clear the overrides and return to the defaults (engine: Auto, OpenAI ${model} / ${voice} when a key is set, otherwise macOS say).`,
       ttsApiKeyConfigured: "TTS API key detected (app/.env).",
       ttsApiKeyOptional: "No TTS API key — fine for a local endpoint; OpenAI needs one.",
     },
@@ -815,6 +821,7 @@ export const STR: Record<Lang, Strings> = {
       baseUrlLabel: "ベース URL", baseUrlPlaceholder: "http://localhost:11434/v1",
       modelLabel: "モデル", modelPlaceholder: "llama3.1",
       codexModelLabel: "モデル（任意）", codexModelPlaceholder: "空欄で Codex 既定",
+      codexModelPlaceholderWith: (name) => `空欄で既定（${name}）`,
       save: "保存", saving: "保存中…",
       applied: "実行中のアプリに適用しました。",
       notApplied: (msg) => `保存しましたが適用できませんでした: ${msg}`,
@@ -906,7 +913,9 @@ export const STR: Record<Lang, Strings> = {
       ttsSection: "音声（TTS）",
       ttsDesc: "音声合成の向き先を OpenAI 互換エンドポイントに変更できます。空欄なら既定（キー設定時は OpenAI・無ければ macOS say）。kokoro-fastapi 等のローカルサーバは API キー不要です。",
       ttsProviderLabel: "エンジン",
-      ttsProviderAuto: "自動（推奨）", ttsProviderSay: "macOS say（オフライン）", ttsProviderHttp: "OpenAI 互換（HTTP）",
+      ttsProviderAutoWith: (resolved) => `自動 — 現在: ${resolved}`,
+      ttsProviderShortSay: "macOS say", ttsProviderShortHttp: "OpenAI 互換（HTTP）",
+      ttsProviderSay: "macOS say（オフライン）", ttsProviderHttp: "OpenAI 互換（HTTP）",
       ttsProviderNote: "自動は、キーまたはカスタム Base URL があれば HTTP、無ければ macOS say を使います。HTTP 固定でも通信に失敗したときは say で再生します。",
       ttsBaseUrlLabel: "ベース URL",
       ttsBaseUrlPlaceholder: "https://api.openai.com/v1",
@@ -920,7 +929,7 @@ export const STR: Record<Lang, Strings> = {
       ttsVoiceCustom: "カスタム",
       ttsVoicePresetNote: "現在の Base URL（OpenAI / Kokoro）に合った声を入力欄にセットします。",
       ttsReset: "既定に戻す",
-      ttsResetDesc: "上書きを消して、環境変数／既定エンドポイントに戻します。",
+      ttsResetDescWith: (model, voice) => `上書きを消して、既定（エンジン: 自動・キー設定時は OpenAI ${model} / ${voice}・無ければ macOS say）に戻します。`,
       ttsApiKeyConfigured: "TTS API キーを検出（app/.env）。",
       ttsApiKeyOptional: "TTS API キーなし — ローカルなら問題なし・OpenAI には必要。",
     },

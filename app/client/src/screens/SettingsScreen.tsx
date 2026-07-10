@@ -12,11 +12,12 @@ import {
   hydrateGlobalTuning, hydrateAuthModes, hydrateAuthKeys, buildAuthPatch,
   buildRolesPayload, defaultTuning, applyRecommendedTuning,
   claudeModelSelectOptions, effortOptionsForClaudeAlias, codexModelSelectOptions, effortOptionsForCodexModel,
-  tierOptionsForCodexModel, codexDefaultEffortLabel, localModelSelectOptions, resolveEffective, clampClaudeEffort,
+  tierOptionsForCodexModel, codexDefaultEffortLabel, codexDefaultModelLabel, localModelSelectOptions, resolveEffective, clampClaudeEffort,
   CODEX_EFFORT_OPTIONS,
   type RoleTarget, type RoleTargets, type Connection, type PresetId, type CloudTarget, type EffectiveResolution,
 } from "../lib/llm-assignments";
 import { loadPreferredCloud, savePreferredCloud } from "../lib/preferred-cloud";
+import { ttsAutoResolution } from "../lib/tts-resolution";
 import { STR, type Lang } from "../i18n";
 import { Button } from "../ui/Button";
 
@@ -278,9 +279,8 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
 
       {tab === "conn" && (
         <section className="support-panel stack">
-          <div className="stat-title">{s.settings.connectionSection}</div>
           <div className="llm-fields stack">
-            <div className="text-sm">{s.settings.targetClaude}</div>
+            <h3 className="settings-section-title">{s.settings.targetClaude}</h3>
             <div className="text-sm text-muted">{s.settings.claudeNoSetup}</div>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.settings.authModeLabel}</span>
@@ -313,8 +313,9 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             </label>
             <div className="text-sm text-muted">{s.settings.claudeGlobalModelNote}</div>
           </div>
+          <hr className="settings-divider" />
           <div className="llm-fields stack">
-            <div className="text-sm">{s.settings.localConnTitle}</div>
+            <h3 className="settings-section-title">{s.settings.localConnTitle}</h3>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.llm.baseUrlLabel}</span>
               <input className="llm-input" value={connBaseUrl} placeholder={s.llm.baseUrlPlaceholder} onChange={(e) => setConnBaseUrl(e.target.value)} />
@@ -338,19 +339,23 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             </label>
             <div className="text-sm text-muted">{view?.apiKeyConfigured ? s.llm.apiKeyConfigured : s.llm.apiKeyMissing}</div>
           </div>
+          <hr className="settings-divider" />
           <div className="llm-fields stack">
-            <div className="text-sm">{s.settings.codexConnTitle}</div>
+            <h3 className="settings-section-title">{s.settings.codexConnTitle}</h3>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.llm.codexModelLabel}</span>
               {(() => {
                 const opts = codexModelSelectOptions(catalog?.codex);
+                // 「空欄で既定」に実際の既定モデル名（カタログの CLI 既定行）を併記する。カタログ不可時は静的文言へ劣化
+                const defaultName = codexDefaultModelLabel(catalog?.codex);
+                const emptyLabel = defaultName ? s.llm.codexModelPlaceholderWith(defaultName) : s.llm.codexModelPlaceholder;
                 if (opts.length === 0) {
-                  return <input className="llm-input" value={connCodex} placeholder={s.llm.codexModelPlaceholder} onChange={(e) => setConnCodex(e.target.value)} />;
+                  return <input className="llm-input" value={connCodex} placeholder={emptyLabel} onChange={(e) => setConnCodex(e.target.value)} />;
                 }
                 const known = opts.some((o) => o.value === connCodex);
                 return (
                   <select className="llm-input" value={connCodex} onChange={(e) => setConnCodex(e.target.value)}>
-                    <option value="">{s.llm.codexModelPlaceholder}</option>
+                    <option value="">{emptyLabel}</option>
                     {!known && connCodex && <option value={connCodex}>{connCodex}</option>}
                     {opts.map((o) => (
                       <option key={o.value} value={o.value}>{o.isDefault ? s.settings.cliDefaultBadgeWith(o.label) : o.label}</option>
@@ -379,18 +384,30 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
           <Button variant="secondary" onClick={() => void persist(targets, conn)} disabled={saving || !view}>{saving ? s.llm.saving : s.settings.saveConnection}</Button>
           {llmResult && <div className="info-pop" role="status">{llmResult}</div>}
 
-          <div className="stat-title">{s.settings.ttsSection}</div>
+          <hr className="settings-divider" />
+          <h3 className="settings-section-title">{s.settings.ttsSection}</h3>
           <div className="text-sm text-muted">{s.settings.ttsDesc}</div>
           <div className="llm-fields stack">
             <label className="llm-field">
               <span className="text-sm text-muted">{s.settings.ttsProviderLabel}</span>
-              <select className="llm-input" value={ttsProvider} disabled={saving || !ttsView} onChange={(e) => setTtsProvider(e.target.value as TtsProvider)}>
-                {TTS_PROVIDER_OPTIONS.map((p) => (
-                  <option key={p} value={p}>
-                    {p === "auto" ? s.settings.ttsProviderAuto : p === "say" ? s.settings.ttsProviderSay : s.settings.ttsProviderHttp}
-                  </option>
-                ))}
-              </select>
+              {(() => {
+                // 「自動」が今どちらに解決されるかをラベルに併記する（編集中の Base URL でライブに変わる）
+                const resolved = ttsAutoResolution(
+                  ttsView?.apiKeyConfigured ?? false,
+                  ttsBaseUrl,
+                  ttsView?.defaults.baseUrl ?? "",
+                );
+                const resolvedLabel = resolved === "say" ? s.settings.ttsProviderShortSay : s.settings.ttsProviderShortHttp;
+                return (
+                  <select className="llm-input" value={ttsProvider} disabled={saving || !ttsView} onChange={(e) => setTtsProvider(e.target.value as TtsProvider)}>
+                    {TTS_PROVIDER_OPTIONS.map((p) => (
+                      <option key={p} value={p}>
+                        {p === "auto" ? s.settings.ttsProviderAutoWith(resolvedLabel) : p === "say" ? s.settings.ttsProviderSay : s.settings.ttsProviderHttp}
+                      </option>
+                    ))}
+                  </select>
+                );
+              })()}
             </label>
             <div className="text-sm text-muted">{s.settings.ttsProviderNote}</div>
             <label className="llm-field">
@@ -417,7 +434,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             <div className="text-sm text-muted">{ttsView?.apiKeyConfigured ? s.settings.ttsApiKeyConfigured : s.settings.ttsApiKeyOptional}</div>
           </div>
           <Button variant="secondary" onClick={onSaveTts} disabled={saving || !ttsView}>{saving ? s.llm.saving : s.llm.save}</Button>
-          <div className="text-sm text-muted">{s.settings.ttsResetDesc}</div>
+          <div className="text-sm text-muted">{s.settings.ttsResetDescWith(ttsView?.defaults.model ?? "gpt-4o-mini-tts", ttsView?.defaults.voice ?? "alloy")}</div>
           <Button variant="secondary" onClick={onResetTts} disabled={saving || !ttsView}>{s.settings.ttsReset}</Button>
           {ttsResult && <div className="info-pop" role="status">{ttsResult}</div>}
         </section>
