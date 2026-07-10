@@ -10,6 +10,7 @@ import { useExplain } from "../useExplain";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { FlowExitButton } from "../ui/FlowExitButton";
 import { FeedbackRow } from "../ui/FeedbackRow";
 import { ExplainBox } from "../ui/ExplainBox";
 import { LevelChip } from "../ui/LevelChip";
@@ -95,7 +96,7 @@ function ListeningPlayer({ meta, lang, onListened, onBack }: {
   const { state, reload } = useLoad(() => fetchListeningItem(meta.id));
   return (
     <div className="stack">
-      <Button variant="secondary" onClick={onBack}>{t.back}</Button>
+      <FlowExitButton onClick={onBack}>{t.back}</FlowExitButton>
       <div className="hero"><h2 className="hero-title">{meta.titleJa || meta.title}</h2></div>
       {state.status === "loading" && <p className="text-muted">{t.scriptLoading}</p>}
       {state.status === "error" && (

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
   confirmPlacement, fetchPlacementTasks, fetchUtteranceTranslation, sttUpload, submitPlacement,
   type PlacementResult, type PlacementTaskDef,
@@ -12,8 +12,10 @@ import { useExplain } from "../useExplain";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { FlowExitButton } from "../ui/FlowExitButton";
 import { RecordButton } from "../ui/RecordButton";
 import { TimerChip } from "../ui/TimerChip";
+import { validatePlacementLevel } from "./placement-level";
 
 type Step =
   | { kind: "loading" }
@@ -46,6 +48,7 @@ export function PlacementScreen(props: { lang: Lang; onBeforeStart?: () => boole
   const [chooseValue, setChooseValue] = useState("");
   const [confirmBusy, setConfirmBusy] = useState(false);
   const [confirmError, setConfirmError] = useState(false);
+  const [appliedLevel, setAppliedLevel] = useState<number | null>(null);
 
   const recorderRef = useRef(new Recorder());
   const recStateRef = useRef<RecState>("idle");
@@ -184,7 +187,12 @@ export function PlacementScreen(props: { lang: Lang; onBeforeStart?: () => boole
     try {
       await confirmPlacement(accept, level);
       if (!aliveRef.current) return;
-      props.onExit();
+      if (accept && level !== undefined) {
+        setAppliedLevel(level);
+        setChoosing(false);
+      } else {
+        exitPlacement();
+      }
     } catch (err) {
       if (!aliveRef.current) return;
       console.warn("placement confirm failed:", err);
@@ -194,25 +202,43 @@ export function PlacementScreen(props: { lang: Lang; onBeforeStart?: () => boole
     }
   }
 
-  if (step.kind === "loading") return <p>…</p>;
+  function exitPlacement() {
+    timer.pause();
+    recorderRef.current.cancel();
+    stopPlayback();
+    props.onExit();
+  }
+
+  function placementFrame(children: ReactNode, warnBeforeExit = true) {
+    return (
+      <div className="stack">
+        <FlowExitButton onClick={exitPlacement}>{STR[props.lang].appShell.backToHome}</FlowExitButton>
+        {warnBeforeExit && <p className="text-sm text-muted">{t.exitNote}</p>}
+        {children}
+      </div>
+    );
+  }
+
+  if (step.kind === "loading") return placementFrame(<p>…</p>, false);
 
   if (step.kind === "load-error") {
-    return (
+    return placementFrame(
       <Banner kind="error" action={<Button onClick={loadTasks}>↻</Button>}>
         {step.message}
-      </Banner>
+      </Banner>,
+      false,
     );
   }
 
   if (step.kind === "intro") {
-    return (
+    return placementFrame(
       <div className="stack">
         <Card header={t.introTitle}>
           <p className="text-muted">{t.introBody}</p>
           <p className="text-sm text-muted">{t.xpNote}</p>
         </Card>
         <Button variant="primary" size="lg" onClick={() => startTask(0)}>{t.introStart}</Button>
-      </div>
+      </div>,
     );
   }
 
@@ -223,7 +249,7 @@ export function PlacementScreen(props: { lang: Lang; onBeforeStart?: () => boole
     const hasAnswer = transcripts[i].trim().length > 0;
     const recordingAction = placementRecordingAction(hasAnswer);
     const isLast = i === tasks.length - 1;
-    return (
+    return placementFrame(
       <div className="stack">
         <Card header={`${t.taskLabel(i + 1, tasks.length)} — ${instruction}`}>
           <p className="text-sm text-muted">{t.promptLabel}:</p>
@@ -260,35 +286,45 @@ export function PlacementScreen(props: { lang: Lang; onBeforeStart?: () => boole
             <p className="reading-text">{transcripts[i]}</p>
           </Card>
         )}
-      </div>
+      </div>,
     );
   }
 
   if (step.kind === "submitting") {
-    return <p>{t.submitting}</p>;
+    return placementFrame(<p>{t.submitting}</p>);
   }
 
   if (step.kind === "submit-error") {
-    return (
+    return placementFrame(
       <div className="stack">
         <Banner kind="error">{t.submitError}</Banner>
         <p className="text-sm text-muted">{step.message}</p>
         <Button variant="primary" onClick={submitAll}>{t.retry}</Button>
-      </div>
+      </div>,
     );
   }
 
   // result
   const { result } = step;
-  return (
+  const choiceValidation = validatePlacementLevel(chooseValue);
+  const choiceError = !choiceValidation.valid ? t.chooseInputError(choiceValidation.reason) : null;
+  return placementFrame(
     <div className="stack">
       <Card header={t.resultTitle}>
         <p><strong>{t.resultStage(result.stage)}</strong></p>
+        <p className="text-sm text-muted">{t.stageLevelNote(result.stage, result.startLevel)}</p>
         <p className="reading-text">{result.rationale}</p>
         <p className="text-sm text-muted">{t.xpNote}</p>
       </Card>
       {confirmError && <Banner kind="error">{t.confirmError}</Banner>}
-      {!choosing ? (
+      {appliedLevel !== null ? (
+        <>
+          <Banner kind="info">{t.levelApplied(appliedLevel)}</Banner>
+          <div className="round-actions">
+            <Button variant="primary" size="lg" onClick={exitPlacement}>{STR[props.lang].appShell.backToHome}</Button>
+          </div>
+        </>
+      ) : !choosing ? (
         <div className="start-row">
           <Button variant="primary" onClick={() => confirm(true, result.startLevel)} disabled={confirmBusy}>
             {t.resultStartAt(result.startLevel)}
@@ -299,25 +335,37 @@ export function PlacementScreen(props: { lang: Lang; onBeforeStart?: () => boole
           <Button variant="ghost" onClick={() => confirm(false)} disabled={confirmBusy}>{t.notNow}</Button>
         </div>
       ) : (
-        <div className="start-row">
-          <label className="text-sm text-muted">
-            {t.chooseLabel}{" "}
-            <input
-              className="level-input" type="number" min={1} max={999} value={chooseValue} autoFocus
-              onChange={(e) => setChooseValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") confirm(true, Number(chooseValue));
-                else if (e.key === "Escape") setChoosing(false);
-              }}
-            />
-          </label>
-          <Button variant="primary" onClick={() => confirm(true, Number(chooseValue))} disabled={confirmBusy}>
-            {t.apply}
-          </Button>
-          <Button variant="ghost" onClick={() => setChoosing(false)} disabled={confirmBusy}>{t.cancel}</Button>
+        <div className="stack">
+          <p id="placement-level-help" className="text-sm text-muted">{t.chooseInputHelp}</p>
+          <div className="start-row">
+            <label className="text-sm text-muted">
+              {t.chooseLabel}{" "}
+              <input
+                className="level-input" type="number" min={1} max={999} step={1} value={chooseValue} autoFocus
+                onChange={(e) => setChooseValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && choiceValidation.valid) void confirm(true, choiceValidation.level);
+                  else if (e.key === "Escape") setChoosing(false);
+                }}
+                aria-invalid={!choiceValidation.valid}
+                aria-describedby={choiceError ? "placement-level-help placement-level-error" : "placement-level-help"}
+              />
+            </label>
+            <Button
+              variant="primary"
+              onClick={() => { if (choiceValidation.valid) void confirm(true, choiceValidation.level); }}
+              disabled={confirmBusy || !choiceValidation.valid}
+            >
+              {t.apply}
+            </Button>
+            <Button variant="ghost" onClick={() => setChoosing(false)} disabled={confirmBusy}>{t.cancel}</Button>
+          </div>
+          {choiceError && <p id="placement-level-error" className="level-edit-error" role="alert">{choiceError}</p>}
         </div>
       )}
-    </div>
+      {appliedLevel === null && <p className="text-sm text-muted">{t.applyTiming}</p>}
+    </div>,
+    false,
   );
 }
 

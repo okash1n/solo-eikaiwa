@@ -57,6 +57,7 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 .text-sm { font-size: var(--fs-sm); }
 .reading-text { font-size: var(--fs-lg); line-height: var(--lh-reading); white-space: pre-wrap; }
 .stack > * + * { margin-top: var(--sp-4); }
+.flow-exit { display: flex; justify-content: flex-start; }
 
 /* Button */
 .btn {
