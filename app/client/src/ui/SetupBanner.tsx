@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cancelWhisperModelDownload, getSetupStatus, startWhisperModelDownload, type SetupStatus, type WhisperModelId } from "../api/setup";
 import { STR, type Lang } from "../i18n";
+import { SetupStatusPoller } from "../lib/setup-status-poller";
 import { formatBytes, isDownloadActive, progressPercent } from "../lib/whisper-setup";
 import { Banner } from "./Banner";
 import { Button } from "./Button";
@@ -23,55 +24,57 @@ export function SetupBanner({
   const [selected, setSelected] = useState<WhisperModelId>("large-v3-turbo");
   const [busy, setBusy] = useState(false);
   const [pollError, setPollError] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mountedRef = useRef(false);
   const readyNotifiedRef = useRef(false);
+  const onModelReadyRef = useRef(onModelReady);
+  onModelReadyRef.current = onModelReady;
 
-  function stopPolling() {
-    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+  const pollerRef = useRef<SetupStatusPoller | null>(null);
+  if (pollerRef.current === null) {
+    pollerRef.current = new SetupStatusPoller({
+      load: getSetupStatus,
+      onStatus: (nextStatus) => {
+        setStatus(nextStatus);
+        setPollError(false);
+        if (nextStatus.status === "done" && !readyNotifiedRef.current) {
+          readyNotifiedRef.current = true;
+          onModelReadyRef.current();
+        }
+      },
+      onError: () => { setPollError(true); },
+      intervalMs: POLL_MS,
+    });
   }
-
-  function applyStatus(s: SetupStatus) {
-    setStatus(s);
-    setPollError(false);
-    if (isDownloadActive(s.status)) {
-      if (!timerRef.current) timerRef.current = setInterval(poll, POLL_MS);
-    } else {
-      stopPolling();
-      if (s.status === "done" && !readyNotifiedRef.current) {
-        readyNotifiedRef.current = true;
-        onModelReady();
-      }
-    }
-  }
-
-  function poll() {
-    getSetupStatus().then(applyStatus).catch(() => setPollError(true));
-  }
+  const poller = pollerRef.current;
 
   useEffect(() => {
-    poll();
-    return stopPolling;
-    // 初回マウント時のみ起動する（以後はapplyStatus内のsetIntervalが自走する）
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    mountedRef.current = true;
+    poller.start();
+    return () => {
+      mountedRef.current = false;
+      poller.stop();
+    };
+  }, [poller]);
 
   async function onStart() {
     setBusy(true);
     try {
-      applyStatus(await startWhisperModelDownload(selected));
+      poller.accept(await startWhisperModelDownload(selected));
     } catch {
-      setPollError(true);
+      if (mountedRef.current) setPollError(true);
     } finally {
-      setBusy(false);
+      if (mountedRef.current) setBusy(false);
     }
   }
 
   async function onCancel() {
     setBusy(true);
     try {
-      applyStatus(await cancelWhisperModelDownload());
+      poller.accept(await cancelWhisperModelDownload());
+    } catch {
+      if (mountedRef.current) setPollError(true);
     } finally {
-      setBusy(false);
+      if (mountedRef.current) setBusy(false);
     }
   }
 
