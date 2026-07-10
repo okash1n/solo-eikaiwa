@@ -871,7 +871,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                               disabled={settingsSaving || !view}
                               onChange={(e) => setTuningField(role, "serviceTier", (e.target.value || null) as RoleTuning["serviceTier"])}
                             >
-                              <option value="">{s.settings.tuningDefaultWith("fast")}</option>
+                              <option value="">{s.settings.tuningDefaultWith(tierLabels.fast)}</option>
                               {codexTierOptions.map((t) => <option key={t} value={t}>{tierLabels[t]}</option>)}
                             </select>
                           </label>
