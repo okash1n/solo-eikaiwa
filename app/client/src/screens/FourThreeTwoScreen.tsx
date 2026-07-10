@@ -15,6 +15,7 @@ import { Card } from "../ui/Card";
 import { ChunkList } from "../ui/ChunkList";
 import { ExplainBox } from "../ui/ExplainBox";
 import { LevelChip } from "../ui/LevelChip";
+import { PlaybackButton } from "../ui/PlaybackButton";
 import { RecordButton } from "../ui/RecordButton";
 import { TimerChip } from "../ui/TimerChip";
 import { canRevealJaFromHintDefault, getSupport, resolveSupport, useSupport } from "../support";
@@ -49,6 +50,7 @@ export function FourThreeTwoScreen(props: {
   lang: Lang;
 }) {
   const t = STR[props.lang].ftt432;
+  const playback = STR[props.lang].playback;
   const support = useSupport();
   const disclosureKey = `${props.sessionId}:${props.topic.id}`;
   // モデルトークを事前準備するか: 個別トグル → メニューの stage 既定（auto か）で解決。
@@ -100,6 +102,7 @@ export function FourThreeTwoScreen(props: {
   const recStateRef = useRef<RecState>("idle");
   const stopInFlightRef = useRef(false);
   const finishInFlightRef = useRef(false);
+  const modelPlaybackGenerationRef = useRef(0);
   const elapsedSecRef = useRef<number[]>(Array(roundsSec.length).fill(0));
   const segmentStartedAtRef = useRef(0);
   const timer = useCountdown(roundsSec[0], {
@@ -144,6 +147,7 @@ export function FourThreeTwoScreen(props: {
         ? Math.max(0.1, Math.round((performance.now() - segmentStartedAtRef.current) / 100) / 10)
         : 0;
       aliveRef.current = false;
+      modelPlaybackGenerationRef.current++;
       recorderRef.current.cancel();
       stopPlayback();
       if (roundStartedRef.current) {
@@ -187,24 +191,31 @@ export function FourThreeTwoScreen(props: {
   }
 
   async function playModelTalk() {
+    const generation = ++modelPlaybackGenerationRef.current;
     setErrorMsg("");
     try {
       const { text, blob } = await prefetchModelTalkAudio(props.topic.id, (stage) => {
         if (aliveRef.current) setModelState(stage);
       });
-      if (!aliveRef.current) return;
+      if (!aliveRef.current || modelPlaybackGenerationRef.current !== generation) return;
       setModelTalk({ disclosureKey, text });
       setModelState("playing");
       try {
         await playBlob(blob);
       } finally {
-        if (aliveRef.current) setModelState("ready");
+        if (aliveRef.current && modelPlaybackGenerationRef.current === generation) setModelState("ready");
       }
     } catch (err) {
-      if (!aliveRef.current) return;
+      if (!aliveRef.current || modelPlaybackGenerationRef.current !== generation) return;
       setErrorMsg(err instanceof Error ? err.message : String(err));
       setModelState("error");
     }
+  }
+
+  function stopModelTalk() {
+    modelPlaybackGenerationRef.current++;
+    stopPlayback();
+    if (aliveRef.current) setModelState("ready");
   }
 
   async function toggleRecording() {
@@ -386,6 +397,7 @@ export function FourThreeTwoScreen(props: {
               <>
                 <ChunkList
                   chunks={filteredChunks} playingIdx={playRow.playingKey} onPlay={(i, text) => playRow.play(i, text)} showJa={showJa}
+                  onStop={playRow.stop} stopLabel={playback.stop}
                   playAria={(en) => STR[props.lang].chunkList.playAria(en)}
                 />
               </>
@@ -403,14 +415,19 @@ export function FourThreeTwoScreen(props: {
           );
         })()}
         <div className="start-row">
-          <Button onClick={playModelTalk} disabled={modelState === "script" || modelState === "audio" || modelState === "playing"}>
-            {modelState === "idle" && t.modelIdle}
-            {modelState === "script" && t.modelScript}
-            {modelState === "audio" && t.modelAudio}
-            {modelState === "ready" && t.modelIdle}
-            {modelState === "playing" && t.modelPlaying}
-            {modelState === "error" && t.modelRetry}
-          </Button>
+          <PlaybackButton
+            playing={modelState === "playing"}
+            onPlay={playModelTalk}
+            onStop={stopModelTalk}
+            disabled={modelState === "script" || modelState === "audio"}
+            playLabel={
+              modelState === "script" ? t.modelScript
+                : modelState === "audio" ? t.modelAudio
+                  : modelState === "error" ? t.modelRetry
+                    : t.modelIdle
+            }
+            stopLabel={playback.stop}
+          />
           <Button variant="primary" onClick={() => startRound(0)} disabled={prepState !== "ready"}>
             {t.startRound1(formatMmSs(roundsSec[0]))}
           </Button>
@@ -479,6 +496,7 @@ export function FourThreeTwoScreen(props: {
             <summary className="text-sm text-muted">{t.roundChunksToggle}</summary>
             <ChunkList
               chunks={filteredChunks} playingIdx={playRow.playingKey} onPlay={(i, text) => playRow.play(i, text)} showJa={showJa}
+              onStop={playRow.stop} stopLabel={playback.stop}
               playAria={(en) => STR[props.lang].chunkList.playAria(en)}
             />
           </details>

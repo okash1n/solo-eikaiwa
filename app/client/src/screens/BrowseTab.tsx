@@ -10,6 +10,7 @@ import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { ExplainBox } from "../ui/ExplainBox";
+import { PlaybackButton } from "../ui/PlaybackButton";
 
 /** 行キー: 例文は no、チャンクは id。種別を混ぜないよう kind でタグ付けする */
 type RowKey = { kind: "sentence"; no: number } | { kind: "chunk"; id: number };
@@ -17,6 +18,7 @@ type RowKey = { kind: "sentence"; no: number } | { kind: "chunk"; id: number };
 /** 一覧タブ: domainフィルタ + カテゴリ見出しでのブラウズ。SRS状態は情報表示のみ */
 export function BrowseTab({ lang }: { lang: Lang }) {
   const t = STR[lang].sentences;
+  const playback = STR[lang].playback;
   const load = useLoad(async () => {
     const all = await fetchSentences();
     // チャンクは補助セクション — 一方の取得失敗でも例文一覧と取得できた側は表示する
@@ -86,14 +88,15 @@ export function BrowseTab({ lang }: { lang: Lang }) {
         <Card header={t.myChunks}>
           {chunks.map((c) => (
             <div key={c.id} className="sentence-row">
-              <Button
-                variant="ghost"
-                onClick={() => row.play({ kind: "chunk", id: c.id }, c.en)}
+              <PlaybackButton
+                playing={row.playingKey?.kind === "chunk" && row.playingKey.id === c.id}
+                onPlay={() => row.play({ kind: "chunk", id: c.id }, c.en)}
+                onStop={row.stop}
                 disabled={anyPlaying}
-                ariaLabel={t.playChunkAria(c.id)}
-              >
-                {row.playingKey?.kind === "chunk" && row.playingKey.id === c.id ? "🔊" : "▶"}
-              </Button>
+                playLabel="▶"
+                stopLabel={playback.stop}
+                playAriaLabel={t.playChunkAria(c.id)}
+              />
               <div className="sentence-body">
                 <span className="sentence-en">{c.en}</span>
                 <span className="sentence-ja-sub">{c.promptText}</span>
@@ -124,14 +127,15 @@ export function BrowseTab({ lang }: { lang: Lang }) {
         <Card header={t.hiddenChunks}>
           {hiddenChunks.map((c) => (
             <div key={c.id} className="sentence-row">
-              <Button
-                variant="ghost"
-                onClick={() => row.play({ kind: "chunk", id: c.id }, c.en)}
+              <PlaybackButton
+                playing={row.playingKey?.kind === "chunk" && row.playingKey.id === c.id}
+                onPlay={() => row.play({ kind: "chunk", id: c.id }, c.en)}
+                onStop={row.stop}
                 disabled={anyPlaying}
-                ariaLabel={t.playChunkAria(c.id)}
-              >
-                {row.playingKey?.kind === "chunk" && row.playingKey.id === c.id ? "🔊" : "▶"}
-              </Button>
+                playLabel="▶"
+                stopLabel={playback.stop}
+                playAriaLabel={t.playChunkAria(c.id)}
+              />
               <div className="sentence-body">
                 <span className="sentence-en">{c.en}</span>
                 <span className="sentence-ja-sub">{c.promptText}</span>
@@ -155,14 +159,15 @@ export function BrowseTab({ lang }: { lang: Lang }) {
         <Card key={catNo} header={`${catNo}. ${catName}`}>
           {shown.filter((s) => s.category_no === catNo).map((s) => (
             <div key={s.no} className="sentence-row">
-              <Button
-                variant="ghost"
-                onClick={() => row.play({ kind: "sentence", no: s.no }, s.en)}
+              <PlaybackButton
+                playing={row.playingKey?.kind === "sentence" && row.playingKey.no === s.no}
+                onPlay={() => row.play({ kind: "sentence", no: s.no }, s.en)}
+                onStop={row.stop}
                 disabled={anyPlaying}
-                ariaLabel={t.playAria(s.no)}
-              >
-                {row.playingKey?.kind === "sentence" && row.playingKey.no === s.no ? "🔊" : "▶"}
-              </Button>
+                playLabel="▶"
+                stopLabel={playback.stop}
+                playAriaLabel={t.playAria(s.no)}
+              />
               <div className="sentence-body">
                 <span className="sentence-en">{s.en}</span>
                 <span className="sentence-ja-sub">{s.ja}</span>

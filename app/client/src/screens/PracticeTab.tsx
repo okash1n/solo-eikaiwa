@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  fetchChunks, fetchSentenceExplanation, fetchSentenceQueue, fetchSentences, gradeChunk, gradeSentence, playTtsCached,
+  fetchChunks, fetchSentenceExplanation, fetchSentenceQueue, fetchSentences, gradeChunk, gradeSentence, type QueueItem,
 } from "../api";
-import { stopPlayback } from "../audio";
 import { clozeText } from "../cloze";
 import { STR, type Lang } from "../i18n";
 import { useLoad } from "../useLoad";
 import { useExplain } from "../useExplain";
+import { usePlayRow } from "../usePlayRow";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { ExplainBox } from "../ui/ExplainBox";
+import { PlaybackButton } from "../ui/PlaybackButton";
 import { localYmd } from "../dates";
 import { countDueByYmd } from "../lib/practice-summary";
 import { initialPhase, type Phase } from "./practicePhase";
@@ -18,9 +19,14 @@ import { resolvePendingAnswer, type PendingAnswer } from "./answerRequest";
 
 const SET_SIZE = 20;
 
+function audioKeyOf(item: QueueItem): string {
+  return item.kind === "chunk" ? `chunk:${item.id}` : `sentence:${item.no}`;
+}
+
 /** 練習タブ: ja→（声に出す）→[歯抜け]→答えを見る→自動再生→自己評価、の産出リトリーバルフロー */
 export function PracticeTab({ lang, hideNote, clozeDefault, audioFirst = false, newPerDay }: { lang: Lang; hideNote: boolean; clozeDefault: boolean; audioFirst?: boolean; newPerDay: number }) {
   const t = STR[lang].sentences;
+  const playback = STR[lang].playback;
   const load = useLoad(() => fetchSentenceQueue(newPerDay));
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState<Phase>(initialPhase(audioFirst, clozeDefault));
@@ -31,12 +37,13 @@ export function PracticeTab({ lang, hideNote, clozeDefault, audioFirst = false, 
   const [busy, setBusy] = useState(false);
   const aliveRef = useRef(true);
   const gradingRef = useRef(false);
+  const audio = usePlayRow<string>();
   // response消失後の再評価でも同じanswerIdを再送し、SRSとXPを二重更新しない。
   const pendingAnswerRef = useRef<PendingAnswer | null>(null);
 
   useEffect(() => {
     aliveRef.current = true;
-    return () => { aliveRef.current = false; stopPlayback(); };
+    return () => { aliveRef.current = false; };
   }, []);
 
   const queue = load.state.status === "ready" ? load.state.data : [];
@@ -51,10 +58,10 @@ export function PracticeTab({ lang, hideNote, clozeDefault, audioFirst = false, 
   const listenPlayedRef = useRef<string | null>(null);
   useEffect(() => {
     if (phase !== "listen" || !current || atSetBoundary) return;
-    const key = current.kind === "chunk" ? `c${current.id}` : `s${current.no}`;
+    const key = audioKeyOf(current);
     if (listenPlayedRef.current === key) return;
     listenPlayedRef.current = key;
-    playTtsCached(current.en).catch(() => {});
+    void audio.play(key, current.en);
   }, [phase, current, atSetBoundary]);
 
   useEffect(() => {
@@ -74,18 +81,14 @@ export function PracticeTab({ lang, hideNote, clozeDefault, audioFirst = false, 
 
   async function reveal() {
     setPhase("answer");
-    try {
-      await playTtsCached(current.en);
-    } catch {
-      // 音声は補助 — 再生失敗でフローを止めない（🔊で再試行できる）
-    }
+    await audio.play(audioKeyOf(current), current.en);
   }
 
   async function grade(g: "good" | "soso" | "bad") {
     if (gradingRef.current) return;
     gradingRef.current = true;
     // 評価APIを待っている間に旧カードのTTS取得が完了しても、再生を開始させない。
-    stopPlayback();
+    audio.stop();
     setBusy(true);
     setErrorMsg("");
     try {
@@ -138,6 +141,7 @@ export function PracticeTab({ lang, hideNote, clozeDefault, audioFirst = false, 
     <div className="stack">
       <p className="text-sm text-muted">{t.remaining(queue.length - idx, gradedCount)}</p>
       <Card>
+        {audio.error && <Banner kind="info">{t.audioPlaybackError}</Banner>}
         {phase !== "listen" && (current.kind === "chunk" ? (
           <>
             <p className="text-sm text-muted">{t.chunkLabel}</p>
@@ -152,9 +156,14 @@ export function PracticeTab({ lang, hideNote, clozeDefault, audioFirst = false, 
           <>
             <p className="text-muted">{t.listenPrompt}</p>
             <div className="round-actions">
-              <Button variant="ghost" onClick={() => playTtsCached(current.en).catch(() => {})} ariaLabel={t.playAgain}>
-                {t.playAgain}
-              </Button>
+              <PlaybackButton
+                playing={audio.playingKey === audioKeyOf(current)}
+                onPlay={() => audio.play(audioKeyOf(current), current.en)}
+                onStop={audio.stop}
+                playLabel={t.playAgain}
+                stopLabel={playback.stop}
+                playAriaLabel={t.playAgain}
+              />
               <Button variant="primary" size="lg" onClick={reveal}>{t.showAnswer}</Button>
             </div>
           </>
@@ -183,9 +192,14 @@ export function PracticeTab({ lang, hideNote, clozeDefault, audioFirst = false, 
           <>
             <p className="sentence-en">{current.en}</p>
             <div className="round-actions">
-              <Button variant="ghost" onClick={() => playTtsCached(current.en).catch(() => {})} ariaLabel={t.playAgain}>
-                {t.playAgain}
-              </Button>
+              <PlaybackButton
+                playing={audio.playingKey === audioKeyOf(current)}
+                onPlay={() => audio.play(audioKeyOf(current), current.en)}
+                onStop={audio.stop}
+                playLabel={t.playAgain}
+                stopLabel={playback.stop}
+                playAriaLabel={t.playAgain}
+              />
               {/* 解説は固定300文専用 — チャンクは AE フィードバック由来の note を既に持つ */}
             </div>
             {current.kind === "sentence" && <SentenceExplain key={current.no} no={current.no} lang={lang} />}
