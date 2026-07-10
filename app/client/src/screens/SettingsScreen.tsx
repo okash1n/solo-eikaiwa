@@ -11,7 +11,8 @@ import { fetchSecrets, saveSecret, deleteSecret, type SecretName, type SecretsVi
 import {
   isLocalDefined, presetEnabled, presetTargets, matchPreset, hydrateConnection, hydrateTargets, hydrateTuning,
   hydrateGlobalTuning, hydrateAuthModes, hydrateAuthKeys, buildAuthPatch,
-  buildRolesPayload, defaultTuning, applyRecommendedTuning,
+  buildGlobalConnectionPayload, buildRoleAssignmentPayload, buildSavedRoleConnectionPatch, hasSavedLocalRole,
+  defaultTuning, applyRecommendedTuning,
   claudeModelSelectOptions, effortOptionsForClaudeAlias, codexModelSelectOptions, effortOptionsForCodexModel,
   tierOptionsForCodexModel, codexDefaultEffortLabel, codexDefaultModelLabel, localModelSelectOptions, resolveEffective, clampClaudeEffort,
   classifyOpenAiEndpoint, CODEX_EFFORT_OPTIONS,
@@ -19,6 +20,10 @@ import {
   type EndpointClassification,
 } from "../lib/llm-assignments";
 import { loadPreferredCloud, savePreferredCloud } from "../lib/preferred-cloud";
+import {
+  connectionDraftChanged, makeLatestGeneration, makeSaveGenerationTracker, mergeConnectionSaveView, mergeRolesSaveView,
+  rolesDraftChanged, ttsDraftChanged, type ConnectionDraft,
+} from "../lib/settings-save-scopes";
 import { ttsAutoResolution } from "../lib/tts-resolution";
 import { STR, type Lang } from "../i18n";
 import { Button } from "../ui/Button";
@@ -31,6 +36,9 @@ type Props = {
   setUiScale: (s: UiScale) => void;
   switchLang: (l: Lang) => void;
 };
+
+type SaveState = { phase: "idle" | "saving" | "saved" | "error"; message: string | null };
+const IDLE_SAVE: SaveState = { phase: "idle", message: null };
 
 type VoiceProviderKind = "kokoro" | "openai";
 const VOICE_PRESETS: Record<VoiceProviderKind, { female: string; male: string }> = {
@@ -55,6 +63,7 @@ function SecretKeyField(props: {
   str: {
     label: string; statusKeychain: string; statusEnv: string; statusMissing: string;
     placeholderSet: string; placeholderNew: string; save: string; del: string;
+    deleteConfirm: string; saving: string; deleting: string;
     saved: string; deleted: string;
     approvalRequired: string;
     saveFailedWithReason: (reason: string) => string;
@@ -65,27 +74,37 @@ function SecretKeyField(props: {
 }) {
   const [value, setValue] = useState("");
   const [result, setResult] = useState<string | null>(null);
+  const [busyAction, setBusyAction] = useState<"save" | "delete" | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const generationRef = useRef(makeLatestGeneration());
+  const busy = busyAction !== null;
   const st = props.status;
   const statusText = st?.configured
     ? st.source === "keychain" ? props.str.statusKeychain : props.str.statusEnv
     : props.str.statusMissing;
 
-  async function run(action: () => Promise<SecretMutationResult>, doneMsg: string) {
+  async function run(kind: "save" | "delete", action: () => Promise<SecretMutationResult>, doneMsg: string) {
+    const generation = generationRef.current.begin();
     setResult(null);
+    setBusyAction(kind);
     try {
       const r = await action();
+      if (!generationRef.current.isCurrent(generation)) return;
       setValue("");
       // 保存自体は成功しても実行中プロセスへの適用に失敗した場合（applied:false）は、
       // 「保存し、適用しました」と嘘をつかずに理由つきで情報表示する（UI 真実性）。
       setResult(r.applied === false ? props.str.notApplied(r.error ?? "") : doneMsg);
     } catch (err) {
+      if (!generationRef.current.isCurrent(generation)) return;
       const reason = err instanceof Error ? err.message : String(err);
       setResult(props.str.saveFailedWithReason(reason));
+    } finally {
+      if (generationRef.current.isCurrent(generation)) setBusyAction(null);
     }
   }
 
   return (
-    <div className="llm-field">
+    <div className="llm-field" aria-busy={busy || undefined}>
       <span className="text-sm text-muted">{props.str.label} — {statusText}</span>
       <div className="secret-key-row">
         <input
@@ -94,21 +113,25 @@ function SecretKeyField(props: {
           autoComplete="off"
           value={value}
           placeholder={st?.configured ? props.str.placeholderSet : props.str.placeholderNew}
-          disabled={props.disabled}
-          onChange={(e) => setValue(e.target.value)}
+          disabled={props.disabled || busy}
+          onChange={(e) => { setValue(e.target.value); setDeleteConfirm(false); }}
         />
-        <Button variant="secondary" disabled={props.disabled || value.trim().length === 0}
-          onClick={() => void run(() => props.onSave(props.name, value.trim()), props.str.saved)}>
-          {props.str.save}
+        <Button variant="primary" loading={busyAction === "save"} disabled={props.disabled || busy || value.trim().length === 0}
+          onClick={() => void run("save", () => props.onSave(props.name, value.trim()), props.str.saved)}>
+          {busyAction === "save" ? props.str.saving : props.str.save}
         </Button>
         {st?.source === "keychain" && (
-          <Button variant="secondary" disabled={props.disabled}
-            onClick={() => void run(() => props.onDelete(props.name), props.str.deleted)}>
-            {props.str.del}
+          <Button variant={deleteConfirm ? "danger" : "secondary"} loading={busyAction === "delete"} disabled={props.disabled || busy}
+            onClick={() => {
+              if (!deleteConfirm) { setDeleteConfirm(true); return; }
+              setDeleteConfirm(false);
+              void run("delete", () => props.onDelete(props.name), props.str.deleted);
+            }}>
+            {busyAction === "delete" ? props.str.deleting : deleteConfirm ? props.str.deleteConfirm : props.str.del}
           </Button>
         )}
       </div>
-      {result && <div className="text-sm text-muted" role="status">{result}</div>}
+      {result && <div className="info-pop" role="status">{result}</div>}
       {props.approvalRequired && <div className="info-pop">{props.str.approvalRequired}</div>}
     </div>
   );
@@ -147,11 +170,12 @@ function RoleTargetToggle(props: {
 export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props) {
   const s = STR[lang];
   const [view, setView] = useState<LlmSettingsView | null>(null);
-  const [llmResult, setLlmResult] = useState<string | null>(null);
-  const [ttsResult, setTtsResult] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [connectionSave, setConnectionSave] = useState<SaveState>(IDLE_SAVE);
+  const [rolesSave, setRolesSave] = useState<SaveState>(IDLE_SAVE);
+  const [ttsSave, setTtsSave] = useState<SaveState>(IDLE_SAVE);
   const [tab, setTab] = useState<"conn" | "roles" | "display">("conn");
   const fetchedRef = useRef(false);
+  const saveGenerationRef = useRef(makeSaveGenerationTracker());
   // モデルカタログ（GET /api/llm-models）。用途タブを開いたときに遅延取得する（app起動時には叩かない）。
   const [catalog, setCatalog] = useState<LlmModelsResponse | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(false);
@@ -178,10 +202,10 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
   // 認証モードの編集状態（claude/codex）。キー検出状態は view から都度導出する（読み取り専用のため state 化しない）。
   const [authClaude, setAuthClaude] = useState<AuthMode>("subscription");
   const [authCodex, setAuthCodex] = useState<AuthMode>("subscription");
-  // 直近 hydrate 済み（=サーバ保存済み）の認証モード。保存時はここからの差分だけを PUT に含める
-  // （auth を変更していない保存で毎回両方を再送すると、api-key 保存後に env キーを削除した状態で
-  // 無関係の保存まで 400 になりロックアウトする — buildAuthPatch 参照）。
-  const [authBaseline, setAuthBaseline] = useState<Record<LlmAuthProvider, AuthMode>>({ claude: "subscription", codex: "subscription" });
+  // 各保存タブの直近保存済みsnapshot。別タブの編集中値を別scopeの保存で確定しないために使う。
+  const [savedConnection, setSavedConnection] = useState<ConnectionDraft | null>(null);
+  const [savedTargets, setSavedTargets] = useState<RoleTargets | null>(null);
+  const [savedTuning, setSavedTuning] = useState<Record<LlmRole, RoleTuning> | null>(null);
   const authKeys = view ? hydrateAuthKeys(view) : { anthropic: false, codex: false };
   // API キーの有無・ソース（値はサーバが返さない）
   const [secrets, setSecrets] = useState<SecretsView | null>(null);
@@ -191,8 +215,9 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
   const [ttsBaseUrl, setTtsBaseUrl] = useState("");
   const [ttsModel, setTtsModel] = useState("");
   const [ttsVoice, setTtsVoice] = useState("");
+  const voiceInputRef = useRef<HTMLInputElement | null>(null);
 
-  function hydrate(v: LlmSettingsView) {
+  function hydrateInitial(v: LlmSettingsView) {
     setView(v);
     const conn = hydrateConnection(v);
     setConnBaseUrl(conn.baseUrl);
@@ -204,7 +229,13 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
     const authModes = hydrateAuthModes(v);
     setAuthClaude(authModes.claude);
     setAuthCodex(authModes.codex);
-    setAuthBaseline(authModes);
+    setSavedConnection({
+      connection: conn,
+      globalClaudeModel: hydrateGlobalTuning(v).claudeModel ?? "",
+      auth: authModes,
+    });
+    setSavedTargets(hydrateTargets(v));
+    setSavedTuning(hydrateTuning(v));
   }
 
   function hydrateTts(v: TtsSettingsView) {
@@ -218,7 +249,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
   useEffect(() => {
     if (fetchedRef.current) return;
     fetchedRef.current = true;
-    fetchLlmSettings().then(hydrate).catch(() => {});
+    fetchLlmSettings().then(hydrateInitial).catch(() => {});
     fetchTtsSettings().then(hydrateTts).catch(() => {});
     fetchSecrets().then(setSecrets).catch(() => {});
   }, []);
@@ -242,47 +273,127 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
   }, [tab]);
 
   const conn: Connection = { baseUrl: connBaseUrl, model: connModel, codexModel: connCodex };
-  const localDefined = isLocalDefined(conn);
+  const savedRoleConnection = savedConnection?.connection ?? conn;
+  const localDefined = isLocalDefined(savedRoleConnection);
   const endpoint = classifyOpenAiEndpoint(connBaseUrl);
 
-  function applyResult(v: LlmSettingsView) {
-    hydrate(v);
-    setLlmResult(v.applied === false ? s.llm.notApplied(v.error ?? "") : s.llm.applied);
+  const connectionDraft: ConnectionDraft = {
+    connection: conn,
+    globalClaudeModel,
+    auth: { claude: authClaude, codex: authCodex },
+  };
+  const connectionDirty = connectionDraftChanged(savedConnection, connectionDraft);
+  const authModeDirty = savedConnection !== null
+    && (savedConnection.auth.claude !== authClaude || savedConnection.auth.codex !== authCodex);
+  const rolesDirty = rolesDraftChanged(savedTargets, targets, savedTuning, tuning);
+  const ttsDirty = ttsDraftChanged(ttsView, ttsProvider, ttsBaseUrl, ttsModel, ttsVoice);
+  const connectionSaving = connectionSave.phase === "saving";
+  const rolesSaving = rolesSave.phase === "saving";
+  const ttsSaving = ttsSave.phase === "saving";
+  // 接続保存は保存済みの接続依存ロールも更新するため、別scopeを同時に保存させない。
+  // タブ移動で pending state を消すと古い応答が後から入力を戻し得るので、設定全体を一時ロックする。
+  const settingsSaving = connectionSaving || rolesSaving || ttsSaving;
+
+  function appliedMessage(v: LlmSettingsView): string {
+    return v.applied === false ? s.llm.notApplied(v.error ?? "") : s.llm.applied;
   }
 
-  async function persist(nextTargets: RoleTargets, nextConn: Connection): Promise<boolean> {
-    setSaving(true); setLlmResult(null);
+  function markConnectionEdited() {
+    if (!connectionSaving) setConnectionSave(IDLE_SAVE);
+  }
+
+  function markRolesEdited() {
+    if (!rolesSaving) setRolesSave(IDLE_SAVE);
+  }
+
+  function markTtsEdited() {
+    if (!ttsSaving) setTtsSave(IDLE_SAVE);
+  }
+
+  function switchSettingsTab(next: "conn" | "roles" | "display") {
+    if (settingsSaving) return;
+    setTab(next);
+    setConnectionSave(IDLE_SAVE);
+    setRolesSave(IDLE_SAVE);
+    setTtsSave(IDLE_SAVE);
+  }
+
+  async function saveConnection() {
+    if (!view) return;
+    if (!isLocalDefined(conn) && hasSavedLocalRole(view.roles)) {
+      setConnectionSave({ phase: "error", message: s.settings.localRoleConnectionRequired });
+      return;
+    }
+    const generation = saveGenerationRef.current.begin("connection");
+    setConnectionSave({ phase: "saving", message: null });
     try {
-      // cloud はローカル未定義時のフォールバック先にのみ影響する（優先クラウドが唯一の妥当な出典）。
-      // tuning は割当・プリセットとは独立に現在の編集状態をそのまま乗せる（プリセット適用は変更しない）。
-      // auth はベースラインからの差分のみを乗せる（buildAuthPatch 参照）。未変更なら auth フィールド自体を省略する
-      // ＝ auth を一切触っていない保存が、無関係な理由（例: 保存済みAPIキーの失効）で 400 になるのを防ぐ。
-      const authPatch = buildAuthPatch(authBaseline, { claude: authClaude, codex: authCodex });
-      applyResult(await saveLlmRoleSettings({
-        ...buildRolesPayload(nextTargets, nextConn, preferredCloud, tuning, { claudeModel: globalClaudeModel.trim() || null }),
+      // 接続変更で既に保存済みのローカル/Codex割当が古い接続先を参照し続けないよう、
+      // 接続依存の保存済みロールだけを同じ接続で更新する。編集中の割当/tuningは送らない。
+      const roles = buildSavedRoleConnectionPatch(view.roles, conn);
+      const authPatch = buildAuthPatch(savedConnection?.auth ?? hydrateAuthModes(view), connectionDraft.auth);
+      const saved = await saveLlmRoleSettings({
+        global: buildGlobalConnectionPayload(conn),
+        roles,
+        tuning: { global: { claudeModel: globalClaudeModel.trim() || null } },
         ...(authPatch ? { auth: authPatch } : {}),
-      }));
-      return true;
+      });
+      if (!saveGenerationRef.current.isCurrent("connection", generation)) return;
+      const nextConnection = hydrateConnection(saved);
+      const nextAuth = hydrateAuthModes(saved);
+      const nextGlobalModel = hydrateGlobalTuning(saved).claudeModel ?? "";
+      setView((current) => mergeConnectionSaveView(current, saved));
+      setConnBaseUrl(nextConnection.baseUrl);
+      setConnModel(nextConnection.model);
+      setConnCodex(nextConnection.codexModel);
+      setGlobalClaudeModel(nextGlobalModel);
+      setAuthClaude(nextAuth.claude);
+      setAuthCodex(nextAuth.codex);
+      setSavedConnection({ connection: nextConnection, globalClaudeModel: nextGlobalModel, auth: nextAuth });
+      setConnectionSave({ phase: saved.applied === false ? "error" : "saved", message: appliedMessage(saved) });
     } catch (err) {
+      if (!saveGenerationRef.current.isCurrent("connection", generation)) return;
       const reason = err instanceof Error ? err.message : String(err);
-      setLlmResult(reason ? s.llm.saveFailedWithReason(reason) : s.llm.saveFailed);
-      return false;
-    } finally { setSaving(false); }
+      setConnectionSave({ phase: "error", message: reason ? s.llm.saveFailedWithReason(reason) : s.llm.saveFailed });
+    }
   }
 
-  async function applyPreset(id: PresetId) {
-    const prev = targets;
-    const next = presetTargets(id, preferredCloud);
-    setTargets(next);
-    if (!(await persist(next, conn))) setTargets(prev); // 失敗時は楽観更新を巻き戻す
+  async function saveRoles() {
+    if (!view || !savedConnection || connectionDirty) return;
+    const generation = saveGenerationRef.current.begin("roles");
+    setRolesSave({ phase: "saving", message: null });
+    try {
+      // 用途タブは、直近保存済みの接続だけでロールを直列化する。
+      // 接続タブで書きかけた値はここからDBへ送らない。
+      const saved = await saveLlmRoleSettings(buildRoleAssignmentPayload(targets, savedConnection.connection, preferredCloud, tuning));
+      if (!saveGenerationRef.current.isCurrent("roles", generation)) return;
+      const nextTargets = hydrateTargets(saved);
+      const nextTuning = hydrateTuning(saved);
+      setView((current) => mergeRolesSaveView(current, saved));
+      setTargets(nextTargets);
+      setTuning(nextTuning);
+      setSavedTargets(nextTargets);
+      setSavedTuning(nextTuning);
+      setRolesSave({ phase: saved.applied === false ? "error" : "saved", message: appliedMessage(saved) });
+    } catch (err) {
+      if (!saveGenerationRef.current.isCurrent("roles", generation)) return;
+      const reason = err instanceof Error ? err.message : String(err);
+      setRolesSave({ phase: "error", message: reason ? s.llm.saveFailedWithReason(reason) : s.llm.saveFailed });
+    }
+  }
+
+  function applyPreset(id: PresetId) {
+    setTargets(presetTargets(id, preferredCloud));
+    markRolesEdited();
   }
 
   function setTarget(role: LlmRole, t: RoleTarget) {
     setTargets((prev) => ({ ...prev, [role]: t }));
+    markRolesEdited();
   }
 
   function setTuningField<K extends keyof RoleTuning>(role: LlmRole, field: K, value: RoleTuning[K]) {
     setTuning((prev) => ({ ...prev, [role]: { ...prev[role], [field]: value } }));
+    markRolesEdited();
   }
 
   /**
@@ -319,6 +430,9 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
     placeholderNew: s.settings.secretPlaceholderNew,
     save: s.settings.secretSave,
     del: s.settings.secretDelete,
+    deleteConfirm: s.settings.secretDeleteConfirm,
+    saving: s.settings.secretSaving,
+    deleting: s.settings.secretDeleting,
     saved: s.settings.secretSaved,
     deleted: s.settings.secretDeleted,
     approvalRequired: s.settings.secretApprovalRequired,
@@ -334,27 +448,36 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
 
   function applyVoicePreset(kind: "female" | "male") {
     setTtsVoice(VOICE_PRESETS[detectVoiceProviderKind(ttsBaseUrl)][kind]);
+    markTtsEdited();
   }
 
   async function onSaveTts() {
-    setSaving(true); setTtsResult(null);
+    if (!ttsView) return;
+    const generation = saveGenerationRef.current.begin("tts");
+    setTtsSave({ phase: "saving", message: null });
     try {
-      hydrateTts(await saveTtsSettings({
+      const saved = await saveTtsSettings({
         provider: ttsProvider,
         baseUrl: ttsBaseUrl.trim() || null,
         model: ttsModel.trim() || null,
         voice: ttsVoice.trim() || null,
-      }));
-      setTtsResult(s.llm.applied);
-    } catch { setTtsResult(s.llm.saveFailed); } finally { setSaving(false); }
+      });
+      if (!saveGenerationRef.current.isCurrent("tts", generation)) return;
+      hydrateTts(saved);
+      setTtsSave({ phase: "saved", message: s.llm.applied });
+    } catch {
+      if (!saveGenerationRef.current.isCurrent("tts", generation)) return;
+      setTtsSave({ phase: "error", message: s.llm.saveFailed });
+    }
   }
 
-  async function onResetTts() {
-    setSaving(true); setTtsResult(null);
-    try {
-      hydrateTts(await saveTtsSettings({ provider: "auto", baseUrl: null, model: null, voice: null }));
-      setTtsResult(s.llm.applied);
-    } catch { setTtsResult(s.llm.saveFailed); } finally { setSaving(false); }
+  function stageResetTts() {
+    const changed = ttsProvider !== "auto" || ttsBaseUrl !== "" || ttsModel !== "" || ttsVoice !== "";
+    setTtsProvider("auto");
+    setTtsBaseUrl("");
+    setTtsModel("");
+    setTtsVoice("");
+    setTtsSave(changed ? { phase: "idle", message: s.settings.ttsResetStaged } : IDLE_SAVE);
   }
 
   const targetLabels: Record<RoleTarget, string> = {
@@ -398,9 +521,9 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
       </div>
 
       <div className="lang-toggle settings-tabs" role="tablist" aria-label={s.settings.title}>
-        <button role="tab" aria-selected={tab === "conn"} className={tab === "conn" ? "is-active" : ""} onClick={() => setTab("conn")}>{s.settings.connectionSection}</button>
-        <button role="tab" aria-selected={tab === "roles"} className={tab === "roles" ? "is-active" : ""} onClick={() => setTab("roles")}>{s.settings.roleAssignSection}</button>
-        <button role="tab" aria-selected={tab === "display"} className={tab === "display" ? "is-active" : ""} onClick={() => setTab("display")}>{s.settings.displaySection}</button>
+        <button role="tab" aria-selected={tab === "conn"} className={tab === "conn" ? "is-active" : ""} disabled={settingsSaving} onClick={() => switchSettingsTab("conn")}>{s.settings.connectionSection}</button>
+        <button role="tab" aria-selected={tab === "roles"} className={tab === "roles" ? "is-active" : ""} disabled={settingsSaving} onClick={() => switchSettingsTab("roles")}>{s.settings.roleAssignSection}</button>
+        <button role="tab" aria-selected={tab === "display"} className={tab === "display" ? "is-active" : ""} disabled={settingsSaving} onClick={() => switchSettingsTab("display")}>{s.settings.displaySection}</button>
       </div>
 
       {tab === "conn" && (
@@ -411,8 +534,8 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             <label className="llm-field">
               <span className="text-sm text-muted">{s.settings.authModeLabel}</span>
               <select
-                className="llm-input" value={authClaude} disabled={saving || !view}
-                onChange={(e) => setAuthClaude(e.target.value as AuthMode)}
+                className="llm-input" value={authClaude} disabled={settingsSaving || !view}
+                onChange={(e) => { setAuthClaude(e.target.value as AuthMode); markConnectionEdited(); }}
               >
                 {AUTH_MODE_OPTIONS.map((m) => (
                   <option key={m} value={m} disabled={m === "api-key" && !authKeys.anthropic}>
@@ -424,7 +547,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             {view?.authModes?.claude === "api-key" && !authKeys.anthropic && (
               <div className="info-pop">{s.settings.claudeAuthMissingKey}</div>
             )}
-            <SecretKeyField name="ANTHROPIC_API_KEY" status={secrets?.ANTHROPIC_API_KEY} disabled={saving || !view}
+            <SecretKeyField name="ANTHROPIC_API_KEY" status={secrets?.ANTHROPIC_API_KEY} disabled={settingsSaving || !view}
               str={secretStr} onSave={onSaveSecret} onDelete={onDeleteSecret} />
             <div className="text-sm text-muted">{s.settings.authApiKeyNote}</div>
             <label className="llm-field">
@@ -433,7 +556,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                 const opts = claudeModelSelectOptions(catalog?.claude);
                 const known = opts.some((o) => o.value === globalClaudeModel);
                 return (
-                  <select className="llm-input" value={globalClaudeModel} disabled={saving || !view} onChange={(e) => setGlobalClaudeModel(e.target.value)}>
+                  <select className="llm-input" value={globalClaudeModel} disabled={settingsSaving || !view} onChange={(e) => { setGlobalClaudeModel(e.target.value); markConnectionEdited(); }}>
                     <option value="">{s.settings.tuningDefaultWith("sonnet")}</option>
                     {!known && globalClaudeModel && <option value={globalClaudeModel}>{globalClaudeModel}</option>}
                     {opts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -448,7 +571,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             <h3 className="settings-section-title">{s.settings.localConnTitle}</h3>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.llm.baseUrlLabel}</span>
-              <input className="llm-input" value={connBaseUrl} placeholder={s.llm.baseUrlPlaceholder} onChange={(e) => setConnBaseUrl(e.target.value)} />
+              <input className="llm-input" value={connBaseUrl} placeholder={s.llm.baseUrlPlaceholder} disabled={settingsSaving || !view} onChange={(e) => { setConnBaseUrl(e.target.value); markConnectionEdited(); }} />
             </label>
             <div className="text-sm text-muted">{s.settings.endpointLabel}: {endpointLine(endpoint)}</div>
             {endpoint.location === "remote" && <div className="info-pop">{s.settings.endpointRemoteDisclosure}</div>}
@@ -460,11 +583,11 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
               {(() => {
                 const opts = localModelSelectOptions(catalog?.local);
                 if (opts.length === 0) {
-                  return <input className="llm-input" value={connModel} placeholder={s.llm.modelPlaceholder} onChange={(e) => setConnModel(e.target.value)} />;
+                  return <input className="llm-input" value={connModel} placeholder={s.llm.modelPlaceholder} disabled={settingsSaving || !view} onChange={(e) => { setConnModel(e.target.value); markConnectionEdited(); }} />;
                 }
                 const known = opts.some((o) => o.value === connModel);
                 return (
-                  <select className="llm-input" value={connModel} onChange={(e) => setConnModel(e.target.value)}>
+                  <select className="llm-input" value={connModel} disabled={settingsSaving || !view} onChange={(e) => { setConnModel(e.target.value); markConnectionEdited(); }}>
                     <option value="">{s.llm.modelPlaceholder}</option>
                     {!known && connModel && <option value={connModel}>{connModel}</option>}
                     {opts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -472,7 +595,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                 );
               })()}
             </label>
-            <SecretKeyField name="OPENAI_COMPAT_API_KEY" status={secrets?.OPENAI_COMPAT_API_KEY} disabled={saving || !view}
+            <SecretKeyField name="OPENAI_COMPAT_API_KEY" status={secrets?.OPENAI_COMPAT_API_KEY} disabled={settingsSaving || !view}
               approvalRequired={Boolean(secrets?.OPENAI_COMPAT_API_KEY.configured && view?.apiKeyApproved !== true)}
               str={secretStr} onSave={onSaveSecret} onDelete={onDeleteSecret} />
           </div>
@@ -487,11 +610,11 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                 const defaultName = codexDefaultModelLabel(catalog?.codex);
                 const emptyLabel = defaultName ? s.llm.codexModelPlaceholderWith(defaultName) : s.llm.codexModelPlaceholder;
                 if (opts.length === 0) {
-                  return <input className="llm-input" value={connCodex} placeholder={emptyLabel} onChange={(e) => setConnCodex(e.target.value)} />;
+                  return <input className="llm-input" value={connCodex} placeholder={emptyLabel} disabled={settingsSaving || !view} onChange={(e) => { setConnCodex(e.target.value); markConnectionEdited(); }} />;
                 }
                 const known = opts.some((o) => o.value === connCodex);
                 return (
-                  <select className="llm-input" value={connCodex} onChange={(e) => setConnCodex(e.target.value)}>
+                  <select className="llm-input" value={connCodex} disabled={settingsSaving || !view} onChange={(e) => { setConnCodex(e.target.value); markConnectionEdited(); }}>
                     <option value="">{emptyLabel}</option>
                     {!known && connCodex && <option value={connCodex}>{connCodex}</option>}
                     {opts.map((o) => (
@@ -504,8 +627,8 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             <label className="llm-field">
               <span className="text-sm text-muted">{s.settings.authModeLabel}</span>
               <select
-                className="llm-input" value={authCodex} disabled={saving || !view}
-                onChange={(e) => setAuthCodex(e.target.value as AuthMode)}
+                className="llm-input" value={authCodex} disabled={settingsSaving || !view}
+                onChange={(e) => { setAuthCodex(e.target.value as AuthMode); markConnectionEdited(); }}
               >
                 {AUTH_MODE_OPTIONS.map((m) => (
                   <option key={m} value={m} disabled={m === "api-key" && !authKeys.codex}>
@@ -514,13 +637,18 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                 ))}
               </select>
             </label>
-            <SecretKeyField name="CODEX_API_KEY" status={secrets?.CODEX_API_KEY} disabled={saving || !view}
+            <SecretKeyField name="CODEX_API_KEY" status={secrets?.CODEX_API_KEY} disabled={settingsSaving || !view}
               str={secretStr} onSave={onSaveSecret} onDelete={onDeleteSecret} />
             <div className="text-sm text-muted">{s.settings.authApiKeyNote}</div>
           </div>
           <div className="text-sm text-muted">{s.llm.help}</div>
-          <Button variant="secondary" onClick={() => void persist(targets, conn)} disabled={saving || !view}>{saving ? s.llm.saving : s.settings.saveConnection}</Button>
-          {llmResult && <div className="info-pop" role="status">{llmResult}</div>}
+          <div className="text-sm text-muted">{s.settings.connectionSaveNote}</div>
+          {authModeDirty && <div className="info-pop" role="status">{s.settings.authModeSaveRequired}</div>}
+          <Button variant="primary" loading={connectionSaving} onClick={() => void saveConnection()} disabled={settingsSaving || !view || !connectionDirty}>
+            {connectionSaving ? s.llm.saving : s.settings.saveConnection}
+          </Button>
+          {connectionDirty && <div className="info-pop" role="status">{s.settings.unsavedChanges}</div>}
+          {connectionSave.message && <div className="info-pop" role="status">{connectionSave.message}</div>}
 
           <hr className="settings-divider" />
           <h3 className="settings-section-title">{s.settings.ttsSection}</h3>
@@ -537,7 +665,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                 );
                 const resolvedLabel = resolved === "say" ? s.settings.ttsProviderShortSay : s.settings.ttsProviderShortHttp;
                 return (
-                  <select className="llm-input" value={ttsProvider} disabled={saving || !ttsView} onChange={(e) => setTtsProvider(e.target.value as TtsProvider)}>
+                  <select className="llm-input" value={ttsProvider} disabled={settingsSaving || !ttsView} onChange={(e) => { setTtsProvider(e.target.value as TtsProvider); markTtsEdited(); }}>
                     {TTS_PROVIDER_OPTIONS.map((p) => (
                       <option key={p} value={p}>
                         {p === "auto" ? s.settings.ttsProviderAutoWith(resolvedLabel) : p === "say" ? s.settings.ttsProviderSay : s.settings.ttsProviderHttp}
@@ -550,34 +678,36 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             <div className="text-sm text-muted">{s.settings.ttsProviderNote}</div>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.settings.ttsBaseUrlLabel}</span>
-              <input className="llm-input" value={ttsBaseUrl} placeholder={s.settings.ttsBaseUrlPlaceholder} onChange={(e) => setTtsBaseUrl(e.target.value)} />
+              <input className="llm-input" value={ttsBaseUrl} placeholder={s.settings.ttsBaseUrlPlaceholder} disabled={settingsSaving || !ttsView} onChange={(e) => { setTtsBaseUrl(e.target.value); markTtsEdited(); }} />
             </label>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.settings.ttsModelLabel}</span>
-              <input className="llm-input" value={ttsModel} placeholder={s.settings.ttsModelPlaceholder} onChange={(e) => setTtsModel(e.target.value)} />
+              <input className="llm-input" value={ttsModel} placeholder={s.settings.ttsModelPlaceholder} disabled={settingsSaving || !ttsView} onChange={(e) => { setTtsModel(e.target.value); markTtsEdited(); }} />
             </label>
             <div className="llm-field">
               <span className="text-sm text-muted">{s.settings.ttsVoicePresetLabel}</span>
               <div className="lang-toggle" role="group" aria-label={s.settings.ttsVoicePresetLabel}>
-                <button className={voicePreset === "female" ? "is-active" : ""} disabled={!ttsView} onClick={() => applyVoicePreset("female")}>{s.settings.ttsVoiceFemale}</button>
-                <button className={voicePreset === "male" ? "is-active" : ""} disabled={!ttsView} onClick={() => applyVoicePreset("male")}>{s.settings.ttsVoiceMale}</button>
-                <button className={voicePreset === "custom" ? "is-active" : ""} disabled={!ttsView}>{s.settings.ttsVoiceCustom}</button>
+                <button className={voicePreset === "female" ? "is-active" : ""} disabled={settingsSaving || !ttsView} onClick={() => applyVoicePreset("female")}>{s.settings.ttsVoiceFemale}</button>
+                <button className={voicePreset === "male" ? "is-active" : ""} disabled={settingsSaving || !ttsView} onClick={() => applyVoicePreset("male")}>{s.settings.ttsVoiceMale}</button>
+                <button className={voicePreset === "custom" ? "is-active" : ""} disabled={settingsSaving || !ttsView} onClick={() => voiceInputRef.current?.focus()}>{s.settings.ttsVoiceCustom}</button>
               </div>
               <span className="text-sm text-muted">{s.settings.ttsVoicePresetNote}</span>
             </div>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.settings.ttsVoiceLabel}</span>
-              <input className="llm-input" value={ttsVoice} placeholder={s.settings.ttsVoicePlaceholder} onChange={(e) => setTtsVoice(e.target.value)} />
+              <input ref={voiceInputRef} className="llm-input" value={ttsVoice} placeholder={s.settings.ttsVoicePlaceholder} disabled={settingsSaving || !ttsView} onChange={(e) => { setTtsVoice(e.target.value); markTtsEdited(); }} />
             </label>
-            <SecretKeyField name="TTS_API_KEY" status={secrets?.TTS_API_KEY} disabled={saving || !ttsView}
+            <SecretKeyField name="TTS_API_KEY" status={secrets?.TTS_API_KEY} disabled={settingsSaving || !ttsView}
               approvalRequired={Boolean(secrets?.TTS_API_KEY.configured && ttsView?.apiKeyApproved !== true)}
               str={secretStr} onSave={onSaveSecret} onDelete={onDeleteSecret} />
             <div className="text-sm text-muted">{s.settings.ttsApiKeyOptionalNote}</div>
           </div>
-          <Button variant="secondary" onClick={onSaveTts} disabled={saving || !ttsView}>{saving ? s.llm.saving : s.llm.save}</Button>
+          <div className="text-sm text-muted">{s.settings.ttsSaveNote}</div>
+          <Button variant="primary" loading={ttsSaving} onClick={onSaveTts} disabled={settingsSaving || !ttsView || !ttsDirty}>{ttsSaving ? s.llm.saving : s.llm.save}</Button>
           <div className="text-sm text-muted">{s.settings.ttsResetDescWith(ttsView?.defaults.model ?? "gpt-4o-mini-tts", ttsView?.defaults.voice ?? "alloy")}</div>
-          <Button variant="secondary" onClick={onResetTts} disabled={saving || !ttsView}>{s.settings.ttsReset}</Button>
-          {ttsResult && <div className="info-pop" role="status">{ttsResult}</div>}
+          <Button variant="secondary" onClick={stageResetTts} disabled={settingsSaving || !ttsView}>{s.settings.ttsReset}</Button>
+          {ttsDirty && <div className="info-pop" role="status">{s.settings.unsavedChanges}</div>}
+          {ttsSave.message && <div className="info-pop" role="status">{ttsSave.message}</div>}
         </section>
       )}
 
@@ -587,7 +717,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
 
           {/* モデルカタログ（用途タブを開いた時点で遅延取得済み）の手動再取得 */}
           <div className="stack">
-            <Button variant="secondary" onClick={() => refreshCatalog(true)} disabled={catalogLoading}>
+            <Button variant="secondary" onClick={() => refreshCatalog(true)} disabled={settingsSaving || catalogLoading}>
               {catalogLoading ? s.settings.refreshingCatalog : s.settings.refreshCatalog}
             </Button>
             <div className="text-sm text-muted">{s.settings.catalogNote}</div>
@@ -599,8 +729,8 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             <div className="llm-field">
               <span className="text-sm text-muted">{s.settings.preferredCloudLabel}</span>
               <div className="lang-toggle" role="group" aria-label={s.settings.preferredCloudLabel}>
-                <button className={preferredCloud === "claude" ? "is-active" : ""} disabled={saving} onClick={() => setPreferredCloud("claude")}>{s.settings.targetClaude}</button>
-                <button className={preferredCloud === "codex" ? "is-active" : ""} disabled={saving} onClick={() => setPreferredCloud("codex")}>{s.settings.targetCodex}</button>
+                <button className={preferredCloud === "claude" ? "is-active" : ""} disabled={settingsSaving} onClick={() => setPreferredCloud("claude")}>{s.settings.targetClaude}</button>
+                <button className={preferredCloud === "codex" ? "is-active" : ""} disabled={settingsSaving} onClick={() => setPreferredCloud("codex")}>{s.settings.targetCodex}</button>
               </div>
               <span className="text-sm text-muted">{s.settings.preferredCloudNote}</span>
             </div>
@@ -611,21 +741,22 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
               return (
                 <>
                   <select
-                    className="llm-input" value={current} disabled={saving || !view}
+                    className="llm-input" value={current} disabled={settingsSaving || !view}
                     aria-label={s.settings.presetSection}
                     onChange={(e) => {
                       const v = e.target.value;
-                      if (v === "all-local" || v === "balanced" || v === "high-quality") void applyPreset(v);
+                      if (v === "all-local" || v === "balanced" || v === "high-quality") applyPreset(v);
                     }}
                   >
                     {current === "custom" && <option value="custom" disabled>{s.settings.presetCustom}</option>}
-                    <option value="all-local" disabled={!presetEnabled("all-local", conn)}>{s.settings.presetAllLocal}</option>
-                    <option value="balanced" disabled={!presetEnabled("balanced", conn)}>{s.settings.presetBalancedOption}</option>
+                    <option value="all-local" disabled={!presetEnabled("all-local", savedRoleConnection)}>{s.settings.presetAllLocal}</option>
+                    <option value="balanced" disabled={!presetEnabled("balanced", savedRoleConnection)}>{s.settings.presetBalancedOption}</option>
                     <option value="high-quality">{s.settings.presetHighQuality}</option>
                   </select>
                   {current === "all-local" && <div className="text-sm text-muted">{s.settings.presetAllLocalDesc}</div>}
                   {m !== "custom" && current === "balanced" && <div className="text-sm text-muted">{s.settings.presetBalancedDesc(m.cloud)}</div>}
                   {m !== "custom" && current === "high-quality" && <div className="text-sm text-muted">{s.settings.presetHighQualityDesc(m.cloud)}</div>}
+                  <div className="text-sm text-muted">{s.settings.presetSaveNote}</div>
                   {!localDefined && <div className="text-sm text-muted">{s.settings.presetLocalRequired}</div>}
                 </>
               );
@@ -636,8 +767,8 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
           <div className="stack">
             <Button
               variant="secondary"
-              onClick={() => setTuning(applyRecommendedTuning(tuning, targets))}
-              disabled={saving || !view}
+              onClick={() => { setTuning(applyRecommendedTuning(tuning, targets)); markRolesEdited(); }}
+              disabled={settingsSaving || !view}
             >
               {s.settings.applyRecommendedTuning}
             </Button>
@@ -675,7 +806,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                     labels={targetLabels}
                     localDisabledNote={s.settings.targetLocalDisabled}
                     ariaLabel={s.settings.roleName[role]}
-                    disabled={saving || !view}
+                    disabled={settingsSaving || !view}
                     onChange={(t) => setTarget(role, t)}
                   />
                   {/* 実効サマリ（常時表示）: 現在この用途で実際に使われているプロバイダ・具体モデル・effort・配信 */}
@@ -693,13 +824,14 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                             <select
                               className="llm-input"
                               value={tuning[role].claudeModel ?? ""}
-                              disabled={saving || !view}
+                              disabled={settingsSaving || !view}
                               onChange={(e) => {
                                 const newAlias = (e.target.value || null) as RoleTuning["claudeModel"];
                                 // モデル切替で選択中の effort が新モデルで無効化される場合（実測: 非対応 effort は
                                 // 黙って無視される）、UI 上に「効かない値」を残さないよう同じ更新で null にクランプする。
                                 const clampedEffort = clampClaudeEffort(catalogClaude, newAlias ?? "sonnet", tuning[role].effort) as RoleTuning["effort"];
                                 setTuning((prev) => ({ ...prev, [role]: { ...prev[role], claudeModel: newAlias, effort: clampedEffort } }));
+                                markRolesEdited();
                               }}
                             >
                               {/* 既定 = global 行（未設定ならコード定数 sonnet）。解決順: ロール別 > global > コード既定 */}
@@ -713,7 +845,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                           <select
                             className="llm-input"
                             value={tuning[role].effort ?? ""}
-                            disabled={saving || !view}
+                            disabled={settingsSaving || !view}
                             onChange={(e) => setTuningField(role, "effort", (e.target.value || null) as RoleTuning["effort"])}
                           >
                             {/* claude の既定effortはSDK標準（未指定）、codex はカタログのdefaultEffort優先（不可時コード既定medium）。
@@ -736,7 +868,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                             <select
                               className="llm-input"
                               value={tuning[role].serviceTier ?? ""}
-                              disabled={saving || !view}
+                              disabled={settingsSaving || !view}
                               onChange={(e) => setTuningField(role, "serviceTier", (e.target.value || null) as RoleTuning["serviceTier"])}
                             >
                               <option value="">{s.settings.tuningDefaultWith("fast")}</option>
@@ -750,16 +882,22 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
                 </div>
               );
             })}
-            <Button variant="secondary" onClick={() => void persist(targets, conn)} disabled={saving || !view}>{saving ? s.llm.saving : s.settings.saveAssignments}</Button>
+            <div className="text-sm text-muted">{s.settings.rolesSaveNote}</div>
+            {connectionDirty && <div className="info-pop">{s.settings.saveConnectionFirst}</div>}
+            <Button variant="primary" loading={rolesSaving} onClick={() => void saveRoles()} disabled={settingsSaving || !view || !rolesDirty || connectionDirty}>
+              {rolesSaving ? s.llm.saving : s.settings.saveAssignments}
+            </Button>
           </div>
 
-          {llmResult && <div className="info-pop" role="status">{llmResult}</div>}
+          {rolesDirty && <div className="info-pop" role="status">{s.settings.unsavedChanges}</div>}
+          {rolesSave.message && <div className="info-pop" role="status">{rolesSave.message}</div>}
         </section>
       )}
 
       {tab === "display" && (
         <section className="support-panel stack">
           <div className="stat-title">{s.settings.displaySection}</div>
+          <div className="text-sm text-muted">{s.settings.displayImmediateNote}</div>
           <div className="lang-toggle" role="group" aria-label={s.appShell.textSize}>
             <button className={uiScale === "small" ? "is-active" : ""} onClick={() => setUiScale("small")}>{s.uiScale.small}</button>
             <button className={uiScale === "medium" ? "is-active" : ""} onClick={() => setUiScale("medium")}>{s.uiScale.medium}</button>

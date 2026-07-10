@@ -263,6 +263,8 @@ bun scripts/data-backup.ts restore "$SNAPSHOT" --confirm-stopped
 
 **設定画面の構成（モデル接続設定 / 用途ごとのモデル）**: **⚙️ 設定**の**モデル接続設定**タブでOpenAI互換の Base URL・モデル名、Codex の任意モデル名、Claude/Codex それぞれの**認証モード**（サブスク/APIキー・後述）を定義する（Claude はサブスクリプションが既定のため接続設定は不要）。Base URLは入力中から **このMac（loopback）/ LAN / remote / 無効**に分類され、正規化originと送信範囲が表示される。**用途ごとのモデル**タブでは5用途へ **Claude / OpenAI互換 / Codex** を直接割り当て、各「実効」行でprovider・処理場所・originを常時確認できる。
 
+**保存の単位**: 「接続を保存」は接続・Claudeの既定モデル・認証モードだけを保存し、未保存の用途割当やチューニングは確定しない（既にローカル/Codexへ保存済みの用途が使う接続値だけは追従更新する）。「割当を保存」は用途割当とチューニングだけを保存し、書きかけの接続値は保存しない。プリセットと推奨チューニングは入力欄に準備してから「割当を保存」で確定する。文字サイズ・言語、優先クラウドはこの端末へすぐ反映される。APIキーは保存時点でKeychainへ反映される一方、認証モードの変更は「接続を保存」が必要である。TTSの「既定に戻す」は入力欄へ既定値を準備するだけで、保存するまで反映されない。
+
 URL分類方針は、`localhost` / `*.localhost` / IPv4 `127.0.0.0/8` / IPv6 `::1` を **このMac**、private・link-local・CGNATのIPv4、`.local`、IPv6 ULA/link-localを **LAN**、それ以外の絶対HTTP(S) URLを **remote** とする。空・相対URL・HTTP(S)以外・userinfo/query/fragment付きは **無効**。この分類は通信可否ではなく送信範囲の開示であり、APIキー送信はさらに厳しく「HTTPSまたはサーバが許可するloopback HTTP」に限定する。
 
 | ロール | 使われる場面 | 推奨 |

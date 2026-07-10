@@ -2,7 +2,8 @@ import { describe, expect, test } from "bun:test";
 import type { LlmRoleInput, LlmRoleView, LlmSettingsInput, LlmSettingsView, LlmRole, RoleTuning, CatalogResult } from "../api";
 import { LLM_ROLES, EFFORT_OPTIONS } from "../api";
 import {
-  PRESETS, isLocalDefined, presetEnabled, hydrateConnection, hydrateTargets, buildRolesPayload, matchPreset,
+  PRESETS, isLocalDefined, presetEnabled, hydrateConnection, hydrateTargets, buildGlobalConnectionPayload,
+  buildRoleAssignmentPayload, buildRolesPayload, buildSavedRoleConnectionPatch, hasSavedLocalRole, matchPreset,
   presetTargets, defaultTuning, hydrateTuning, RECOMMENDED_TUNING, applyRecommendedTuning,
   claudeModelSelectOptions, effortOptionsForClaudeAlias, codexModelSelectOptions, effortOptionsForCodexModel,
   tierOptionsForCodexModel, codexDefaultEffortLabel, codexDefaultModelLabel, localModelSelectOptions, resolveEffective, clampClaudeEffort,
@@ -170,6 +171,39 @@ describe("buildRolesPayload: tuning の直列化", () => {
     };
     const payload = buildRolesPayload(PRESETS.balanced, LOCAL_CONN, "claude", tuning);
     expect(payload.tuning).toEqual(tuning);
+  });
+});
+
+describe("設定画面の保存スコープ用ペイロード", () => {
+  test("接続ペイロードはglobalだけを含み、用途の未保存値を取り込まない", () => {
+    expect(buildGlobalConnectionPayload(LOCAL_CONN)).toEqual({
+      provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3", codexModel: null,
+    });
+  });
+
+  test("用途ペイロードはroles/tuningだけを含み、接続globalを含まない", () => {
+    const payload = buildRoleAssignmentPayload(PRESETS.balanced, LOCAL_CONN);
+    expect(payload).not.toHaveProperty("global");
+    expect(payload.roles.conversation).toEqual({ provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3" });
+    expect(payload.tuning).toEqual(defaultTuning());
+  });
+
+  test("接続保存は保存済みの接続依存ロールだけを更新し、inherit/Claudeを固定しない", () => {
+    const saved = mkView({
+      roles: {
+        conversation: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+        assist: { provider: "claude", baseUrl: null, model: null, codexModel: null },
+        coaching: { provider: "openai-compat", baseUrl: "http://old", model: "old", codexModel: null },
+        generation: { provider: "codex", baseUrl: null, model: null, codexModel: "old-codex" },
+        assessment: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+      },
+    });
+    expect(buildSavedRoleConnectionPatch(saved.roles, LOCAL_CONN)).toEqual({
+      coaching: { provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3" },
+      generation: { provider: "codex", codexModel: null },
+    });
+    expect(hasSavedLocalRole(saved.roles)).toBe(true);
+    expect(hasSavedLocalRole(mkView().roles)).toBe(false);
   });
 });
 

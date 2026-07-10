@@ -174,6 +174,9 @@ type SettingsStrings = {
     secretPlaceholderNew: string;
     secretSave: string;
     secretDelete: string;
+    secretDeleteConfirm: string;
+    secretSaving: string;
+    secretDeleting: string;
     secretSaved: string;
     secretDeleted: string;
     authApiKeyNote: string;
@@ -201,6 +204,16 @@ type SettingsStrings = {
     catalogNote: string;
     saveConnection: string;
     saveAssignments: string;
+    unsavedChanges: string;
+    connectionSaveNote: string;
+    rolesSaveNote: string;
+    presetSaveNote: string;
+    saveConnectionFirst: string;
+    authModeSaveRequired: string;
+    localRoleConnectionRequired: string;
+    ttsSaveNote: string;
+    ttsResetStaged: string;
+    displayImmediateNote: string;
     displaySection: string;
     ttsSection: string;
     ttsDesc: string;
@@ -519,7 +532,7 @@ export const STR: Record<Lang, Strings> = {
       presetCustom: "Custom",
       presetBalancedOption: "Balanced (Recommended)",
       preferredCloudLabel: "Preferred cloud",
-      preferredCloudNote: "Used for the cloud slots when you apply a preset — pick the provider you subscribe to.",
+      preferredCloudNote: "Saved on this device as soon as you choose it. It is used for cloud slots only when you choose a preset, then Save assignments.",
       applyRecommendedTuning: "Apply recommended tuning",
       applyRecommendedTuningNote: "Sets the recommended model/effort/delivery for Claude/Codex roles. OpenAI-compatible roles are left as-is. Save assignments to confirm.",
       connectionSection: "Model connections",
@@ -551,6 +564,9 @@ export const STR: Record<Lang, Strings> = {
       secretPlaceholderNew: "Paste your API key",
       secretSave: "Save key",
       secretDelete: "Delete key",
+      secretDeleteConfirm: "Delete key?",
+      secretSaving: "Saving key…",
+      secretDeleting: "Deleting key…",
       secretSaved: "Key saved to Keychain and applied.",
       secretDeleted: "Key removed from Keychain.",
       authApiKeyNote: "API keys are billed pay-as-you-go via api.openai.com / the Anthropic API (separate from your subscription allowance). The key itself is never stored in the UI.",
@@ -578,6 +594,16 @@ export const STR: Record<Lang, Strings> = {
       catalogNote: "Fetches the real model list from Claude / Codex / the configured OpenAI-compatible endpoint to power the pickers below and the “Effective” line. If a source can't be reached, it degrades to “unconfirmed” rather than guessing.",
       saveConnection: "Save connections",
       saveAssignments: "Save assignments",
+      unsavedChanges: "Unsaved changes",
+      connectionSaveNote: "Saves connections, the default Claude model, authentication modes, and connection values used by already saved local or Codex roles. It does not save unsaved role choices or tuning.",
+      rolesSaveNote: "Saves role choices and tuning. Connection edits in the other tab are not saved here.",
+      presetSaveNote: "Choosing a preset stages its role assignments. Save assignments to apply them.",
+      saveConnectionFirst: "Save the connection changes first so role assignments use the saved endpoint and model.",
+      authModeSaveRequired: "Authentication mode changes take effect only after Save connections.",
+      localRoleConnectionRequired: "Some saved roles use the OpenAI-compatible endpoint. Assign those roles to a cloud provider before clearing the endpoint and model.",
+      ttsSaveNote: "Voice changes are staged here and take effect after Save.",
+      ttsResetStaged: "Defaults are staged in the fields. Choose Save to apply them.",
+      displayImmediateNote: "Text size and language apply immediately on this device.",
       displaySection: "Display",
       ttsSection: "Voice (TTS)",
       ttsDesc: "Point speech synthesis at an OpenAI-compatible endpoint. Leave blank to use the default (OpenAI when a key is set, otherwise macOS say). A local server such as kokoro-fastapi needs no API key.",
@@ -596,7 +622,7 @@ export const STR: Record<Lang, Strings> = {
       ttsVoiceFemale: "Female",
       ttsVoiceMale: "Male",
       ttsVoiceCustom: "Custom",
-      ttsVoicePresetNote: "Presets pick a matching voice for the current Base URL (OpenAI / Kokoro).",
+      ttsVoicePresetNote: "Presets fill a matching voice for the current Base URL (OpenAI / Kokoro). For a custom voice, select Custom to focus the field below and type its name.",
       ttsReset: "Reset to default",
       ttsResetDescWith: (model, voice) => `Clear the overrides and return to the defaults (engine: Auto, OpenAI ${model} / ${voice} when a key is set, otherwise macOS say).`,
       ttsApiKeyOptionalNote: "A key is only needed for endpoints that require one (e.g. OpenAI); local servers work without it.",
@@ -964,7 +990,7 @@ export const STR: Record<Lang, Strings> = {
       presetCustom: "カスタム",
       presetBalancedOption: "バランス（推奨）",
       preferredCloudLabel: "優先クラウド",
-      preferredCloudNote: "プリセット適用時のクラウド枠に使われます。課金しているサービスに合わせてください。",
+      preferredCloudNote: "選ぶとこの端末にすぐ保存されます。プリセットを選んでから「割当を保存」したときに、クラウド枠へ使われます。",
       applyRecommendedTuning: "推奨チューニングを適用",
       applyRecommendedTuningNote: "Claude/Codex割当の用途に推奨のモデル/effort/配信を設定します（OpenAI互換割当は変更しません）。「割当を保存」で確定します。",
       connectionSection: "モデル接続設定",
@@ -996,6 +1022,9 @@ export const STR: Record<Lang, Strings> = {
       secretPlaceholderNew: "API キーを貼り付け",
       secretSave: "キーを保存",
       secretDelete: "キーを削除",
+      secretDeleteConfirm: "キーを削除する?",
+      secretSaving: "キーを保存中…",
+      secretDeleting: "キーを削除中…",
       secretSaved: "キーを Keychain に保存し、適用しました。",
       secretDeleted: "キーを Keychain から削除しました。",
       authApiKeyNote: "APIキーは api.openai.com / Anthropic API の従量課金です（サブスクの利用枠とは別）。キーは UI には保存されません。",
@@ -1023,6 +1052,16 @@ export const STR: Record<Lang, Strings> = {
       catalogNote: "Claude/Codex/設定済みのOpenAI互換接続先から実際のモデル一覧を取得し、下の選択肢と「実効」表示に反映します。取得できないソースは推測せず「実体未確認」に留めます。",
       saveConnection: "接続を保存",
       saveAssignments: "割当を保存",
+      unsavedChanges: "未保存の変更があります",
+      connectionSaveNote: "接続・Claudeの既定モデル・認証モードと、保存済みのローカル/Codex用途が使う接続値を保存します。用途の未保存の割当やチューニングは保存しません。",
+      rolesSaveNote: "用途ごとの割当とチューニングを保存します。別タブの接続変更はここでは保存しません。",
+      presetSaveNote: "プリセットを選ぶと用途の割当を入力欄に準備します。「割当を保存」で反映します。",
+      saveConnectionFirst: "用途の割当で保存済みの接続先・モデルを使うため、先に接続変更を保存してください。",
+      authModeSaveRequired: "認証モードの変更は「接続を保存」で反映されます。",
+      localRoleConnectionRequired: "保存済みの一部の用途がOpenAI互換接続先を使っています。接続先とモデルを空にする前に、それらの用途をクラウドへ割り当ててください。",
+      ttsSaveNote: "音声の変更はこの画面で準備し、「保存」で反映します。",
+      ttsResetStaged: "既定値を入力欄に準備しました。「保存」で反映します。",
+      displayImmediateNote: "文字サイズと言語は、この端末ですぐに反映されます。",
       displaySection: "表示",
       ttsSection: "音声（TTS）",
       ttsDesc: "音声合成の向き先を OpenAI 互換エンドポイントに変更できます。空欄なら既定（キー設定時は OpenAI・無ければ macOS say）。kokoro-fastapi 等のローカルサーバは API キー不要です。",
@@ -1041,7 +1080,7 @@ export const STR: Record<Lang, Strings> = {
       ttsVoiceFemale: "女性",
       ttsVoiceMale: "男性",
       ttsVoiceCustom: "カスタム",
-      ttsVoicePresetNote: "現在の Base URL（OpenAI / Kokoro）に合った声を入力欄にセットします。",
+      ttsVoicePresetNote: "現在の Base URL（OpenAI / Kokoro）に合った声を入力欄にセットします。独自の声は「カスタム」を押して下の入力欄に名前を直接入力してください。",
       ttsReset: "既定に戻す",
       ttsResetDescWith: (model, voice) => `上書きを消して、既定（エンジン: 自動・キー設定時は OpenAI ${model} / ${voice}・無ければ macOS say）に戻します。`,
       ttsApiKeyOptionalNote: "キーが必要なのは OpenAI 等の鍵必須エンドポイントのみです（ローカルサーバは不要）。",
