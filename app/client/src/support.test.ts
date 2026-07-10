@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { DEFAULT_SUPPORT, loadSupport, resolveSupport } from "./support";
+import { canRevealJaFromHintDefault, canRevealJaFromPrep, DEFAULT_SUPPORT, loadSupport, resolveSupport } from "./support";
 
 function stubStorage(value: string | null): void {
   (globalThis as unknown as { localStorage: Storage }).localStorage = {
@@ -16,6 +16,26 @@ describe("resolveSupport", () => {
   test("override が null なら autoDefault に従う", () => {
     expect(resolveSupport(null, true)).toBe(true);
     expect(resolveSupport(null, false)).toBe(false);
+  });
+});
+
+describe("canRevealJaFromPrep", () => {
+  const jaPrep = { hintDefault: "ja" as const };
+  const enPrep = { hintDefault: "en" as const };
+
+  test("設定は日本語ヒントの表示ボタンの利用可否だけを決める", () => {
+    expect(canRevealJaFromPrep({ ...DEFAULT_SUPPORT, jaHint: null }, jaPrep)).toBe(true);
+    expect(canRevealJaFromPrep({ ...DEFAULT_SUPPORT, jaHint: null }, enPrep)).toBe(false);
+    expect(canRevealJaFromPrep({ ...DEFAULT_SUPPORT, jaHint: true }, enPrep)).toBe(true);
+    expect(canRevealJaFromPrep({ ...DEFAULT_SUPPORT, jaHint: false }, jaPrep)).toBe(false);
+  });
+});
+
+describe("canRevealJaFromHintDefault", () => {
+  test("メニューから渡された既定値にも同じ利用可否規則を適用する", () => {
+    expect(canRevealJaFromHintDefault({ ...DEFAULT_SUPPORT, jaHint: null }, "ja")).toBe(true);
+    expect(canRevealJaFromHintDefault({ ...DEFAULT_SUPPORT, jaHint: null }, "en")).toBe(false);
+    expect(canRevealJaFromHintDefault({ ...DEFAULT_SUPPORT, jaHint: true }, "en")).toBe(true);
   });
 });
 

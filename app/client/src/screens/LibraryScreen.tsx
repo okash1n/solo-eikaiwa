@@ -9,7 +9,7 @@ import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { ExplainBox } from "../ui/ExplainBox";
 
-/** 生成済みモデルトークの一覧（情報表示のみ）。本文確認・再再生・訳解説ができる。 */
+/** 生成済みモデルトークの一覧（情報表示のみ）。スクリプト確認・再再生・訳解説ができる。 */
 export function LibraryScreen({ lang }: { lang: Lang }) {
   const t = STR[lang].library;
   const { state, reload } = useLoad(fetchModelTalkLibrary);
@@ -34,7 +34,7 @@ export function LibraryScreen({ lang }: { lang: Lang }) {
   );
 }
 
-/** 1エントリ: 再生（共有 row）＋本文折りたたみ＋訳解説（talk-explain 流用・エントリ単位の useExplain）。 */
+/** 1エントリ: 再生（共有 row）＋スクリプト折りたたみ＋訳解説（talk-explain 流用・エントリ単位の useExplain）。 */
 function LibraryEntry({ entry, lang, row }: {
   entry: ModelTalkEntry; lang: Lang; row: ReturnType<typeof usePlayRow<number>>;
 }) {

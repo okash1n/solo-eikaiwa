@@ -8,7 +8,7 @@ export type MenuBlock = {
   id: string; kind: string; title: string;
   titleKey?: MenuTitleKey; topicTitle?: string;
   minutes: number;
-  params: { topic?: ContentItem; scenario?: ContentItem; roundsSec?: number[]; modelTalkMode?: "auto" | "button" };
+  params: { topic?: ContentItem; scenario?: ContentItem; roundsSec?: number[]; hintMode?: "ja" | "en"; modelTalkMode?: "auto" | "button" };
   fallback?: RotationFallback;
 };
 export type Menu = { minutes: number; date: string; blocks: MenuBlock[] };

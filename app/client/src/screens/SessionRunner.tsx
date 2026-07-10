@@ -218,12 +218,12 @@ function BlockBody({ block, sessionId, lang }: { block: MenuBlock; sessionId: st
     case "chunk-placeholder":
       return <ChunkPlaceholderScreen />;
     case "warmup-reading":
-      return block.params.topic ? <WarmupReadingScreen topic={block.params.topic} lang={lang} /> : <p>{STR[lang].session.noTopic}</p>;
+      return block.params.topic ? <WarmupReadingScreen topic={block.params.topic} sessionId={sessionId} hintMode={block.params.hintMode} lang={lang} /> : <p>{STR[lang].session.noTopic}</p>;
     case "four-three-two":
       return block.params.topic ? (
         <FourThreeTwoScreen
           topic={block.params.topic} sessionId={sessionId} blockId={block.id}
-          roundsSec={block.params.roundsSec} modelTalkMode={block.params.modelTalkMode} lang={lang}
+          roundsSec={block.params.roundsSec} hintMode={block.params.hintMode} modelTalkMode={block.params.modelTalkMode} lang={lang}
         />
       ) : (
         <p>{STR[lang].session.noTopic}</p>

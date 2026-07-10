@@ -1,8 +1,9 @@
 /**
  * 学習サポート設定（サイドバー常設の個別トグル3つ）。
  * localStorage に保存し、変更は購読者（開いている画面）へ通知する。
- * サーバの stage 駆動は「表示既定の供給者」に格下げされ、最終的な表示可否はここで決める。
- * データ（チャンクの ja 等）は常にサーバから届くので、オフ既定の項目でもトグルを オン にすれば見られる。
+ * サーバの stage 駆動は「支援を利用可能にする既定の供給者」に留める。支援内容そのものは
+ * 各教材での明示操作後にだけ開示する。データ（チャンクの ja 等）は常にサーバから届くので、
+ * オフ既定の項目でもトグルをオンにすれば表示ボタンを利用できる。
  */
 import { useSyncExternalStore } from "react";
 
@@ -82,9 +83,15 @@ export function resolveSupport(override: SupportToggle, autoDefault: boolean): b
 }
 
 /**
- * 準備パックの日本語表示可否。個別トグル → サーバの stage 既定（hintDefault）で解決する。
+ * 準備パックの日本語ヒント表示ボタンを利用可能にするか。個別トグル → サーバの
+ * stage 既定（hintDefault）で解決する。内容の表示自体は呼び出し側の明示操作が必要。
  * hintDefault の "ja"/"en" 反転ミスを1箇所に封じるための薄いヘルパ。
  */
-export function showJaFromPrep(support: SupportSettings, prep: { hintDefault: "ja" | "en" }): boolean {
-  return resolveSupport(support.jaHint, prep.hintDefault === "ja");
+export function canRevealJaFromHintDefault(support: SupportSettings, hintDefault: "ja" | "en"): boolean {
+  return resolveSupport(support.jaHint, hintDefault === "ja");
+}
+
+/** 準備パックから hintDefault を読む画面用の薄いラッパー。 */
+export function canRevealJaFromPrep(support: SupportSettings, prep: { hintDefault: "ja" | "en" }): boolean {
+  return canRevealJaFromHintDefault(support, prep.hintDefault);
 }
