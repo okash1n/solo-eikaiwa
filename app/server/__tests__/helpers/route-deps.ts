@@ -256,6 +256,7 @@ export function makeTestDeps(overrides: Partial<RouteDeps> = {}): {
     saveSecret: async (_n, _v) => {},
     removeSecret: async (_n) => {},
     applySecretsChange: (_n) => ({ applied: true, error: null }),
+    refreshCodexAuth: async () => {},
     saveTtsSettings: (_s) => {},
     ttsEnv: () => ({ apiKeyConfigured: false }),
     modelDownload: makeFakeModelDownloadManager(),

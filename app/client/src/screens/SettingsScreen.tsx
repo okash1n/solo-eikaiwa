@@ -7,7 +7,7 @@ import {
   type LlmRole, type LlmSettingsView, type TtsSettingsView, type RoleTuning, type LlmModelsResponse, type CatalogModelEffort,
   type AuthMode, type LlmAuthProvider, type TtsProvider,
 } from "../api";
-import { fetchSecrets, saveSecret, deleteSecret, type SecretName, type SecretsView, type SecretStatus } from "../api";
+import { fetchSecrets, saveSecret, deleteSecret, type SecretName, type SecretsView, type SecretStatus, type SecretMutationResult } from "../api";
 import {
   isLocalDefined, presetEnabled, presetTargets, matchPreset, hydrateConnection, hydrateTargets, hydrateTuning,
   hydrateGlobalTuning, hydrateAuthModes, hydrateAuthKeys, buildAuthPatch,
@@ -53,10 +53,12 @@ function SecretKeyField(props: {
   str: {
     label: string; statusKeychain: string; statusEnv: string; statusMissing: string;
     placeholderSet: string; placeholderNew: string; save: string; del: string;
-    saved: string; deleted: string; saveFailedWithReason: (reason: string) => string;
+    saved: string; deleted: string;
+    saveFailedWithReason: (reason: string) => string;
+    notApplied: (reason: string) => string;
   };
-  onSave: (name: SecretName, value: string) => Promise<void>;
-  onDelete: (name: SecretName) => Promise<void>;
+  onSave: (name: SecretName, value: string) => Promise<SecretMutationResult>;
+  onDelete: (name: SecretName) => Promise<SecretMutationResult>;
 }) {
   const [value, setValue] = useState("");
   const [result, setResult] = useState<string | null>(null);
@@ -65,12 +67,14 @@ function SecretKeyField(props: {
     ? st.source === "keychain" ? props.str.statusKeychain : props.str.statusEnv
     : props.str.statusMissing;
 
-  async function run(action: () => Promise<void>, doneMsg: string) {
+  async function run(action: () => Promise<SecretMutationResult>, doneMsg: string) {
     setResult(null);
     try {
-      await action();
+      const r = await action();
       setValue("");
-      setResult(doneMsg);
+      // 保存自体は成功しても実行中プロセスへの適用に失敗した場合（applied:false）は、
+      // 「保存し、適用しました」と嘘をつかずに理由つきで情報表示する（UI 真実性）。
+      setResult(r.applied === false ? props.str.notApplied(r.error ?? "") : doneMsg);
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
       setResult(props.str.saveFailedWithReason(reason));
@@ -276,16 +280,25 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
     setTuning((prev) => ({ ...prev, [role]: { ...prev[role], [field]: value } }));
   }
 
-  /** 鍵の保存/削除。鍵の有無で認証モードの選択可否・TTS の自動解決が変わるため、関連ビューを再取得する。 */
-  async function onSaveSecret(name: SecretName, value: string) {
-    setSecrets(await saveSecret(name, value));
-    fetchLlmSettings().then(hydrate).catch(() => {});
-    fetchTtsSettings().then(hydrateTts).catch(() => {});
+  /**
+   * 鍵の保存/削除。鍵の有無で認証モードの選択可否（authKeys は view から導出）・TTS「自動」の
+   * 解決表示（ttsView.apiKeyConfigured）が変わるため view/ttsView だけを再取得する。
+   * hydrate/hydrateTts は呼ばない — 編集中の接続・TTS 入力（未保存）をサーバ値で上書きして
+   * 破棄してしまうため（レビュー指摘 2026-07-10）。
+   */
+  async function onSaveSecret(name: SecretName, value: string): Promise<SecretMutationResult> {
+    const r = await saveSecret(name, value);
+    setSecrets(r.secrets);
+    fetchLlmSettings().then(setView).catch(() => {});
+    fetchTtsSettings().then(setTtsView).catch(() => {});
+    return r;
   }
-  async function onDeleteSecret(name: SecretName) {
-    setSecrets(await deleteSecret(name));
-    fetchLlmSettings().then(hydrate).catch(() => {});
-    fetchTtsSettings().then(hydrateTts).catch(() => {});
+  async function onDeleteSecret(name: SecretName): Promise<SecretMutationResult> {
+    const r = await deleteSecret(name);
+    setSecrets(r.secrets);
+    fetchLlmSettings().then(setView).catch(() => {});
+    fetchTtsSettings().then(setTtsView).catch(() => {});
+    return r;
   }
   const secretStr = {
     label: s.settings.secretKeyLabel,
@@ -299,6 +312,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
     saved: s.settings.secretSaved,
     deleted: s.settings.secretDeleted,
     saveFailedWithReason: s.llm.saveFailedWithReason,
+    notApplied: s.llm.notApplied,
   };
 
   const voicePreset: "female" | "male" | "custom" = VOICE_PRESET_FEMALE_VALUES.includes(ttsVoice.trim())

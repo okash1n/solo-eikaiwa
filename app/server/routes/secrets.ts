@@ -17,14 +17,28 @@ export type SecretsRoutesDeps = {
   applySecretsChange: (name: SecretName) => { applied: boolean; error: string | null };
   /** codex の認証環境が変わったとき常駐 app-server を kill する（llm-settings ルートと同一の依存）。 */
   killCodexAppServerRegistry: () => void;
+  /**
+   * CODEX_API_KEY の変更を隔離 CODEX_HOME の auth.json へ反映する（旧 auth.json 破棄 → api-key モード
+   * かつ新キーがあれば再ログイン）。失敗は throw（route が applied:false + error として情報的に返す）。
+   */
+  refreshCodexAuth: () => Promise<void>;
 };
 
-function applyAndRespond(deps: SecretsRoutesDeps, name: SecretName): Response {
-  // CODEX_API_KEY は隔離 CODEX_HOME の auth.json・常駐プロセスの env に効くため、
-  // 変更時は app-server を kill して次回 lazy respawn で新しい鍵を反映する（認証モード変更時と同じ扱い）。
-  if (name === "CODEX_API_KEY") deps.killCodexAppServerRegistry();
+async function applyAndRespond(deps: SecretsRoutesDeps, name: SecretName): Promise<Response> {
+  // CODEX_API_KEY は隔離 CODEX_HOME の auth.json と常駐プロセスに効くため、変更時は
+  // app-server を kill し、auth.json を新しい鍵で作り直す（ensureCodexApiKeyHome は有効な
+  // auth.json があると early-return するため、破棄→再ログインまでやらないと旧キーが使われ続ける）。
+  let authError: string | null = null;
+  if (name === "CODEX_API_KEY") {
+    deps.killCodexAppServerRegistry();
+    try {
+      await deps.refreshCodexAuth();
+    } catch (err) {
+      authError = err instanceof Error ? err.message : String(err);
+    }
+  }
   const { applied, error } = deps.applySecretsChange(name);
-  return json({ secrets: deps.getSecretsStatus(), applied, error });
+  return json({ secrets: deps.getSecretsStatus(), applied: applied && authError === null, error: authError ?? error });
 }
 
 async function handlePut(req: Request, deps: SecretsRoutesDeps): Promise<Response> {

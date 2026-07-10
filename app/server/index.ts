@@ -28,7 +28,7 @@ import { makeTtsProviderStore } from "./tts-provider-store";
 import { makeLlmRoleSettingsStore } from "./llm-role-settings-store";
 import { makeLlmRoleTuningStore } from "./llm-role-tuning-store";
 import { makeLlmAuthStore, setActiveAuthModes } from "./llm-auth-store";
-import { ensureCodexApiKeyHome } from "./codex-auth";
+import { ensureCodexApiKeyHome, resetCodexApiKeyHome } from "./codex-auth";
 import { conversationWarmup } from "./llm-warmup";
 import { DEFAULT_LLM_SETTINGS, LLM_ROLES } from "./llm-provider";
 import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -187,6 +187,17 @@ const realDeps: RouteDeps = {
   // env 由来。TTS の APIキーは有無のみ開示（TTS_API_KEY 優先・無ければ OPENAI_API_KEY）。値は絶対に返さない。
   ttsEnv: () => ({ apiKeyConfigured: Boolean((Bun.env.TTS_API_KEY ?? Bun.env.OPENAI_API_KEY)?.trim()) }),
   // API キーの Keychain 設定（routes/secrets.ts）。値はいかなる応答にも含めない。
+  // CODEX_API_KEY の変更は隔離 CODEX_HOME の auth.json を破棄し、api-key モード運用中なら
+  // 新しいキー（削除時は env 復元値）で再ログインする。キーが無くなった場合は情報的エラーを
+  // throw し、route が applied:false + error として返す（モード自体は変更しない）。
+  refreshCodexAuth: async () => {
+    resetCodexApiKeyHome();
+    if (llmAuthStore.getAll().codex !== "api-key") return;
+    if (!Bun.env.CODEX_API_KEY?.trim()) {
+      throw new Error("codex auth mode is api-key but no key is configured now; save a key or switch to subscription");
+    }
+    await ensureCodexApiKeyHome();
+  },
   getSecretsStatus: () => secretsManager.status(),
   saveSecret: (name, value) => secretsManager.save(name, value),
   removeSecret: (name) => secretsManager.remove(name),

@@ -75,17 +75,36 @@ describe("secrets API", () => {
     expect(body).not.toContain("sk-secret-xyz");
   });
 
-  test("PUT: CODEX_API_KEY の保存では codex 常駐プロセスを kill する（認証環境変更）・他の鍵では kill しない", async () => {
+  test("PUT: CODEX_API_KEY の保存では codex 常駐プロセスの kill と auth.json リフレッシュを行う・他の鍵では行わない", async () => {
     let killed = 0;
+    let refreshed = 0;
     const { deps } = makeTestDeps({
       saveSecret: async () => {},
       killCodexAppServerRegistry: () => { killed++; },
+      refreshCodexAuth: async () => { refreshed++; },
     });
     const h = makeFetchHandler(deps);
     await h(putJson("/api/secrets", { name: "CODEX_API_KEY", value: "sk-codex" }));
     expect(killed).toBe(1);
+    expect(refreshed).toBe(1);
     await h(putJson("/api/secrets", { name: "TTS_API_KEY", value: "sk-tts" }));
     expect(killed).toBe(1);
+    expect(refreshed).toBe(1);
+  });
+
+  test("PUT/DELETE: auth.json リフレッシュ失敗は applied:false + error として情報的に返す（保存自体は成功・値は含めない）", async () => {
+    const { deps } = makeTestDeps({
+      saveSecret: async () => {},
+      removeSecret: async () => {},
+      refreshCodexAuth: async () => { throw new Error("codex auth mode is api-key but no key is configured"); },
+    });
+    const h = makeFetchHandler(deps);
+    const res = await h(delReq("/api/secrets/CODEX_API_KEY"));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.applied).toBe(false);
+    expect(body.error).toContain("api-key");
+    expect(body.secrets).toBeDefined();
   });
 
   test("DELETE: 削除 → 再解決。未知の名前は 400", async () => {
