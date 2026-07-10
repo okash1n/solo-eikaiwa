@@ -53,7 +53,7 @@ pub fn run() {
         updater::spawn_manual_check(app.clone());
       }
     })
-    .invoke_handler(tauri::generate_handler![attach::retry_attach])
+    .invoke_handler(tauri::generate_handler![attach::retry_attach, attach::startup_status])
     .build(tauri::generate_context!())
     .expect("error while building tauri application")
     .run(|app_handle, event| {

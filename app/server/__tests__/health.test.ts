@@ -24,6 +24,59 @@ describe("health", () => {
     expect(h.version.length).toBeGreaterThan(0);
   });
 
+  test("desktop sidecar の識別情報は4項目が揃った時だけ返す", () => {
+    const env = {
+      SOLO_EIKAIWA_SIDECAR_PROTOCOL: "1",
+      SOLO_EIKAIWA_SIDECAR_BUILD_ID: "d".repeat(64),
+      SOLO_EIKAIWA_DATA_ROOT_ID: "a".repeat(64),
+      SOLO_EIKAIWA_SIDECAR_INSTANCE_ID: "0123456789abcdef0123456789abcdef",
+    };
+    const h = checkHealth({ whichFn: () => null, env, modelExists: () => false });
+    expect(h.sidecar).toEqual({
+      protocol: 1,
+      buildId: env.SOLO_EIKAIWA_SIDECAR_BUILD_ID,
+      dataRootId: env.SOLO_EIKAIWA_DATA_ROOT_ID,
+      instanceId: env.SOLO_EIKAIWA_SIDECAR_INSTANCE_ID,
+    });
+  });
+
+  test("識別情報が一部欠落・protocol不正ならsidecarを名乗らない", () => {
+    const base = {
+      SOLO_EIKAIWA_SIDECAR_PROTOCOL: "1",
+      SOLO_EIKAIWA_SIDECAR_BUILD_ID: "build",
+      SOLO_EIKAIWA_DATA_ROOT_ID: "root",
+      SOLO_EIKAIWA_SIDECAR_INSTANCE_ID: "instance",
+    };
+    expect(checkHealth({ whichFn: () => null, env: { ...base, SOLO_EIKAIWA_DATA_ROOT_ID: "" }, modelExists: () => false }).sidecar).toBeUndefined();
+    expect(checkHealth({ whichFn: () => null, env: { ...base, SOLO_EIKAIWA_SIDECAR_PROTOCOL: "2" }, modelExists: () => false }).sidecar).toBeUndefined();
+    expect(checkHealth({
+      whichFn: () => null,
+      env: {
+        ...base,
+        SOLO_EIKAIWA_SIDECAR_BUILD_ID: "not-a-binary-sha256",
+        SOLO_EIKAIWA_DATA_ROOT_ID: "a".repeat(64),
+        SOLO_EIKAIWA_SIDECAR_INSTANCE_ID: "b".repeat(32),
+      },
+      modelExists: () => false,
+    }).sidecar).toBeUndefined();
+  });
+
+  test("healthにはデータ領域の生パスを返さない", () => {
+    const rawPath = "/Users/private/Library/Application Support/solo-eikaiwa";
+    const h = checkHealth({
+      whichFn: () => null,
+      env: {
+        SOLO_EIKAIWA_DATA_DIR: rawPath,
+        SOLO_EIKAIWA_SIDECAR_PROTOCOL: "1",
+        SOLO_EIKAIWA_SIDECAR_BUILD_ID: "d".repeat(64),
+        SOLO_EIKAIWA_DATA_ROOT_ID: "b".repeat(64),
+        SOLO_EIKAIWA_SIDECAR_INSTANCE_ID: "c".repeat(32),
+      },
+      modelExists: () => false,
+    });
+    expect(JSON.stringify(h)).not.toContain(rawPath);
+  });
+
   test("ttsKey が無くても ok は true（say フォールバックがあるため）", () => {
     const h = checkHealth({ whichFn: () => "/bin/x", env: {}, modelExists: () => true });
     expect(h.ttsKey).toBe(false);

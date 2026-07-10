@@ -1,15 +1,20 @@
 //! Tauri Phase 2: サーバをexternalBin（sidecar）として同梱し、自前で起動する経路。
-//! [`crate::attach`] の「既存デーモンへのattach」が失敗した場合（配布版の大半のケース）に
+//! [`crate::attach`] の「検証済みorphan再利用」が成立しなかった場合に
 //! ここへ落ちる: サーババイナリをspawn → env注入 → ヘルスポーリング（身元確認つき）→ navigate。
 //! ポート競合（3111使用中）はサーバ側が`process.exit(1)`する設計（Task 1）に乗って検知し、
 //! 3112へ1回だけフォールバックする。アプリ終了時は起動した子プロセスをkillする。
 
+use std::fmt::Write as _;
 use std::io::Write as _;
+use std::net::{SocketAddr, TcpStream};
+use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use serde::Serialize;
+use sha2::{Digest, Sha256};
 use tauri::{AppHandle, Manager};
 use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 use tauri_plugin_shell::ShellExt;
@@ -28,6 +33,20 @@ const OWN_SIDECAR_POLL_ATTEMPTS: u32 = 20;
 const OWN_SIDECAR_POLL_INTERVAL: Duration = Duration::from_millis(500);
 /// ログインシェルでの`$PATH`解決を待つ上限（壊れた.zshrc等で無限に待たないための保険）。
 const LOGIN_SHELL_PATH_TIMEOUT: Duration = Duration::from_secs(3);
+const SIDECAR_PROTOCOL: u8 = 1;
+const INSTANCE_ID_FILE: &str = ".sidecar-instance-id";
+
+/// フォールバック画面へ返す起動状態。機密情報や生パスは含めず、利用者が取れる判断だけを返す。
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum StartupStatus {
+    #[default]
+    Starting,
+    Ready,
+    StaleSidecar,
+    PortOccupied,
+    InternalError,
+}
 
 /// 起動したsidecarの子プロセスハンドル。アプリ終了時にkillするため`app.manage()`で保持する。
 /// `starting`は`spawn_and_attach`の並行実行ガード（起動時の自動attach試行とフォールバック
@@ -37,6 +56,113 @@ const LOGIN_SHELL_PATH_TIMEOUT: Duration = Duration::from_secs(3);
 pub struct SidecarState {
     child: Mutex<Option<CommandChild>>,
     starting: AtomicBool,
+    status: Mutex<StartupStatus>,
+}
+
+fn status_priority(status: StartupStatus) -> u8 {
+    match status {
+        StartupStatus::Starting => 0,
+        StartupStatus::InternalError => 1,
+        StartupStatus::PortOccupied => 2,
+        StartupStatus::StaleSidecar => 3,
+        StartupStatus::Ready => 4,
+    }
+}
+
+pub(crate) fn note_startup_status(app: &AppHandle, next: StartupStatus) {
+    let Some(state) = app.try_state::<SidecarState>() else { return };
+    let mut current = state.status.lock().unwrap();
+    if status_priority(next) >= status_priority(*current) {
+        *current = next;
+    }
+}
+
+pub(crate) fn reset_startup_status(app: &AppHandle) {
+    let Some(state) = app.try_state::<SidecarState>() else { return };
+    *state.status.lock().unwrap() = StartupStatus::Starting;
+}
+
+pub(crate) fn startup_status(app: &AppHandle) -> StartupStatus {
+    app.try_state::<SidecarState>()
+        .map(|state| *state.status.lock().unwrap())
+        .unwrap_or(StartupStatus::InternalError)
+}
+
+fn valid_instance_id(value: &str) -> bool {
+    value.len() == 32 && value.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+}
+
+fn read_instance_id(path: &Path) -> std::io::Result<String> {
+    let value = std::fs::read_to_string(path)?.trim().to_string();
+    if valid_instance_id(&value) {
+        Ok(value)
+    } else {
+        Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "invalid sidecar instance id"))
+    }
+}
+
+/// データ領域に永続する不透明IDを作る。temp file→hard linkで初回並行起動でも既存値を
+/// 上書きせず、書きかけのIDを正規ファイルとして残さない。
+pub(crate) fn load_or_create_instance_id(data_dir: &Path) -> std::io::Result<String> {
+    std::fs::create_dir_all(data_dir)?;
+    let target = data_dir.join(INSTANCE_ID_FILE);
+    match read_instance_id(&target) {
+        Ok(value) => return Ok(value),
+        Err(e) if e.kind() != std::io::ErrorKind::NotFound => return Err(e),
+        Err(_) => {}
+    }
+
+    let candidate = uuid::Uuid::new_v4().simple().to_string();
+    let temp = data_dir.join(format!("{INSTANCE_ID_FILE}.{candidate}.tmp"));
+    let mut file = std::fs::OpenOptions::new()
+        .create_new(true)
+        .write(true)
+        .mode(0o600)
+        .open(&temp)?;
+    file.write_all(candidate.as_bytes())?;
+    file.write_all(b"\n")?;
+    file.sync_all()?;
+    drop(file);
+
+    let linked = std::fs::hard_link(&temp, &target);
+    let _ = std::fs::remove_file(&temp);
+    match linked {
+        Ok(()) => Ok(candidate),
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => read_instance_id(&target),
+        Err(e) => Err(e),
+    }
+}
+
+/// canonicalizeした保存先だけをSHA-256へ通し、healthに生パスを出さずデータ領域を照合する。
+pub(crate) fn data_root_id(data_dir: &Path) -> std::io::Result<String> {
+    let normalized = std::fs::canonicalize(data_dir)?;
+    let digest = Sha256::digest(normalized.as_os_str().as_encoded_bytes());
+    let mut encoded = String::with_capacity(64);
+    for byte in digest {
+        write!(&mut encoded, "{byte:02x}").expect("writing to String cannot fail");
+    }
+    Ok(encoded)
+}
+
+fn expected_identity_for_data_dir(data_dir: &Path) -> std::io::Result<attach::ExpectedSidecarIdentity> {
+    let instance_id = load_or_create_instance_id(data_dir)?;
+    Ok(attach::ExpectedSidecarIdentity {
+        app_version: env!("CARGO_PKG_VERSION").to_string(),
+        protocol: SIDECAR_PROTOCOL,
+        build_id: env!("SOLO_EIKAIWA_SIDECAR_BUILD_ID").to_string(),
+        data_root_id: data_root_id(data_dir)?,
+        instance_id,
+    })
+}
+
+pub(crate) fn expected_identity(app: &AppHandle) -> Result<attach::ExpectedSidecarIdentity, String> {
+    let data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    expected_identity_for_data_dir(&data_dir).map_err(|e| e.to_string())
+}
+
+fn port_is_open(port: u16) -> bool {
+    let address = SocketAddr::from(([127, 0, 0, 1], port));
+    TcpStream::connect_timeout(&address, Duration::from_millis(100)).is_ok()
 }
 
 /// `spawn_and_attach`の多重実行防止ガード。`starting`をCASで確保し、Dropで必ず解放する
@@ -90,7 +216,7 @@ pub(crate) fn should_try_next_port(identified: bool, process_exited: bool) -> bo
 /// の`is_identified(port)`はそれを拾って`true`を返してしまい、「自分の子が起動成功した」と
 /// 誤認してnavigateしてしまう（実機で発見）。事前にidentity確認しておき、既に応答があるなら
 /// spawnそのものを行わず次の候補ポートへ進むことでこれを防ぐ。
-/// 通常モード（attach-first経由）ではこのガードを使わない: attach-first側で既に
+/// 通常モード（検証付き再利用経由）ではこのガードを使わない: 再利用側で既に
 /// identity一致を確認した上でspawnにフォールバックしてきているので、spawn_and_attach内で
 /// 重ねて同じチェックをする理由が無い（`should_try_next_port`側の早期終了で十分）。
 pub(crate) fn should_skip_spawn_due_to_existing_identity(no_attach: bool, port_already_identified: bool) -> bool {
@@ -214,6 +340,7 @@ fn spawn_solo_server(
     data_dir: &Path,
     path_env: &str,
     log_path: &Path,
+    identity: &attach::ExpectedSidecarIdentity,
 ) -> Option<(CommandChild, Arc<AtomicBool>)> {
     let command = match app.shell().sidecar("solo-server") {
         Ok(cmd) => cmd,
@@ -226,6 +353,10 @@ fn spawn_solo_server(
         .env("SOLO_EIKAIWA_RESOURCES_DIR", resources_dir.display().to_string())
         .env("SOLO_EIKAIWA_DATA_DIR", data_dir.display().to_string())
         .env("SOLO_EIKAIWA_PORT", port.to_string())
+        .env("SOLO_EIKAIWA_SIDECAR_PROTOCOL", identity.protocol.to_string())
+        .env("SOLO_EIKAIWA_SIDECAR_BUILD_ID", &identity.build_id)
+        .env("SOLO_EIKAIWA_DATA_ROOT_ID", &identity.data_root_id)
+        .env("SOLO_EIKAIWA_SIDECAR_INSTANCE_ID", &identity.instance_id)
         .env("PATH", path_env);
 
     let (mut rx, child) = match command.spawn() {
@@ -297,6 +428,14 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
         return false;
     }
     let log_path = logs_dir.join("sidecar.log");
+    let identity = match expected_identity_for_data_dir(&data_dir) {
+        Ok(identity) => identity,
+        Err(e) => {
+            log::error!("sidecar: failed to prepare identity: {e}");
+            note_startup_status(app, StartupStatus::InternalError);
+            return false;
+        }
+    };
 
     let whisper_bin_dir = resources_dir.join("whisper-bin");
     let login_path = capture_login_shell_path();
@@ -306,7 +445,14 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
     let no_attach = attach::no_attach_forced();
 
     for &port in CANDIDATE_PORTS.iter() {
-        if should_skip_spawn_due_to_existing_identity(no_attach, attach::is_identified(port)) {
+        let existing = attach::probe_identity(port, &identity);
+        match existing {
+            attach::IdentityStatus::Stale => note_startup_status(app, StartupStatus::StaleSidecar),
+            attach::IdentityStatus::Foreign => note_startup_status(app, StartupStatus::PortOccupied),
+            _ => {}
+        }
+        if should_skip_spawn_due_to_existing_identity(no_attach, existing == attach::IdentityStatus::Match) {
+            note_startup_status(app, StartupStatus::PortOccupied);
             log::warn!(
                 "sidecar: NO_ATTACH set but port {port} already answers as solo-eikaiwa; \
                  skipping spawn there (would immediately conflict) and trying the next port",
@@ -315,8 +461,11 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
         }
 
         log::info!("sidecar: spawning solo-server on port {port}");
-        let Some((child, exited)) = spawn_solo_server(app, port, &resources_dir, &data_dir, &path_env, &log_path) else {
+        let Some((child, exited)) = spawn_solo_server(
+            app, port, &resources_dir, &data_dir, &path_env, &log_path, &identity,
+        ) else {
             // 起動自体に失敗（バイナリ欠落等）。ポートを変えても無意味なので諦める。
+            note_startup_status(app, StartupStatus::InternalError);
             break;
         };
 
@@ -328,7 +477,7 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
 
         let mut identified = false;
         for attempt in 1..=OWN_SIDECAR_POLL_ATTEMPTS {
-            if attach::is_identified(port) {
+            if attach::is_identified(port, &identity) {
                 identified = true;
                 break;
             }
@@ -346,10 +495,16 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
         }
 
         if identified {
-            return attach::navigate_to(app, port);
+            let navigated = attach::navigate_to(app, port);
+            note_startup_status(app, if navigated { StartupStatus::Ready } else { StartupStatus::InternalError });
+            return navigated;
         }
 
         if should_try_next_port(identified, exited.load(Ordering::SeqCst)) {
+            note_startup_status(
+                app,
+                if port_is_open(port) { StartupStatus::PortOccupied } else { StartupStatus::InternalError },
+            );
             log::warn!("sidecar: solo-server on port {port} exited quickly (likely port conflict); trying next port");
             continue;
         }
@@ -357,6 +512,7 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
         log::error!(
             "sidecar: solo-server on port {port} did not become healthy in time; giving up (see {log_path:?})",
         );
+        note_startup_status(app, StartupStatus::InternalError);
         break;
     }
 
@@ -366,11 +522,76 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        effective_path, extract_marked_path, format_command_event, should_skip_spawn_due_to_existing_identity,
-        should_try_next_port,
+        data_root_id, effective_path, expected_identity_for_data_dir, extract_marked_path,
+        format_command_event, load_or_create_instance_id, should_skip_spawn_due_to_existing_identity,
+        should_try_next_port, status_priority, StartupStatus, INSTANCE_ID_FILE,
     };
+    use std::fs;
     use std::sync::atomic::{AtomicBool, Ordering};
     use tauri_plugin_shell::process::{CommandEvent, TerminatedPayload};
+
+    fn unique_temp_dir(label: &str) -> std::path::PathBuf {
+        std::env::temp_dir().join(format!("solo-eikaiwa-{label}-{}", uuid::Uuid::new_v4()))
+    }
+
+    #[test]
+    fn instance_id_is_persistent_per_data_root() {
+        let dir = unique_temp_dir("identity");
+        fs::create_dir_all(&dir).unwrap();
+        let first = load_or_create_instance_id(&dir).unwrap();
+        let second = load_or_create_instance_id(&dir).unwrap();
+        assert_eq!(first, second);
+        assert_eq!(first.len(), 32);
+        assert!(first.bytes().all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase()));
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn corrupted_instance_id_is_rejected_without_replacement() {
+        let dir = unique_temp_dir("corrupted-identity");
+        fs::create_dir_all(&dir).unwrap();
+        let identity_file = dir.join(INSTANCE_ID_FILE);
+        fs::write(&identity_file, "broken\n").unwrap();
+        assert_eq!(
+            load_or_create_instance_id(&dir).unwrap_err().kind(),
+            std::io::ErrorKind::InvalidData,
+        );
+        assert_eq!(fs::read_to_string(identity_file).unwrap(), "broken\n");
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn startup_status_has_stable_ui_codes_and_failure_priority() {
+        assert_eq!(serde_json::to_string(&StartupStatus::StaleSidecar).unwrap(), r#""stale-sidecar""#);
+        assert_eq!(serde_json::to_string(&StartupStatus::PortOccupied).unwrap(), r#""port-occupied""#);
+        assert!(status_priority(StartupStatus::StaleSidecar) > status_priority(StartupStatus::PortOccupied));
+        assert!(status_priority(StartupStatus::PortOccupied) > status_priority(StartupStatus::InternalError));
+    }
+
+    #[test]
+    fn data_root_id_is_stable_but_does_not_expose_the_path() {
+        let first = unique_temp_dir("root-a");
+        let second = unique_temp_dir("root-b");
+        fs::create_dir_all(&first).unwrap();
+        fs::create_dir_all(&second).unwrap();
+        let id1 = data_root_id(&first).unwrap();
+        assert_eq!(id1, data_root_id(&first).unwrap());
+        assert_ne!(id1, data_root_id(&second).unwrap());
+        assert_eq!(id1.len(), 64);
+        assert!(!id1.contains(first.to_string_lossy().as_ref()));
+        fs::remove_dir_all(first).unwrap();
+        fs::remove_dir_all(second).unwrap();
+    }
+
+    #[test]
+    fn build_id_is_the_bundled_sidecar_sha256() {
+        let dir = unique_temp_dir("build-id");
+        fs::create_dir_all(&dir).unwrap();
+        let build_id = expected_identity_for_data_dir(&dir).unwrap().build_id;
+        assert_eq!(build_id.len(), 64);
+        assert!(build_id.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)));
+        fs::remove_dir_all(dir).unwrap();
+    }
 
     #[test]
     fn should_skip_spawn_only_when_no_attach_and_port_already_identified() {
@@ -378,7 +599,7 @@ mod tests {
         assert!(should_skip_spawn_due_to_existing_identity(true, true));
         // NO_ATTACH指定時でも、そのポートに何も無ければ通常どおりspawnする。
         assert!(!should_skip_spawn_due_to_existing_identity(true, false));
-        // 通常モード（attach-first経由）ではこのガードを使わない設計なので、
+        // 通常モード（検証付き再利用経由）ではこのガードを使わない設計なので、
         // 既に応答があってもfalse（=spawnする）を返す。
         assert!(!should_skip_spawn_due_to_existing_identity(false, true));
         assert!(!should_skip_spawn_due_to_existing_identity(false, false));

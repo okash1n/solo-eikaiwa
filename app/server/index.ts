@@ -90,6 +90,16 @@ function runtimeSecretEnv(): Record<string, string | undefined> {
     OPENAI_API_KEY: Bun.env.OPENAI_API_KEY,
   };
 }
+
+function runtimeHealthEnv(): Record<string, string | undefined> {
+  return {
+    ...runtimeSecretEnv(),
+    SOLO_EIKAIWA_SIDECAR_PROTOCOL: Bun.env.SOLO_EIKAIWA_SIDECAR_PROTOCOL,
+    SOLO_EIKAIWA_SIDECAR_BUILD_ID: Bun.env.SOLO_EIKAIWA_SIDECAR_BUILD_ID,
+    SOLO_EIKAIWA_DATA_ROOT_ID: Bun.env.SOLO_EIKAIWA_DATA_ROOT_ID,
+    SOLO_EIKAIWA_SIDECAR_INSTANCE_ID: Bun.env.SOLO_EIKAIWA_SIDECAR_INSTANCE_ID,
+  };
+}
 const libraryStore = makeLibraryStore(db);
 const sentences = loadSentences();
 const sentenceStore = makeSentenceStore(db, sentences);
@@ -138,7 +148,7 @@ const realDeps: RouteDeps = {
   converse: (args) => converseTurn({ ...args, runner: runnerFor("conversation") }),
   // llmSettings: health.llmReady（claude/codex/openai-compatのいずれかが実際に使えるかの集約判定）が
   // openai-compat経路の判定に使う。DB未設定時はcheckHealth側でenv直接運用として扱う。
-  health: () => checkHealth({ llmSettings: llmSettingsStore.get(), env: runtimeSecretEnv() }),
+  health: () => checkHealth({ llmSettings: llmSettingsStore.get(), env: runtimeHealthEnv() }),
   logFile: () => sessionLogPath(new Date()),
   recordingsDir: RECORDINGS_DIR,
   staticDir: CLIENT_DIST_DIR,
