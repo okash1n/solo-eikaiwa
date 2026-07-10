@@ -15,7 +15,8 @@ import { ChunkList } from "../ui/ChunkList";
 import { ExplainBox } from "../ui/ExplainBox";
 import { LevelChip } from "../ui/LevelChip";
 import { TimerChip } from "../ui/TimerChip";
-import { getSupport, resolveSupport, showJaFromPrep, useSupport } from "../support";
+import { canRevealJaFromHintDefault, getSupport, resolveSupport, useSupport } from "../support";
+import { isDisclosureOpen, splitBilingualHint, toggleDisclosure } from "../support-disclosure";
 
 /** メニュー params に roundsSec が無い場合（当日分の古いキャッシュ等）のフォールバック */
 const DEFAULT_ROUNDS_SEC = [120, 90, 60];
@@ -44,13 +45,14 @@ type PrepState = "loading" | "ready" | "error";
  */
 export function FourThreeTwoScreen(props: {
   topic: ContentItem; sessionId: string; blockId: string; roundsSec?: number[];
-  modelTalkMode?: "auto" | "button"; lang: Lang;
+  hintMode?: "ja" | "en"; modelTalkMode?: "auto" | "button"; lang: Lang;
 }) {
   const t = STR[props.lang].ftt432;
   const support = useSupport();
-  // モデルトーク自動再生の可否: 個別トグル → メニューの stage 既定（auto か）で解決。
-  // 初期 modelState と一度きりの prefetch effect が参照するため、マウント時に固定する。
-  const [autoPlay] = useState(() =>
+  const disclosureKey = `${props.sessionId}:${props.topic.id}`;
+  // モデルトークを事前準備するか: 個別トグル → メニューの stage 既定（auto か）で解決。
+  // 事前準備は本文表示・音声再生を行わず、明示操作後の待ち時間だけを短縮する。
+  const [preloadModelTalk] = useState(() =>
     resolveSupport(getSupport().modelTalk, (props.modelTalkMode ?? "auto") === "auto"),
   );
   const roundsSec =
@@ -70,12 +72,21 @@ export function FourThreeTwoScreen(props: {
   const [aeLoading, setAeLoading] = useState(false);
   const [aeSkippedNoRecording, setAeSkippedNoRecording] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [jaRevealedFor, setJaRevealedFor] = useState<string | null>(null);
   // 準備フェーズ
   const [prepState, setPrepState] = useState<PrepState>("loading");
   const [prep, setPrep] = useState<PrepPack | null>(null);
   type ModelState = "idle" | "script" | "audio" | "ready" | "playing" | "error";
-  const [modelState, setModelState] = useState<ModelState>(autoPlay ? "script" : "idle");
-  const [modelText, setModelText] = useState("");
+  const [modelState, setModelState] = useState<ModelState>(preloadModelTalk ? "script" : "idle");
+  const [modelTalk, setModelTalk] = useState<{ disclosureKey: string; text: string } | null>(null);
+  const visibleModelText = modelTalk?.disclosureKey === disclosureKey ? modelTalk.text : "";
+  const topicHints = props.topic.hints.map(splitBilingualHint);
+  const hintDefault = prep?.hintDefault ?? props.hintMode ?? "ja";
+  const canRevealJa = canRevealJaFromHintDefault(support, hintDefault);
+  const hasTopicJapaneseHints = topicHints.some((hint) => Boolean(hint.ja));
+  const prepChunks = prep?.chunks.filter((chunk) => typeof chunk.en === "string" && chunk.en) ?? [];
+  const hasPrepJapaneseHints = prepChunks.some((chunk) => Boolean(chunk.ja));
+  const showJa = canRevealJa && isDisclosureOpen(jaRevealedFor, disclosureKey);
   const playRow = usePlayRow<number>();
   const prepFetchedRef = useRef(false); // StrictMode の二重マウントで prep を二重フェッチしない
   const prepTimer = useCountdown(PREP_SECONDS);
@@ -107,13 +118,12 @@ export function FourThreeTwoScreen(props: {
     if (!prepFetchedRef.current) {
       prepFetchedRef.current = true;
       loadPrep();
-      if (autoPlay) {
+      if (preloadModelTalk) {
         prefetchModelTalkAudio(props.topic.id, (stage) => {
           if (aliveRef.current) setModelState(stage);
         })
-          .then(({ text }) => {
+          .then(() => {
             if (!aliveRef.current) return;
-            setModelText(text);
             setModelState("ready");
           })
           .catch(() => {
@@ -166,7 +176,7 @@ export function FourThreeTwoScreen(props: {
         if (aliveRef.current) setModelState(stage);
       });
       if (!aliveRef.current) return;
-      setModelText(text);
+      setModelTalk({ disclosureKey, text });
       setModelState("playing");
       try {
         await playBlob(blob);
@@ -301,6 +311,10 @@ export function FourThreeTwoScreen(props: {
     roundStartedRef.current = false;
   }
 
+  function toggleJaHints() {
+    setJaRevealedFor((current) => toggleDisclosure(current, disclosureKey));
+  }
+
   if (phase.kind === "prep") {
     return (
       <div className="stack">
@@ -313,11 +327,14 @@ export function FourThreeTwoScreen(props: {
           <p className="text-sm text-muted">{t.prepMicNote}</p>
           <TimerChip remaining={prepTimer.remaining} expired={prepTimer.expired} note={t.prepTimerNote} />
         </Card>
-        <ul className="text-muted">
-          {props.topic.hints.map((h, i) => (
-            <li key={i}>{h}</li>
-          ))}
-        </ul>
+        {canRevealJa && (hasTopicJapaneseHints || hasPrepJapaneseHints) && (
+          <Button variant="secondary" onClick={toggleJaHints}>
+            {showJa ? t.hideJaHints : t.showJaHints}
+          </Button>
+        )}
+        {topicHints.length > 0 && (
+          <div className="text-muted"><ChunkList chunks={topicHints} playingIdx={null} showJa={showJa} /></div>
+        )}
         {prepState === "loading" && <p>{t.loading}</p>}
         {prepState === "error" && (
           <Banner kind="error" action={<Button onClick={loadPrep}>{t.retry}</Button>}>
@@ -325,15 +342,16 @@ export function FourThreeTwoScreen(props: {
           </Banner>
         )}
         {prepState === "ready" && prep && (() => {
-          const filteredChunks = prep.chunks.filter((c) => typeof c.en === "string" && c.en);
-          const showJa = showJaFromPrep(support, prep);
+          const filteredChunks = prepChunks;
           return (
           <div className="stack">
             {filteredChunks.length > 0 && (
-              <ChunkList
-                chunks={filteredChunks} playingIdx={playRow.playingKey} onPlay={(i, text) => playRow.play(i, text)} showJa={showJa}
-                playAria={(en) => STR[props.lang].chunkList.playAria(en)}
-              />
+              <>
+                <ChunkList
+                  chunks={filteredChunks} playingIdx={playRow.playingKey} onPlay={(i, text) => playRow.play(i, text)} showJa={showJa}
+                  playAria={(en) => STR[props.lang].chunkList.playAria(en)}
+                />
+              </>
             )}
             {prep.outline.length > 0 && (
               <Card header={t.outlineTitle}>
@@ -360,10 +378,10 @@ export function FourThreeTwoScreen(props: {
             {t.startRound1(t.min(minNum(roundsSec[0])))}
           </Button>
         </div>
-        {modelText && (
-          <details open>
+        {visibleModelText && (
+          <details>
             <summary className="text-muted">{t.modelTranscript}</summary>
-            <p className="reading-text">{modelText}</p>
+            <p className="reading-text">{visibleModelText}</p>
           </details>
         )}
         {prepState !== "error" && (errorMsg || playRow.error) && <Banner kind="error">{errorMsg || playRow.error}</Banner>}
@@ -408,15 +426,17 @@ export function FourThreeTwoScreen(props: {
         {t.roundHeading(roundIndex + 1, t.min(minNum(roundsSec[roundIndex])), props.topic.title)}
       </h3>
       <p className="text-muted">{LISTENERS[roundIndex % LISTENERS.length]}</p>
-      <ul className="text-sm text-muted">
-        {props.topic.hints.map((h, i) => (
-          <li key={i}>{h}</li>
-        ))}
-      </ul>
+      {canRevealJa && (hasTopicJapaneseHints || hasPrepJapaneseHints) && (
+        <Button variant="secondary" onClick={toggleJaHints}>
+          {showJa ? t.hideJaHints : t.showJaHints}
+        </Button>
+      )}
+      {topicHints.length > 0 && (
+        <div className="text-sm text-muted"><ChunkList chunks={topicHints} playingIdx={null} showJa={showJa} /></div>
+      )}
       {prep && (() => {
-        const filteredChunks = prep.chunks.filter((c) => typeof c.en === "string" && c.en);
+        const filteredChunks = prepChunks;
         if (filteredChunks.length === 0) return null;
-        const showJa = showJaFromPrep(support, prep);
         return (
           <details className="round-chunks">
             <summary className="text-sm text-muted">{t.roundChunksToggle}</summary>

@@ -313,6 +313,7 @@ type SentencesStrings = {
 type WarmupStrings = { warmup: {
   intro: string; loading: string; retry: string; fallbackTitle: string;
   clozeStepButton: string; clozeStepTitle: string; clozeStepBody: string; outlineTitle: string;
+  showJaHints: string; hideJaHints: string;
 } };
 type Ftt432Strings = { ftt432: {
   min: (v: string) => string;
@@ -320,6 +321,7 @@ type Ftt432Strings = { ftt432: {
   prepIntro: (rounds: string, count: number, prep: string) => string;
   prepMicNote: string; roundTimeboxNote: string; roundChunksToggle: string;
   prepTimerNote: string; loading: string; retry: string; outlineTitle: string;
+  showJaHints: string; hideJaHints: string;
   modelIdle: string; modelScript: string; modelAudio: string; modelPlaying: string; modelRetry: string;
   startRound1: (min: string) => string; modelTranscript: string;
   aeTitle: string; aeLoading: string; aeNoRecording: string; startRound2: (min: string) => string;
@@ -334,6 +336,7 @@ type ReflectionStrings = { reflection: {
   explainMore: string; explainLoading: string; explainError: string;
 } };
 type ChunkListStrings = { chunkList: { playAria: (en: string) => string } };
+/** 生成教材の原文は script と呼び、録音由来の transcript / 文字起こしとは区別する。 */
 type ShadowingStrings = { shadowing: {
   intro: string; writingScript: string; generatingAudio: string; retry: string;
   playing: string; play: string; showScript: string;
@@ -433,10 +436,10 @@ export const STR: Record<Lang, Strings> = {
     uiScale: { small: "A−", medium: "A", large: "A＋", xlarge: "A＋＋" },
     support: {
       title: "Support",
-      jaHint: "Japanese hints", modelTalk: "Model talk autoplay", cloze: "Fill-in-the-blank",
+      jaHint: "Japanese hints", modelTalk: "Model talk preloading", cloze: "Fill-in-the-blank",
       optAuto: "Auto", optOn: "On", optOff: "Off",
-      helpJaHint: "Whether practice chunks show a Japanese gloss. Auto: shown at lower levels, hidden as you level up. You can change it here anytime.",
-      helpModelTalk: "Whether a model talk plays automatically during 4/3/2 preparation. Auto: follows your level. Even when off, you can always play it with the button.",
+      helpJaHint: "Whether a Show Japanese hints control is available for practice chunks. Auto: available at lower levels and hidden as you level up. The hints stay hidden until you press the control.",
+      helpModelTalk: "Whether a model talk is prepared in advance during 4/3/2 preparation. Auto: follows your level. Its audio and script stay hidden until you press the model talk button.",
       helpCloze: "Whether sentence practice starts in fill-in-the-blank view. Auto: starts in normal view.",
       helpAriaSuffix: (label) => `About ${label}`,
     },
@@ -730,6 +733,8 @@ export const STR: Record<Lang, Strings> = {
       clozeStepTitle: "Read with gaps (optional)",
       clozeStepBody: "This time fill the blanks yourself as you read aloud. The answers are in the list above.",
       outlineTitle: "Today's story outline",
+      showJaHints: "Show Japanese hints",
+      hideJaHints: "Hide Japanese hints",
     },
     ftt432: {
       min: (v) => `${v} min`,
@@ -740,9 +745,10 @@ export const STR: Record<Lang, Strings> = {
       roundChunksToggle: "Prep phrases",
       prepTimerNote: "Time to get started", loading: "Your coach is preparing phrases…", retry: "Retry",
       outlineTitle: "Story outline",
-      modelIdle: "🎧 Hear a model talk (optional)", modelScript: "✍ Writing the script…",
+      showJaHints: "Show Japanese hints", hideJaHints: "Hide Japanese hints",
+      modelIdle: "🎧 Hear a model talk (optional)", modelScript: "✍ Preparing the model talk script…",
       modelAudio: "🎙 Generating audio…", modelPlaying: "🔊 Playing…", modelRetry: "🎧 Model talk (retry)",
-      startRound1: (min) => `Start Round 1 (${min}) →`, modelTranscript: "Model talk transcript",
+      startRound1: (min) => `Start Round 1 (${min}) →`, modelTranscript: "Model talk script",
       aeTitle: "Feedback (read it, then Round 2)", aeLoading: "Your coach is writing feedback…",
       aeNoRecording: "No recording, so there's no feedback", startRound2: (min) => `Start Round 2 (${min})`,
       doneBody: (count) => `4/3/2 done! You told the same story ${count} times, a little faster each round.`,
@@ -760,7 +766,7 @@ export const STR: Record<Lang, Strings> = {
     chunkList: { playAria: (en) => `Play "${en}"` },
     shadowing: {
       intro: "First, without looking at the script, repeat the audio slightly behind it, layering your voice over it (shadowing). Even one listen is fine. Stuck? Tap 'Show script' to check.",
-      writingScript: "✍ Your coach is writing the model talk…", generatingAudio: "🎙 Generating audio…", retry: "Retry",
+      writingScript: "✍ Preparing the model talk script…", generatingAudio: "🎙 Generating audio…", retry: "Retry",
       playing: "🔊 Playing…", play: "▶ Play (as many times as you like)", showScript: "📄 Show script",
       explainMore: "💡 Translation & notes", explainLoading: "Writing the translation and notes…",
       explainError: "Couldn't load the explanation. Please try again.",
@@ -768,7 +774,7 @@ export const STR: Record<Lang, Strings> = {
     library: {
       title: "📚 Model Talk Library", loading: "Loading…", retry: "Retry",
       empty: "Nothing yet. Model talks you generate in 4/3/2 prep or Shadowing will be saved here.",
-      playAria: (title) => `Play "${title}"`, playing: "🔊 Playing…", transcript: "Transcript",
+      playAria: (title) => `Play "${title}"`, playing: "🔊 Playing…", transcript: "Model talk script",
       explainMore: "💡 Translation & notes", explainLoading: "Writing the translation and notes…",
       explainError: "Couldn't load the explanation. Please try again.",
     },
@@ -864,10 +870,10 @@ export const STR: Record<Lang, Strings> = {
     uiScale: { small: "小", medium: "中", large: "大", xlarge: "特大" },
     support: {
       title: "サポート",
-      jaHint: "日本語ヒント", modelTalk: "モデルトーク自動再生", cloze: "歯抜け既定",
+      jaHint: "日本語ヒント", modelTalk: "モデルトークの事前準備", cloze: "歯抜け既定",
       optAuto: "自動", optOn: "オン", optOff: "オフ",
-      helpJaHint: "練習チャンクに日本語訳を添えるかどうか。自動=低いレベルでは表示し、上がると非表示になります。いつでもここで変更できます。",
-      helpModelTalk: "4/3/2 の準備でお手本トークを自動再生するかどうか。自動=レベルに応じた既定です。オフでもボタンでいつでも再生できます。",
+      helpJaHint: "練習チャンクの「日本語ヒントを表示」ボタンを利用できるかどうか。自動=低いレベルでは利用でき、上がると隠れます。ヒント本文はボタンを押すまで表示しません。",
+      helpModelTalk: "4/3/2 の準備中にモデルトークを事前準備するかどうか。自動=レベルに応じた既定です。音声とスクリプトは、設定にかかわらずモデルトークのボタンを押すまで表示・再生しません。",
       helpCloze: "例文練習を歯抜け（穴埋め）表示から始めるかどうか。自動=通常表示から始まります。",
       helpAriaSuffix: (label) => `${label}の説明`,
     },
@@ -1161,6 +1167,8 @@ export const STR: Record<Lang, Strings> = {
       clozeStepTitle: "歯抜けで音読（任意）",
       clozeStepBody: "今度は空欄を自分で埋めながら声に出しましょう。答えは上の一覧で確認できます。",
       outlineTitle: "今日の話の骨組み",
+      showJaHints: "日本語ヒントを表示",
+      hideJaHints: "日本語ヒントを隠す",
     },
     ftt432: {
       min: (v) => `${v}分`,
@@ -1171,9 +1179,10 @@ export const STR: Record<Lang, Strings> = {
       roundChunksToggle: "準備の表現チャンク",
       prepTimerNote: "そろそろ始めましょう", loading: "コーチが表現チャンクを用意しています…", retry: "再試行",
       outlineTitle: "話の骨組み",
-      modelIdle: "🎧 モデルトークを聞く（任意）", modelScript: "✍ 原稿を作成中…",
+      showJaHints: "日本語ヒントを表示", hideJaHints: "日本語ヒントを隠す",
+      modelIdle: "🎧 モデルトークを聞く（任意）", modelScript: "✍ モデルトークのスクリプトを作成中…",
       modelAudio: "🎙 音声を生成中…", modelPlaying: "🔊 再生中…", modelRetry: "🎧 モデルトーク（再試行）",
-      startRound1: (min) => `Round 1 を始める（${min}）→`, modelTranscript: "モデルトーク本文",
+      startRound1: (min) => `Round 1 を始める（${min}）→`, modelTranscript: "モデルトークのスクリプト",
       aeTitle: "フィードバック（読んだら Round 2 へ）", aeLoading: "コーチがフィードバックを書いています…",
       aeNoRecording: "録音がなかったのでフィードバックはありません", startRound2: (min) => `Round 2 を始める（${min}）`,
       doneBody: (count) => `4/3/2 完了！同じ話を${count}回、少しずつ速く話せました。`,
@@ -1191,7 +1200,7 @@ export const STR: Record<Lang, Strings> = {
     chunkList: { playAria: (en) => `「${en}」を再生` },
     shadowing: {
       intro: "まずはスクリプトを見ずに、音声に少し遅れてかぶせるように声に出して繰り返します（シャドーイング）。1回聞くだけでもOK。行き詰まったら「スクリプトを表示」で確認できます。",
-      writingScript: "✍ コーチがモデルトークを書いています…", generatingAudio: "🎙 音声を生成しています…", retry: "再試行",
+      writingScript: "✍ コーチがモデルトークのスクリプトを作成中…", generatingAudio: "🎙 音声を生成しています…", retry: "再試行",
       playing: "🔊 再生中…", play: "▶ 再生（何度でも）", showScript: "📄 スクリプトを表示",
       explainMore: "💡 日本語訳と解説", explainLoading: "日本語訳と解説を書いています…",
       explainError: "解説を取得できませんでした。もう一度お試しください。",
@@ -1199,7 +1208,7 @@ export const STR: Record<Lang, Strings> = {
     library: {
       title: "📚 モデルトークライブラリ", loading: "読み込み中…", retry: "再試行",
       empty: "まだありません。4/3/2 の準備やシャドーイングでモデルトークを生成すると、ここに残ります。",
-      playAria: (title) => `「${title}」を再生`, playing: "🔊 再生中…", transcript: "本文",
+      playAria: (title) => `「${title}」を再生`, playing: "🔊 再生中…", transcript: "モデルトークのスクリプト",
       explainMore: "💡 日本語訳と解説", explainLoading: "日本語訳と解説を書いています…",
       explainError: "解説を取得できませんでした。もう一度お試しください。",
     },

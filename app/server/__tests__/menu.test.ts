@@ -224,6 +224,23 @@ describe("buildTodayMenu", () => {
     expect(rewritten).toEqual(menu);
   });
 
+  test("日本語ヒントの既定値が無い旧キャッシュは当日の教材を変えずに補完する", () => {
+    const dirs = makeContentDirs();
+    const first = buildTodayMenu(60, { ...dirs, today: JULY5 });
+    const cacheFile = path.join(dirs.menuCacheDir, "menu-2026-07-05-60.json");
+    const old = JSON.parse(readFileSync(cacheFile, "utf8")) as typeof first;
+    for (const block of old.blocks) {
+      if (block.kind === "warmup-reading" || block.kind === "four-three-two") delete block.params.hintMode;
+    }
+    writeFileSync(cacheFile, JSON.stringify(old));
+
+    const rebuilt = buildTodayMenu(60, { ...dirs, today: JULY5 });
+    const topicBlocks = rebuilt.blocks.filter((block) => block.kind === "warmup-reading" || block.kind === "four-three-two");
+    expect(topicBlocks.map((block) => block.params.hintMode)).toEqual(["ja", "ja"]);
+    expect(rebuilt.blocks.map((block) => block.id)).toEqual(first.blocks.map((block) => block.id));
+    expect(rebuilt.blocks.map((block) => block.topicTitle)).toEqual(first.blocks.map((block) => block.topicTitle));
+  });
+
   test("破損した使用状況ファイルは空として扱い、メニューは構築され新規記録が作られる", () => {
     const dirs = makeContentDirs();
     writeFileSync(dirs.usageFile, "{ broken usage json");
@@ -621,6 +638,19 @@ describe("menu: レベル駆動", () => {
       const m = buildTodayMenu(60, { ...dirs, level, today: () => new Date("2026-07-06T09:00:00") });
       const ftt = m.blocks.find((b) => b.kind === "four-three-two")!;
       expect(ftt.params.modelTalkMode).toBe(mode);
+    }
+  });
+  test("日本語ヒントの利用可否既定を全トピックブロックへ渡す", () => {
+    for (const [level, hintMode] of [[13, "ja"], [45, "en"]] as const) {
+      const dirs = makeContentDirs();
+      const daily = buildTodayMenu(60, { ...dirs, level, today: () => new Date("2026-07-06T09:00:00") });
+      const topicBlocks = daily.blocks.filter((block) => block.kind === "warmup-reading" || block.kind === "four-three-two");
+      expect(topicBlocks.map((block) => block.params.hintMode)).toEqual([hintMode, hintMode]);
+
+      const quickWarmup = buildQuickMenu("warmup", { ...makeContentDirs(), level, today: () => new Date("2026-07-06T09:00:00") });
+      const quickFtt = buildQuickMenu("ftt-mini", { ...makeContentDirs(), level, today: () => new Date("2026-07-06T09:00:00") });
+      expect(quickWarmup.blocks[0].params.hintMode).toBe(hintMode);
+      expect(quickFtt.blocks[0].params.hintMode).toBe(hintMode);
     }
   });
   test("同日はレベルが変わってもキャッシュヒットし、当日のメニューは固定される（自動昇格の反映は翌日以降）", () => {

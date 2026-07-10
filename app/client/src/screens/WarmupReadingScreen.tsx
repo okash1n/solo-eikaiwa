@@ -8,24 +8,32 @@ import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { ChunkList } from "../ui/ChunkList";
 import { LevelChip } from "../ui/LevelChip";
-import { showJaFromPrep, useSupport } from "../support";
+import { canRevealJaFromHintDefault, canRevealJaFromPrep, useSupport } from "../support";
 import { clozeText } from "../cloze";
+import { isDisclosureOpen, splitBilingualHint, toggleDisclosure } from "../support-disclosure";
 
 /**
  * セッション冒頭の低負荷な音読ウォームアップ。今日のトピックの表現チャンクと骨組みを
  * 声に出して読むだけ（録音・採点なし）。この後の4/3/2で同じ素材を使う下地作り。
  */
-export function WarmupReadingScreen(props: { topic: ContentItem; lang: Lang }) {
+export function WarmupReadingScreen(props: { topic: ContentItem; sessionId: string; hintMode?: "ja" | "en"; lang: Lang }) {
   const t = STR[props.lang].warmup;
   const load = useLoad(() => fetchPrepPack(props.topic.id));
   const playRow = usePlayRow<number>();
   const [clozeStep, setClozeStep] = useState(false);
+  const [jaRevealedFor, setJaRevealedFor] = useState<string | null>(null);
 
   const support = useSupport();
+  const disclosureKey = `${props.sessionId}:${props.topic.id}`;
   const prep = load.state.status === "ready" ? load.state.data : null;
   const chunks = prep?.chunks.filter((c) => typeof c.en === "string" && c.en) ?? [];
-  // ja を表示するか: 個別トグル → サーバの stage 既定（hintDefault）で解決
-  const showJa = prep ? showJaFromPrep(support, prep) : true;
+  const canRevealJa = prep ? canRevealJaFromPrep(support, prep) : false;
+  const showJa = canRevealJa && isDisclosureOpen(jaRevealedFor, disclosureKey);
+  const hasJapaneseHints = chunks.some((chunk) => Boolean(chunk.ja));
+  const fallbackHints = props.topic.hints.map(splitBilingualHint);
+  const canRevealFallbackJa = canRevealJaFromHintDefault(support, props.hintMode ?? "ja");
+  const showFallbackJa = canRevealFallbackJa && isDisclosureOpen(jaRevealedFor, disclosureKey);
+  const hasFallbackJapaneseHints = fallbackHints.some((hint) => Boolean(hint.ja));
 
   return (
     <div className="stack">
@@ -42,7 +50,15 @@ export function WarmupReadingScreen(props: { topic: ContentItem; lang: Lang }) {
           {props.topic.hints.length > 0 && (
             <div>
               <h4>{t.fallbackTitle}</h4>
-              <ChunkList chunks={props.topic.hints.map((h) => ({ en: h }))} playingIdx={null} />
+              {canRevealFallbackJa && hasFallbackJapaneseHints && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setJaRevealedFor((current) => toggleDisclosure(current, disclosureKey))}
+                >
+                  {showFallbackJa ? t.hideJaHints : t.showJaHints}
+                </Button>
+              )}
+              <ChunkList chunks={fallbackHints} playingIdx={null} showJa={showFallbackJa} />
             </div>
           )}
         </div>
@@ -50,10 +66,20 @@ export function WarmupReadingScreen(props: { topic: ContentItem; lang: Lang }) {
       {load.state.status === "ready" && prep && (
         <div className="stack">
           {chunks.length > 0 && (
-            <ChunkList
-              chunks={chunks} playingIdx={playRow.playingKey} onPlay={(i, text) => playRow.play(i, text)} showJa={showJa}
-              playAria={(en) => STR[props.lang].chunkList.playAria(en)}
-            />
+            <>
+              {canRevealJa && hasJapaneseHints && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setJaRevealedFor((current) => toggleDisclosure(current, disclosureKey))}
+                >
+                  {showJa ? t.hideJaHints : t.showJaHints}
+                </Button>
+              )}
+              <ChunkList
+                chunks={chunks} playingIdx={playRow.playingKey} onPlay={(i, text) => playRow.play(i, text)} showJa={showJa}
+                playAria={(en) => STR[props.lang].chunkList.playAria(en)}
+              />
+            </>
           )}
           {playRow.error && <Banner kind="error">{playRow.error}</Banner>}
           {chunks.length > 0 && !clozeStep && (

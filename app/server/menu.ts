@@ -48,12 +48,33 @@ export function roleplayTitleKey(scenario: ContentItem): MenuTitleKey {
 
 /**
  * JSONとしては妥当でも Menu の形になっていないキャッシュ（手動編集・古いフォーマット等）を弾く。
- * level フィールドを必須にすることで、Phase B 以前（レベル付きファイル名時代）の
- * キャッシュ本体が万一残っていても自動的に無効化され再構築される。
+ * level フィールドを必須にすることで、Phase B 以前のキャッシュ本体が万一残っていても
+ * 自動的に無効化・再構築する。hintMode が無い直近の旧形式は当日の教材を保つため、
+ * 有効形状として読んだ後に補完する。
  */
+function hasTopicParams(block: unknown): boolean {
+  if (!block || typeof block !== "object") return false;
+  const { kind, params } = block as { kind?: unknown; params?: unknown };
+  if (kind !== "warmup-reading" && kind !== "four-three-two") return true;
+  return Boolean(params) && typeof params === "object";
+}
+
+/** hintMode 追加前の当日メニューを、教材選定や使用記録を動かさずに現在の stage 既定で補完する。 */
+function hydrateTopicHintModes(menu: Menu): boolean {
+  const hintMode = prepParams(stageOf(menu.level)).hintLang;
+  let changed = false;
+  for (const block of menu.blocks) {
+    if (block.kind !== "warmup-reading" && block.kind !== "four-three-two") continue;
+    if (block.params.hintMode === "ja" || block.params.hintMode === "en") continue;
+    block.params.hintMode = hintMode;
+    changed = true;
+  }
+  return changed;
+}
+
 function isValidMenuShape(value: unknown): value is Menu {
   const v = value as Partial<Menu> | undefined;
-  return Array.isArray(v?.blocks) && v.blocks.length > 0 && typeof v?.level === "number";
+  return Array.isArray(v?.blocks) && v.blocks.length > 0 && typeof v?.level === "number" && v.blocks.every(hasTopicParams);
 }
 
 export type MenuDeps = {
@@ -77,13 +98,17 @@ export function buildTodayMenu(minutes: 60 | 30, deps: MenuDeps = {}): Menu {
 
   const level = deps.level ?? DEFAULT_LEVEL;
   const stage = stageOf(level);
+  const prepSupport = prepParams(stage);
   // キャッシュキーに level は含めない: 自動昇格が同日中に何度も起きても当日のメニューは固定する
   // （lv接尾辞ありのファイル名は誤って読まれない＝旧形式は自然に無効化される）。
   // レベル変更を同日に反映したい場合は invalidateTodayMenuCache を呼ぶ（明示的な変更のみ）。
   const cacheFile = path.join(menuCacheDir, `menu-${ymd}-${minutes}.json`);
   const cached = readJsonSafe<Menu>(cacheFile);
   if (cached) {
-    if (isValidMenuShape(cached)) return cached;
+    if (isValidMenuShape(cached)) {
+      if (hydrateTopicHintModes(cached)) writeFileSync(cacheFile, JSON.stringify(cached, null, 2));
+      return cached;
+    }
     console.warn(`[menu] cached menu has unexpected shape, rebuilding: ${cacheFile}`);
   }
 
@@ -107,15 +132,15 @@ export function buildTodayMenu(minutes: 60 | 30, deps: MenuDeps = {}): Menu {
   const blocks: MenuBlock[] =
     minutes === 60
       ? [
-          { id: "b1", kind: "warmup-reading", title: warmupTitle, titleKey: "warmup", minutes: 8, params: { topic: mainTopic }, fallback: topicFallback ?? undefined },
-          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, titleKey: "ftt", topicTitle: mainTopic.title, minutes: 16, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk }, fallback: topicFallback ?? undefined },
+          { id: "b1", kind: "warmup-reading", title: warmupTitle, titleKey: "warmup", minutes: 8, params: { topic: mainTopic, hintMode: prepSupport.hintLang }, fallback: topicFallback ?? undefined },
+          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, titleKey: "ftt", topicTitle: mainTopic.title, minutes: 16, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), hintMode: prepSupport.hintLang, modelTalkMode: prepSupport.modelTalk }, fallback: topicFallback ?? undefined },
           { id: "b3", kind: "roleplay", title: roleplayTitle(scenario), titleKey: roleplayTitleKey(scenario), topicTitle: scenario.title, minutes: 20, params: { scenario }, fallback: scenarioFallback ?? undefined },
           { id: "b4", kind: "shadowing", title: `シャドーイング: ${shadowTopic.title}`, titleKey: "shadowing", topicTitle: shadowTopic.title, minutes: 8, params: { topic: shadowTopic } },
           { id: "b5", kind: "reflection", title: "振り返り", titleKey: "reflection", minutes: 5, params: {} },
         ]
       : [
-          { id: "b1", kind: "warmup-reading", title: warmupTitle, titleKey: "warmup", minutes: 6, params: { topic: mainTopic }, fallback: topicFallback ?? undefined },
-          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, titleKey: "ftt", topicTitle: mainTopic.title, minutes: 12, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk }, fallback: topicFallback ?? undefined },
+          { id: "b1", kind: "warmup-reading", title: warmupTitle, titleKey: "warmup", minutes: 6, params: { topic: mainTopic, hintMode: prepSupport.hintLang }, fallback: topicFallback ?? undefined },
+          { id: "b2", kind: "four-three-two", title: `4/3/2: ${mainTopic.title}`, titleKey: "ftt", topicTitle: mainTopic.title, minutes: 12, params: { topic: mainTopic, roundsSec: fttRoundsSec(level), hintMode: prepSupport.hintLang, modelTalkMode: prepSupport.modelTalk }, fallback: topicFallback ?? undefined },
           { id: "b3", kind: "roleplay", title: roleplayTitle(scenario), titleKey: roleplayTitleKey(scenario), topicTitle: scenario.title, minutes: 10, params: { scenario }, fallback: scenarioFallback ?? undefined },
           { id: "b4", kind: "reflection", title: "振り返り", titleKey: "reflection", minutes: 2, params: {} },
         ];
@@ -153,6 +178,7 @@ export function buildQuickMenu(kind: QuickKind, deps: MenuDeps = {}): Menu {
   const ymd = localYmd((deps.today ?? (() => new Date()))());
   const level = deps.level ?? DEFAULT_LEVEL;
   const stage = stageOf(level);
+  const prepSupport = prepParams(stage);
   const state = loadRotation(usageFile);
 
   let block: MenuBlock;
@@ -171,11 +197,11 @@ export function buildQuickMenu(kind: QuickKind, deps: MenuDeps = {}): Menu {
     const { item: topic, fallback } = pickNextByDomainWithFallback(loadContent(topicsDir), state, ymd, stage, "topic");
     markUsed(state.usage, topic.id, ymd);
     if (kind === "warmup") {
-      block = { id: "q1", kind: "warmup-reading", title: "音読ウォームアップ", titleKey: "warmup", minutes: 6, params: { topic }, fallback: fallback ?? undefined };
+      block = { id: "q1", kind: "warmup-reading", title: "音読ウォームアップ", titleKey: "warmup", minutes: 6, params: { topic, hintMode: prepSupport.hintLang }, fallback: fallback ?? undefined };
     } else if (kind === "ftt-mini") {
       block = {
         id: "q1", kind: "four-three-two", title: `くり返しトーク（4/3/2）: ${topic.title}`, titleKey: "ftt-mini", topicTitle: topic.title, minutes: 8,
-        params: { topic, roundsSec: fttMiniRoundsSec(level), modelTalkMode: prepParams(stage).modelTalk }, fallback: fallback ?? undefined,
+        params: { topic, roundsSec: fttMiniRoundsSec(level), hintMode: prepSupport.hintLang, modelTalkMode: prepSupport.modelTalk }, fallback: fallback ?? undefined,
       };
     } else {
       block = {
