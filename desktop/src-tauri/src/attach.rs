@@ -2,11 +2,9 @@
 //! 生きていて本人であればメインウィンドウをそのURLへ向ける。
 //!
 //! Tauri Phase 2: 配布アプリは自前のサーバ（sidecar・[`crate::sidecar`]）を同梱するが、
-//! 開発者のLaunchAgentデーモンが同じ127.0.0.1:3111で稼働中なら、それにアタッチしてsidecar
-//! 起動を省略する（attach-first）。ただし別アプリ/別サービスがたまたま同じポートを掴んでいる
-//! 事故を避けるため、health応答の`app`フィールドがsolo-eikaiwa本体であることを確認してから
-//! navigateする（身元確認）。`SOLO_EIKAIWA_NO_ATTACH`が設定されていればattachを試みず、
-//! 常に自前のsidecarを起動する（配布ユーザーは通常デーモンを持たないため実質常にこの経路）。
+//! 過去の起動でorphan化した同一ビルドのsidecarが同じデータ領域を使っている場合だけ再利用する。
+//! healthの`app`だけでは開発サーバ・旧版・別データ領域を区別できないため、protocol・アプリ版・
+//! build ID・正規化データ領域ID・永続instance IDをすべて照合する（fail-closed）。
 
 use std::time::Duration;
 
@@ -17,7 +15,7 @@ use ureq::Agent;
 use crate::sidecar;
 
 const HEALTH_TIMEOUT: Duration = Duration::from_secs(2);
-/// 既存デーモンへのattach試行回数。配布版ではデーモンが存在しないケースが大半なため、
+/// 検証済みorphanへのattach試行回数。通常はorphanが存在しないため、
 /// ここで長く待つと全ユーザーの起動が毎回遅くなる。短く見切ってsidecar起動へ進む。
 const ATTACH_POLL_ATTEMPTS: u32 = 2;
 const ATTACH_POLL_INTERVAL: Duration = Duration::from_millis(300);
@@ -68,6 +66,36 @@ fn health_agent() -> Agent {
 #[derive(Debug, Deserialize)]
 struct HealthIdentity {
     app: Option<String>,
+    version: Option<String>,
+    sidecar: Option<HealthSidecarIdentity>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct HealthSidecarIdentity {
+    protocol: Option<u8>,
+    build_id: Option<String>,
+    data_root_id: Option<String>,
+    instance_id: Option<String>,
+}
+
+/// Desktopが正規sidecarへ要求する識別情報。起動ごとのnonceではなく永続instance IDを使うため、
+/// Force Quit後の正当なorphanは再利用できる一方、旧版・別データ領域・開発サーバは拒否できる。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct ExpectedSidecarIdentity {
+    pub(crate) app_version: String,
+    pub(crate) protocol: u8,
+    pub(crate) build_id: String,
+    pub(crate) data_root_id: String,
+    pub(crate) instance_id: String,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum IdentityStatus {
+    Match,
+    Stale,
+    Foreign,
+    Unavailable,
 }
 
 /// health応答のJSONボディが取得できればそのまま返す（内容は問わず、生死確認のみだったPhase1の
@@ -77,17 +105,36 @@ fn fetch_health_body(url: &str) -> Option<String> {
     res.body_mut().read_to_string().ok()
 }
 
-/// health応答のJSONボディがsolo-eikaiwa本体のものかを純粋に判定する（ネットワーク非依存・テスト可能）。
-/// 不正なJSON・`app`フィールド欠落・値の不一致はすべて「本体ではない」として扱う（fail-closed）。
-fn identity_ok(body: &str) -> bool {
-    serde_json::from_str::<HealthIdentity>(body)
-        .map(|h| h.app.as_deref() == Some(EXPECTED_APP_ID))
-        .unwrap_or(false)
+/// health応答を、正規sidecar・旧版/別データ領域・無関係な応答へ分類する純粋関数。
+/// solo-eikaiwaを名乗る旧healthも安全側に倒してStaleとし、app不一致・壊れたJSONはForeignとする。
+fn identity_status(body: &str, expected: &ExpectedSidecarIdentity) -> IdentityStatus {
+    let Ok(health) = serde_json::from_str::<HealthIdentity>(body) else {
+        return IdentityStatus::Foreign;
+    };
+    if health.app.as_deref() != Some(EXPECTED_APP_ID) {
+        return IdentityStatus::Foreign;
+    }
+    let Some(sidecar) = health.sidecar else {
+        return IdentityStatus::Stale;
+    };
+    let matches = health.version.as_deref() == Some(expected.app_version.as_str())
+        && sidecar.protocol == Some(expected.protocol)
+        && sidecar.build_id.as_deref() == Some(expected.build_id.as_str())
+        && sidecar.data_root_id.as_deref() == Some(expected.data_root_id.as_str())
+        && sidecar.instance_id.as_deref() == Some(expected.instance_id.as_str());
+    if matches { IdentityStatus::Match } else { IdentityStatus::Stale }
 }
 
-/// 指定ポートのサーバが生きていて、かつsolo-eikaiwa本体だと確認できたか（1回分の判定）。
-pub(crate) fn is_identified(port: u16) -> bool {
-    fetch_health_body(&health_url(port)).is_some_and(|body| identity_ok(&body))
+/// 指定ポートを1回だけ調べ、接続不能も含めて分類する。
+pub(crate) fn probe_identity(port: u16, expected: &ExpectedSidecarIdentity) -> IdentityStatus {
+    fetch_health_body(&health_url(port))
+        .map(|body| identity_status(&body, expected))
+        .unwrap_or(IdentityStatus::Unavailable)
+}
+
+/// 指定ポートが期待する正規sidecarか。
+pub(crate) fn is_identified(port: u16, expected: &ExpectedSidecarIdentity) -> bool {
+    probe_identity(port, expected) == IdentityStatus::Match
 }
 
 /// `SOLO_EIKAIWA_NO_ATTACH` が空でない値で設定されていればattachを試みない
@@ -111,7 +158,7 @@ pub(crate) fn navigate_to(app: &AppHandle, port: u16) -> bool {
     window.navigate(url).is_ok()
 }
 
-/// 既存デーモン・またはForce Quit等でorphan化した過去のsidecarへの身元確認つきattachを試みる。
+/// Force Quit等でorphan化した過去のsidecarへの完全な身元確認つきattachを試みる。
 /// `sidecar::CANDIDATE_PORTS`（3111→3112）の順に両方チェックする: 3111が別プロセスに
 /// 使われていて過去のsidecarが3112でorphan化しているケースでも、正規の終了を経ずに
 /// 起動し直すたびに新しい自前sidecarを積み上げてしまわないよう、既に生きている自分の
@@ -122,10 +169,34 @@ fn try_attach_to_existing(app: &AppHandle) -> bool {
         log::info!("attach: SOLO_EIKAIWA_NO_ATTACH set, skipping attach and going straight to own sidecar");
         return false;
     }
+    let expected = match sidecar::expected_identity(app) {
+        Ok(identity) => identity,
+        Err(e) => {
+            log::error!("attach: failed to prepare sidecar identity: {e}");
+            sidecar::note_startup_status(app, sidecar::StartupStatus::InternalError);
+            return false;
+        }
+    };
     for attempt in 1..=ATTACH_POLL_ATTEMPTS {
         for &port in sidecar::CANDIDATE_PORTS.iter() {
-            if is_identified(port) {
-                return navigate_to(app, port);
+            match probe_identity(port, &expected) {
+                IdentityStatus::Match => {
+                    let navigated = navigate_to(app, port);
+                    sidecar::note_startup_status(
+                        app,
+                        if navigated { sidecar::StartupStatus::Ready } else { sidecar::StartupStatus::InternalError },
+                    );
+                    return navigated;
+                }
+                IdentityStatus::Stale => {
+                    sidecar::note_startup_status(app, sidecar::StartupStatus::StaleSidecar);
+                    log::warn!("attach: incompatible or stale solo-eikaiwa sidecar on port {port}; refusing attach");
+                }
+                IdentityStatus::Foreign => {
+                    sidecar::note_startup_status(app, sidecar::StartupStatus::PortOccupied);
+                    log::warn!("attach: port {port} answered with a foreign health response; refusing attach");
+                }
+                IdentityStatus::Unavailable => {}
             }
         }
         log::info!(
@@ -136,7 +207,7 @@ fn try_attach_to_existing(app: &AppHandle) -> bool {
     false
 }
 
-/// 起動時に呼ぶ: attach-first（身元確認つき）→ 失敗したら自前のsidecarを起動する。
+/// 起動時に呼ぶ: 検証済みorphanの再利用 → 失敗したら自前のsidecarを起動する。
 /// 全滅した場合は同梱のフォールバックページ（案内+再試行ボタン）が表示されたままになる。
 pub fn spawn_initial_attach(app: AppHandle) {
     std::thread::spawn(move || {
@@ -157,6 +228,7 @@ pub fn spawn_initial_attach(app: AppHandle) {
 /// `spawn_blocking`で専用スレッドプールへ逃がし、メインスレッドは即座に解放する。
 #[tauri::command]
 pub async fn retry_attach(app: AppHandle) -> bool {
+    sidecar::reset_startup_status(&app);
     tauri::async_runtime::spawn_blocking(move || {
         if try_attach_to_existing(&app) {
             return true;
@@ -167,9 +239,18 @@ pub async fn retry_attach(app: AppHandle) -> bool {
     .unwrap_or(false)
 }
 
+/// フォールバック画面が、旧sidecarと一般的なポート占有を区別して案内するための状態取得。
+#[tauri::command]
+pub fn startup_status(app: AppHandle) -> sidecar::StartupStatus {
+    sidecar::startup_status(&app)
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{args_have_poc_stt_flag, identity_ok, is_identified, target_url};
+    use super::{
+        args_have_poc_stt_flag, identity_status, is_identified, probe_identity, target_url,
+        ExpectedSidecarIdentity, IdentityStatus,
+    };
     use std::io::{Read, Write};
     use std::net::TcpListener;
     use std::time::{Duration, Instant};
@@ -223,24 +304,40 @@ mod tests {
         assert!(!args_have_poc_stt_flag(args(&["bin", "--poc=other"])));
     }
 
-    #[test]
-    fn identity_ok_true_for_matching_app_field() {
-        assert!(identity_ok(r#"{"app":"solo-eikaiwa","version":"0.28.0"}"#));
+    fn expected_identity() -> ExpectedSidecarIdentity {
+        ExpectedSidecarIdentity {
+            app_version: "0.29.0".to_string(),
+            protocol: 1,
+            build_id: "com.local.solo-eikaiwa.desktop@0.29.0".to_string(),
+            data_root_id: "root-a".to_string(),
+            instance_id: "instance-a".to_string(),
+        }
     }
 
     #[test]
-    fn identity_ok_false_for_mismatched_app_field() {
-        assert!(!identity_ok(r#"{"app":"some-other-app"}"#));
+    fn identity_status_matches_only_the_complete_expected_handshake() {
+        let body = r#"{"app":"solo-eikaiwa","version":"0.29.0","sidecar":{"protocol":1,"buildId":"com.local.solo-eikaiwa.desktop@0.29.0","dataRootId":"root-a","instanceId":"instance-a"}}"#;
+        assert_eq!(identity_status(body, &expected_identity()), IdentityStatus::Match);
     }
 
     #[test]
-    fn identity_ok_false_for_missing_app_field() {
-        assert!(!identity_ok(r#"{"ok":true}"#));
+    fn identity_status_rejects_stale_version_build_data_root_and_instance() {
+        for body in [
+            r#"{"app":"solo-eikaiwa","version":"0.28.0","sidecar":{"protocol":1,"buildId":"com.local.solo-eikaiwa.desktop@0.29.0","dataRootId":"root-a","instanceId":"instance-a"}}"#,
+            r#"{"app":"solo-eikaiwa","version":"0.29.0","sidecar":{"protocol":1,"buildId":"other-build","dataRootId":"root-a","instanceId":"instance-a"}}"#,
+            r#"{"app":"solo-eikaiwa","version":"0.29.0","sidecar":{"protocol":1,"buildId":"com.local.solo-eikaiwa.desktop@0.29.0","dataRootId":"root-b","instanceId":"instance-a"}}"#,
+            r#"{"app":"solo-eikaiwa","version":"0.29.0","sidecar":{"protocol":1,"buildId":"com.local.solo-eikaiwa.desktop@0.29.0","dataRootId":"root-a","instanceId":"instance-b"}}"#,
+            r#"{"app":"solo-eikaiwa","version":"0.29.0"}"#,
+        ] {
+            assert_eq!(identity_status(body, &expected_identity()), IdentityStatus::Stale);
+        }
     }
 
     #[test]
-    fn identity_ok_false_for_malformed_json() {
-        assert!(!identity_ok("not json"));
+    fn identity_status_distinguishes_foreign_or_fake_health() {
+        assert_eq!(identity_status(r#"{"app":"some-other-app"}"#, &expected_identity()), IdentityStatus::Foreign);
+        assert_eq!(identity_status(r#"{"ok":true}"#, &expected_identity()), IdentityStatus::Foreign);
+        assert_eq!(identity_status("not json", &expected_identity()), IdentityStatus::Foreign);
     }
 
     /// ローカルに1回だけ固定の応答を返す使い捨てサーバを立て、その待受ポートを返す。
@@ -259,14 +356,14 @@ mod tests {
 
     #[test]
     fn is_identified_true_when_server_returns_matching_identity() {
-        let body = r#"{"app":"solo-eikaiwa","version":"0.28.0"}"#;
+        let body = r#"{"app":"solo-eikaiwa","version":"0.29.0","sidecar":{"protocol":1,"buildId":"com.local.solo-eikaiwa.desktop@0.29.0","dataRootId":"root-a","instanceId":"instance-a"}}"#;
         let response = format!(
             "HTTP/1.1 200 OK\r\ncontent-length: {}\r\n\r\n{}",
             body.len(),
             body,
         );
         let port = spawn_response_server(Box::leak(response.into_boxed_str()));
-        assert!(is_identified(port));
+        assert!(is_identified(port, &expected_identity()));
     }
 
     #[test]
@@ -278,7 +375,31 @@ mod tests {
             body,
         );
         let port = spawn_response_server(Box::leak(response.into_boxed_str()));
-        assert!(!is_identified(port));
+        assert!(!is_identified(port, &expected_identity()));
+    }
+
+    #[test]
+    fn probe_identity_classifies_old_sidecar_over_real_http_as_stale() {
+        let body = r#"{"app":"solo-eikaiwa","version":"0.28.0","sidecar":{"protocol":1,"buildId":"com.local.solo-eikaiwa.desktop@0.28.0","dataRootId":"root-a","instanceId":"instance-a"}}"#;
+        let response = format!(
+            "HTTP/1.1 200 OK\r\ncontent-length: {}\r\n\r\n{}",
+            body.len(),
+            body,
+        );
+        let port = spawn_response_server(Box::leak(response.into_boxed_str()));
+        assert_eq!(probe_identity(port, &expected_identity()), IdentityStatus::Stale);
+    }
+
+    #[test]
+    fn probe_identity_classifies_fake_health_over_real_http_as_foreign() {
+        let body = r#"{"app":"other-app","version":"0.29.0"}"#;
+        let response = format!(
+            "HTTP/1.1 200 OK\r\ncontent-length: {}\r\n\r\n{}",
+            body.len(),
+            body,
+        );
+        let port = spawn_response_server(Box::leak(response.into_boxed_str()));
+        assert_eq!(probe_identity(port, &expected_identity()), IdentityStatus::Foreign);
     }
 
     #[test]
@@ -287,6 +408,6 @@ mod tests {
         let listener = TcpListener::bind("127.0.0.1:0").expect("bind ephemeral port");
         let port = listener.local_addr().expect("local_addr").port();
         drop(listener);
-        assert!(!is_identified(port));
+        assert!(!is_identified(port, &expected_identity()));
     }
 }

@@ -16,6 +16,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2.6.3", features = [] }
+sha2 = "0.10"
 
 [dependencies]
 serde_json = "1.0"
@@ -29,3 +30,5 @@ tauri-plugin-dialog = "2"
 tauri-plugin-updater = "2"
 sys-locale = "0.3"
 time = { version = "0.3.41", features = ["formatting"] }
+sha2 = "0.10"
+uuid = { version = "1", features = ["v4"] }

@@ -82,6 +82,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
+ "sha2",
  "sys-locale",
  "tauri",
  "tauri-build",
@@ -91,6 +92,7 @@ dependencies = [
  "tauri-plugin-updater",
  "time",
  "ureq",
+ "uuid",
 ]
 
 [[package]]

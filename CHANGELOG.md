@@ -42,6 +42,7 @@
 
 ### Security
 
+- デスクトップ版が既存サーバへ接続する条件を、アプリ版・handshake protocol・build・正規化データ領域・永続instanceの完全一致へ強化した。開発サーバ、更新前の旧sidecar、別データ領域、偽healthには接続せず、旧sidecarと一般的なポート占有を画面で区別する
 - Bun/Viteが自動読込する`.env.local`や環境別`.env`を全階層でGit管理対象外にし、秘密情報の誤コミットを防止した
 - ローカルAPIで許可するHost・Originをloopback、Caddy、Viteの正規経路に限定し、cross-siteリクエストと認証なしの非loopback待受を処理前に拒否するようにした
 - JSONを`application/json`系かつ64 KiB以下のobjectに限定し、構造量と各フィールドを実行時検証するようにした。STT音声は対応形式かつ24 MiB以下、TTSテキストは8,000文字以下に制限した
