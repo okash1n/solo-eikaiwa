@@ -59,18 +59,18 @@
     --card-foreground: #1f1e1c;
     --popover: #ffffff;
     --popover-foreground: #1f1e1c;
-    --primary: #1e9c5a;
+    --primary: #187a45;
     --primary-foreground: #ffffff;
     --secondary: #ffffff;
     --secondary-foreground: #1f1e1c;
     --muted: #f4f2ee;
     --muted-foreground: #6f6b64;
     --accent: #e4f4ea;
-    --accent-foreground: #1e9c5a;
+    --accent-foreground: #187a45;
     --destructive: #a03d33;
     --border: #e5e1da;
     --input: #e5e1da;
-    --ring: #1e9c5a;
+    --ring: #187a45;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
@@ -88,13 +88,13 @@
 
     /* ドリル用アイコンタイル（tokens.css と同じ値。tokens.css 移行完了後もここが正） */
     --tile-green-bg: #e4f4ea;
-    --tile-green-fg: #1e9c5a;
+    --tile-green-fg: #187a45;
     --tile-purple-bg: #efeafb;
-    --tile-purple-fg: #7c5cd6;
+    --tile-purple-fg: #5e3ab5;
     --tile-orange-bg: #fdeede;
-    --tile-orange-fg: #d9791f;
+    --tile-orange-fg: #a6520e;
     --tile-blue-bg: #e5f0fb;
-    --tile-blue-fg: #2f7cd6;
+    --tile-blue-fg: #2565a7;
 
     /* 情報色（彩度控えめ） */
     --ok: #33683f;

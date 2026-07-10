@@ -66,7 +66,12 @@ export function ProgressScreen({ lang }: { lang: Lang }) {
       {pageHero}
 
       <Card header={t.speakingTime}>
-        <div className="metric-bars">
+        <ul className="visually-hidden">
+          {days.map((d) => (
+            <li key={d.ymd}>{t.speakingDay(formatYmdLong(d.ymd, lang), fmtMin(d.speakingSec))}</li>
+          ))}
+        </ul>
+        <div className="metric-bars" aria-hidden="true">
           {days.map((d) => (
             <div key={d.ymd} className="metric-bar-col" title={`${formatYmdLong(d.ymd, lang)}: ${fmtMin(d.speakingSec)}${t.speakingMinUnit}`}>
               <div className="metric-bar" style={{ height: `${Math.round((d.speakingSec / maxSec) * 100)}%` }} />
@@ -77,7 +82,12 @@ export function ProgressScreen({ lang }: { lang: Lang }) {
       </Card>
 
       <Card header={t.articulation}>
-        <div className="stack-sm">
+        <ul className="visually-hidden">
+          {days.filter((d) => d.utterances > 0).map((d) => (
+            <li key={d.ymd}>{t.articulationDay(formatYmdLong(d.ymd, lang), d.avgArticulationWpm)}</li>
+          ))}
+        </ul>
+        <div className="stack-sm" aria-hidden="true">
           {days.filter((d) => d.utterances > 0).map((d) => (
             <div key={d.ymd} className="hbar-row">
               <span className="hbar-label">{formatYmdShort(d.ymd, lang)}</span>

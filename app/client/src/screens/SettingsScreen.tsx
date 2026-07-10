@@ -155,6 +155,7 @@ function RoleTargetToggle(props: {
           <button
             key={t}
             className={props.value === t ? "is-active" : ""}
+            aria-pressed={props.value === t}
             disabled={props.disabled || (t === "local" && !props.localEnabled)}
             onClick={() => props.onChange(t)}
           >
@@ -687,9 +688,9 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             <div className="llm-field">
               <span className="text-sm text-muted">{s.settings.ttsVoicePresetLabel}</span>
               <div className="lang-toggle" role="group" aria-label={s.settings.ttsVoicePresetLabel}>
-                <button className={voicePreset === "female" ? "is-active" : ""} disabled={settingsSaving || !ttsView} onClick={() => applyVoicePreset("female")}>{s.settings.ttsVoiceFemale}</button>
-                <button className={voicePreset === "male" ? "is-active" : ""} disabled={settingsSaving || !ttsView} onClick={() => applyVoicePreset("male")}>{s.settings.ttsVoiceMale}</button>
-                <button className={voicePreset === "custom" ? "is-active" : ""} disabled={settingsSaving || !ttsView} onClick={() => voiceInputRef.current?.focus()}>{s.settings.ttsVoiceCustom}</button>
+                <button className={voicePreset === "female" ? "is-active" : ""} aria-pressed={voicePreset === "female"} disabled={settingsSaving || !ttsView} onClick={() => applyVoicePreset("female")}>{s.settings.ttsVoiceFemale}</button>
+                <button className={voicePreset === "male" ? "is-active" : ""} aria-pressed={voicePreset === "male"} disabled={settingsSaving || !ttsView} onClick={() => applyVoicePreset("male")}>{s.settings.ttsVoiceMale}</button>
+                <button className={voicePreset === "custom" ? "is-active" : ""} aria-pressed={voicePreset === "custom"} disabled={settingsSaving || !ttsView} onClick={() => voiceInputRef.current?.focus()}>{s.settings.ttsVoiceCustom}</button>
               </div>
               <span className="text-sm text-muted">{s.settings.ttsVoicePresetNote}</span>
             </div>
@@ -729,8 +730,8 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
             <div className="llm-field">
               <span className="text-sm text-muted">{s.settings.preferredCloudLabel}</span>
               <div className="lang-toggle" role="group" aria-label={s.settings.preferredCloudLabel}>
-                <button className={preferredCloud === "claude" ? "is-active" : ""} disabled={settingsSaving} onClick={() => setPreferredCloud("claude")}>{s.settings.targetClaude}</button>
-                <button className={preferredCloud === "codex" ? "is-active" : ""} disabled={settingsSaving} onClick={() => setPreferredCloud("codex")}>{s.settings.targetCodex}</button>
+                <button className={preferredCloud === "claude" ? "is-active" : ""} aria-pressed={preferredCloud === "claude"} disabled={settingsSaving} onClick={() => setPreferredCloud("claude")}>{s.settings.targetClaude}</button>
+                <button className={preferredCloud === "codex" ? "is-active" : ""} aria-pressed={preferredCloud === "codex"} disabled={settingsSaving} onClick={() => setPreferredCloud("codex")}>{s.settings.targetCodex}</button>
               </div>
               <span className="text-sm text-muted">{s.settings.preferredCloudNote}</span>
             </div>
@@ -899,14 +900,14 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang }: Props)
           <div className="stat-title">{s.settings.displaySection}</div>
           <div className="text-sm text-muted">{s.settings.displayImmediateNote}</div>
           <div className="lang-toggle" role="group" aria-label={s.appShell.textSize}>
-            <button className={uiScale === "small" ? "is-active" : ""} onClick={() => setUiScale("small")}>{s.uiScale.small}</button>
-            <button className={uiScale === "medium" ? "is-active" : ""} onClick={() => setUiScale("medium")}>{s.uiScale.medium}</button>
-            <button className={uiScale === "large" ? "is-active" : ""} onClick={() => setUiScale("large")}>{s.uiScale.large}</button>
-            <button className={uiScale === "xlarge" ? "is-active" : ""} onClick={() => setUiScale("xlarge")}>{s.uiScale.xlarge}</button>
+            <button className={uiScale === "small" ? "is-active" : ""} aria-pressed={uiScale === "small"} onClick={() => setUiScale("small")}>{s.uiScale.small}</button>
+            <button className={uiScale === "medium" ? "is-active" : ""} aria-pressed={uiScale === "medium"} onClick={() => setUiScale("medium")}>{s.uiScale.medium}</button>
+            <button className={uiScale === "large" ? "is-active" : ""} aria-pressed={uiScale === "large"} onClick={() => setUiScale("large")}>{s.uiScale.large}</button>
+            <button className={uiScale === "xlarge" ? "is-active" : ""} aria-pressed={uiScale === "xlarge"} onClick={() => setUiScale("xlarge")}>{s.uiScale.xlarge}</button>
           </div>
           <div className="lang-toggle" role="group" aria-label={s.appShell.language}>
-            <button className={lang === "en" ? "is-active" : ""} onClick={() => switchLang("en")}>EN</button>
-            <button className={lang === "ja" ? "is-active" : ""} onClick={() => switchLang("ja")}>日本語</button>
+            <button className={lang === "en" ? "is-active" : ""} aria-pressed={lang === "en"} onClick={() => switchLang("en")}>EN</button>
+            <button className={lang === "ja" ? "is-active" : ""} aria-pressed={lang === "ja"} onClick={() => switchLang("ja")}>日本語</button>
           </div>
         </section>
       )}

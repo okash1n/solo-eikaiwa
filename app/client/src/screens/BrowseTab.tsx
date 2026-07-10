@@ -74,6 +74,7 @@ export function BrowseTab({ lang }: { lang: Lang }) {
           <button
             key={f}
             className={`filter-chip${filter === f ? " is-active" : ""}`}
+            aria-pressed={filter === f}
             onClick={() => setFilter(f)}
           >
             {f === "all" ? t.filterAll : t.domain[f]}

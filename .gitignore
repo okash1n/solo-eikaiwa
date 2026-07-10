@@ -4,6 +4,7 @@ models/
 .env.*
 !.env.example
 dist/
+/app/client/test-results/
 *.log
 .superpowers/
 

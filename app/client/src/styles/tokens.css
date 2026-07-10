@@ -6,15 +6,15 @@
   --border: #e5e1da;
   --text: #1f1e1c;
   --text-muted: #6f6b64;
-  --accent: #1e9c5a;
+  --accent: #187a45;
   --accent-soft: #e4f4ea;
   --on-accent: #ffffff;
 
   /* ドリル用アイコンタイル（soft背景 / アイコン色） */
-  --tile-green-bg: #e4f4ea;   --tile-green-fg: #1e9c5a;
-  --tile-purple-bg: #efeafb;  --tile-purple-fg: #7c5cd6;
-  --tile-orange-bg: #fdeede;  --tile-orange-fg: #d9791f;
-  --tile-blue-bg: #e5f0fb;    --tile-blue-fg: #2f7cd6;
+  --tile-green-bg: #e4f4ea;   --tile-green-fg: #187a45;
+  --tile-purple-bg: #efeafb;  --tile-purple-fg: #5e3ab5;
+  --tile-orange-bg: #fdeede;  --tile-orange-fg: #a6520e;
+  --tile-blue-bg: #e5f0fb;    --tile-blue-fg: #2565a7;
   --ok: #33683f;
   --ok-soft: #e7f2ea;
   --warn: #8a5d14;

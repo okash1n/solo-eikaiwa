@@ -85,10 +85,10 @@ export function SentencesScreen({ lang }: { lang: Lang }) {
         <p className="hero-date">{t.heroDesc}</p>
       </div>
       <div className="filter-row sentences-toolbar">
-        <button className={`filter-chip${tab === "practice" ? " is-active" : ""}`} onClick={() => selectTab("practice")}>
+        <button className={`filter-chip${tab === "practice" ? " is-active" : ""}`} aria-pressed={tab === "practice"} onClick={() => selectTab("practice")}>
           {t.tabPractice}
         </button>
-        <button className={`filter-chip${tab === "browse" ? " is-active" : ""}`} onClick={() => selectTab("browse")}>
+        <button className={`filter-chip${tab === "browse" ? " is-active" : ""}`} aria-pressed={tab === "browse"} onClick={() => selectTab("browse")}>
           {t.tabBrowse}
         </button>
         {tab === "practice" && (

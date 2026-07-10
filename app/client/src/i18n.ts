@@ -44,7 +44,7 @@ type SessionStrings = {
 type NavStrings = {
   nav: {
     home: string; placement: string; free: string; library: string; sentences: string; listening: string; progress: string; feedback: string; settings: string;
-    sectionToday: string; sectionSelf: string; sectionRecords: string; selfStudyHint: string;
+    sectionToday: string; sectionSelf: string; sectionRecords: string; selfStudyHint: string; navigationLabel: string;
   };
 };
 type AppShellStrings = { appShell: { backToHome: string; textSize: string; language: string } };
@@ -256,7 +256,7 @@ type CalendarStrings = {
   calendar: {
     title: string; legendLess: string; legendMore: string;
     loading: string; loadError: string; retry: string;
-    dayLabel: (date: string, xp: number) => string;
+    dayLabel: (date: string, xp: number) => string; summary: (count: number) => string;
   };
 };
 type FreeTalkHeaderStrings = { freeTalk: { title: string; desc: string } };
@@ -277,8 +277,8 @@ type ProgressStrings = {
     acceptUp: string; acceptDown: string; decline: string;
     actionError: string;
     title: string;
-    speakingTime: string; speakingMinUnit: string;
-    articulation: string; articulationUnit: string;
+    speakingTime: string; speakingMinUnit: string; speakingDay: (date: string, minutes: string) => string;
+    articulation: string; articulationUnit: string; articulationDay: (date: string, wpm: number) => string;
     pauseCard: string; repetitionCard: string; weekOverWeek: string;
     levelHistory: string; currentLevel: (n: number) => string;
     empty: string;
@@ -455,7 +455,7 @@ export const STR: Record<Lang, Strings> = {
   en: {
     nav: {
       home: "Home", placement: "Level Check", free: "Free Talk", library: "Model Talks", sentences: "390 Sentences", listening: "Listening", progress: "Progress", feedback: "Practice reactions", settings: "Settings",
-      sectionToday: "Today's practice", sectionSelf: "Self-study", sectionRecords: "Records, level & settings",
+      sectionToday: "Today's practice", sectionSelf: "Self-study", sectionRecords: "Records, level & settings", navigationLabel: "Main navigation",
       selfStudyHint: "Your main path is Today's practice. Self-study fits spare moments — a good order: listen (Listening) → memorize (Sentences) → speak (Free talk).",
     },
     appShell: { backToHome: "← Back to home", textSize: "Text size", language: "Language" },
@@ -683,6 +683,7 @@ export const STR: Record<Lang, Strings> = {
       title: "Days with practice", legendLess: "Less", legendMore: "More",
       loading: "Loading practice days…", loadError: "Couldn't load practice days.", retry: "Retry",
       dayLabel: (date, xp) => xp > 0 ? `${date} · ${xp} XP` : date,
+      summary: (count) => count === 1 ? "Practice recorded on 1 day." : `Practice recorded on ${count} days.`,
     },
     freeTalk: { title: "Free Talk", desc: "Talk about anything in English — press the button to start and stop recording" },
     progress: {
@@ -704,8 +705,8 @@ export const STR: Record<Lang, Strings> = {
       acceptUp: "Level up", acceptDown: "Move down", decline: "Not now",
       actionError: "Couldn't apply. Refreshed the latest state.",
       title: "Progress",
-      speakingTime: "Speaking time (last 14 days)", speakingMinUnit: "min",
-      articulation: "Articulation rate", articulationUnit: "wpm",
+      speakingTime: "Speaking time (last 14 days)", speakingMinUnit: "min", speakingDay: (date, minutes) => `${date}: ${minutes} minutes of speaking`,
+      articulation: "Articulation rate", articulationUnit: "wpm", articulationDay: (date, wpm) => `${date}: ${wpm} words per minute`,
       pauseCard: "Pause ratio", repetitionCard: "Self-repetition", weekOverWeek: "vs last week",
       levelHistory: "Level history", currentLevel: (n) => `Now Lv ${n}`,
       empty: "Start speaking and your metrics will show up here.",
@@ -957,7 +958,7 @@ export const STR: Record<Lang, Strings> = {
   ja: {
     nav: {
       home: "ホーム", placement: "レベル測定", free: "自由会話", library: "モデルトーク", sentences: "暗記例文390", listening: "リスニング（多聴）", progress: "進捗", feedback: "練習の感想", settings: "設定",
-      sectionToday: "今日の練習", sectionSelf: "自主練", sectionRecords: "記録・測定・設定",
+      sectionToday: "今日の練習", sectionSelf: "自主練", sectionRecords: "記録・測定・設定", navigationLabel: "メインナビゲーション",
       selfStudyHint: "メインは「今日の練習」。自主練はすきま時間に。目安の順番: リスニング → 暗記例文 → 自由会話。",
     },
     appShell: { backToHome: "← ホームに戻る", textSize: "文字サイズ", language: "言語" },
@@ -1185,6 +1186,7 @@ export const STR: Record<Lang, Strings> = {
       title: "練習した日", legendLess: "少", legendMore: "多",
       loading: "練習記録を読み込んでいます…", loadError: "練習記録を読み込めませんでした。", retry: "再試行",
       dayLabel: (date, xp) => xp > 0 ? `${date} ・ ${xp} XP` : date,
+      summary: (count) => `練習を記録した日: ${count}日。`,
     },
     freeTalk: { title: "自由会話", desc: "英語でなんでも話しかけてください — 録音ボタンで開始・停止" },
     progress: {
@@ -1206,8 +1208,8 @@ export const STR: Record<Lang, Strings> = {
       acceptUp: "レベルアップ", acceptDown: "レベルを下げる", decline: "今はしない",
       actionError: "適用できませんでした。最新の状態に更新しました",
       title: "進捗",
-      speakingTime: "話した時間（直近14日）", speakingMinUnit: "分",
-      articulation: "調音速度", articulationUnit: "wpm",
+      speakingTime: "話した時間（直近14日）", speakingMinUnit: "分", speakingDay: (date, minutes) => `${date}: ${minutes}分話しました`,
+      articulation: "調音速度", articulationUnit: "wpm", articulationDay: (date, wpm) => `${date}: ${wpm} wpm`,
       pauseCard: "ポーズ比率", repetitionCard: "言い直し率", weekOverWeek: "前週比",
       levelHistory: "レベル履歴", currentLevel: (n) => `現在 Lv ${n}`,
       empty: "話すと、ここに記録が貯まりはじめます。",

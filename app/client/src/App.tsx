@@ -53,6 +53,9 @@ export function App() {
   const [mode, setMode] = useState<Mode>({ kind: "start" });
   const [lang, setLang] = useState<Lang>(() => loadLang());
   const t = STR[lang];
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
   function switchLang(next: Lang) {
     setLang(next);
     saveLang(next);
@@ -146,7 +149,7 @@ export function App() {
     <div className="shell">
       <aside className="sidebar">
         <h1 className="app-brand"><span className="brand-mark" aria-hidden="true" />solo-eikaiwa</h1>
-        <nav className="side-nav">
+        <nav className="side-nav" aria-label={t.nav.navigationLabel}>
           {navSections.map((sec) => (
             <Fragment key={sec.key}>
               <p className="side-section">
@@ -166,9 +169,9 @@ export function App() {
                 <div id="self-study-hint" className="info-pop">{t.nav.selfStudyHint}</div>
               )}
               {navItems.filter((n) => n.section === sec.key).map((n) => (
-                <button key={n.key} className={`side-item${n.active ? " is-active" : ""}`} onClick={n.go}>
+                <button key={n.key} className={`side-item${n.active ? " is-active" : ""}`} aria-current={n.active ? "page" : undefined} onClick={n.go}>
                   <span className="side-icon" aria-hidden="true">{n.icon}</span>
-                  {n.label}
+                  <span className="side-label">{n.label}</span>
                 </button>
               ))}
             </Fragment>
@@ -181,12 +184,12 @@ export function App() {
         <div className="sidebar-quick">
           <div className="lang-toggle" role="group" aria-label={t.appShell.textSize}>
             {(["small", "medium", "large", "xlarge"] as const).map((sc) => (
-              <button key={sc} className={uiScale === sc ? "is-active" : ""} onClick={() => setUiScale(sc)}>{t.uiScale[sc]}</button>
+              <button key={sc} className={uiScale === sc ? "is-active" : ""} aria-pressed={uiScale === sc} onClick={() => setUiScale(sc)}>{t.uiScale[sc]}</button>
             ))}
           </div>
           <div className="lang-toggle" role="group" aria-label={t.appShell.language}>
-            <button className={lang === "en" ? "is-active" : ""} onClick={() => switchLang("en")}>EN</button>
-            <button className={lang === "ja" ? "is-active" : ""} onClick={() => switchLang("ja")}>日本語</button>
+            <button className={lang === "en" ? "is-active" : ""} aria-pressed={lang === "en"} onClick={() => switchLang("en")}>EN</button>
+            <button className={lang === "ja" ? "is-active" : ""} aria-pressed={lang === "ja"} onClick={() => switchLang("ja")}>日本語</button>
           </div>
         </div>
         <SupportPanel lang={lang} />
@@ -195,7 +198,7 @@ export function App() {
           <a className="side-link" href="https://github.com/btajp/solo-eikaiwa" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
             <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
           </a>
-          <button className={`side-link${mode.kind === "about" ? " is-active" : ""}`} onClick={() => moveTo({ kind: "about" })}>{t.about.title}</button>
+          <button className={`side-link${mode.kind === "about" ? " is-active" : ""}`} aria-current={mode.kind === "about" ? "page" : undefined} onClick={() => moveTo({ kind: "about" })}>{t.about.title}</button>
         </div>
       </aside>
       <main className="app">
@@ -342,9 +345,9 @@ function SupportPanel({ lang }: { lang: Lang }) {
             </div>
             {openHelp === tg.key && <div id={popId} className="info-pop">{tg.help}</div>}
             <div className="lang-toggle" role="group" aria-label={tg.label}>
-              <button className={s[tg.key] === null ? "is-active" : ""} onClick={() => setToggle(tg.key, null)}>{t.optAuto}</button>
-              <button className={s[tg.key] === true ? "is-active" : ""} onClick={() => setToggle(tg.key, true)}>{t.optOn}</button>
-              <button className={s[tg.key] === false ? "is-active" : ""} onClick={() => setToggle(tg.key, false)}>{t.optOff}</button>
+              <button className={s[tg.key] === null ? "is-active" : ""} aria-pressed={s[tg.key] === null} onClick={() => setToggle(tg.key, null)}>{t.optAuto}</button>
+              <button className={s[tg.key] === true ? "is-active" : ""} aria-pressed={s[tg.key] === true} onClick={() => setToggle(tg.key, true)}>{t.optOn}</button>
+              <button className={s[tg.key] === false ? "is-active" : ""} aria-pressed={s[tg.key] === false} onClick={() => setToggle(tg.key, false)}>{t.optOff}</button>
             </div>
           </div>
         );

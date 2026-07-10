@@ -54,6 +54,10 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 /* テキストユーティリティ */
 .text-muted { color: var(--text-muted); }
 .reading-text { font-size: var(--fs-lg); line-height: var(--lh-reading); white-space: pre-wrap; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
 .stack > * + * { margin-top: var(--sp-4); }
 .flow-exit { display: flex; justify-content: flex-start; }
 
@@ -199,6 +203,7 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 }
 .side-item:hover { background: var(--bg); color: var(--text); }
 .side-item.is-active { background: var(--accent-soft); color: var(--accent); font-weight: 650; }
+.side-label { min-width: 0; overflow-wrap: anywhere; }
 /* ナビのセクション見出し（今日の練習/自主練/記録・測定） */
 .side-section {
   display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2);
@@ -262,12 +267,25 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 .about-actions { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
 @media (max-width: 860px) {
   .shell { flex-direction: column; }
-  .sidebar { width: 100%; height: auto; position: static; flex-direction: row; align-items: center; border-right: none; border-bottom: 1px solid var(--border); padding: var(--sp-2) var(--sp-4); }
-  .side-nav { flex-direction: row; }
+  .sidebar {
+    width: 100%; height: auto; position: static; flex-direction: row; flex-wrap: wrap; align-items: stretch;
+    gap: var(--sp-2); border-right: none; border-bottom: 1px solid var(--border);
+    padding: max(var(--sp-2), env(safe-area-inset-top)) max(var(--sp-3), env(safe-area-inset-right)) max(var(--sp-2), env(safe-area-inset-bottom)) max(var(--sp-3), env(safe-area-inset-left));
+  }
+  .app-brand { flex: 1 1 100%; }
+  .side-nav { width: 100%; flex-direction: row; flex-wrap: wrap; gap: 2px; }
+  .side-section, .side-nav .info-pop { flex: 0 0 100%; }
+  .side-item { flex: 1 1 11rem; min-width: 0; }
   .sidebar-spacer { display: none; }
-  .sidebar-quick { display: none; }
-  .sidebar-links { display: none; }
-  .stat-box { margin-left: auto; display: flex; gap: var(--sp-2); align-items: baseline; }
+  .sidebar-quick { display: flex; flex: 1 1 100%; flex-direction: row; flex-wrap: wrap; }
+  .sidebar-quick .lang-toggle { flex: 1 1 10rem; }
+  .support-panel, .stat-box, .sidebar-links { flex: 1 1 100%; }
+  .stat-box { margin-left: 0; }
+  .sidebar-links { display: flex; }
+}
+@media (max-width: 600px) {
+  .app { padding: var(--sp-4) var(--sp-3) var(--sp-6); }
+  .drill-grid, .metric-cards { grid-template-columns: 1fr; }
 }
 
 /* 言い方ヒント */

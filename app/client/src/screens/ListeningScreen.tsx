@@ -73,8 +73,8 @@ function ListeningList({ data, lang, weekCount, onOpen }: {
     <>
       <p className="text-sm text-muted">{t.weekCount(weekCount)}</p>
       <div className="lang-toggle" role="group" aria-label={t.filterFit}>
-        <button className={!showAll ? "is-active" : ""} onClick={() => setShowAll(false)}>{t.filterFit}</button>
-        <button className={showAll ? "is-active" : ""} onClick={() => setShowAll(true)}>{t.filterAll}</button>
+        <button className={!showAll ? "is-active" : ""} aria-pressed={!showAll} onClick={() => setShowAll(false)}>{t.filterFit}</button>
+        <button className={showAll ? "is-active" : ""} aria-pressed={showAll} onClick={() => setShowAll(true)}>{t.filterAll}</button>
       </div>
       {shown.length === 0 && <p className="text-muted">{t.empty}</p>}
       {shown.map((it) => (

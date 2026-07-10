@@ -96,7 +96,13 @@ function PracticeCalendar({ state, lang, onRetry }: {
   }
   return (
     <Card header={t.calendar.title}>
-      <div className="cal" ref={calRef}>
+      <p className="visually-hidden">{t.calendar.summary(state.data.days.length)}</p>
+      <ul className="visually-hidden">
+        {state.data.days.map((ymd) => (
+          <li key={ymd}>{t.calendar.dayLabel(formatYmdLong(ymd, lang), xpByDay[ymd] ?? 0)}</li>
+        ))}
+      </ul>
+      <div className="cal" ref={calRef} aria-hidden="true">
         <div className="cal-weekdays">
           {WEEKDAY_LETTERS[lang].map((w, i) => (
             <span key={i}>{w}</span>
@@ -126,7 +132,7 @@ function PracticeCalendar({ state, lang, onRetry }: {
           );
         })}
       </div>
-      <div className="cal-legend text-sm text-muted">
+      <div className="cal-legend text-sm text-muted" aria-hidden="true">
         {t.calendar.legendLess}
         {[1, 2, 3, 4].map((lv) => (<span key={lv} className="day" data-level={lv} />))}
         {t.calendar.legendMore}
