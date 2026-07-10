@@ -1,6 +1,6 @@
 import {
   LLM_ROLES, SERVICE_TIER_OPTIONS, EFFORT_OPTIONS,
-  type LlmRole, type LlmRoleInput, type LlmSettingsInput, type LlmSettingsView, type RoleTuning,
+  type LlmRole, type LlmRoleInput, type LlmRoleView, type LlmSettingsInput, type LlmSettingsView, type RoleTuning,
   type ServiceTierOption, type EffortOption, type CatalogModel, type CatalogModelEffort, type CatalogResult,
   type AuthMode, type LlmAuthProvider,
 } from "../api";
@@ -248,28 +248,31 @@ export function hydrateTargets(view: LlmSettingsView): RoleTargets {
 
 /**
  * (targets, conn) を PUT /api/llm-settings/roles のペイロードへ直列化する。
- * - 接続は常に global（接続ストア）に保存する＝プリセット/割当保存でも接続は失われない。
+ * - 接続はロールの実行に必要な値として使うが、この関数の戻り値に global は含めない。
  * - ローカル未定義のとき local ターゲットは優先クラウド（既定 claude）にフォールバックする（空 baseUrl で 400 になるのを防ぐ）。
  * - tuning は常時（全ロール分）含める。省略時は全ロール null（既定）。割当やプリセット適用とは独立して素通しする
  *   （プリセット適用は tuning を変更しない — 呼び出し側が現在の tuning state をそのまま渡す）。
  */
-export function buildRolesPayload(
+/** 接続タブだけが保存する global 設定を直列化する。 */
+export function buildGlobalConnectionPayload(conn: Connection): LlmSettingsInput {
+  const baseUrl = conn.baseUrl.trim();
+  const model = conn.model.trim();
+  const codexModel = conn.codexModel.trim() || null;
+  if (baseUrl && model) return { provider: "openai-compat", baseUrl, model, codexModel };
+  return codexModel ? { provider: "codex", codexModel } : { provider: "claude" };
+}
+
+export function buildRoleAssignmentPayload(
   targets: RoleTargets,
   conn: Connection,
   cloud: CloudTarget = "claude",
   tuning: Record<LlmRole, RoleTuning> = defaultTuning(),
   globalTuning?: Partial<RoleTuning>,
-): { global: LlmSettingsInput; roles: Record<LlmRole, LlmRoleInput>; tuning: Partial<Record<LlmRole | "global", Partial<RoleTuning>>> } {
+): { roles: Record<LlmRole, LlmRoleInput>; tuning: Partial<Record<LlmRole | "global", Partial<RoleTuning>>> } {
   const baseUrl = conn.baseUrl.trim();
   const model = conn.model.trim();
   const codexModel = conn.codexModel.trim() || null;
   const localDefined = baseUrl.length > 0 && model.length > 0;
-
-  const global: LlmSettingsInput = localDefined
-    ? { provider: "openai-compat", baseUrl, model, codexModel }
-    : codexModel
-    ? { provider: "codex", codexModel }
-    : { provider: "claude" };
 
   const roles = {} as Record<LlmRole, LlmRoleInput>;
   for (const role of LLM_ROLES) {
@@ -279,7 +282,51 @@ export function buildRolesPayload(
       : t === "codex" ? { provider: "codex", codexModel }
       : { provider: "claude" };
   }
-  return { global, roles, tuning: globalTuning !== undefined ? { ...tuning, global: globalTuning } : tuning };
+  return { roles, tuning: globalTuning !== undefined ? { ...tuning, global: globalTuning } : tuning };
+}
+
+/**
+ * 接続保存時にだけ更新する、既存の接続依存ロールのパッチ。
+ * inherit / Claude は global を参照するため送らず、未保存の用途タブstateをこの処理へ混ぜない。
+ */
+export function buildSavedRoleConnectionPatch(
+  savedRoles: Record<LlmRole, LlmRoleView>,
+  conn: Connection,
+): Partial<Record<LlmRole, LlmRoleInput>> {
+  const baseUrl = conn.baseUrl.trim();
+  const model = conn.model.trim();
+  const codexModel = conn.codexModel.trim() || null;
+  const patch: Partial<Record<LlmRole, LlmRoleInput>> = {};
+  for (const role of LLM_ROLES) {
+    if (savedRoles[role].provider === "openai-compat") {
+      patch[role] = { provider: "openai-compat", baseUrl, model };
+    } else if (savedRoles[role].provider === "codex") {
+      patch[role] = { provider: "codex", codexModel };
+    }
+  }
+  return patch;
+}
+
+/** 保存済みロールにローカル接続を直接参照するものがあるか。接続を空にする前に割当変更を促す。 */
+export function hasSavedLocalRole(savedRoles: Record<LlmRole, LlmRoleView>): boolean {
+  return LLM_ROLES.some((role) => savedRoles[role].provider === "openai-compat");
+}
+
+/**
+ * 互換用の全体ペイロード。明示的に全scopeを保存する呼び出しだけが使う。
+ * 画面の「接続を保存」「割当を保存」は、それぞれ部分ペイロードを使う。
+ */
+export function buildRolesPayload(
+  targets: RoleTargets,
+  conn: Connection,
+  cloud: CloudTarget = "claude",
+  tuning: Record<LlmRole, RoleTuning> = defaultTuning(),
+  globalTuning?: Partial<RoleTuning>,
+): { global: LlmSettingsInput; roles: Record<LlmRole, LlmRoleInput>; tuning: Partial<Record<LlmRole | "global", Partial<RoleTuning>>> } {
+  return {
+    global: buildGlobalConnectionPayload(conn),
+    ...buildRoleAssignmentPayload(targets, conn, cloud, tuning, globalTuning),
+  };
 }
 
 /**
