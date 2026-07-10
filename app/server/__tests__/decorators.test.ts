@@ -12,6 +12,31 @@ describe("withTimeout", () => {
     await expect(withTimeout(slow, 10)("x")).rejects.toBeInstanceOf(TransportError);
   });
 
+  test("timeout時にrunnerへ渡したsignalをabortする", async () => {
+    let seen: AbortSignal | undefined;
+    const hanging: ClaudeRunner = (_prompt, _resumeId, opts) => new Promise((_resolve, reject) => {
+      seen = opts?.signal;
+      opts?.signal?.addEventListener("abort", () => reject(opts.signal?.reason), { once: true });
+    });
+    await expect(withTimeout(hanging, 5)("x")).rejects.toBeInstanceOf(TransportError);
+    expect(seen?.aborted).toBe(true);
+  });
+
+  test("呼出元signalのabortをrunnerへ伝えて同じ理由で終了する", async () => {
+    const controller = new AbortController();
+    const reason = new Error("caller cancelled");
+    let seen: AbortSignal | undefined;
+    const hanging: ClaudeRunner = (_prompt, _resumeId, opts) => new Promise((_resolve, reject) => {
+      seen = opts?.signal;
+      opts?.signal?.addEventListener("abort", () => reject(opts.signal?.reason), { once: true });
+    });
+    const running = withTimeout(hanging, 1_000)("x", undefined, { signal: controller.signal });
+    await Promise.resolve();
+    controller.abort(reason);
+    await expect(running).rejects.toBe(reason);
+    expect(seen?.aborted).toBe(true);
+  });
+
   test("解決後にタイマーが必ず clear される（setTimeout/clearTimeout をモックして検証）", async () => {
     const originalSetTimeout = globalThis.setTimeout;
     const originalClearTimeout = globalThis.clearTimeout;
@@ -52,12 +77,49 @@ describe("withFallback", () => {
     try {
       const res = await withFallback(primary, fallback)("hi", "resume-1", { systemPrompt: "SP" });
       expect(res).toEqual({ text: "fallback-result", sessionId: "fb" });
-      expect(calls).toEqual([["hi", "resume-1", { systemPrompt: "SP" }]]);
+      expect(calls).toHaveLength(1);
+      expect(calls[0]![0]).toBe("hi");
+      expect(calls[0]![1]).toBe("resume-1");
+      expect(calls[0]![2]).toMatchObject({ systemPrompt: "SP", signal: expect.any(AbortSignal) });
+      expect((calls[0]![2] as { deadlineAt?: number }).deadlineAt).toBeNumber();
       expect(warn).toHaveBeenCalledTimes(1);
       expect(warn.mock.calls[0]![0]).toBe("primary runner unavailable, falling back:");
     } finally {
       warn.mockRestore();
     }
+  });
+
+  test("fallbackを含む総deadlineで遅いfallbackをabortする", async () => {
+    const primary: ClaudeRunner = async () => { throw new TransportError("primary down"); };
+    let fallbackSignal: AbortSignal | undefined;
+    const fallback: ClaudeRunner = (_prompt, _resumeId, opts) => new Promise((_resolve, reject) => {
+      fallbackSignal = opts?.signal;
+      opts?.signal?.addEventListener("abort", () => reject(opts.signal?.reason), { once: true });
+    });
+    const warn = spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      await expect(withFallback(primary, fallback, 5)("x")).rejects.toBeInstanceOf(TransportError);
+      expect(fallbackSignal?.aborted).toBe(true);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  test("呼出元cancelではfallbackを開始しない", async () => {
+    const controller = new AbortController();
+    const reason = new Error("cancelled");
+    let fallbackCalled = false;
+    const primary: ClaudeRunner = (_prompt, _resumeId, opts) => new Promise((_resolve, reject) => {
+      opts?.signal?.addEventListener("abort", () => reject(opts.signal?.reason), { once: true });
+    });
+    const fallback: ClaudeRunner = async () => {
+      fallbackCalled = true;
+      return { text: "no", sessionId: "no" };
+    };
+    const running = withFallback(primary, fallback, 1_000)("x", undefined, { signal: controller.signal });
+    controller.abort(reason);
+    await expect(running).rejects.toBe(reason);
+    expect(fallbackCalled).toBe(false);
   });
 
   test("primary が plain Error で reject したら fallback を呼ばずそのまま rethrow する", async () => {

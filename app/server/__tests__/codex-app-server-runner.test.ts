@@ -97,6 +97,29 @@ describe("makeCodexAppServerRunner", () => {
     expect(foldText).toContain("Assistant: Sure");
   });
 
+  test("履歴上限を超えたnative threadを新threadへ回転し、有界履歴だけを畳み込む", async () => {
+    const f = makeScriptedProc({
+      "thread/start": threadStartOk(["t-1", "t-2"]),
+      "turn/start": turnOk(["A1", "A2", "A3"]),
+    });
+    const runner = runnerWith(f, {
+      transcriptOptions: { maxTurns: 1, maxTokens: 100, maxSessions: 4, ttlMs: 10_000 },
+    });
+    const first = await runner("U1");
+    const second = await runner("U2", first.sessionId);
+    const third = await runner("U3", second.sessionId);
+
+    expect(first.sessionId).toBe("t-1");
+    expect(second.sessionId).toBe("t-1");
+    expect(third.sessionId).toBe("t-2");
+    const turns = f.sent.filter((m) => m.method === "turn/start");
+    const folded = ((turns[2]!.params as Msg).input as Msg[])[0]!.text as string;
+    expect(folded).not.toContain("U1");
+    expect(folded).toContain("User: U2");
+    expect(folded).toContain("Assistant: A2");
+    expect(folded).toContain("User: U3");
+  });
+
   test("未知sessionId（プロセス再起動想定）: thread/resume成功→turn/start（パリティ経路）", async () => {
     const f = makeScriptedProc({
       "thread/resume": (m) => [{ id: m.id, result: { thread: { id: (m.params as Msg).threadId } } }],
@@ -337,7 +360,10 @@ describe("selectRunner相当の合成（withFallback(withTimeout(appServerRunner
     const res = await composed("Hi", "sess-9", { systemPrompt: "SP" });
 
     expect(res).toEqual({ text: "exec-fallback-reply", sessionId: "exec-s" });
-    expect(execCalls).toEqual([["Hi", "sess-9", { systemPrompt: "SP" }]]);
+    expect(execCalls).toHaveLength(1);
+    expect(execCalls[0]![0]).toBe("Hi");
+    expect(execCalls[0]![1]).toBe("sess-9");
+    expect(execCalls[0]![2]).toMatchObject({ systemPrompt: "SP", signal: expect.any(AbortSignal) });
   });
 
   test("モデル起因の失敗（turn failed）はexecFakeへ委譲されずそのままthrowする", async () => {

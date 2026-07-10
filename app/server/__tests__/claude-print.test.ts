@@ -110,6 +110,17 @@ describe("makeClaudePrintRunner", () => {
     const r = await runner("hi");
     expect(r.text).toBe("hello world");
   });
+
+  test("runnerのAbortSignalをexecへ渡す", async () => {
+    let seen: AbortSignal | undefined;
+    const runner = makeClaudePrintRunner({
+      defaultSystemPrompt: "S",
+      exec: async (args) => { seen = args.signal; return okJson("ok"); },
+    });
+    const controller = new AbortController();
+    await runner("hi", undefined, { signal: controller.signal });
+    expect(seen).toBe(controller.signal);
+  });
 });
 
 describe("makeClaudePrintRunner: 認証モードに応じた bare/env 注入", () => {

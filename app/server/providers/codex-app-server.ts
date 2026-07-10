@@ -2,7 +2,7 @@ import { tmpdir } from "node:os";
 import type { ClaudeRunner } from "../converse";
 import { composeCodexPrompt, type CodexMsg } from "./codex";
 import { TransportError } from "./errors";
-import { appendTurn } from "./transcript";
+import { appendTurn, TranscriptStore, type TranscriptStoreOptions } from "./transcript";
 import { getActiveAuthModes } from "../llm-auth-store";
 import { codexSpawnEnv } from "../codex-auth";
 
@@ -21,6 +21,35 @@ export type SpawnAppServer = () => AppServerProc;
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 180_000;
 
+function abortReason(signal: AbortSignal): Error {
+  if (signal.reason instanceof Error) return signal.reason;
+  const error = new Error("codex app-server request cancelled");
+  error.name = "AbortError";
+  return error;
+}
+
+function awaitWithSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return promise;
+  if (signal.aborted) return Promise.reject(abortReason(signal));
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => {
+      signal.removeEventListener("abort", onAbort);
+      reject(abortReason(signal));
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener("abort", onAbort);
+        resolve(value);
+      },
+      (error) => {
+        signal.removeEventListener("abort", onAbort);
+        reject(error);
+      },
+    );
+  });
+}
+
 /** listModels() のページネーション上限。異常に多いページ数（無限ループするサーバ実装など）から
  * 「知らないうちに部分リストを返し続ける」ことを防ぐための安全弁。 */
 const MAX_MODEL_LIST_PAGES = 10;
@@ -29,6 +58,8 @@ type Pending = {
   resolve: (result: Record<string, unknown>) => void;
   reject: (err: Error) => void;
   timer: ReturnType<typeof setTimeout>;
+  signal?: AbortSignal;
+  onAbort?: () => void;
 };
 
 /** turn/start に応じて収集する item/completed の agentMessage テキスト（threadId ごとに最後勝ち）。 */
@@ -96,12 +127,15 @@ export class CodexAppServerClient {
   }
 
   /** lazy: 初回 request 時に spawn + initialize/initialized ハンドシェイク */
-  async request(method: string, params: Record<string, unknown> | undefined): Promise<Record<string, unknown>> {
+  async request(
+    method: string, params: Record<string, unknown> | undefined, signal?: AbortSignal,
+  ): Promise<Record<string, unknown>> {
+    if (signal?.aborted) throw abortReason(signal);
     this.ensureStarted();
     if (!this.handshakeDone) {
-      await this.ensureHandshake();
+      await awaitWithSignal(this.ensureHandshake(signal), signal);
     }
-    return this.sendRequest(method, params);
+    return this.sendRequest(method, params, signal);
   }
 
   /**
@@ -131,11 +165,12 @@ export class CodexAppServerClient {
   }
 
   /** turn/start を送り、turn/completed まで通知を収集して最終 agentMessage テキストを返す */
-  async runTurn(threadId: string, text: string): Promise<string> {
+  async runTurn(threadId: string, text: string, signal?: AbortSignal): Promise<string> {
+    if (signal?.aborted) throw abortReason(signal);
     if (this.turnCollectors.has(threadId)) {
       throw new Error("codex-app-server: runTurn は同一threadIdで同時に1つのみ実行できます");
     }
-    const startResult = this.request("turn/start", { threadId, input: [{ type: "text", text }] });
+    const startResult = this.request("turn/start", { threadId, input: [{ type: "text", text }] }, signal);
     const collected = new Promise<string>((resolve, reject) => {
       this.turnCollectors.set(threadId, { threadId, resolve, reject, lastAgentMessage: undefined });
     });
@@ -143,10 +178,23 @@ export class CodexAppServerClient {
     // 未処理のまま放置されて unhandled rejection にならないよう、ここで一旦 handled にしておく
     // （下の await collected は独立して本来のエラー伝播を担う）。
     collected.catch(() => {});
+    let turnId = "";
+    const onAbort = () => {
+      this.turnCollectors.get(threadId)?.reject(abortReason(signal!));
+      // turn/start応答前は空turnIdによるstartup interrupt、応答後は確定IDを送る。
+      queueMicrotask(() => {
+        this.sendBestEffortRequest("turn/interrupt", { threadId, turnId });
+      });
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
     try {
-      await startResult;
+      const started = await startResult;
+      const id = (started.turn as Record<string, unknown> | undefined)?.id;
+      if (typeof id === "string") turnId = id;
+      if (signal?.aborted) throw abortReason(signal);
       return await collected;
     } finally {
+      signal?.removeEventListener("abort", onAbort);
       this.turnCollectors.delete(threadId);
     }
   }
@@ -174,7 +222,7 @@ export class CodexAppServerClient {
     });
   }
 
-  private ensureHandshake(): Promise<void> {
+  private ensureHandshake(signal?: AbortSignal): Promise<void> {
     if (this.handshakeDone) return Promise.resolve();
     if (!this.handshakePromise) {
       this.handshakePromise = (async () => {
@@ -182,7 +230,7 @@ export class CodexAppServerClient {
           await this.sendRequest("initialize", {
             clientInfo: { name: "solo-eikaiwa", title: "solo-eikaiwa", version: "0" },
             capabilities: {},
-          });
+          }, signal);
         } catch (err) {
           // 失敗した handshakePromise を永久にキャッシュしない: プロセスが生きたまま initialize が
           // error 応答/timeout した場合はプロセスを kill して内部状態をリセットし、次の request() が
@@ -218,20 +266,43 @@ export class CodexAppServerClient {
     proc.kill();
   }
 
-  private sendRequest(method: string, params: Record<string, unknown> | undefined): Promise<Record<string, unknown>> {
+  private sendRequest(
+    method: string, params: Record<string, unknown> | undefined, signal?: AbortSignal,
+  ): Promise<Record<string, unknown>> {
     if (!this.isAlive) {
       return Promise.reject(new TransportError("codex app-server exited"));
     }
+    if (signal?.aborted) return Promise.reject(abortReason(signal));
     const id = this.nextId++;
     const msg: Record<string, unknown> = { method, id };
     if (params !== undefined) msg.params = params;
     return new Promise<Record<string, unknown>>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id);
+        if (signal && pending.onAbort) signal.removeEventListener("abort", pending.onAbort);
         reject(new TransportError(`codex app-server request timed out: ${method}`));
       }, this.requestTimeoutMs);
-      this.pending.set(id, { resolve, reject, timer });
-      this.proc!.send(msg);
+      const pending: Pending = { resolve, reject, timer, signal };
+      if (signal) {
+        pending.onAbort = () => {
+          if (!this.pending.delete(id)) return;
+          clearTimeout(timer);
+          reject(abortReason(signal));
+        };
+        signal.addEventListener("abort", pending.onAbort, { once: true });
+      }
+      this.pending.set(id, pending);
+      try {
+        this.proc!.send(msg);
+      } catch (error) {
+        this.pending.delete(id);
+        clearTimeout(timer);
+        if (signal && pending.onAbort) signal.removeEventListener("abort", pending.onAbort);
+        reject(new TransportError(
+          `codex app-server send failed: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        ));
+      }
     });
   }
 
@@ -239,6 +310,16 @@ export class CodexAppServerClient {
     const msg: Record<string, unknown> = { method };
     if (params !== undefined) msg.params = params;
     this.proc!.send(msg);
+  }
+
+  /** 応答を必要としない中断用request。pending・timerを作らず、返答は通常の未知idとして無視する。 */
+  private sendBestEffortRequest(method: string, params: Record<string, unknown>): void {
+    if (!this.proc || !this.isAlive || !this.handshakeDone) return;
+    try {
+      this.proc.send({ method, id: this.nextId++, params });
+    } catch {
+      // 中断処理中のtransport失敗は、元のcancel理由を上書きしない。
+    }
   }
 
   private handleMessage(msg: Record<string, unknown>): void {
@@ -250,6 +331,7 @@ export class CodexAppServerClient {
       if (!pending) return;
       this.pending.delete(id as number);
       clearTimeout(pending.timer);
+      if (pending.signal && pending.onAbort) pending.signal.removeEventListener("abort", pending.onAbort);
       if ("error" in msg) {
         const err = msg.error as Record<string, unknown> | undefined;
         const message = typeof err?.message === "string" ? err.message : JSON.stringify(err);
@@ -301,6 +383,7 @@ export class CodexAppServerClient {
     const err = new TransportError(`codex app-server exited (code ${code})`);
     for (const [id, pending] of this.pending) {
       clearTimeout(pending.timer);
+      if (pending.signal && pending.onAbort) pending.signal.removeEventListener("abort", pending.onAbort);
       pending.reject(err);
       this.pending.delete(id);
     }
@@ -433,6 +516,7 @@ export type CodexAppServerConfig = {
   serviceTier?: string;
   defaultSystemPrompt: string;
   spawn?: SpawnAppServer;          // テスト注入。既定 realSpawnAppServer
+  transcriptOptions?: Partial<TranscriptStoreOptions>;
 };
 
 /**
@@ -485,12 +569,12 @@ export function makeCodexAppServerRunner(cfg: CodexAppServerConfig): ClaudeRunne
  * 新規プロセスは spawn されない＝ CodexAppServerClient.ensureStarted の lazy 判定に従う）。
  * maps を渡すと threads/transcript もそのまま再利用する（registry 経由の呼び出しが、設定保存の
  * たびの再構築でも保険トランスクリプトをリセットしないようにするため。Fix 1）。省略時（直接
- * makeCodexAppServerRunner を呼ぶ場合）は従来どおり呼び出しごとに空の Map を新規に持つ。
+ * makeCodexAppServerRunner を呼ぶ場合）は呼び出しごとに空の有界 store を新規に持つ。
  */
 function buildRunner(
   client: CodexAppServerClient,
   cfg: CodexAppServerConfig,
-  maps?: { threads: Map<string, { systemPrompt: string; generation: number }>; transcript: Map<string, CodexMsg[]> },
+  maps?: { threads: Map<string, { systemPrompt: string; generation: number }>; transcript: TranscriptStore },
 ): ClaudeRunner {
   /**
    * sessionId(=threadId) → スレッド作成/復元時に採用した systemPrompt と、その時点のプロセス世代。
@@ -499,43 +583,56 @@ function buildRunner(
    * 新プロセスが知らないスレッドの古い記憶が生きているように見える）ため、エントリごとに世代を持つ。
    */
   const threads = maps?.threads ?? new Map<string, { systemPrompt: string; generation: number }>();
-  /** 保険のインメモリ・トランスクリプト（resume 不能時の畳み込み再投入用。exec アダプタの store と同様に保持し続ける）。 */
-  const transcript = maps?.transcript ?? new Map<string, CodexMsg[]>();
+  /** resume 不能時の畳み込み再投入用。TTL・LRU・turn/token 上限で一時履歴を回収する。 */
+  const transcript = maps?.transcript ?? new TranscriptStore({
+    ...cfg.transcriptOptions,
+    onEvict: (sessionId) => threads.delete(sessionId),
+  });
 
-  async function startThread(system: string): Promise<string> {
-    const res = await client.request("thread/start", threadParams(cfg, system));
+  async function startThread(system: string, signal?: AbortSignal): Promise<string> {
+    const res = await client.request("thread/start", threadParams(cfg, system), signal);
     const id = (res.thread as Record<string, unknown> | undefined)?.id;
     if (typeof id !== "string" || !id) {
       throw new Error("codex app-server: thread/start が thread.id を返しませんでした");
     }
     threads.set(id, { systemPrompt: system, generation: client.generation() });
+    transcript.set(id, []);
     return id;
   }
 
   /** 旧セッションの履歴を初回入力に畳み込んだ新スレッドを作る（fold）。 */
-  async function startFolded(oldId: string, system: string, prompt: string) {
+  async function startFolded(oldId: string, system: string, prompt: string, signal?: AbortSignal) {
     const history = transcript.get(oldId) ?? [];
-    const threadId = await startThread(system);
+    const threadId = await startThread(system, signal);
     // 新スレッドの transcript エントリを旧履歴で先に播種しておく。こうすることで、この後
     // appendTurn(transcript, threadId, ...) が内部で読む transcript.get(threadId) が旧履歴を
     // 引き継いだ状態になり、[...history, 新往復] を書き戻す従来の挙動と一致する
     // （新スレッドIDには当然まだ何も入っていないため、播種しないと旧履歴が失われる）。
     transcript.set(threadId, history);
+    transcript.markSynchronized(threadId);
+    transcript.end(oldId);
     return { threadId, turnText: foldPrompt(history, prompt) };
   }
 
   /** セッション階梯の 1〜3 段目を解決し、turn を打つ先のスレッドと入力テキストを決める。 */
-  async function resolveThread(resumeId: string | undefined, system: string, prompt: string):
+  async function resolveThread(resumeId: string | undefined, system: string, prompt: string, signal?: AbortSignal):
     Promise<{ threadId: string; turnText: string }> {
     if (!resumeId) {
-      return { threadId: await startThread(system), turnText: prompt };
+      return { threadId: await startThread(system, signal), turnText: prompt };
+    }
+    if (transcript.wasEvicted(resumeId)) {
+      return { threadId: await startThread(system, signal), turnText: prompt };
     }
     const known = threads.get(resumeId);
     if (known) {
+      if (transcript.needsRotation(resumeId)) {
+        threads.delete(resumeId);
+        return startFolded(resumeId, system, prompt, signal);
+      }
       if (known.systemPrompt !== system) {
         // developerInstructions はスレッド作成時に固定済みのため、systemPrompt が変わったら新スレッドへ畳み込む
         threads.delete(resumeId);
-        return startFolded(resumeId, system, prompt);
+        return startFolded(resumeId, system, prompt, signal);
       }
       if (known.generation === client.generation()) {
         return { threadId: resumeId, turnText: prompt };
@@ -548,21 +645,23 @@ function buildRunner(
       threads.delete(resumeId);
     }
     try {
-      await client.request("thread/resume", { threadId: resumeId, ...threadParams(cfg, system) });
+      await client.request("thread/resume", { threadId: resumeId, ...threadParams(cfg, system) }, signal);
       threads.set(resumeId, { systemPrompt: system, generation: client.generation() });
+      if (!transcript.has(resumeId)) transcript.set(resumeId, []);
+      transcript.markForRotation(resumeId);
       return { threadId: resumeId, turnText: prompt };
     } catch (err) {
       if (err instanceof TransportError) throw err; // transport 障害は exec フォールバック判定へ
       // リクエストレベルの resume 失敗（未知スレッド等）→ 新スレッド + 畳み込み（transcript が空なら素の prompt）
-      return startFolded(resumeId, system, prompt);
+      return startFolded(resumeId, system, prompt, signal);
     }
   }
 
   return async (prompt, resumeId, opts) => {
     const system = opts?.systemPrompt ?? cfg.defaultSystemPrompt;
     try {
-      const { threadId, turnText } = await resolveThread(resumeId, system, prompt);
-      const text = (await client.runTurn(threadId, turnText)).trim();
+      const { threadId, turnText } = await resolveThread(resumeId, system, prompt, opts?.signal);
+      const text = (await client.runTurn(threadId, turnText, opts?.signal)).trim();
       if (!text) throw new Error("Codex returned empty result");
       appendTurn(transcript, threadId, prompt, text);
       return { text, sessionId: threadId };
@@ -605,7 +704,7 @@ type CodexAppServerRegistryEntry = {
   /** buildRunner の threads/transcript と同じ形。設定保存で registry を再取得しても保険トランスクリプトが
    * リセットされないよう、client と同居させて同一キーである限り使い回す（Fix 1）。 */
   threads: Map<string, { systemPrompt: string; generation: number }>;
-  transcript: Map<string, CodexMsg[]>;
+  transcript: TranscriptStore;
 };
 
 /** module-level singleton。applyLlmRoleSettings が設定保存のたびに selectRunner → getCodexAppServerRunner
@@ -623,19 +722,25 @@ function connectionKey(): string {
  * registry の spawn-or-reuse 本体。同一キー（実質定数）である限り、既存の client と threads/transcript
  * （=既に spawn 済みかもしれない常駐プロセスと、そのセッション記憶）をそのまま返す（新規プロセスは
  * spawn されない。Fix 1）。キーが変わった場合（将来 API キー認証の隔離 CODEX_HOME 等が入った場合）や
- * __resetCodexAppServerRegistry() 後だけ、旧 client を kill() して新規の空 Map から作り直す。
+ * __resetCodexAppServerRegistry() 後だけ、旧 client を kill() して新規の空 store から作り直す。
  * getCodexAppServerRunner（ClaudeRunner 合成）と getCodexAppServerClient（Task 3: カタログ直接アクセス）
  * の両方がこの唯一の spawn-or-reuse ロジックを共有する。
  */
-function ensureRegistryEntry(spawn?: SpawnAppServer): CodexAppServerRegistryEntry {
+function ensureRegistryEntry(
+  spawn?: SpawnAppServer, transcriptOptions?: Partial<TranscriptStoreOptions>,
+): CodexAppServerRegistryEntry {
   const key = connectionKey();
   if (!registry || registry.key !== key) {
     registry?.client.kill();
+    const threads = new Map<string, { systemPrompt: string; generation: number }>();
     registry = {
       key,
       client: new CodexAppServerClient(spawn ?? realSpawnAppServer),
-      threads: new Map(),
-      transcript: new Map(),
+      threads,
+      transcript: new TranscriptStore({
+        ...transcriptOptions,
+        onEvict: (sessionId) => threads.delete(sessionId),
+      }),
     };
   }
   return registry;
@@ -652,7 +757,7 @@ function ensureRegistryEntry(spawn?: SpawnAppServer): CodexAppServerRegistryEntr
  *   仮に変わっても次回呼び出しの runner に反映される）。
  */
 export function getCodexAppServerRunner(cfg: CodexAppServerConfig): ClaudeRunner {
-  const entry = ensureRegistryEntry(cfg.spawn);
+  const entry = ensureRegistryEntry(cfg.spawn, cfg.transcriptOptions);
   return buildRunner(entry.client, cfg, { threads: entry.threads, transcript: entry.transcript });
 }
 

@@ -1,63 +1,82 @@
-/**
- * ClaudeRunner を包むデコレータ群。
- *
- * - withTimeout: runner の呼び出しにタイムアウトを課す。
- * - withFallback: transport 起因の失敗（TransportError）に限り別 runner へフォールバックする。
- *
- * どの runner にどう適用するか（配線）は llm-provider.ts の selectRunner に集約する
- * （claude 経路への適用は Task 8 の resolveClaudeRunner に集約）。
- */
+/** ClaudeRunner のdeadline・fallback合成。 */
 import { TransportError } from "./errors";
 import type { ClaudeRunner } from "../converse";
 
-/**
- * runner の呼び出しにタイムアウトを課す。ms 以内に解決/拒否しなければ TransportError で reject する。
- * 元の Promise が後から解決/拒否しても、この関数が返す Promise には影響しない（先に決着した方が勝つ）。
- * タイマーは runner の Promise が解決・拒否どちらで決着しても、外側の Promise を決着させる直前に
- * 必ず clear する（残留させない。タイムアウト側が勝った場合はタイマー自体が既に発火済みなので clear 不要）。
- */
-export function withTimeout(runner: ClaudeRunner, ms = 180_000): ClaudeRunner {
-  return (prompt, resumeId, opts) =>
-    new Promise((resolve, reject) => {
-      let settled = false;
-      const timer = setTimeout(() => {
-        if (settled) return;
-        settled = true;
-        reject(new TransportError(`runner timed out after ${ms}ms`));
-      }, ms);
+const DEFAULT_TIMEOUT_MS = 180_000;
 
-      runner(prompt, resumeId, opts).then(
-        (value) => {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          resolve(value);
-        },
-        (err) => {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          reject(err);
-        },
-      );
-    });
+function signalReason(signal: AbortSignal): Error {
+  if (signal.reason instanceof Error) return signal.reason;
+  const error = new Error("runner cancelled");
+  error.name = "AbortError";
+  return error;
 }
 
 /**
- * primary runner が TransportError で reject したときに限り、同一引数 (prompt, resumeId, opts) で
- * fallback runner へ委譲する。TransportError 以外（モデル起因の失敗等）はそのまま rethrow し、
- * fallback は呼ばない。
- * primary の reject は必ず try/await で捕捉してから fallback を呼ぶため、fallback 実行中に
- * primary 側の rejected promise が unhandled rejection として残ることはない。
+ * runnerへAbortSignalとmonotonicな絶対deadlineを渡し、期限・呼出元cancelのどちらでも実処理を中断する。
+ * 親deadlineがある場合は短い方を採用するため、デコレータを重ねても総時間を延長しない。
  */
-export function withFallback(primary: ClaudeRunner, fallback: ClaudeRunner): ClaudeRunner {
-  return async (prompt, resumeId, opts) => {
+export function withTimeout(runner: ClaudeRunner, ms = DEFAULT_TIMEOUT_MS): ClaudeRunner {
+  return async (prompt, resumeId, opts = {}) => {
+    const controller = new AbortController();
+    const ownDeadline = performance.now() + Math.max(0, ms);
+    const deadlineAt = Math.min(opts.deadlineAt ?? Number.POSITIVE_INFINITY, ownDeadline);
+    const remainingMs = Math.max(0, deadlineAt - performance.now());
+    const timeoutError = new TransportError(`runner timed out after ${ms}ms`);
+    const onParentAbort = () => controller.abort(signalReason(opts.signal!));
+    opts.signal?.addEventListener("abort", onParentAbort, { once: true });
+    if (opts.signal?.aborted) controller.abort(signalReason(opts.signal));
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (!controller.signal.aborted) {
+      if (remainingMs === 0) controller.abort(timeoutError);
+      else timer = setTimeout(() => controller.abort(timeoutError), remainingMs);
+    }
+
+    const aborted = new Promise<never>((_resolve, reject) => {
+      if (controller.signal.aborted) reject(signalReason(controller.signal));
+      else controller.signal.addEventListener("abort", () => reject(signalReason(controller.signal)), { once: true });
+    });
+    const running = controller.signal.aborted
+      ? Promise.reject(signalReason(controller.signal))
+      : Promise.resolve().then(() => {
+        if (controller.signal.aborted) throw signalReason(controller.signal);
+        return runner(prompt, resumeId, {
+          ...opts,
+          signal: controller.signal,
+          deadlineAt,
+        });
+      });
+
+    try {
+      return await Promise.race([running, aborted]);
+    } catch (error) {
+      if (controller.signal.aborted) throw signalReason(controller.signal);
+      throw error;
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+      opts.signal?.removeEventListener("abort", onParentAbort);
+    }
+  };
+}
+
+/**
+ * transport起因の失敗だけfallbackへ委譲する。外側のwithTimeoutがprimary+fallback全体を1つの
+ * deadline/AbortSignalで包むため、fallback開始で時間予算がリセットされることはない。
+ */
+export function withFallback(
+  primary: ClaudeRunner, fallback: ClaudeRunner, totalMs = DEFAULT_TIMEOUT_MS,
+): ClaudeRunner {
+  const combined: ClaudeRunner = async (prompt, resumeId, opts) => {
     try {
       return await primary(prompt, resumeId, opts);
-    } catch (err) {
-      if (!(err instanceof TransportError)) throw err;
-      console.warn("primary runner unavailable, falling back:", err);
+    } catch (error) {
+      if (opts?.signal?.aborted || (opts?.deadlineAt !== undefined && performance.now() >= opts.deadlineAt)) {
+        throw opts.signal?.aborted ? signalReason(opts.signal) : error;
+      }
+      if (!(error instanceof TransportError)) throw error;
+      console.warn("primary runner unavailable, falling back:", error);
       return fallback(prompt, resumeId, opts);
     }
   };
+  return withTimeout(combined, totalMs);
 }

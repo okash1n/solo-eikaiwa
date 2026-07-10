@@ -1,5 +1,7 @@
 import type { ClaudeRunner } from "../converse";
-import { appendTurn, resolveSessionId, type ChatTurn } from "./transcript";
+import {
+  appendTurn, resolveSessionId, TranscriptStore, type ChatTurn, type TranscriptStoreOptions,
+} from "./transcript";
 import { parseRemoteBaseUrl } from "../remote-endpoint";
 
 /** OpenAI 互換 chat completions で ClaudeRunner を実現する設定。 */
@@ -13,6 +15,7 @@ export type OpenAICompatConfig = {
   defaultSystemPrompt: string;
   /** テスト用の注入 seam。既定はグローバル fetch */
   fetchFn?: typeof fetch;
+  transcriptOptions?: Partial<TranscriptStoreOptions>;
 };
 
 /** transcript.ts の ChatTurn の型エイリアス（このモジュール内での呼び名を維持）。 */
@@ -22,15 +25,15 @@ type ChatResponse = { choices?: Array<{ message?: { content?: string } }> };
 
 /**
  * OpenAI 互換 API を叩く ClaudeRunner。chat completions はステートレスなので、
- * SDK の resume セマンティクスを sessionId → 会話履歴(system を除く) のインメモリ Map で再現する。
- * プロセス再起動で履歴が消えるのは既存 SDK セッションも同様（許容）。
+ * SDK の resume セマンティクスを sessionId → 会話履歴(system を除く) の有界 store で再現する。
+ * 一時履歴は turn/token・TTL・LRU 上限で回収し、プロセス再起動でも消える（許容）。
  */
 export function makeOpenAICompatRunner(cfg: OpenAICompatConfig): ClaudeRunner {
   const fetchFn = cfg.fetchFn ?? fetch;
   const parsedBase = parseRemoteBaseUrl(cfg.baseUrl);
   if (!parsedBase.ok) throw new Error(parsedBase.error);
   const endpoint = `${parsedBase.baseUrl}/chat/completions`;
-  const store = new Map<string, ChatMsg[]>();
+  const store = new TranscriptStore(cfg.transcriptOptions);
 
   return async (prompt, resumeId, opts) => {
     const sessionId = resolveSessionId(store, resumeId);
@@ -49,6 +52,7 @@ export function makeOpenAICompatRunner(cfg: OpenAICompatConfig): ClaudeRunner {
     const res = await fetchFn(endpoint, {
       method: "POST",
       redirect: "error",
+      signal: opts?.signal,
       headers,
       body: JSON.stringify({ model: cfg.model, messages, stream: false }),
     });

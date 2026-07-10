@@ -16,6 +16,7 @@ export type ClaudePrintExec = (args: {
   bare?: boolean;
   /** 認証モードごとの最小env上書き（claudeSpawnEnv参照）。 */
   env?: Record<string, string | undefined>;
+  signal?: AbortSignal;
 }) => Promise<string>;
 
 export type ClaudePrintConfig = {
@@ -64,6 +65,7 @@ export function makeClaudePrintRunner(cfg: ClaudePrintConfig): ClaudeRunner {
       cwd,
       ...(authMode === "api-key" ? { bare: true } : {}),
       env: claudeSpawnEnv(authMode, Bun.env, getActiveAuthSecrets().anthropic),
+      signal: opts?.signal,
     });
 
     let parsed: ClaudePrintJson;
@@ -104,7 +106,10 @@ export function makeClaudePrintRunner(cfg: ClaudePrintConfig): ClaudeRunner {
  * この関数は claude CLI に依存するため単体テスト対象外。makeClaudePrintRunner は注入した exec フェイクで検証する
  * （realCodexExec の先例と同じ扱い。手動スモークは Task 5 で確認する）。
  */
-export const realClaudePrintExec: ClaudePrintExec = async ({ prompt, systemPrompt, model, effort, resumeId, cwd, bare, env }) => {
+export const realClaudePrintExec: ClaudePrintExec = async (
+  { prompt, systemPrompt, model, effort, resumeId, cwd, bare, env, signal },
+) => {
+  if (signal?.aborted) throw abortReason(signal);
   const args = [
     "-p",
     "--output-format", "json",
@@ -123,11 +128,28 @@ export const realClaudePrintExec: ClaudePrintExec = async ({ prompt, systemPromp
     stderr: "pipe",
     env: env ?? minimalSubprocessEnv(),
   });
-  const stdout = await new Response(proc.stdout).text();
-  const stderr = await new Response(proc.stderr).text();
-  const exitCode = await proc.exited;
+  const onAbort = () => proc.kill();
+  signal?.addEventListener("abort", onAbort, { once: true });
+  let stdout: string;
+  let stderr: string;
+  let exitCode: number;
+  try {
+    [stdout, stderr, exitCode] = await Promise.all([
+      new Response(proc.stdout).text(), new Response(proc.stderr).text(), proc.exited,
+    ]);
+  } finally {
+    signal?.removeEventListener("abort", onAbort);
+  }
+  if (signal?.aborted) throw abortReason(signal);
   if (exitCode !== 0) {
     throw new TransportError(`claude -p failed (exit ${exitCode}): ${stderr.slice(-500)}`);
   }
   return stdout;
 };
+
+function abortReason(signal: AbortSignal): Error {
+  if (signal.reason instanceof Error) return signal.reason;
+  const error = new Error("claude print cancelled");
+  error.name = "AbortError";
+  return error;
+}

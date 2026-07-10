@@ -84,9 +84,33 @@ describe("makeCodexRunner", () => {
     expect(seen[1].prompt).toContain("turn two");
   });
 
+  test("履歴上限を超えると古い往復を次のpromptへ含めない", async () => {
+    const seen: Array<{ prompt: string; model?: string; cwd: string }> = [];
+    const runner = makeCodexRunner(baseCfg({
+      exec: fakeExec("reply", seen),
+      transcriptOptions: { maxTurns: 1, maxTokens: 100, maxSessions: 4, ttlMs: 10_000 },
+    }));
+    const first = await runner("old turn");
+    await runner("new turn", first.sessionId);
+    await runner("latest turn", first.sessionId);
+    expect(seen[2].prompt).not.toContain("old turn");
+    expect(seen[2].prompt).toContain("new turn");
+    expect(seen[2].prompt).toContain("latest turn");
+  });
+
   test("空出力: empty で throw する", async () => {
     const runner = makeCodexRunner(baseCfg({ exec: fakeExec("   ", []) }));
     await expect(runner("hi")).rejects.toThrow(/empty/i);
+  });
+
+  test("runnerのAbortSignalをexecへ渡す", async () => {
+    let seen: AbortSignal | undefined;
+    const runner = makeCodexRunner(baseCfg({
+      exec: async (args) => { seen = args.signal; return "ok"; },
+    }));
+    const controller = new AbortController();
+    await runner("hi", undefined, { signal: controller.signal });
+    expect(seen).toBe(controller.signal);
   });
 });
 
