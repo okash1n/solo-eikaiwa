@@ -2,7 +2,9 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { ClaudeRunner } from "../converse";
-import { appendTurn, resolveSessionId, type ChatTurn } from "./transcript";
+import {
+  appendTurn, resolveSessionId, TranscriptStore, type ChatTurn, type TranscriptStoreOptions,
+} from "./transcript";
 import { getActiveAuthModes } from "../llm-auth-store";
 import { codexSpawnEnv } from "../codex-auth";
 
@@ -39,6 +41,7 @@ export type CodexExec = (
     prompt: string; model?: string; cwd: string; reasoningEffort?: string; serviceTier?: string;
     /** 認証モードごとの最小env上書き（codexSpawnEnv参照）。 */
     env?: Record<string, string | undefined>;
+    signal?: AbortSignal;
   },
 ) => Promise<string>;
 
@@ -55,17 +58,19 @@ export type CodexConfig = {
   defaultSystemPrompt: string;
   /** テスト用の注入 seam。既定は realCodexExec */
   exec?: CodexExec;
+  transcriptOptions?: Partial<TranscriptStoreOptions>;
 };
 
 /**
  * `codex exec` をワンショットで叩く ClaudeRunner。
- * resume セマンティクスは sessionId → 会話履歴 のインメモリ Map で再現し、毎ターン全文を composeCodexPrompt で
- * 畳んで渡す（codex 自身の session/resume は使わない）。プロセス再起動で履歴が消えるのは既存 SDK と同様（許容）。
+ * resume セマンティクスは sessionId → 会話履歴 の有界 store で再現し、毎ターン保持範囲を
+ * composeCodexPrompt で畳んで渡す（codex 自身の session/resume は使わない）。一時履歴は
+ * turn/token・TTL・LRU 上限で回収し、プロセス再起動でも消える（許容）。
  */
 export function makeCodexRunner(cfg: CodexConfig): ClaudeRunner {
   const exec = cfg.exec ?? realCodexExec;
   const cwd = cfg.cwd ?? tmpdir();
-  const store = new Map<string, CodexMsg[]>();
+  const store = new TranscriptStore(cfg.transcriptOptions);
 
   return async (prompt, resumeId, opts) => {
     const sessionId = resolveSessionId(store, resumeId);
@@ -77,6 +82,7 @@ export function makeCodexRunner(cfg: CodexConfig): ClaudeRunner {
       prompt: composed, model: cfg.model, cwd,
       reasoningEffort: cfg.reasoningEffort, serviceTier: cfg.serviceTier,
       env: codexSpawnEnv(getActiveAuthModes().codex),
+      signal: opts?.signal,
     })).trim();
     if (!text) throw new Error("Codex returned empty result");
 
@@ -97,7 +103,8 @@ export function makeCodexRunner(cfg: CodexConfig): ClaudeRunner {
  * この関数は codex CLI に依存するため単体テスト対象外。makeCodexRunner は注入した exec フェイクで検証し、
  * ここは Task 5 の手動スモークで確認する。
  */
-export const realCodexExec: CodexExec = async ({ prompt, model, cwd, reasoningEffort, serviceTier, env }) => {
+export const realCodexExec: CodexExec = async ({ prompt, model, cwd, reasoningEffort, serviceTier, env, signal }) => {
+  if (signal?.aborted) throw abortReason(signal);
   const work = mkdtempSync(path.join(tmpdir(), "codex-run-"));
   try {
     const outFile = path.join(work, "last.txt");
@@ -121,8 +128,16 @@ export const realCodexExec: CodexExec = async ({ prompt, model, cwd, reasoningEf
       stderr: "pipe",
       env: env ?? codexSpawnEnv(getActiveAuthModes().codex),
     });
-    const stderr = await new Response(proc.stderr).text();
-    const exitCode = await proc.exited;
+    const onAbort = () => proc.kill();
+    signal?.addEventListener("abort", onAbort, { once: true });
+    let stderr: string;
+    let exitCode: number;
+    try {
+      [stderr, exitCode] = await Promise.all([new Response(proc.stderr).text(), proc.exited]);
+    } finally {
+      signal?.removeEventListener("abort", onAbort);
+    }
+    if (signal?.aborted) throw abortReason(signal);
     if (exitCode !== 0) {
       throw new Error(`codex exec failed (exit ${exitCode}): ${stderr.slice(-500)}`);
     }
@@ -131,3 +146,10 @@ export const realCodexExec: CodexExec = async ({ prompt, model, cwd, reasoningEf
     rmSync(work, { recursive: true, force: true });
   }
 };
+
+function abortReason(signal: AbortSignal): Error {
+  if (signal.reason instanceof Error) return signal.reason;
+  const error = new Error("codex exec cancelled");
+  error.name = "AbortError";
+  return error;
+}

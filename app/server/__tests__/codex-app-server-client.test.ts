@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { CodexAppServerClient, type SpawnAppServer } from "../providers/codex-app-server";
+import { CodexAppServerClient, TransportError, type SpawnAppServer } from "../providers/codex-app-server";
 import { makeFakeProc, makeScriptedProc } from "./helpers/fake-app-server";
 
 describe("CodexAppServerClient", () => {
@@ -38,6 +38,52 @@ describe("CodexAppServerClient", () => {
     f.emit({ method: "item/completed", params: { threadId: "t-1", item: { type: "agentMessage", id: "i1", text: "Hi there" } } });
     f.emit({ method: "turn/completed", params: { threadId: "t-1", turn: { status: "completed" } } });
     expect(await turn).toBe("Hi there");
+  });
+
+  test("runTurnのAbortSignalでturn/interruptを送り待機を解除する", async () => {
+    const f = makeFakeProc();
+    const client = new CodexAppServerClient((() => f.proc) as SpawnAppServer);
+    const first = client.request("thread/start", {});
+    await Bun.sleep(0);
+    f.emit({ id: f.sent[0]!.id, result: {} });
+    await Bun.sleep(0);
+    f.emit({ id: f.sent[2]!.id, result: { thread: { id: "t-1" } } });
+    await first;
+
+    const controller = new AbortController();
+    const reason = new Error("cancel turn");
+    const turn = client.runTurn("t-1", "Hello", controller.signal);
+    await Bun.sleep(0);
+    const turnReq = f.sent.find((m) => m.method === "turn/start")!;
+    f.emit({ id: turnReq.id, result: { turn: { id: "turn-1" } } });
+    await Bun.sleep(0);
+    controller.abort(reason);
+    await expect(turn).rejects.toBe(reason);
+    await Bun.sleep(0);
+    const interrupt = f.sent.find((m) => m.method === "turn/interrupt")!;
+    expect(interrupt.params).toEqual({ threadId: "t-1", turnId: "turn-1" });
+    const pending = (client as unknown as { pending: Map<number, unknown> }).pending;
+    expect(pending.size).toBe(0); // interrupt応答待ちのtimerを残さない
+  });
+
+  test("共有handshake待機中でも個別requestのcancelを即時反映する", async () => {
+    const f = makeFakeProc();
+    const client = new CodexAppServerClient((() => f.proc) as SpawnAppServer);
+    const first = client.request("thread/start", { name: "first" });
+    const controller = new AbortController();
+    const reason = new Error("cancel second");
+    const second = client.request("thread/start", { name: "second" }, controller.signal);
+
+    controller.abort(reason);
+    await expect(second).rejects.toBe(reason);
+    f.emit({ id: f.sent[0]!.id, result: {} });
+    await Bun.sleep(0);
+    const firstReq = f.sent.find(
+      (message) => message.method === "thread/start"
+        && (message.params as Record<string, unknown>).name === "first",
+    )!;
+    f.emit({ id: firstReq.id, result: { thread: { id: "t-first" } } });
+    expect((await first).thread).toEqual({ id: "t-first" });
   });
 
   test("turn失敗はエラーになりエラー内容を含む", async () => {
@@ -79,6 +125,18 @@ describe("CodexAppServerClient", () => {
     f.exit(1);
     expect(p).rejects.toThrow(/exited/);
     expect(client.alive()).toBe(false);
+  });
+
+  test("send失敗をTransportErrorに分類しfallback可能にする", async () => {
+    const f = makeFakeProc();
+    f.proc.send = () => { throw new Error("broken pipe"); };
+    const client = new CodexAppServerClient((() => f.proc) as SpawnAppServer);
+
+    const error = await client.request("thread/start", {}).catch((caught) => caught);
+
+    expect(error).toBeInstanceOf(TransportError);
+    expect(error).toHaveProperty("message", expect.stringContaining("send failed"));
+    expect(f.killCount).toBe(1);
   });
 
   test("turn/start応答前にexitしても未処理rejectionを起こさずrunTurnがTransportErrorでrejectする", async () => {

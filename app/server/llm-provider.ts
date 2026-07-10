@@ -133,8 +133,8 @@ export function selectRunner(args: SelectRunnerArgs): ClaudeRunner {
       );
 
     case "codex": {
-      // codex app-server（常駐プロセス）を既定経路にし、withTimeout でハングを打ち切り、
-      // transport 障害（TransportError）時のみ withFallback で codex exec（ワンショット）へ委譲する。
+      // codex app-server（常駐プロセス）を既定経路にし、transport 障害（TransportError）時のみ
+      // codex exec（ワンショット）へ委譲する。両経路はwithFallbackの総deadlineを共有する。
       // 接続設定（model/reasoningEffort/serviceTier）はどちらの経路でも同一値を渡す
       // （conn オブジェクトを1箇所で組み立てて両方へ展開する＝設定ドリフト防止）。
       const conn = resolveCodexConn(env, args.defaultSystemPrompt, args.tuning);

@@ -256,6 +256,28 @@ describe("makeClaudeRunner: SDK呼び出し引数のパススルー", () => {
     await runner("hi");
     expect(calls[0].options).not.toHaveProperty("pathToClaudeCodeExecutable");
   });
+
+  test("runnerのAbortSignalをSDK abortControllerへ連結する", async () => {
+    let sdkController: AbortController | undefined;
+    const waitingQuery = ((args: { options: Record<string, unknown> }) => {
+      sdkController = args.options.abortController as AbortController;
+      return (async function* () {
+        await new Promise<void>((resolve) => {
+          sdkController!.signal.addEventListener("abort", () => resolve(), { once: true });
+        });
+        throw sdkController!.signal.reason;
+      })();
+    }) as unknown as typeof query;
+    const runner = makeClaudeRunner(waitingQuery);
+    const controller = new AbortController();
+    const reason = new Error("cancel sdk");
+    const running = runner("hi", undefined, { signal: controller.signal });
+    controller.abort(reason);
+
+    await expect(running).rejects.toBeInstanceOf(TransportError);
+    expect(sdkController?.signal.aborted).toBe(true);
+    expect(sdkController?.signal.reason).toBe(reason);
+  });
 });
 
 describe("resolveClaudeExecutablePath（sidecarモード判定 + Bun.which解決。TauriPhase2: compile済みバイナリではSDKの同梱CLI自己解決が壊れるため明示注入が必要）", () => {

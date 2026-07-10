@@ -1,14 +1,16 @@
 import { describe, expect, test } from "bun:test";
 import { makeOpenAICompatRunner, warmOpenAICompat, openAICompatWarmTargetFromEnv, type OpenAICompatConfig } from "../providers/openai-compat";
 
-type CapturedReq = { url: string; body: any; headers: Record<string, string>; redirect?: RequestRedirect };
+type CapturedReq = {
+  url: string; body: any; headers: Record<string, string>; redirect?: RequestRedirect; signal?: AbortSignal | null;
+};
 
 /** choices[0].message.content = reply を返すフェイク fetch。呼び出し内容を captured に記録する。 */
 function fakeChatFetch(reply: string, captured: CapturedReq[]): typeof fetch {
   return (async (url: string, init: RequestInit) => {
     const headers: Record<string, string> = {};
     for (const [k, v] of Object.entries(init.headers ?? {})) headers[k.toLowerCase()] = String(v);
-    captured.push({ url, body: JSON.parse(String(init.body)), headers, redirect: init.redirect });
+    captured.push({ url, body: JSON.parse(String(init.body)), headers, redirect: init.redirect, signal: init.signal });
     return new Response(JSON.stringify({ choices: [{ message: { role: "assistant", content: reply } }] }), {
       status: 200, headers: { "Content-Type": "application/json" },
     });
@@ -63,6 +65,21 @@ describe("makeOpenAICompatRunner", () => {
     ]);
   });
 
+  test("履歴上限を超えると古い往復を次のpromptへ含めない", async () => {
+    const captured: CapturedReq[] = [];
+    const runner = makeOpenAICompatRunner(baseCfg({
+      fetchFn: fakeChatFetch("reply", captured),
+      transcriptOptions: { maxTurns: 1, maxTokens: 100, maxSessions: 4, ttlMs: 10_000 },
+    }));
+    const first = await runner("old turn");
+    await runner("new turn", first.sessionId);
+    await runner("latest turn", first.sessionId);
+    const messages = captured[2].body.messages as Array<{ content: string }>;
+    expect(messages.some((m) => m.content === "old turn")).toBe(false);
+    expect(messages.some((m) => m.content === "new turn")).toBe(true);
+    expect(messages.some((m) => m.content === "latest turn")).toBe(true);
+  });
+
   test("resume miss: 未知の sessionId は履歴なしの新セッションになり、新しい id を返す", async () => {
     const captured: CapturedReq[] = [];
     const runner = makeOpenAICompatRunner(baseCfg({ fetchFn: fakeChatFetch("y", captured) }));
@@ -113,6 +130,14 @@ describe("makeOpenAICompatRunner", () => {
       new Response(JSON.stringify({ choices: [{ message: { content: "" } }] }), { status: 200 })) as unknown as typeof fetch;
     const runner = makeOpenAICompatRunner(baseCfg({ fetchFn: emptyFetch }));
     await expect(runner("hi")).rejects.toThrow(/empty/i);
+  });
+
+  test("runnerのAbortSignalをfetchへ渡す", async () => {
+    const captured: CapturedReq[] = [];
+    const controller = new AbortController();
+    const runner = makeOpenAICompatRunner(baseCfg({ fetchFn: fakeChatFetch("ok", captured) }));
+    await runner("hi", undefined, { signal: controller.signal });
+    expect(captured[0].signal).toBe(controller.signal);
   });
 });
 

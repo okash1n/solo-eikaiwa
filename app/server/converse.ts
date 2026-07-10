@@ -34,7 +34,7 @@ export const PARTNER_SYSTEM_PROMPT = partnerSystemPrompt(1);
 export type ClaudeRunner = (
   prompt: string,
   resumeId?: string,
-  opts?: { systemPrompt?: string },
+  opts?: { systemPrompt?: string; signal?: AbortSignal; deadlineAt?: number },
 ) => Promise<{ text: string; sessionId: string }>;
 
 /**
@@ -64,6 +64,10 @@ export function makeClaudeRunner(
   return async (prompt, resumeId, opts) => {
     let sessionId = resumeId ?? "";
     let text = "";
+    const sdkAbort = new AbortController();
+    const onAbort = () => sdkAbort.abort(opts?.signal?.reason);
+    opts?.signal?.addEventListener("abort", onAbort, { once: true });
+    if (opts?.signal?.aborted) sdkAbort.abort(opts.signal.reason);
     // 2相エラー分類（binding、providers/decorators.ts の withFallback の判定基盤）:
     // SDK から最初のメッセージを受け取る前に throw した例外はプロセス起動・ハンドシェイク等の
     // transport 起因とみなし TransportError に包む（cause 保持）。query() 呼び出し自体の同期 throw
@@ -77,66 +81,67 @@ export function makeClaudeRunner(
         { cause: err },
       );
 
-    let receivedFirstMessage = false;
-    // subscriptionは最小allowlist env（APIキー除去）、api-keyはそこへ解決済みANTHROPIC_API_KEYだけを追加する。
-    // モードと鍵は呼び出しごとに参照するため、module-level runnerのまま保存/削除を即時反映できる。
-    const claudeAuthEnv = claudeSpawnEnv(
-      getActiveAuthModes().claude,
-      Bun.env,
-      getActiveAuthSecrets().anthropic,
-    );
-    const iterator = (() => {
-      try {
-        return queryFn({
-          prompt,
-          options: {
-            systemPrompt: opts?.systemPrompt ?? PARTNER_SYSTEM_PROMPT,
-            model: cfg?.model ?? "sonnet",
-            ...(cfg?.effort ? { effort: cfg.effort as EffortLevel } : {}),
-            // `allowedTools` only controls auto-allow/permission-prompt behavior; per the SDK's own
-            // sdk.d.ts docs it does NOT restrict which tools the model can see ("To restrict which
-            // tools are available, use the `tools` option instead."). An empty allowedTools array
-            // still leaves every built-in tool in the model's context, so it could still emit a
-            // tool_use and burn our single maxTurns budget → error_max_turns. `tools: []` is the
-            // option sdk.d.ts documents as "Disable all built-in tools", which is what we want here.
-            tools: [],
-            maxTurns: 1,
-            ...(resumeId ? { resume: resumeId } : {}),
-            env: claudeAuthEnv,
-            ...(cfg?.claudeExecutablePath ? { pathToClaudeCodeExecutable: cfg.claudeExecutablePath } : {}),
-          },
-        })[Symbol.asyncIterator]();
-      } catch (err) {
-        throw asTransportError(err);
-      }
-    })();
+    try {
+      let receivedFirstMessage = false;
+      // subscriptionは最小allowlist env（APIキー除去）、api-keyはそこへ解決済みANTHROPIC_API_KEYだけを追加する。
+      // モードと鍵は呼び出しごとに参照するため、module-level runnerのまま保存/削除を即時反映できる。
+      const claudeAuthEnv = claudeSpawnEnv(
+        getActiveAuthModes().claude,
+        Bun.env,
+        getActiveAuthSecrets().anthropic,
+      );
+      const iterator = (() => {
+        try {
+          return queryFn({
+            prompt,
+            options: {
+              systemPrompt: opts?.systemPrompt ?? PARTNER_SYSTEM_PROMPT,
+              model: cfg?.model ?? "sonnet",
+              ...(cfg?.effort ? { effort: cfg.effort as EffortLevel } : {}),
+              abortController: sdkAbort,
+              // `allowedTools` は権限確認だけを制御し、モデルに見えるツール自体は制限しない。
+              // 会話用途ではツールを使わせないため、SDK が定める `tools: []` を明示する。
+              tools: [],
+              maxTurns: 1,
+              ...(resumeId ? { resume: resumeId } : {}),
+              env: claudeAuthEnv,
+              ...(cfg?.claudeExecutablePath ? { pathToClaudeCodeExecutable: cfg.claudeExecutablePath } : {}),
+            },
+          })[Symbol.asyncIterator]();
+        } catch (err) {
+          throw asTransportError(err);
+        }
+      })();
 
-    while (true) {
-      let step: Awaited<ReturnType<typeof iterator.next>>;
-      try {
-        step = await iterator.next();
-      } catch (err) {
-        if (receivedFirstMessage) throw err;
-        throw asTransportError(err);
-      }
-      if (step.done) break;
-      receivedFirstMessage = true;
-      const msg = step.value;
-      if (msg.type === "system" && msg.subtype === "init") sessionId = msg.session_id;
-      if (msg.type === "result") {
-        if (msg.subtype === "success") {
-          text = msg.result;
-        } else {
-          const details: string[] = [];
-          if (msg.stop_reason) details.push(`stop_reason=${msg.stop_reason}`);
-          if (msg.errors?.length) details.push(`errors=${msg.errors.join("; ")}`);
-          const suffix = details.length ? `: ${details.join(", ")}` : "";
-          throw new Error(`Claude result error (${msg.subtype})${suffix}`);
+      while (true) {
+        let step: Awaited<ReturnType<typeof iterator.next>>;
+        try {
+          step = await iterator.next();
+        } catch (err) {
+          if (receivedFirstMessage) throw err;
+          throw asTransportError(err);
+        }
+        if (step.done) break;
+        receivedFirstMessage = true;
+        const msg = step.value;
+        if (msg.type === "system" && msg.subtype === "init") sessionId = msg.session_id;
+        if (msg.type === "result") {
+          if (msg.subtype === "success") {
+            text = msg.result;
+          } else {
+            const details: string[] = [];
+            if (msg.stop_reason) details.push(`stop_reason=${msg.stop_reason}`);
+            if (msg.errors?.length) details.push(`errors=${msg.errors.join("; ")}`);
+            const suffix = details.length ? `: ${details.join(", ")}` : "";
+            throw new Error(`Claude result error (${msg.subtype})${suffix}`);
+          }
         }
       }
+      if (!text) throw new Error("Claude returned empty result");
+      return { text, sessionId };
+    } finally {
+      opts?.signal?.removeEventListener("abort", onAbort);
     }
-    if (!text) throw new Error("Claude returned empty result");
-    return { text, sessionId };
   };
 }
 
@@ -154,8 +159,8 @@ const CLAUDE_DEFAULT_TUNING: { model: string; effort?: string } = { model: "sonn
  * （coach.ts / placement.ts / assessment.ts / content-gen.ts / converse.ts）に置き、
  * ここでは実行器だけを共有する。
  *
- * 合成: SDK 経路（withTimeout でハング打ち切り）を primary、`claude -p` ワンショット（claude-print.ts）を
- * フォールバックにした withFallback 合成（transport 障害時のみ委譲。モデル起因の失敗は委譲しない）。
+ * 合成: SDK 経路を primary、`claude -p` ワンショット（claude-print.ts）をフォールバックにした
+ * withFallback 合成。transport 障害時だけ委譲し、両経路で1つのdeadlineを共有する。
  *
  * ランタイム切替: defaultRunner は「現在の currentRunner に委譲する安定参照のラッパ」。
  * 6つの呼び出し側（coach / placement / assessment / converse / scripts/generate-content）は
@@ -279,7 +284,7 @@ const currentRunners = new Map<LlmRole, ClaudeRunner>(
  * applyLlmRoleSettings による currentRunners 差し替えが再起動なしで反映される。
  */
 const roleWrappers = new Map<LlmRole, ClaudeRunner>(
-  LLM_ROLES.map((r) => [r, (prompt: string, resumeId?: string, opts?: { systemPrompt?: string }) =>
+  LLM_ROLES.map((r) => [r, (prompt: string, resumeId?: string, opts?: Parameters<ClaudeRunner>[2]) =>
     currentRunners.get(r)!(prompt, resumeId, opts)]),
 );
 
