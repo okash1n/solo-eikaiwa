@@ -5,6 +5,7 @@ import {
 } from "../api";
 import { STR, type DrillKey, type Lang } from "../i18n";
 import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 import { type MenuSource } from "./SessionRunner";
 import { localYmd } from "../dates";
 import { calendarLevel } from "../lib/calendar-level";
@@ -69,10 +70,7 @@ function PracticeCalendar({ days, xpByDay, lang }: { days: string[]; xpByDay: Re
     weeks.push(col);
   }
   return (
-    <div className="card">
-      <div className="calendar-head">
-        <h3>{t.calendar.title}</h3>
-      </div>
+    <Card header={t.calendar.title}>
       <div className="cal" ref={calRef}>
         <div className="cal-weekdays">
           {WEEKDAY_LETTERS[lang].map((w, i) => (
@@ -111,7 +109,7 @@ function PracticeCalendar({ days, xpByDay, lang }: { days: string[]; xpByDay: Re
         {[1, 2, 3, 4].map((lv) => (<span key={lv} className="day" data-level={lv} />))}
         {t.calendar.legendMore}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -285,8 +283,7 @@ function ProposalCard(props: {
     if (typeof r.lowOutputRounds === "number" && fires("lowOutput", r.lowOutputRounds > 0)) lines.push(t.lowOutput(r.lowOutputRounds));
   }
   return (
-    <div className="card proposal-card">
-      <h3>{proposal.kind === "up" ? t.upTitle : t.downTitle}</h3>
+    <Card className="ring-primary" header={proposal.kind === "up" ? t.upTitle : t.downTitle}>
       <p>{proposal.kind === "up" ? t.upBody(proposal.toLevel) : t.downBody(proposal.toLevel)}</p>
       <ul className="text-sm text-muted">
         {lines.map((l, i) => (<li key={i}>{l}</li>))}
@@ -298,6 +295,6 @@ function ProposalCard(props: {
         </Button>
         <Button variant="secondary" onClick={() => props.onAction("decline")}>{t.decline}</Button>
       </div>
-    </div>
+    </Card>
   );
 }

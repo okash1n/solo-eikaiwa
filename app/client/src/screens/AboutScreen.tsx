@@ -1,4 +1,5 @@
 import { STR, type Lang } from "../i18n";
+import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 
 const LP_URL = "https://btajp.github.io/solo-eikaiwa/#privacy";
@@ -17,8 +18,8 @@ export function AboutScreen({ lang }: { lang: Lang }) {
           <div className="app-brand"><span className="brand-mark" aria-hidden="true" />solo-eikaiwa</div>
           <p>{t.desc}</p>
           <div className="about-actions">
-            <a className="btn btn-primary" href={LP_URL} target="_blank" rel="noopener noreferrer">{t.lpButton}</a>
-            <a className="btn btn-secondary" href={GITHUB_URL} target="_blank" rel="noopener noreferrer">{t.githubButton}</a>
+            <Button asChild variant="primary"><a href={LP_URL} target="_blank" rel="noopener noreferrer">{t.lpButton}</a></Button>
+            <Button asChild variant="secondary"><a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">{t.githubButton}</a></Button>
           </div>
           <p className="text-sm text-muted">{t.license}</p>
         </div>

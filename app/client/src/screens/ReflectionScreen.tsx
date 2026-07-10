@@ -60,12 +60,12 @@ export function ReflectionScreen({
   return (
     <div className="stack">
       {reflection.goodPhrases.length > 0 && (
-        <Card header={<h3>{t.goodPhrases}</h3>}>
+        <Card header={t.goodPhrases}>
           <ul>{reflection.goodPhrases.map((p, i) => <li key={i}>{p}</li>)}</ul>
         </Card>
       )}
       {reflection.fixes.length > 0 && (
-        <Card header={<h3>{t.fixes}</h3>}>
+        <Card header={t.fixes}>
           <ul>
             {reflection.fixes.map((f, i) => (
               <FixItem key={i} fix={f} lang={lang} />
@@ -73,7 +73,7 @@ export function ReflectionScreen({
           </ul>
         </Card>
       )}
-      <Card header={<h3>{t.tomorrow}</h3>}>
+      <Card header={t.tomorrow}>
         <p>{reflection.noteForTomorrow_ja}</p>
       </Card>
       <Button variant="secondary" onClick={confirmReview} disabled={reviewed}>

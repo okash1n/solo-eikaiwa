@@ -64,8 +64,7 @@ export function ProgressScreen({ lang }: { lang: Lang }) {
     <div className="stack">
       {pageHero}
 
-      <Card>
-        <div className="card-header"><h3>{t.speakingTime}</h3></div>
+      <Card header={t.speakingTime}>
         <div className="metric-bars">
           {days.map((d) => (
             <div key={d.ymd} className="metric-bar-col" title={`${d.ymd}: ${fmtMin(d.speakingSec)}${t.speakingMinUnit}`}>
@@ -76,8 +75,7 @@ export function ProgressScreen({ lang }: { lang: Lang }) {
         </div>
       </Card>
 
-      <Card>
-        <div className="card-header"><h3>{t.articulation}</h3></div>
+      <Card header={t.articulation}>
         <div className="stack-sm">
           {days.filter((d) => d.utterances > 0).map((d) => (
             <div key={d.ymd} className="hbar-row">
@@ -104,8 +102,7 @@ export function ProgressScreen({ lang }: { lang: Lang }) {
         </Card>
       </div>
 
-      <Card>
-        <div className="card-header"><h3>{t.levelHistory}</h3></div>
+      <Card header={t.levelHistory}>
         <p className="text-sm text-muted">{t.currentLevel(summary.level.current)}</p>
         {summary.level.history.length > 0 && (
           <ul className="level-history">
@@ -177,8 +174,7 @@ function MonthlyReview({ lang }: { lang: Lang }) {
   const canGenerate = canGenerateMonthlyReview(report?.ymd ?? null);
 
   return (
-    <Card>
-      <div className="card-header"><h3>{t.monthlyReview}</h3></div>
+    <Card header={t.monthlyReview}>
       {report ? (
         <>
           <p className="text-sm text-muted">{t.mrDate(report.ymd)}</p>

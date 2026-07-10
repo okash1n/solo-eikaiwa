@@ -11,6 +11,7 @@ type Props = {
   ariaLabel?: string;
   title?: string;
   className?: string;
+  asChild?: boolean;
 };
 
 /** variant/size の旧プロップ名 → shadcn Button のプロップ名へのマッピング */
@@ -31,7 +32,7 @@ const SIZE_MAP = {
  * （variant: primary/secondary/ghost/danger, size: md/lg, loading）を維持する。
  * loading 中はスピナーを出して自動 disabled（スピナーは既存の .spinner CSS を再利用）。
  */
-export function Button({ variant = "secondary", size = "md", loading, disabled, onClick, children, ariaLabel, title, className }: Props) {
+export function Button({ variant = "secondary", size = "md", loading, disabled, onClick, children, ariaLabel, title, className, asChild }: Props) {
   return (
     <ShadcnButton
       variant={VARIANT_MAP[variant]}
@@ -42,9 +43,14 @@ export function Button({ variant = "secondary", size = "md", loading, disabled, 
       title={title}
       aria-busy={loading || undefined}
       className={className}
+      asChild={asChild}
     >
-      {loading && <span className="spinner" aria-hidden />}
-      {children}
+      {asChild ? children : (
+        <>
+          {loading && <span className="spinner" aria-hidden />}
+          {children}
+        </>
+      )}
     </ShadcnButton>
   );
 }
