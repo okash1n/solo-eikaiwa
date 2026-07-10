@@ -1,5 +1,6 @@
 import { fetchModelTalkLibrary, fetchTalkExplanation, type ModelTalkEntry } from "../api";
 import { STR, type Lang } from "../i18n";
+import { localYmdFromTimestamp } from "../dates";
 import { useLoad } from "../useLoad";
 import { usePlayRow } from "../usePlayRow";
 import { useExplain } from "../useExplain";
@@ -52,7 +53,7 @@ function LibraryEntry({ entry, lang, row }: {
             {row.playingKey === entry.id ? t.playing : "▶"}
           </Button>{" "}
           {entry.topicTitle || entry.topicId}{" "}
-          <span className="text-sm text-muted">{entry.createdAt.slice(0, 10)}</span>
+          <span className="text-sm text-muted">{localYmdFromTimestamp(entry.createdAt)}</span>
         </>
       }
     >

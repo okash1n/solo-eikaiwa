@@ -130,7 +130,7 @@ describe("sentences / queue", () => {
     const store = memStore();
     store.grade(3, "good", "2026-07-01"); // due 2026-07-04
     store.grade(2, "good", "2026-07-02"); // due 2026-07-05
-    store.grade(5, "good", "2026-07-06"); // due 2026-07-09（未到来）
+    store.grade(5, "good", "2026-07-05"); // due 2026-07-08（未到来・当日導入数には含めない）
     const q = store.queue(2, "2026-07-06");
     // 復習: no3(due07-04) → no2(due07-05)。新規: no1, no4（no5は復習予約済みなので新規に出ない）
     expect(q.map((s) => s.no)).toEqual([3, 2, 1, 4]);
@@ -159,6 +159,26 @@ describe("sentences / queue", () => {
     const store = makeSentenceStore(openDb(":memory:"), outOfOrder);
     const q = store.queue(2, "2026-07-06");
     expect(q.map((s) => s.no)).toEqual([1, 2]);
+  });
+
+  test("同日中に初回採点した数を日次上限から差し引き、翌日に新規枠を戻す", () => {
+    const store = memStore();
+    expect(store.queue(3, "2026-07-06").map((s) => s.no)).toEqual([1, 2, 3]);
+
+    store.grade(1, "good", "2026-07-06");
+    store.grade(2, "good", "2026-07-06");
+    expect(store.queue(3, "2026-07-06").map((s) => s.no)).toEqual([3]);
+
+    store.grade(3, "good", "2026-07-06");
+    expect(store.queue(3, "2026-07-06")).toEqual([]);
+    expect(store.queue(3, "2026-07-07").map((s) => s.no)).toEqual([4, 5]);
+  });
+
+  test("同じ例文を同日に再採点しても新規導入数を二重計上しない", () => {
+    const store = memStore();
+    store.grade(1, "bad", "2026-07-06");
+    store.grade(1, "soso", "2026-07-06");
+    expect(store.queue(3, "2026-07-06").filter((s) => s.srs === null).map((s) => s.no)).toEqual([2, 3]);
   });
 });
 

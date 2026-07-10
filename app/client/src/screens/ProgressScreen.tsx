@@ -4,6 +4,7 @@ import {
   type MonthlyReport, type MonthlyReportPreview,
 } from "../api";
 import { STR, type Lang } from "../i18n";
+import { canGenerateMonthlyReview } from "../dates";
 import { useLoad } from "../useLoad";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
@@ -165,8 +166,7 @@ function MonthlyReview({ lang }: { lang: Lang }) {
     }
   }
 
-  const THIRTY_DAYS_MS = 30 * 86400000;
-  const canGenerate = !report || Date.now() - Date.parse(report.ts) >= THIRTY_DAYS_MS;
+  const canGenerate = canGenerateMonthlyReview(report?.ymd ?? null);
 
   return (
     <Card>

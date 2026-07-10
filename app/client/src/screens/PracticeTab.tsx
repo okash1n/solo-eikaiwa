@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  fetchSentenceExplanation, fetchSentenceQueue, fetchSentences, gradeChunk, gradeSentence, playTtsCached,
+  fetchChunks, fetchSentenceExplanation, fetchSentenceQueue, fetchSentences, gradeChunk, gradeSentence, playTtsCached,
 } from "../api";
 import { stopPlayback } from "../audio";
 import { clozeText } from "../cloze";
@@ -12,6 +12,7 @@ import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { ExplainBox } from "../ui/ExplainBox";
 import { localYmd } from "../dates";
+import { countDueByYmd } from "../lib/practice-summary";
 import { initialPhase, type Phase } from "./practicePhase";
 import { resolvePendingAnswer, type PendingAnswer } from "./answerRequest";
 
@@ -59,13 +60,13 @@ export function PracticeTab({ lang, hideNote, clozeDefault, audioFirst = false, 
   useEffect(() => {
     // 完了画面で「明日の復習予定数」を出す（情報表示のみ・失敗は無視）
     if (!done || dueTomorrow !== null) return;
-    fetchSentences()
-      .then((all) => {
+    Promise.all([fetchSentences(), fetchChunks()])
+      .then(([sentences, chunks]) => {
         if (!aliveRef.current) return;
         const tmr = new Date();
         tmr.setDate(tmr.getDate() + 1);
         const tomorrow = localYmd(tmr);
-        setDueTomorrow(all.filter((s) => s.srs && s.srs.due <= tomorrow).length);
+        setDueTomorrow(countDueByYmd([...sentences, ...chunks], tomorrow));
       })
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps

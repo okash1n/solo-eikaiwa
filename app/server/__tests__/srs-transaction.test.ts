@@ -49,6 +49,7 @@ describe("SRS採点transaction", () => {
     expect([first.status, retryA.status, retryB.status]).toEqual([200, 200, 200]);
     expect(await retryB.json()).toEqual(await first.clone().json());
     expect(db.query<{ reviews: number }, []>("SELECT reviews FROM sentence_srs WHERE no = 1").get()!.reviews).toBe(1);
+    expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM sentence_intro_log WHERE no = 1").get()!.n).toBe(1);
     expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM xp_events WHERE kind = 'srs-grade'").get()!.n).toBe(1);
     expect(deps.progressStore.getSummary().xp).toBe(2);
   });
@@ -73,6 +74,7 @@ describe("SRS採点transaction", () => {
     }));
     expect(res.status).toBe(500);
     expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM sentence_srs").get()!.n).toBe(0);
+    expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM sentence_intro_log").get()!.n).toBe(0);
     expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM srs_review_events").get()!.n).toBe(0);
     expect(deps.progressStore.getSummary().xp).toBe(0);
   });
@@ -86,6 +88,7 @@ describe("SRS採点transaction", () => {
     }));
     expect(res.status).toBe(500);
     expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM xp_events").get()!.n).toBe(0);
+    expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM sentence_intro_log").get()!.n).toBe(0);
     expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM srs_review_events").get()!.n).toBe(0);
   });
 });

@@ -113,6 +113,10 @@ export function ensureSentenceSchema(db: Database): void {
     text TEXT NOT NULL,
     created TEXT NOT NULL
   )`);
+  db.run(`CREATE TABLE IF NOT EXISTS sentence_intro_log (
+    no INTEGER PRIMARY KEY,
+    ymd TEXT NOT NULL
+  )`);
 }
 
 export function makeSentenceStore(
@@ -127,6 +131,22 @@ export function makeSentenceStore(
     return new Map(rows.map((r) => [r.no, { stage: r.stage, due: r.due, reviews: r.reviews }]));
   }
 
+  const applyGrade = db.transaction((no: number, grade: Grade, today: string) => {
+    if (!byNo.has(no)) return null;
+    const row = db.query<SrsRow, [number]>("SELECT * FROM sentence_srs WHERE no = ?").get(no);
+    const transition = srsTransition(row?.stage ?? 0, grade, today);
+    db.run(
+      `INSERT INTO sentence_srs (no, stage, due, last_grade, reviews) VALUES (?, ?, ?, ?, 1)
+       ON CONFLICT(no) DO UPDATE SET stage = excluded.stage, due = excluded.due,
+         last_grade = excluded.last_grade, reviews = sentence_srs.reviews + 1`,
+      [no, transition.stage, transition.due, grade],
+    );
+    if (!row) {
+      db.run("INSERT OR IGNORE INTO sentence_intro_log (no, ymd) VALUES (?, ?)", [no, today]);
+    }
+    return { no, stage: transition.stage, due: transition.due };
+  });
+
   return {
     list() {
       const srs = srsMap();
@@ -135,6 +155,10 @@ export function makeSentenceStore(
 
     queue(newCount, today = localYmd()) {
       const srs = srsMap();
+      const introducedToday = db.query<{ count: number }, [string]>(
+        "SELECT COUNT(*) AS count FROM sentence_intro_log WHERE ymd = ?",
+      ).get(today)?.count ?? 0;
+      const freshLimit = Math.max(0, newCount - introducedToday);
       const reviews = sentences
         .filter((s) => { const st = srs.get(s.no); return st !== undefined && st.due <= today; })
         .sort((a, b) => {
@@ -144,21 +168,12 @@ export function makeSentenceStore(
       const fresh = sentences
         .filter((s) => !srs.has(s.no))
         .sort((a, b) => a.no - b.no)
-        .slice(0, newCount);
+        .slice(0, freshLimit);
       return [...reviews, ...fresh].map((s) => ({ ...s, srs: srs.get(s.no) ?? null }));
     },
 
     grade(no, grade, today = localYmd()) {
-      if (!byNo.has(no)) return null;
-      const row = db.query<SrsRow, [number]>("SELECT * FROM sentence_srs WHERE no = ?").get(no);
-      const t = srsTransition(row?.stage ?? 0, grade, today);
-      db.run(
-        `INSERT INTO sentence_srs (no, stage, due, last_grade, reviews) VALUES (?, ?, ?, ?, 1)
-         ON CONFLICT(no) DO UPDATE SET stage = excluded.stage, due = excluded.due,
-           last_grade = excluded.last_grade, reviews = sentence_srs.reviews + 1`,
-        [no, t.stage, t.due, grade],
-      );
-      return { no, stage: t.stage, due: t.due };
+      return applyGrade(no, grade, today);
     },
 
     getExplanation(no) {
