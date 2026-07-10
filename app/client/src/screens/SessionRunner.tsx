@@ -7,6 +7,7 @@ import { STR, type Lang } from "../i18n";
 import { formatMmSs, useCountdown } from "../useCountdown";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
+import { FlowExitButton } from "../ui/FlowExitButton";
 import { ProgressDots, Screen } from "../ui/Screen";
 import { TimerChip } from "../ui/TimerChip";
 import { ChunkPlaceholderScreen } from "./ChunkPlaceholderScreen";
@@ -152,19 +153,24 @@ export function SessionRunner(props: {
       {t.xpSaveFailed}
     </Banner>
   ) : null;
+  const exitButton = <FlowExitButton onClick={props.onExit}>{STR[props.lang].appShell.backToHome}</FlowExitButton>;
 
   if (errorMsg) {
     return (
-      <div>
+      <div className="screen stack">
+        {exitButton}
         <Banner kind="error" action={<Button onClick={loadMenu}>{t.retry}</Button>}>{errorMsg}</Banner>
       </div>
     );
   }
-  if (!menu) return <p className="text-muted">{t.building}</p>;
+  if (!menu) {
+    return <div className="screen stack">{exitButton}<p className="text-muted">{t.building}</p></div>;
+  }
 
   if (done) {
     return (
-      <div className="stack fade-in">
+      <div className="screen stack fade-in">
+        {exitButton}
         {completionNotice}
         <p className="text-muted">{t.doneSummary}</p>
         <FeedbackRow context={{ blockKind: "session", refId: sourceSignature(props.source) }} lang={props.lang} />
@@ -229,40 +235,43 @@ export function SessionRunner(props: {
   }
 
   return (
-    <Screen
-      title={blockTitle(block, props.lang)}
-      meta={
-        <>
-          <ProgressDots current={index} total={menu.blocks.length} label={t.blockAria(index, menu.blocks.length)} />
-          {blockProgress.ready && !hasInternalFlow && <TimerChip remaining={timer.remaining} expired={timer.expired} note={t.timerNote} />}
-        </>
-      }
-    >
-      {completionNotice}
-      {/* v0.26 wave5: rotation の情報的注記。ラウンドロビン振替・帯域緩和で選ばれたときだけ出す中立な一文（警告調ではない） */}
-      {block.fallback && <Banner kind="info">{t.fallbackNote}</Banner>}
-      {hasInternalFlow && <p className="text-sm text-muted">{t.blockEstimate(formatMmSs(block.minutes * 60))}</p>}
-      <div key={block.id} className="fade-in">
-        <BlockBody
-          block={block} sessionId={props.sessionId} lang={props.lang}
-          onBeforeRecording={props.onBeforeRecording}
-          onReady={() => reportBlockReady(block.id)}
-          onValidAttempt={() => reportValidAttempt(block.id)}
-          onInternalFlowComplete={() => reportInternalFlowComplete(block.id)}
-        />
-      </div>
-      {showOuterCompletion && <>
-        {completionGate !== "ready" && <Banner kind="info">{
-          completionGate === "preparing" ? t.preparingBlock : t.completeAfterAttempt
-        }</Banner>}
-        <div className="text-sm text-muted">{t.leaveBeforeComplete}</div>
-        <div className="round-actions">
-          <Button variant="primary" size="lg" onClick={nextBlock} disabled={advancing || completionGate !== "ready"}>
-            {isLast ? t.finish : t.next}
-          </Button>
+    <div className="screen stack">
+      {exitButton}
+      <Screen
+        title={blockTitle(block, props.lang)}
+        meta={
+          <>
+            <ProgressDots current={index} total={menu.blocks.length} label={t.blockAria(index, menu.blocks.length)} />
+            {blockProgress.ready && !hasInternalFlow && <TimerChip remaining={timer.remaining} expired={timer.expired} note={t.timerNote} />}
+          </>
+        }
+      >
+        {completionNotice}
+        {/* v0.26 wave5: rotation の情報的注記。ラウンドロビン振替・帯域緩和で選ばれたときだけ出す中立な一文（警告調ではない） */}
+        {block.fallback && <Banner kind="info">{t.fallbackNote}</Banner>}
+        {hasInternalFlow && <p className="text-sm text-muted">{t.blockEstimate(formatMmSs(block.minutes * 60))}</p>}
+        <div key={block.id} className="fade-in">
+          <BlockBody
+            block={block} sessionId={props.sessionId} lang={props.lang}
+            onBeforeRecording={props.onBeforeRecording}
+            onReady={() => reportBlockReady(block.id)}
+            onValidAttempt={() => reportValidAttempt(block.id)}
+            onInternalFlowComplete={() => reportInternalFlowComplete(block.id)}
+          />
         </div>
-      </>}
-    </Screen>
+        {showOuterCompletion && <>
+          {completionGate !== "ready" && <Banner kind="info">{
+            completionGate === "preparing" ? t.preparingBlock : t.completeAfterAttempt
+          }</Banner>}
+          <div className="text-sm text-muted">{t.leaveBeforeComplete}</div>
+          <div className="round-actions">
+            <Button variant="primary" size="lg" onClick={nextBlock} disabled={advancing || completionGate !== "ready"}>
+              {isLast ? t.finish : t.next}
+            </Button>
+          </div>
+        </>}
+      </Screen>
+    </div>
   );
 }
 

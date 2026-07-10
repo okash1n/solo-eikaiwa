@@ -282,14 +282,18 @@ type PlacementStrings = {
     cardTitleNew: string; cardBodyNew: string; startDefaultNote: (lv: number) => string;
     cardTitleMonthly: string; cardBodyMonthly: string;
     introTitle: string; introBody: string; introStart: string;
+    exitNote: string;
     taskLabel: (i: number, total: number) => string;
     promptLabel: string;
     recordStart: string; recordReplace: string; recordStarting: string; recordStop: string; transcribing: string;
     yourAnswer: string; redo: string; next: string; submit: string;
     submitting: string; submitError: string; retry: string;
     resultTitle: string; resultStage: (stage: number) => string;
+    stageLevelNote: (stage: number, level: number) => string;
     resultStartAt: (level: number) => string; chooseOwn: string; notNow: string; cancel: string;
-    chooseLabel: string; apply: string; confirmError: string;
+    chooseLabel: string; chooseInputHelp: string;
+    chooseInputError: (reason: "required" | "whole-number" | "range") => string;
+    apply: string; applyTiming: string; levelApplied: (level: number) => string; confirmError: string;
     xpNote: string;
     showPromptJa: string; translating: string; translateError: string; retryTranslate: string;
     micError: (detail: string) => string; notHeard: string;
@@ -697,6 +701,7 @@ export const STR: Record<Lang, Strings> = {
       introTitle: "Level check",
       introBody: "You'll do three short speaking tasks: introduce yourself (1 min), explain a situation (1.5 min), and give an opinion (1 min). Record each one — the result only applies if you accept it.",
       introStart: "Start task 1",
+      exitNote: "Leaving this check discards the recordings and transcripts from this attempt.",
       taskLabel: (i, total) => `Task ${i} of ${total}`,
       promptLabel: "Your prompt",
       recordStart: "🎙 Start speaking", recordReplace: "Record again (replaces your previous answer)", recordStarting: "Requesting microphone…",
@@ -707,9 +712,19 @@ export const STR: Record<Lang, Strings> = {
       retry: "Submit again",
       resultTitle: "Your result",
       resultStage: (stage) => `Estimated stage: ${stage} of 6`,
+      stageLevelNote: (stage, level) => `Stage ${stage} is a difficulty band (1–6). Lv ${level} is the recommended starting point within that band.`,
       resultStartAt: (level) => `Start at Lv ${level}`,
       chooseOwn: "Choose my own level", notNow: "Not this time", cancel: "Cancel",
-      chooseLabel: "Level (1–999)", apply: "Apply",
+      chooseLabel: "Level (1–999)",
+      chooseInputHelp: "Enter a whole number from 1 to 999. This changes the starting Lv, not the Stage estimate.",
+      chooseInputError: (reason) => {
+        if (reason === "required") return "Enter a starting level.";
+        if (reason === "whole-number") return "Use a whole number, without decimals or text.";
+        return "Choose a level from 1 to 999.";
+      },
+      apply: "Apply",
+      applyTiming: "The selected Lv takes effect right away for your next practice.",
+      levelApplied: (level) => `Lv ${level} is set. Your next practice will use it.`,
       confirmError: "Couldn't apply. Please try again.",
       xpNote: "+10 XP for completing the check",
       showPromptJa: "💡 Show Japanese", translating: "Translating…",
@@ -1171,6 +1186,7 @@ export const STR: Record<Lang, Strings> = {
       introTitle: "レベル測定",
       introBody: "3つの短いスピーキングを行います: 自己紹介（1分）→ 状況説明（1.5分）→ 意見（1分）。それぞれ録音してください。結果はあなたが承認したときだけ反映されます。",
       introStart: "タスク1を始める",
+      exitNote: "ここでホームに戻ると、この測定で録音・文字起こしした内容は保存されません。",
       taskLabel: (i, total) => `タスク ${i} / ${total}`,
       promptLabel: "お題",
       recordStart: "🎙 話し始める", recordReplace: "録り直す（前の回答を置き換え）", recordStarting: "マイクを準備中…",
@@ -1181,9 +1197,19 @@ export const STR: Record<Lang, Strings> = {
       retry: "もう一度送信",
       resultTitle: "測定結果",
       resultStage: (stage) => `推定ステージ: ${stage} / 6`,
+      stageLevelNote: (stage, level) => `ステージ${stage}は難易度帯（1〜6）です。Lv${level}は、その帯で始めるおすすめのレベルです。`,
       resultStartAt: (level) => `Lv ${level} から始める`,
       chooseOwn: "自分でレベルを選ぶ", notNow: "今回は反映しない", cancel: "キャンセル",
-      chooseLabel: "レベル（1〜999）", apply: "適用",
+      chooseLabel: "レベル（1〜999）",
+      chooseInputHelp: "1〜999の整数を入力してください。変更するのは開始Lvで、ステージの推定は変わりません。",
+      chooseInputError: (reason) => {
+        if (reason === "required") return "開始レベルを入力してください。";
+        if (reason === "whole-number") return "小数や文字を含めず、整数で入力してください。";
+        return "1〜999の範囲で入力してください。";
+      },
+      apply: "適用",
+      applyTiming: "選んだLvは、次の練習からすぐに反映されます。",
+      levelApplied: (level) => `Lv${level}を反映しました。次の練習からこのLvを使います。`,
       confirmError: "適用できませんでした。もう一度お試しください",
       xpNote: "測定完了で +10 XP",
       showPromptJa: "💡 日本語で見る", translating: "訳しています…",

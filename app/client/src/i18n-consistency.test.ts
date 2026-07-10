@@ -47,6 +47,19 @@ describe("画面導線と学習素材の呼称", () => {
     expect(STR.ja.placement.notNow).not.toBe(STR.ja.placement.cancel);
   });
 
+  test("レベル測定はStageとLvの役割、入力条件、反映時点を両言語で示す", () => {
+    expect(STR.en.placement.stageLevelNote(2, 13)).toContain("Stage 2");
+    expect(STR.en.placement.stageLevelNote(2, 13)).toContain("Lv 13");
+    expect(STR.en.placement.chooseInputHelp).toContain("1 to 999");
+    expect(STR.en.placement.applyTiming).toContain("next practice");
+    expect(STR.en.placement.levelApplied(13)).toContain("Lv 13");
+    expect(STR.ja.placement.stageLevelNote(2, 13)).toContain("ステージ2");
+    expect(STR.ja.placement.stageLevelNote(2, 13)).toContain("Lv13");
+    expect(STR.ja.placement.chooseInputHelp).toContain("1〜999");
+    expect(STR.ja.placement.applyTiming).toContain("次の練習");
+    expect(STR.ja.placement.levelApplied(13)).toContain("Lv13");
+  });
+
   test("モデルトークとリスニングはナビ・画面・記録で対応する名称にする", () => {
     expect(STR.en.nav.library).toBe(STR.en.library.title);
     expect(STR.ja.nav.library).toBe(STR.ja.library.title);
