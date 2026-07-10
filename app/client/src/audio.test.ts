@@ -197,6 +197,24 @@ function installAudioStub() {
 }
 
 describe("再生世代", () => {
+  test("完走した再生だけを有効な再生として返す", async () => {
+    const { instances } = installAudioStub();
+    const playing = playBlob(new Blob(["completed"]));
+    await Promise.resolve();
+
+    instances[0].onended?.();
+    expect(await playing).toBe(true);
+  });
+
+  test("停止された再生は有効な再生として返さない", async () => {
+    installAudioStub();
+    const playing = playBlob(new Blob(["interrupted"]));
+    await Promise.resolve();
+
+    stopPlayback();
+    expect(await playing).toBe(false);
+  });
+
   test("Aの遅延rejectがBのregistryを消さず、stopPlaybackがBを停止する", async () => {
     const { plays, instances } = installAudioStub();
     const a = playBlob(new Blob(["a"]));

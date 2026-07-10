@@ -26,6 +26,7 @@ type SessionStrings = {
   session: {
     building: string; retry: string; timerNote: string;
     finish: string; next: string; doneExit: string;
+    preparingBlock: string; completeAfterAttempt: string; leaveBeforeComplete: string; doneSummary: string;
     xpSaveFailed: string; xpRetry: string; xpRetrying: string;
     noTopic: string; noScenario: string; unknownBlock: (kind: string) => string;
     blockAria: (index: number, total: number) => string;
@@ -338,6 +339,7 @@ type SentencesStrings = {
 type WarmupStrings = { warmup: {
   intro: string; loading: string; retry: string; fallbackTitle: string;
   clozeStepButton: string; clozeStepTitle: string; clozeStepBody: string; outlineTitle: string;
+  confirmReading: string; readingConfirmed: string;
   showJaHints: string; hideJaHints: string;
 } };
 type Ftt432Strings = { ftt432: {
@@ -358,6 +360,7 @@ type Ftt432Strings = { ftt432: {
 } };
 type ReflectionStrings = { reflection: {
   loading: string; retry: string; goodPhrases: string; fixes: string; tomorrow: string;
+  confirmReview: string; reviewed: string;
   explainMore: string; explainLoading: string; explainError: string;
 } };
 type ChunkListStrings = { chunkList: { playAria: (en: string) => string } };
@@ -766,6 +769,10 @@ export const STR: Record<Lang, Strings> = {
     session: {
       building: "Building today's menu…", retry: "Retry", timerNote: "Move on at a natural stopping point",
       finish: "✅ Finish session", next: "Next block →", doneExit: "🏠 Back to home",
+      preparingBlock: "Preparing this block. Its timer starts when the practice material is ready.",
+      completeAfterAttempt: "Finish this block after a completed practice attempt.",
+      leaveBeforeComplete: "Leaving before completing this block marks it as interrupted and adds no XP.",
+      doneSummary: "Completed blocks are recorded. Interrupted blocks do not add XP.",
       xpSaveFailed: "This block's XP hasn't been recorded yet. You can retry while continuing.",
       xpRetry: "Retry XP", xpRetrying: "Retrying…",
       noTopic: "No topic available", noScenario: "No scenario available",
@@ -780,6 +787,7 @@ export const STR: Record<Lang, Strings> = {
       clozeStepButton: "🔡 Read with gaps (round 2 · optional)",
       clozeStepTitle: "Read with gaps (optional)",
       clozeStepBody: "This time fill the blanks yourself as you read aloud. The answers are in the list above.",
+      confirmReading: "I've read these aloud", readingConfirmed: "Read aloud",
       outlineTitle: "Today's story outline",
       showJaHints: "Show Japanese hints",
       hideJaHints: "Hide Japanese hints",
@@ -810,6 +818,7 @@ export const STR: Record<Lang, Strings> = {
     reflection: {
       loading: "Your coach is reviewing this practice session…", retry: "Retry",
       goodPhrases: "👏 What went well", fixes: "✏️ Worth polishing", tomorrow: "📝 For tomorrow",
+      confirmReview: "I've reviewed this", reviewed: "Reviewed",
       explainMore: "💡 Explain more", explainLoading: "Writing an explanation…", explainError: "Couldn't load the explanation.",
     },
     chunkList: { playAria: (en) => `Play "${en}"` },
@@ -1224,6 +1233,10 @@ export const STR: Record<Lang, Strings> = {
     session: {
       building: "今日のメニューを組んでいます…", retry: "再試行", timerNote: "キリのいいところで次へ",
       finish: "✅ セッションを終える", next: "次のブロックへ →", doneExit: "🏠 ホームに戻る",
+      preparingBlock: "このブロックを準備しています。教材の準備ができるとタイマーが始まります。",
+      completeAfterAttempt: "練習を一度実施すると、このブロックを完了できます。",
+      leaveBeforeComplete: "完了前に離れると、このブロックは中断として扱われ、XPは増えません。",
+      doneSummary: "完了したブロックだけが記録されます。中断したブロックのXPは増えません。",
       xpSaveFailed: "このブロックのXPはまだ記録されていません。練習を続けたまま再試行できます。",
       xpRetry: "XPを再試行", xpRetrying: "再試行中…",
       noTopic: "トピックがありません", noScenario: "シナリオがありません",
@@ -1238,6 +1251,7 @@ export const STR: Record<Lang, Strings> = {
       clozeStepButton: "🔡 歯抜けで音読（2周目・任意）",
       clozeStepTitle: "歯抜けで音読（任意）",
       clozeStepBody: "今度は空欄を自分で埋めながら声に出しましょう。答えは上の一覧で確認できます。",
+      confirmReading: "声に出して読んだ", readingConfirmed: "音読しました",
       outlineTitle: "今日の話の骨組み",
       showJaHints: "日本語ヒントを表示",
       hideJaHints: "日本語ヒントを隠す",
@@ -1268,6 +1282,7 @@ export const STR: Record<Lang, Strings> = {
     reflection: {
       loading: "コーチがこの練習を振り返っています…", retry: "再試行",
       goodPhrases: "👏 良かった表現", fixes: "✏️ 直したい表現", tomorrow: "📝 明日へ",
+      confirmReview: "振り返りを確認した", reviewed: "確認しました",
       explainMore: "💡 もっと詳しく", explainLoading: "解説を書いています…", explainError: "解説を取得できませんでした。",
     },
     chunkList: { playAria: (en) => `「${en}」を再生` },

@@ -239,9 +239,14 @@ export async function playBlobForRequest(blob: Blob, generation: number): Promis
   }
 }
 
-export async function playBlob(blob: Blob): Promise<void> {
+/**
+ * 音声が最後まで再生されたときだけ true を返す。別の音声再生や画面離脱で中断された場合は
+ * 正常終了として待ち手を解放しつつ false を返すため、練習実施の記録に中断を混ぜない。
+ */
+export async function playBlob(blob: Blob): Promise<boolean> {
   const generation = beginPlaybackRequest();
   await playBlobForRequest(blob, generation);
+  return isPlaybackRequestCurrent(generation);
 }
 
 /**

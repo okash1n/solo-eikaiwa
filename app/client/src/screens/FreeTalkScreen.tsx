@@ -15,6 +15,8 @@ export function FreeTalkScreen(props: {
   activitySessionId: string; scenarioId?: string; onSessionId?: (id: string) => void;
   /** STT・LLMの準備確認。falseなら録音を開始せず、親が復旧操作を表示する。 */
   onBeforeRecord?: () => boolean;
+  /** セッション内のロールプレイが、空でない発話を受け取ったことを親へ知らせる。 */
+  onValidTurn?: () => void;
   lang: Lang;
 }) {
   const t = STR[props.lang].freeTalkScreen;
@@ -77,6 +79,7 @@ export function FreeTalkScreen(props: {
       if (outcome.kind === "error") throw outcome.error;
       const text = outcome.text;
       setTurns((prev) => [...prev, { role: "you", text }]);
+      props.onValidTurn?.();
 
       updateStatus("thinking");
       const { replyText, sessionId } = await converse(

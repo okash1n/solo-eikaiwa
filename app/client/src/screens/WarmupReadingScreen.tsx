@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fetchPrepPack, type ContentItem } from "../api";
 import { STR, type Lang } from "../i18n";
 import { useLoad } from "../useLoad";
@@ -16,12 +16,18 @@ import { isDisclosureOpen, splitBilingualHint, toggleDisclosure } from "../suppo
  * セッション冒頭の低負荷な音読ウォームアップ。今日のトピックの表現チャンクと骨組みを
  * 声に出して読むだけ（録音・採点なし）。この後の4/3/2で同じ素材を使う下地作り。
  */
-export function WarmupReadingScreen(props: { topic: ContentItem; sessionId: string; hintMode?: "ja" | "en"; lang: Lang }) {
+export function WarmupReadingScreen(props: {
+  topic: ContentItem; sessionId: string; hintMode?: "ja" | "en"; lang: Lang;
+  onReady?: () => void; onValidAttempt?: () => void;
+}) {
   const t = STR[props.lang].warmup;
   const load = useLoad(() => fetchPrepPack(props.topic.id));
   const playRow = usePlayRow<number>();
   const [clozeStep, setClozeStep] = useState(false);
   const [jaRevealedFor, setJaRevealedFor] = useState<string | null>(null);
+  const [readingConfirmed, setReadingConfirmed] = useState(false);
+  const readyNotifiedRef = useRef(false);
+  const validAttemptNotifiedRef = useRef(false);
 
   const support = useSupport();
   const disclosureKey = `${props.sessionId}:${props.topic.id}`;
@@ -34,6 +40,23 @@ export function WarmupReadingScreen(props: { topic: ContentItem; sessionId: stri
   const canRevealFallbackJa = canRevealJaFromHintDefault(support, props.hintMode ?? "ja");
   const showFallbackJa = canRevealFallbackJa && isDisclosureOpen(jaRevealedFor, disclosureKey);
   const hasFallbackJapaneseHints = fallbackHints.some((hint) => Boolean(hint.ja));
+  const hasFallbackPracticeMaterial = fallbackHints.some((hint) => Boolean(hint.en));
+  const hasPreparedPracticeMaterial = chunks.length > 0 || Boolean(prep?.outline.length);
+
+  useEffect(() => {
+    const materialReady = (load.state.status === "ready" && hasPreparedPracticeMaterial)
+      || (load.state.status === "error" && hasFallbackPracticeMaterial);
+    if (readyNotifiedRef.current || !materialReady) return;
+    readyNotifiedRef.current = true;
+    props.onReady?.();
+  }, [hasFallbackPracticeMaterial, hasPreparedPracticeMaterial, load.state.status, props.onReady]);
+
+  function confirmReading() {
+    setReadingConfirmed(true);
+    if (validAttemptNotifiedRef.current) return;
+    validAttemptNotifiedRef.current = true;
+    props.onValidAttempt?.();
+  }
 
   return (
     <div className="stack">
@@ -59,6 +82,11 @@ export function WarmupReadingScreen(props: { topic: ContentItem; sessionId: stri
                 </Button>
               )}
               <ChunkList chunks={fallbackHints} playingIdx={null} showJa={showFallbackJa} />
+              {hasFallbackPracticeMaterial && (
+                <Button variant="secondary" onClick={confirmReading} disabled={readingConfirmed}>
+                  {readingConfirmed ? t.readingConfirmed : t.confirmReading}
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -103,6 +131,11 @@ export function WarmupReadingScreen(props: { topic: ContentItem; sessionId: stri
                 ))}
               </ol>
             </Card>
+          )}
+          {hasPreparedPracticeMaterial && (
+            <Button variant="secondary" onClick={confirmReading} disabled={readingConfirmed}>
+              {readingConfirmed ? t.readingConfirmed : t.confirmReading}
+            </Button>
           )}
         </div>
       )}
