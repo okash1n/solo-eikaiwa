@@ -48,6 +48,7 @@ export function FourThreeTwoScreen(props: {
   topic: ContentItem; sessionId: string; blockId: string; roundsSec?: number[];
   hintMode?: "ja" | "en"; modelTalkMode?: "auto" | "button";
   onBeforeRecord?: () => boolean;
+  onReady?: () => void; onValidAttempt?: () => void;
   lang: Lang;
 }) {
   const t = STR[props.lang].ftt432;
@@ -92,6 +93,7 @@ export function FourThreeTwoScreen(props: {
   const showJa = canRevealJa && isDisclosureOpen(jaRevealedFor, disclosureKey);
   const playRow = usePlayRow<number>();
   const prepFetchedRef = useRef(false); // StrictMode の二重マウントで prep を二重フェッチしない
+  const readyNotifiedRef = useRef(false);
   const prepTimer = useCountdown(PREP_SECONDS);
   const recorderRef = useRef(new Recorder());
   const roundStartedRef = useRef(false);
@@ -116,8 +118,6 @@ export function FourThreeTwoScreen(props: {
 
   useEffect(() => {
     aliveRef.current = true;
-    // StrictMode の setup→cleanup→setup でも準備タイマーを再開する。
-    if (!prepTimer.expired && !prepTimer.running) prepTimer.start();
     if (!prepFetchedRef.current) {
       prepFetchedRef.current = true;
       loadPrep();
@@ -156,6 +156,16 @@ export function FourThreeTwoScreen(props: {
       }
     };
   }, []);
+
+  // 教材の取得に成功するまでは、準備時間も親セッション時間も進めない。
+  useEffect(() => {
+    if (prepState !== "ready") return;
+    if (!readyNotifiedRef.current) {
+      readyNotifiedRef.current = true;
+      props.onReady?.();
+    }
+    if (!prepTimer.expired && !prepTimer.running) prepTimer.start();
+  }, [prepState, prepTimer, props.onReady]);
 
   async function loadPrep() {
     setPrepState("loading");
@@ -252,6 +262,7 @@ export function FourThreeTwoScreen(props: {
         .filter(Boolean)
         .join(" ");
       setTranscripts([...transcriptsRef.current]);
+      props.onValidAttempt?.();
       return true;
     } catch (err) {
       if (!aliveRef.current) return false;
@@ -392,7 +403,7 @@ export function FourThreeTwoScreen(props: {
             {modelState === "playing" && t.modelPlaying}
             {modelState === "error" && t.modelRetry}
           </Button>
-          <Button variant="primary" onClick={() => startRound(0)}>
+          <Button variant="primary" onClick={() => startRound(0)} disabled={prepState !== "ready"}>
             {t.startRound1(t.min(minNum(roundsSec[0])))}
           </Button>
         </div>

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { type ContentItem } from "../api";
 import { STR, type Lang } from "../i18n";
 import { Card } from "../ui/Card";
@@ -6,11 +7,18 @@ import { FreeTalkScreen } from "./FreeTalkScreen";
 
 export function RoleplayScreen(props: {
   scenario: ContentItem; sessionId: string; lang: Lang; onBeforeRecord?: () => boolean;
+  onReady?: () => void; onValidAttempt?: () => void;
 }) {
   const t = STR[props.lang].roleplay;
   const starters = props.scenario.starters ?? [];
+  const readyNotifiedRef = useRef(false);
   // EN 表示ではシナリオの英語タイトル、JA では従来どおり titleJa
   const heading = props.lang === "ja" ? props.scenario.titleJa : props.scenario.title;
+  useEffect(() => {
+    if (readyNotifiedRef.current) return;
+    readyNotifiedRef.current = true;
+    props.onReady?.();
+  }, [props.onReady]);
   return (
     <div className="stack">
       <Card>
@@ -30,7 +38,7 @@ export function RoleplayScreen(props: {
       </Card>
       <FreeTalkScreen
         activitySessionId={props.sessionId} scenarioId={props.scenario.id} lang={props.lang}
-        onBeforeRecord={props.onBeforeRecord}
+        onBeforeRecord={props.onBeforeRecord} onValidTurn={props.onValidAttempt}
       />
     </div>
   );

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { fetchFixExplanation, fetchReflection } from "../api";
 import { useExplain } from "../useExplain";
 import { useLoad } from "../useLoad";
@@ -22,9 +23,29 @@ function FixItem({ fix, lang }: { fix: { original: string; better: string }; lan
   );
 }
 
-export function ReflectionScreen({ sessionId, lang }: { sessionId: string; lang: Lang }) {
+export function ReflectionScreen({
+  sessionId, lang, onReady, onValidAttempt,
+}: {
+  sessionId: string; lang: Lang; onReady?: () => void; onValidAttempt?: () => void;
+}) {
   const t = STR[lang].reflection;
   const { state, reload } = useLoad(() => fetchReflection(sessionId));
+  const readyNotifiedRef = useRef(false);
+  const validAttemptNotifiedRef = useRef(false);
+  const [reviewed, setReviewed] = useState(false);
+
+  useEffect(() => {
+    if (state.status !== "ready" || readyNotifiedRef.current) return;
+    readyNotifiedRef.current = true;
+    onReady?.();
+  }, [state.status, onReady]);
+
+  function confirmReview() {
+    setReviewed(true);
+    if (validAttemptNotifiedRef.current) return;
+    validAttemptNotifiedRef.current = true;
+    onValidAttempt?.();
+  }
 
   if (state.status === "error") {
     return (
@@ -55,6 +76,9 @@ export function ReflectionScreen({ sessionId, lang }: { sessionId: string; lang:
       <Card header={<h3>{t.tomorrow}</h3>}>
         <p>{reflection.noteForTomorrow_ja}</p>
       </Card>
+      <Button variant="secondary" onClick={confirmReview} disabled={reviewed}>
+        {reviewed ? t.reviewed : t.confirmReview}
+      </Button>
     </div>
   );
 }

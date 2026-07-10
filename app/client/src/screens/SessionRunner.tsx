@@ -24,6 +24,12 @@ import {
   type OpenBlockHandle,
   type PendingCompletion,
 } from "./sessionCoordinator";
+import {
+  blockCompletionGate,
+  initialBlockProgress,
+  markBlockReady,
+  markValidAttempt,
+} from "./sessionBlockProgress";
 
 export type MenuSource =
   | { type: "daily"; minutes: 60 | 30 }
@@ -48,8 +54,10 @@ export function SessionRunner(props: {
   const [advancing, setAdvancing] = useState(false);
   const [failedCompletions, setFailedCompletions] = useState<PendingCompletion[]>([]);
   const [retryingCompletion, setRetryingCompletion] = useState<string | null>(null);
+  const [blockProgress, setBlockProgress] = useState(initialBlockProgress);
   const retryingRef = useRef(false);
   const coordinatorRef = useRef(makeSessionCoordinator());
+  const blockProgressRef = useRef(initialBlockProgress());
   const generationRef = useRef(0);
   const aliveRef = useRef(true);
 
@@ -71,11 +79,7 @@ export function SessionRunner(props: {
       .then((m) => {
         if (!coordinatorRef.current.isCurrent(generation)) return;
         setMenu(m);
-        const first = m.blocks[0];
-        if (!coordinatorRef.current.open(first, () => beginAttempt(first.kind), generation)) return;
-        timer.reset(first.minutes * 60);
-        timer.start();
-        sendSessionEvent("block_start", props.sessionId, { blockId: first.id, kind: first.kind });
+        resetBlockProgress();
       })
       .catch((err) => {
         if (coordinatorRef.current.isCurrent(generation)) {
@@ -160,6 +164,7 @@ export function SessionRunner(props: {
     return (
       <div className="stack fade-in">
         {completionNotice}
+        <p className="text-muted">{t.doneSummary}</p>
         <FeedbackRow context={{ blockKind: "session", refId: sourceSignature(props.source) }} lang={props.lang} />
         <div className="round-actions">
           <Button variant="primary" size="lg" onClick={props.onExit}>{t.doneExit}</Button>
@@ -170,24 +175,47 @@ export function SessionRunner(props: {
 
   const block = menu.blocks[index];
   const isLast = index === menu.blocks.length - 1;
+  const completionGate = blockCompletionGate(blockProgress);
+
+  function resetBlockProgress() {
+    const initial = initialBlockProgress();
+    blockProgressRef.current = initial;
+    setBlockProgress(initial);
+  }
+
+  function reportBlockReady(blockId: string) {
+    if (blockId !== block.id) return;
+    const next = markBlockReady(blockProgressRef.current);
+    blockProgressRef.current = next;
+    setBlockProgress(next);
+    if (!coordinatorRef.current.open(block, () => beginAttempt(block.kind), generationRef.current)) return;
+    timer.reset(block.minutes * 60);
+    timer.start();
+    sendSessionEvent("block_start", props.sessionId, { blockId: block.id, kind: block.kind });
+  }
+
+  function reportValidAttempt(blockId: string) {
+    if (blockId !== block.id) return;
+    const next = markValidAttempt(blockProgressRef.current);
+    blockProgressRef.current = next;
+    setBlockProgress(next);
+  }
 
   function nextBlock() {
+    if (completionGate !== "ready") return;
     const open = coordinatorRef.current.take(block.id);
     if (!open) return;
     setAdvancing(true);
-    sendSessionEvent("block_end", props.sessionId, { blockId: block.id, kind: block.kind });
+    sendSessionEvent("block_end", props.sessionId, { blockId: block.id, kind: block.kind, completed: true });
     void completeHandle(open);
     if (isLast) {
+      timer.pause();
       setDone(true);
       return;
     }
-    const next = menu!.blocks[index + 1];
+    resetBlockProgress();
     setIndex(index + 1);
-    timer.reset(next.minutes * 60);
-    timer.start();
-    if (coordinatorRef.current.open(next, () => beginAttempt(next.kind), generationRef.current)) {
-      sendSessionEvent("block_start", props.sessionId, { blockId: next.id, kind: next.kind });
-    }
+    timer.reset(0);
   }
 
   return (
@@ -196,7 +224,7 @@ export function SessionRunner(props: {
       meta={
         <>
           <ProgressDots current={index} total={menu.blocks.length} label={t.blockAria(index, menu.blocks.length)} />
-          <TimerChip remaining={timer.remaining} expired={timer.expired} note={t.timerNote} />
+          {blockProgress.ready && <TimerChip remaining={timer.remaining} expired={timer.expired} note={t.timerNote} />}
         </>
       }
     >
@@ -207,10 +235,16 @@ export function SessionRunner(props: {
         <BlockBody
           block={block} sessionId={props.sessionId} lang={props.lang}
           onBeforeRecording={props.onBeforeRecording}
+          onReady={() => reportBlockReady(block.id)}
+          onValidAttempt={() => reportValidAttempt(block.id)}
         />
       </div>
+      {completionGate !== "ready" && <Banner kind="info">{
+        completionGate === "preparing" ? t.preparingBlock : t.completeAfterAttempt
+      }</Banner>}
+      <div className="text-sm text-muted">{t.leaveBeforeComplete}</div>
       <div className="round-actions">
-        <Button variant="primary" size="lg" onClick={nextBlock} disabled={advancing}>
+        <Button variant="primary" size="lg" onClick={nextBlock} disabled={advancing || completionGate !== "ready"}>
           {isLast ? t.finish : t.next}
         </Button>
       </div>
@@ -219,21 +253,22 @@ export function SessionRunner(props: {
 }
 
 function BlockBody({
-  block, sessionId, lang, onBeforeRecording,
+  block, sessionId, lang, onBeforeRecording, onReady, onValidAttempt,
 }: {
   block: MenuBlock; sessionId: string; lang: Lang; onBeforeRecording?: () => boolean;
+  onReady: () => void; onValidAttempt: () => void;
 }) {
   switch (block.kind) {
     case "chunk-placeholder":
       return <ChunkPlaceholderScreen />;
     case "warmup-reading":
-      return block.params.topic ? <WarmupReadingScreen topic={block.params.topic} sessionId={sessionId} hintMode={block.params.hintMode} lang={lang} /> : <p>{STR[lang].session.noTopic}</p>;
+      return block.params.topic ? <WarmupReadingScreen topic={block.params.topic} sessionId={sessionId} hintMode={block.params.hintMode} lang={lang} onReady={onReady} onValidAttempt={onValidAttempt} /> : <p>{STR[lang].session.noTopic}</p>;
     case "four-three-two":
       return block.params.topic ? (
         <FourThreeTwoScreen
           topic={block.params.topic} sessionId={sessionId} blockId={block.id}
           roundsSec={block.params.roundsSec} hintMode={block.params.hintMode} modelTalkMode={block.params.modelTalkMode}
-          onBeforeRecord={onBeforeRecording} lang={lang}
+          onBeforeRecord={onBeforeRecording} lang={lang} onReady={onReady} onValidAttempt={onValidAttempt}
         />
       ) : (
         <p>{STR[lang].session.noTopic}</p>
@@ -242,13 +277,13 @@ function BlockBody({
       return block.params.scenario
         ? <RoleplayScreen
             scenario={block.params.scenario} sessionId={sessionId} lang={lang}
-            onBeforeRecord={onBeforeRecording}
+            onBeforeRecord={onBeforeRecording} onReady={onReady} onValidAttempt={onValidAttempt}
           />
         : <p>{STR[lang].session.noScenario}</p>;
     case "shadowing":
-      return block.params.topic ? <ShadowingScreen topic={block.params.topic} lang={lang} /> : <p>{STR[lang].session.noTopic}</p>;
+      return block.params.topic ? <ShadowingScreen topic={block.params.topic} lang={lang} onReady={onReady} onValidAttempt={onValidAttempt} /> : <p>{STR[lang].session.noTopic}</p>;
     case "reflection":
-      return <ReflectionScreen sessionId={sessionId} lang={lang} />;
+      return <ReflectionScreen sessionId={sessionId} lang={lang} onReady={onReady} onValidAttempt={onValidAttempt} />;
     default:
       return <p>{STR[lang].session.unknownBlock(block.kind)}</p>;
   }

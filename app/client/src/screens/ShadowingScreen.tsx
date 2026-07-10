@@ -12,7 +12,9 @@ import { LevelChip } from "../ui/LevelChip";
 type State = "script" | "audio" | "ready" | "playing" | "error";
 
 /** モデルトークをTTSで聞きながら重ねて音読するシャドーイングブロック（知覚ドリル）。既定はスクリプトを隠して聞く */
-export function ShadowingScreen(props: { topic: ContentItem; lang: Lang }) {
+export function ShadowingScreen(props: {
+  topic: ContentItem; lang: Lang; onReady?: () => void; onValidAttempt?: () => void;
+}) {
   const t = STR[props.lang].shadowing;
   const [state, setState] = useState<State>("script");
   const [text, setText] = useState("");
@@ -23,6 +25,7 @@ export function ShadowingScreen(props: { topic: ContentItem; lang: Lang }) {
   const explainer = useExplain(() => fetchTalkExplanation(text));
   const aliveRef = useRef(true);
   const fetchedRef = useRef(false);
+  const readyNotifiedRef = useRef(false);
 
   useEffect(() => {
     aliveRef.current = true;
@@ -48,6 +51,10 @@ export function ShadowingScreen(props: { topic: ContentItem; lang: Lang }) {
       setText(talkText);
       setAudioBlob(blob);
       setState("ready");
+      if (!readyNotifiedRef.current) {
+        readyNotifiedRef.current = true;
+        props.onReady?.();
+      }
     } catch (err) {
       if (!aliveRef.current) return;
       setErrorMsg(err instanceof Error ? err.message : String(err));
@@ -59,7 +66,8 @@ export function ShadowingScreen(props: { topic: ContentItem; lang: Lang }) {
     if (!audioBlob) return;
     setState("playing");
     try {
-      await playBlob(audioBlob);
+      const played = await playBlob(audioBlob);
+      if (played) props.onValidAttempt?.();
     } catch (err) {
       if (!aliveRef.current) return;
       setErrorMsg(err instanceof Error ? err.message : String(err));
