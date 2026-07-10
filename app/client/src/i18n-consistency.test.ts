@@ -36,3 +36,34 @@ describe("フィードバックと設定の意味", () => {
     expect(STR.ja.settings.roleReason.assessment).toContain("Standard 配信");
   });
 });
+
+describe("画面導線と学習素材の呼称", () => {
+  test("ホームへの戻り先とレベル測定の取消を別の文言にする", () => {
+    expect(STR.en.appShell.backToHome).toBe("← Back to home");
+    expect(STR.ja.appShell.backToHome).toBe("← ホームに戻る");
+    expect(STR.en.placement.cancel).toBe("Cancel");
+    expect(STR.ja.placement.cancel).toBe("キャンセル");
+    expect(STR.en.placement.notNow).not.toBe(STR.en.placement.cancel);
+    expect(STR.ja.placement.notNow).not.toBe(STR.ja.placement.cancel);
+  });
+
+  test("モデルトークとリスニングはナビ・画面・記録で対応する名称にする", () => {
+    expect(STR.en.nav.library).toBe(STR.en.library.title);
+    expect(STR.ja.nav.library).toBe(STR.ja.library.title);
+    expect(STR.ja.nav.listening).toContain(STR.ja.listeningScreen.title);
+    expect(STR.ja.llmNotice.body).toContain(STR.ja.listeningScreen.title);
+    expect(STR.ja.feedbackScreen.block.listening).toBe(STR.ja.listeningScreen.title);
+    expect(STR.ja.nav.selfStudyHint).toContain(STR.ja.listeningScreen.title);
+  });
+
+  test("収集フレーズと準備フレーズを概念ごとに一貫して呼ぶ", () => {
+    expect(STR.en.sentences.chunkLabel).toBe("Your phrase");
+    expect(STR.en.sentences.myChunks).toContain("My phrases");
+    expect(STR.ja.sentences.chunkLabel).toBe("あなたのフレーズ");
+    expect(STR.ja.sentences.myChunks).toContain("マイフレーズ");
+    expect(STR.en.support.helpJaHint).toContain("practice phrases");
+    expect(STR.ja.support.helpJaHint).toContain("練習フレーズ");
+    expect(STR.ja.warmup.loading).toContain("準備フレーズ");
+    expect(STR.ja.ftt432.roundChunksToggle).toBe("準備フレーズ");
+  });
+});

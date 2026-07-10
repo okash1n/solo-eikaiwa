@@ -262,6 +262,7 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
   background: none; border: none; padding: 0; cursor: pointer; text-decoration: none;
 }
 .side-link:hover { color: var(--text); }
+.side-link.is-active { color: var(--accent); font-weight: 650; }
 /* About画面のLP/GitHubボタン行 */
 .about-actions { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
 @media (max-width: 860px) {

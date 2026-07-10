@@ -314,7 +314,7 @@ export function PlacementScreen(props: { lang: Lang; onBeforeStart?: () => boole
           <Button variant="primary" onClick={() => confirm(true, Number(chooseValue))} disabled={confirmBusy}>
             {t.apply}
           </Button>
-          <Button variant="ghost" onClick={() => setChoosing(false)} disabled={confirmBusy}>{t.notNow}</Button>
+          <Button variant="ghost" onClick={() => setChoosing(false)} disabled={confirmBusy}>{t.cancel}</Button>
         </div>
       )}
     </div>

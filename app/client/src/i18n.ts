@@ -42,7 +42,7 @@ type NavStrings = {
     sectionToday: string; sectionSelf: string; sectionRecords: string; selfStudyHint: string;
   };
 };
-type AppShellStrings = { appShell: { backToMenu: string; textSize: string; language: string } };
+type AppShellStrings = { appShell: { backToHome: string; textSize: string; language: string } };
 /**
  * Tauri Phase 2: Claude/Codex/ローカルLLMがいずれも未導入のときの一度きりの案内バナー文言（情報的トーン・研究制約）。
  * health.claude===false で表示し、ユーザーが閉じるまで再訪のたびに出る（サイドバー設定等と同じ「明示的に閉じるまで
@@ -288,7 +288,7 @@ type PlacementStrings = {
     yourAnswer: string; redo: string; next: string; submit: string;
     submitting: string; submitError: string; retry: string;
     resultTitle: string; resultStage: (stage: number) => string;
-    resultStartAt: (level: number) => string; chooseOwn: string; notNow: string;
+    resultStartAt: (level: number) => string; chooseOwn: string; notNow: string; cancel: string;
     chooseLabel: string; apply: string; confirmError: string;
     xpNote: string;
     showPromptJa: string; translating: string; translateError: string; retryTranslate: string;
@@ -432,11 +432,11 @@ const WEEKDAYS_JA = ["日", "月", "火", "水", "木", "金", "土"];
 export const STR: Record<Lang, Strings> = {
   en: {
     nav: {
-      home: "Home", placement: "Level Check", free: "Free Talk", library: "Library", sentences: "390 Sentences", listening: "Listening", progress: "Progress", feedback: "Feedback", settings: "Settings",
-      sectionToday: "Today's practice", sectionSelf: "Self-study", sectionRecords: "Records & level",
+      home: "Home", placement: "Level Check", free: "Free Talk", library: "Model Talks", sentences: "390 Sentences", listening: "Listening", progress: "Progress", feedback: "Feedback", settings: "Settings",
+      sectionToday: "Today's practice", sectionSelf: "Self-study", sectionRecords: "Records, level & settings",
       selfStudyHint: "Your main path is Today's practice. Self-study fits spare moments — a good order: listen (Listening) → memorize (Sentences) → speak (Free talk).",
     },
-    appShell: { backToMenu: "← Back to menu", textSize: "Text size", language: "Language" },
+    appShell: { backToHome: "← Back to home", textSize: "Text size", language: "Language" },
     llmNotice: {
       body: "Claude, Codex, or a local LLM isn't set up. Conversation, corrections, and explanations won't work, but example sentences, listening, shadowing, and recording transcripts still work as-is.",
       linkLabel: "Setup guide",
@@ -479,7 +479,7 @@ export const STR: Record<Lang, Strings> = {
       title: "Support",
       jaHint: "Japanese hints", modelTalk: "Model talk preloading", cloze: "Start with gaps",
       optAuto: "Auto", optOn: "On", optOff: "Off",
-      helpJaHint: "Whether a Show Japanese hints control is available for practice chunks. Auto: available at lower levels and hidden as you level up. The hints stay hidden until you press the control.",
+      helpJaHint: "Whether a Show Japanese hints control is available for practice phrases. Auto: available at lower levels and hidden as you level up. The hints stay hidden until you press the control.",
       helpModelTalk: "Whether a model talk is prepared in advance during 4/3/2 preparation. Auto: follows your level. Its audio and script stay hidden until you press the model talk button.",
       helpCloze: "Whether sentence practice starts with gaps. Auto: starts in normal view.",
       helpAriaSuffix: (label) => `About ${label}`,
@@ -708,7 +708,7 @@ export const STR: Record<Lang, Strings> = {
       resultTitle: "Your result",
       resultStage: (stage) => `Estimated stage: ${stage} of 6`,
       resultStartAt: (level) => `Start at Lv ${level}`,
-      chooseOwn: "Choose my own level", notNow: "Not this time",
+      chooseOwn: "Choose my own level", notNow: "Not this time", cancel: "Cancel",
       chooseLabel: "Level (1–999)", apply: "Apply",
       confirmError: "Couldn't apply. Please try again.",
       xpNote: "+10 XP for completing the check",
@@ -753,16 +753,16 @@ export const STR: Record<Lang, Strings> = {
       playAria: (no) => `Play No.${no}`,
       chunkLabel: "Your phrase",
       chunkSayIt: "↑ Say a more natural version out loud",
-      myChunks: "My chunks — collected from your sessions",
-      hiddenChunks: "Hidden chunks",
-      showHiddenChunks: (n) => `Show hidden (${n})`,
-      hideHiddenChunks: "Hide hidden chunks",
+      myChunks: "My phrases — collected from your sessions",
+      hiddenChunks: "Hidden phrases",
+      showHiddenChunks: (n) => `Show hidden phrases (${n})`,
+      hideHiddenChunks: "Hide hidden phrases",
       hideChunk: "Hide",
-      hideChunkAria: (id) => `Hide chunk ${id}`,
+      hideChunkAria: (id) => `Hide phrase ${id}`,
       restoreChunk: "Restore",
-      restoreChunkAria: (id) => `Restore chunk ${id}`,
-      chunkLoadError: "Some chunks couldn't be loaded.",
-      playChunkAria: (id) => `Play chunk ${id}`,
+      restoreChunkAria: (id) => `Restore phrase ${id}`,
+      chunkLoadError: "Some phrases couldn't be loaded.",
+      playChunkAria: (id) => `Play phrase ${id}`,
     },
     menuTitle: {
       warmup: () => "Read-Aloud Warm-up",
@@ -843,7 +843,7 @@ export const STR: Record<Lang, Strings> = {
       explainError: "Couldn't load the explanation. Please try again.",
     },
     library: {
-      title: "📚 Model Talk Library", loading: "Loading…", retry: "Retry",
+      title: "Model Talks", loading: "Loading…", retry: "Retry",
       empty: "Nothing yet. Model talks you generate in 4/3/2 prep or Shadowing will be saved here.",
       playAria: (title) => `Play "${title}"`, transcript: "Model talk script",
       explainMore: "💡 Translation & notes", explainLoading: "Writing the translation and notes…",
@@ -906,13 +906,13 @@ export const STR: Record<Lang, Strings> = {
   },
   ja: {
     nav: {
-      home: "ホーム", placement: "レベル測定", free: "自由会話", library: "ライブラリ", sentences: "暗記例文390", listening: "リスニング（多聴）", progress: "進捗", feedback: "フィードバック", settings: "設定",
-      sectionToday: "今日の練習", sectionSelf: "自主練", sectionRecords: "記録・測定",
-      selfStudyHint: "メインは「今日の練習」。自主練はすきま時間に。目安の順番: 聞く(多聴) → 覚える(暗記例文) → 話す(自由会話)。",
+      home: "ホーム", placement: "レベル測定", free: "自由会話", library: "モデルトーク", sentences: "暗記例文390", listening: "リスニング（多聴）", progress: "進捗", feedback: "フィードバック", settings: "設定",
+      sectionToday: "今日の練習", sectionSelf: "自主練", sectionRecords: "記録・測定・設定",
+      selfStudyHint: "メインは「今日の練習」。自主練はすきま時間に。目安の順番: リスニング → 暗記例文 → 自由会話。",
     },
-    appShell: { backToMenu: "← メニューに戻る", textSize: "文字サイズ", language: "言語" },
+    appShell: { backToHome: "← ホームに戻る", textSize: "文字サイズ", language: "言語" },
     llmNotice: {
-      body: "Claude/Codex/ローカルLLMが未導入の場合、会話・添削・解説は使えません。例文・多聴・シャドーイング・録音の文字起こしはそのまま使えます。",
+      body: "Claude/Codex/ローカルLLMが未導入の場合、会話・添削・解説は使えません。例文・リスニング・シャドーイング・録音の文字起こしはそのまま使えます。",
       linkLabel: "セットアップ手順",
       dismissAriaLabel: "閉じる",
     },
@@ -924,7 +924,7 @@ export const STR: Record<Lang, Strings> = {
       ttsKeyMissing: "OPENAI_API_KEY 未設定のため TTS は say フォールバックです",
     },
     setup: {
-      intro: "音声のテキスト化にはモデルの初回ダウンロードが必要です。録音の文字起こし以外（例文・多聴・LLM機能など）はこのまま使えます。",
+      intro: "音声のテキスト化にはモデルの初回ダウンロードが必要です。録音の文字起こし以外（例文・リスニング・LLM機能など）はこのまま使えます。",
       modelChoiceLabel: "モデル",
       modelLarge: "推奨（1.6GB）",
       modelLargeNote: "精度優先。現在のアプリの文字起こし品質と同等です。",
@@ -953,7 +953,7 @@ export const STR: Record<Lang, Strings> = {
       title: "サポート",
       jaHint: "日本語ヒント", modelTalk: "モデルトークの事前準備", cloze: "歯抜けで開始",
       optAuto: "自動", optOn: "オン", optOff: "オフ",
-      helpJaHint: "練習チャンクの「日本語ヒントを表示」ボタンを利用できるかどうか。自動=低いレベルでは利用でき、上がると隠れます。ヒント本文はボタンを押すまで表示しません。",
+      helpJaHint: "練習フレーズの「日本語ヒントを表示」ボタンを利用できるかどうか。自動=低いレベルでは利用でき、上がると隠れます。ヒント本文はボタンを押すまで表示しません。",
       helpModelTalk: "4/3/2 の準備中にモデルトークを事前準備するかどうか。自動=レベルに応じた既定です。音声とスクリプトは、設定にかかわらずモデルトークのボタンを押すまで表示・再生しません。",
       helpCloze: "例文練習を歯抜け表示から始めるかどうか。自動=通常表示から始まります。",
       helpAriaSuffix: (label) => `${label}の説明`,
@@ -1117,7 +1117,7 @@ export const STR: Record<Lang, Strings> = {
     quick: { label: "クイックドリル（5〜10分）", note: "短くても毎日が正解" },
     intensive: { label: "強化セッション", note: "週1〜2回おすすめ" },
     drills: {
-      warmup: { title: "音読ウォームアップ", minutes: "6分", desc: "今日の表現を声に出して準備" },
+      warmup: { title: "音読ウォームアップ", minutes: "6分", desc: "今日の準備フレーズを声に出して読む" },
       "ftt-mini": { title: "くり返しトーク（4/3/2）", minutes: "8分", desc: "同じ話を2回、制限時間を短くしながら流暢に" },
       shadowing: { title: "シャドーイング", minutes: "5分", desc: "聞こえた英語に重ねて言う" },
       "roleplay-daily": { title: "日常ロールプレイ", minutes: "10分", desc: "レストラン・旅行・雑談の場面練習" },
@@ -1182,7 +1182,7 @@ export const STR: Record<Lang, Strings> = {
       resultTitle: "測定結果",
       resultStage: (stage) => `推定ステージ: ${stage} / 6`,
       resultStartAt: (level) => `Lv ${level} から始める`,
-      chooseOwn: "自分でレベルを選ぶ", notNow: "今回は反映しない",
+      chooseOwn: "自分でレベルを選ぶ", notNow: "今回は反映しない", cancel: "キャンセル",
       chooseLabel: "レベル（1〜999）", apply: "適用",
       confirmError: "適用できませんでした。もう一度お試しください",
       xpNote: "測定完了で +10 XP",
@@ -1225,18 +1225,18 @@ export const STR: Record<Lang, Strings> = {
       domain: { daily: "日常", business: "ビジネス", it: "IT" },
       srsNew: "未学習",
       playAria: (no) => `No.${no} を再生`,
-      chunkLabel: "あなたの表現",
+      chunkLabel: "あなたのフレーズ",
       chunkSayIt: "↑ より自然な言い方を声に出してみましょう",
-      myChunks: "マイチャンク — セッションから自動収集",
-      hiddenChunks: "非表示のチャンク",
-      showHiddenChunks: (n) => `非表示を表示（${n}件）`,
-      hideHiddenChunks: "非表示のチャンクを閉じる",
+      myChunks: "マイフレーズ — セッションから自動収集",
+      hiddenChunks: "非表示のマイフレーズ",
+      showHiddenChunks: (n) => `非表示のマイフレーズを表示（${n}件）`,
+      hideHiddenChunks: "非表示のマイフレーズを閉じる",
       hideChunk: "非表示",
-      hideChunkAria: (id) => `チャンク${id}を非表示にする`,
+      hideChunkAria: (id) => `フレーズ${id}を非表示にする`,
       restoreChunk: "復元",
-      restoreChunkAria: (id) => `チャンク${id}を復元する`,
-      chunkLoadError: "一部のチャンクを読み込めませんでした。",
-      playChunkAria: (id) => `チャンク${id}を再生`,
+      restoreChunkAria: (id) => `フレーズ${id}を復元する`,
+      chunkLoadError: "一部のマイフレーズを読み込めませんでした。",
+      playChunkAria: (id) => `フレーズ${id}を再生`,
     },
     menuTitle: {
       warmup: () => "音読ウォームアップ",
@@ -1265,7 +1265,7 @@ export const STR: Record<Lang, Strings> = {
     },
     warmup: {
       intro: "声に出して読みましょう（各フレーズ2回ずつ）。🔊でお手本を聞けます。このあとの 4/3/2 で実際に使います。",
-      loading: "コーチが表現チャンクを用意しています…", retry: "再試行",
+      loading: "コーチが準備フレーズを用意しています…", retry: "再試行",
       fallbackTitle: "代わりにこちらを声に出して読みましょう",
       clozeStepButton: "🔡 歯抜けで音読（2周目・任意）",
       clozeStepTitle: "歯抜けで音読（任意）",
@@ -1277,13 +1277,13 @@ export const STR: Record<Lang, Strings> = {
     },
     ftt432: {
       prepTitle: (topic) => `準備 — ${topic}`,
-      prepIntro: (rounds, count, prep) => `これから同じ話を ${rounds} で${count}回話します。まず使えそうな表現と骨組みを確認してください（目安 ${prep}）。`,
+      prepIntro: (rounds, count, prep) => `これから同じ話を ${rounds} で${count}回話します。まず準備フレーズと話の骨組みを確認してください（目安 ${prep}）。`,
       prepMicNote: "🎙を押して話し始めるとタイマーが動きます。Round 1 の録音には Round 2 の前にコーチのフィードバックが付きます。",
       roundTimeboxNote: "発話時間の上限です。録音を始めると動き、早く話し終えてもOKです。",
-      roundChunksToggle: "準備の表現チャンク",
+      roundChunksToggle: "準備フレーズ",
       prepTimerLabel: "準備時間（教材の準備後に開始）",
       prepTimerAria: (time) => `準備時間: ${time}。教材の準備ができると始まります。`,
-      prepTimerNote: "そろそろ始めましょう", loading: "コーチが表現チャンクを用意しています…", retry: "再試行",
+      prepTimerNote: "そろそろ始めましょう", loading: "コーチが準備フレーズを用意しています…", retry: "再試行",
       outlineTitle: "話の骨組み",
       showJaHints: "日本語ヒントを表示", hideJaHints: "日本語ヒントを隠す",
       modelIdle: "🎧 モデルトークを聞く（任意）", modelScript: "✍ モデルトークのスクリプトを作成中…",
@@ -1317,7 +1317,7 @@ export const STR: Record<Lang, Strings> = {
       explainError: "解説を取得できませんでした。もう一度お試しください。",
     },
     library: {
-      title: "📚 モデルトークライブラリ", loading: "読み込み中…", retry: "再試行",
+      title: "モデルトーク", loading: "読み込み中…", retry: "再試行",
       empty: "まだありません。4/3/2 の準備やシャドーイングでモデルトークを生成すると、ここに残ります。",
       playAria: (title) => `「${title}」を再生`, transcript: "モデルトークのスクリプト",
       explainMore: "💡 日本語訳と解説", explainLoading: "日本語訳と解説を書いています…",
@@ -1335,10 +1335,10 @@ export const STR: Record<Lang, Strings> = {
       you: "あなた", ai: "AI", translate: "訳", translating: "訳しています…", translateError: "訳を取得できませんでした。",
     },
     listeningScreen: {
-      title: "多聴ライブラリ",
+      title: "リスニング",
       desc: "レベルに合った短い英語を聞きます。まずはスクリプトを見ずに聞くと、耳が育ちます。",
       loading: "読み込み中…", retry: "再試行",
-      empty: "この絞り込みに合う多聴素材がまだありません。",
+      empty: "この絞り込みに合うリスニング素材がまだありません。",
       weekCount: (n) => `今週 ${n} 本`,
       filterFit: "自分のレベル", filterAll: "すべて",
       domain: { daily: "日常", business: "ビジネス", it: "IT" },
@@ -1365,7 +1365,7 @@ export const STR: Record<Lang, Strings> = {
       empty: "まだフィードバックはありません。練習の最後に反応するとここに表示されます。",
       copy: "📋 Markdownでコピー", copied: "コピーしました",
       rating: { hard: "難しすぎた", "just-right": "ちょうどよかった", easy: "簡単すぎた" },
-      block: { session: "セッション", "free-talk": "自由会話", listening: "多聴" },
+      block: { session: "セッション", "free-talk": "自由会話", listening: "リスニング" },
       at: (ymd) => ymd,
       levelStage: (level, stage) =>
         [level !== null ? `Lv${level}` : null, stage !== null ? `Stage${stage}` : null].filter(Boolean).join(" · ") || "—",
