@@ -309,7 +309,7 @@ type SentencesStrings = {
     listenPrompt: string;
     showCloze: string; showAnswer: string;
     clozeHint: string;
-    playAgain: string;
+    playAgain: string; audioPlaybackError: string;
     explainMore: string; explainLoading: string; explainError: string;
     gradeGood: string; gradeSoso: string; gradeBad: string;
     doneTitle: (n: number) => string;
@@ -350,7 +350,7 @@ type Ftt432Strings = { ftt432: {
   prepTimerLabel: string; prepTimerAria: (time: string) => string;
   prepTimerNote: string; loading: string; retry: string; outlineTitle: string;
   showJaHints: string; hideJaHints: string;
-  modelIdle: string; modelScript: string; modelAudio: string; modelPlaying: string; modelRetry: string;
+  modelIdle: string; modelScript: string; modelAudio: string; modelRetry: string;
   startRound1: (time: string) => string; modelTranscript: string;
   aeTitle: string; aeLoading: string; aeNoRecording: string; startRound2: (time: string) => string;
   doneBody: (count: number) => string;
@@ -366,15 +366,16 @@ type ReflectionStrings = { reflection: {
   explainMore: string; explainLoading: string; explainError: string;
 } };
 type ChunkListStrings = { chunkList: { playAria: (en: string) => string } };
+type PlaybackStrings = { playback: { stop: string; playing: string } };
 /** 生成教材の原文は script と呼び、録音由来の transcript / 文字起こしとは区別する。 */
 type ShadowingStrings = { shadowing: {
   intro: string; writingScript: string; generatingAudio: string; retry: string;
-  playing: string; play: string; showScript: string;
+  play: string; showScript: string; playbackError: string; playbackRetry: string;
   explainMore: string; explainLoading: string; explainError: string;
 } };
 type LibraryStrings = { library: {
   title: string; loading: string; retry: string; empty: string;
-  playAria: (title: string) => string; playing: string; transcript: string;
+  playAria: (title: string) => string; transcript: string;
   explainMore: string; explainLoading: string; explainError: string;
 } };
 type RoleplayStrings = { roleplay: { starters: string } };
@@ -392,7 +393,7 @@ type ListeningScreenStrings = { listeningScreen: {
   filterFit: string; filterAll: string;
   domain: { daily: string; business: string; it: string };
   open: string; back: string;
-  play: string; playing: string; stop: string;
+  play: string;
   logSaving: string; logFailed: string; logRetry: string;
   showScript: string; scriptLoading: string;
   explainMore: string; explainLoading: string; explainError: string;
@@ -419,7 +420,7 @@ type Strings =
   & QuickStrings & IntensiveStrings & DrillsStrings & SessionCardStrings
   & CalendarStrings & FreeTalkHeaderStrings & ProgressStrings & PlacementStrings & SentencesStrings
   & MenuTitleStrings & SessionStrings
-  & WarmupStrings & Ftt432Strings & ReflectionStrings & ChunkListStrings
+  & WarmupStrings & Ftt432Strings & ReflectionStrings & ChunkListStrings & PlaybackStrings
   & ShadowingStrings & LibraryStrings & RoleplayStrings & FreeTalkScreenStrings & ListeningScreenStrings
   & LevelChipStrings & FeedbackRowStrings & FeedbackScreenStrings & LlmPanelStrings & SettingsStrings
   & AboutStrings & LlmNoticeStrings & SetupStrings & PracticeReadinessStrings & BannerStrings;
@@ -734,7 +735,8 @@ export const STR: Record<Lang, Strings> = {
       listenPrompt: "🔊 Listen only — say what it means or repeat it",
       showCloze: "Show gaps", showAnswer: "Show answer",
       clozeHint: "Fill the gaps out loud, then check the answer",
-      playAgain: "🔊 Play again",
+      playAgain: "▶ Play again",
+      audioPlaybackError: "Couldn't play the audio. You can still show the answer and continue.",
       explainMore: "💡 Explain more",
       explainLoading: "Writing a deeper explanation…",
       explainError: "Couldn't load the explanation. Try again on the next card.",
@@ -811,7 +813,7 @@ export const STR: Record<Lang, Strings> = {
       outlineTitle: "Story outline",
       showJaHints: "Show Japanese hints", hideJaHints: "Hide Japanese hints",
       modelIdle: "🎧 Hear a model talk (optional)", modelScript: "✍ Preparing the model talk script…",
-      modelAudio: "🎙 Generating audio…", modelPlaying: "🔊 Playing…", modelRetry: "🎧 Model talk (retry)",
+      modelAudio: "🎙 Generating audio…", modelRetry: "🎧 Model talk (retry)",
       startRound1: (time) => `Start Round 1 (${time}) →`, modelTranscript: "Model talk script",
       aeTitle: "Feedback (read it, then Round 2)", aeLoading: "Your coach is writing feedback…",
       aeNoRecording: "No recording, so there's no feedback", startRound2: (time) => `Start Round 2 (${time})`,
@@ -831,17 +833,19 @@ export const STR: Record<Lang, Strings> = {
       explainMore: "💡 Explain more", explainLoading: "Writing an explanation…", explainError: "Couldn't load the explanation.",
     },
     chunkList: { playAria: (en) => `Play "${en}"` },
+    playback: { stop: "⏹ Stop", playing: "Playing…" },
     shadowing: {
       intro: "First, without looking at the script, repeat the audio slightly behind it, layering your voice over it (shadowing). Even one listen is fine. Stuck? Tap 'Show script' to check.",
       writingScript: "✍ Preparing the model talk script…", generatingAudio: "🎙 Generating audio…", retry: "Retry",
-      playing: "🔊 Playing…", play: "▶ Play (as many times as you like)", showScript: "📄 Show script",
+      play: "▶ Play (as many times as you like)", showScript: "📄 Show script",
+      playbackError: "Couldn't play the audio. Try playback again.", playbackRetry: "Try playback again",
       explainMore: "💡 Translation & notes", explainLoading: "Writing the translation and notes…",
       explainError: "Couldn't load the explanation. Please try again.",
     },
     library: {
       title: "📚 Model Talk Library", loading: "Loading…", retry: "Retry",
       empty: "Nothing yet. Model talks you generate in 4/3/2 prep or Shadowing will be saved here.",
-      playAria: (title) => `Play "${title}"`, playing: "🔊 Playing…", transcript: "Model talk script",
+      playAria: (title) => `Play "${title}"`, transcript: "Model talk script",
       explainMore: "💡 Translation & notes", explainLoading: "Writing the translation and notes…",
       explainError: "Couldn't load the explanation. Please try again.",
     },
@@ -865,7 +869,7 @@ export const STR: Record<Lang, Strings> = {
       filterFit: "Your level", filterAll: "All",
       domain: { daily: "Daily", business: "Business", it: "IT" },
       open: "Listen", back: "← Back to list",
-      play: "▶ Play", playing: "🔊 Playing…", stop: "⏹ Stop",
+      play: "▶ Play",
       logSaving: "Listening complete. Saving your listen…",
       logFailed: "Listening is complete, but we couldn't save the listen. Your practice is unaffected.",
       logRetry: "Retry saving",
@@ -1205,7 +1209,8 @@ export const STR: Record<Lang, Strings> = {
       listenPrompt: "🔊 音だけを聞いて、意味を言う・繰り返してみましょう",
       showCloze: "歯抜けを表示", showAnswer: "答えを見る",
       clozeHint: "歯抜け部分を埋めながらもう一度声に出して、答え合わせへ",
-      playAgain: "🔊 もう一度聞く",
+      playAgain: "▶ もう一度聞く",
+      audioPlaybackError: "音声を再生できませんでした。「答えを見る」で練習を続けられます。",
       explainMore: "💡 もっと詳しく",
       explainLoading: "詳しい解説を書いています…",
       explainError: "解説を取得できませんでした。次のカードで再度お試しください。",
@@ -1282,7 +1287,7 @@ export const STR: Record<Lang, Strings> = {
       outlineTitle: "話の骨組み",
       showJaHints: "日本語ヒントを表示", hideJaHints: "日本語ヒントを隠す",
       modelIdle: "🎧 モデルトークを聞く（任意）", modelScript: "✍ モデルトークのスクリプトを作成中…",
-      modelAudio: "🎙 音声を生成中…", modelPlaying: "🔊 再生中…", modelRetry: "🎧 モデルトーク（再試行）",
+      modelAudio: "🎙 音声を生成中…", modelRetry: "🎧 モデルトーク（再試行）",
       startRound1: (time) => `Round 1 を始める（${time}）→`, modelTranscript: "モデルトークのスクリプト",
       aeTitle: "フィードバック（読んだら Round 2 へ）", aeLoading: "コーチがフィードバックを書いています…",
       aeNoRecording: "録音がなかったのでフィードバックはありません", startRound2: (time) => `Round 2 を始める（${time}）`,
@@ -1302,17 +1307,19 @@ export const STR: Record<Lang, Strings> = {
       explainMore: "💡 もっと詳しく", explainLoading: "解説を書いています…", explainError: "解説を取得できませんでした。",
     },
     chunkList: { playAria: (en) => `「${en}」を再生` },
+    playback: { stop: "⏹ 停止", playing: "再生中…" },
     shadowing: {
       intro: "まずはスクリプトを見ずに、音声に少し遅れてかぶせるように声に出して繰り返します（シャドーイング）。1回聞くだけでもOK。行き詰まったら「スクリプトを表示」で確認できます。",
       writingScript: "✍ コーチがモデルトークのスクリプトを作成中…", generatingAudio: "🎙 音声を生成しています…", retry: "再試行",
-      playing: "🔊 再生中…", play: "▶ 再生（何度でも）", showScript: "📄 スクリプトを表示",
+      play: "▶ 再生（何度でも）", showScript: "📄 スクリプトを表示",
+      playbackError: "音声を再生できませんでした。もう一度再生できます。", playbackRetry: "もう一度再生する",
       explainMore: "💡 日本語訳と解説", explainLoading: "日本語訳と解説を書いています…",
       explainError: "解説を取得できませんでした。もう一度お試しください。",
     },
     library: {
       title: "📚 モデルトークライブラリ", loading: "読み込み中…", retry: "再試行",
       empty: "まだありません。4/3/2 の準備やシャドーイングでモデルトークを生成すると、ここに残ります。",
-      playAria: (title) => `「${title}」を再生`, playing: "🔊 再生中…", transcript: "モデルトークのスクリプト",
+      playAria: (title) => `「${title}」を再生`, transcript: "モデルトークのスクリプト",
       explainMore: "💡 日本語訳と解説", explainLoading: "日本語訳と解説を書いています…",
       explainError: "解説を取得できませんでした。もう一度お試しください。",
     },
@@ -1336,7 +1343,7 @@ export const STR: Record<Lang, Strings> = {
       filterFit: "自分のレベル", filterAll: "すべて",
       domain: { daily: "日常", business: "ビジネス", it: "IT" },
       open: "聞く", back: "← 一覧に戻る",
-      play: "▶ 再生", playing: "🔊 再生中…", stop: "⏹ 停止",
+      play: "▶ 再生",
       logSaving: "聴取は完了しました。記録を保存しています…",
       logFailed: "聴取は完了しましたが、記録を保存できませんでした。練習内容には影響しません。",
       logRetry: "保存を再試行",

@@ -13,6 +13,7 @@ import { Card } from "../ui/Card";
 import { FeedbackRow } from "../ui/FeedbackRow";
 import { ExplainBox } from "../ui/ExplainBox";
 import { LevelChip } from "../ui/LevelChip";
+import { PlaybackButton } from "../ui/PlaybackButton";
 import { resolvePendingListeningLog, type PendingListeningLog } from "./listeningLogRequest";
 
 type LibraryData = { items: ListeningMeta[]; weeklyCount: number; stage: number };
@@ -121,6 +122,7 @@ function ListeningPlayback({ item, lang, onListened }: {
   item: ListeningDetail; lang: Lang; onListened: (weeklyCount: number) => void;
 }) {
   const t = STR[lang].listeningScreen;
+  const playback = STR[lang].playback;
   const [playingIdx, setPlayingIdx] = useState<number | null>(null);
   const [showScript, setShowScript] = useState(false);
   const [listened, setListened] = useState(false);
@@ -202,9 +204,15 @@ function ListeningPlayback({ item, lang, onListened }: {
           {t.logFailed}
         </Banner>
       )}
-      {!isPlaying && <Button variant="primary" onClick={playAll}>{t.play}</Button>}
-      {isPlaying && <Button variant="secondary" onClick={stop}>{t.stop}</Button>}
-      {isPlaying && <p className="text-sm text-muted">{t.playing}</p>}
+      <PlaybackButton
+        playing={isPlaying}
+        onPlay={playAll}
+        onStop={stop}
+        playLabel={t.play}
+        stopLabel={playback.stop}
+        playVariant="primary"
+      />
+      {isPlaying && <p className="text-sm text-muted">{playback.playing}</p>}
       {!showScript && <Button variant="secondary" onClick={() => setShowScript(true)}>{t.showScript}</Button>}
       {showScript && (
         <>

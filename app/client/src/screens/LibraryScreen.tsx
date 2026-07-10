@@ -8,6 +8,7 @@ import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { ExplainBox } from "../ui/ExplainBox";
+import { PlaybackButton } from "../ui/PlaybackButton";
 
 /** 生成済みモデルトークの一覧（情報表示のみ）。スクリプト確認・再再生・訳解説ができる。 */
 export function LibraryScreen({ lang }: { lang: Lang }) {
@@ -39,19 +40,21 @@ function LibraryEntry({ entry, lang, row }: {
   entry: ModelTalkEntry; lang: Lang; row: ReturnType<typeof usePlayRow<number>>;
 }) {
   const t = STR[lang].library;
+  const playback = STR[lang].playback;
   const explainer = useExplain(() => fetchTalkExplanation(entry.text));
   return (
     <Card
       header={
         <>
-          <Button
-            variant="ghost"
-            onClick={() => row.play(entry.id, entry.text)}
+          <PlaybackButton
+            playing={row.playingKey === entry.id}
+            onPlay={() => row.play(entry.id, entry.text)}
+            onStop={row.stop}
             disabled={row.playingKey !== null}
-            ariaLabel={t.playAria(entry.topicTitle || entry.topicId)}
-          >
-            {row.playingKey === entry.id ? t.playing : "▶"}
-          </Button>{" "}
+            playLabel="▶"
+            stopLabel={playback.stop}
+            playAriaLabel={t.playAria(entry.topicTitle || entry.topicId)}
+          />{" "}
           {entry.topicTitle || entry.topicId}{" "}
           <span className="text-sm text-muted">{localYmdFromTimestamp(entry.createdAt)}</span>
         </>

@@ -8,6 +8,8 @@ import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { ExplainBox } from "../ui/ExplainBox";
 import { LevelChip } from "../ui/LevelChip";
+import { PlaybackButton } from "../ui/PlaybackButton";
+import { resolveShadowingPlaybackOutcome, type ShadowingPlaybackOutcome } from "./shadowingPlayback";
 
 type State = "script" | "audio" | "ready" | "playing" | "error";
 
@@ -16,16 +18,19 @@ export function ShadowingScreen(props: {
   topic: ContentItem; lang: Lang; onReady?: () => void; onValidAttempt?: () => void;
 }) {
   const t = STR[props.lang].shadowing;
+  const playback = STR[props.lang].playback;
   const [state, setState] = useState<State>("script");
   const [text, setText] = useState("");
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [playbackFailed, setPlaybackFailed] = useState(false);
   // スクリプト表示の既定は常に非表示（隠して聞く）。ユーザーは「スクリプトを表示」ボタンでいつでも開ける。
   const [showScript, setShowScript] = useState(false);
   const explainer = useExplain(() => fetchTalkExplanation(text));
   const aliveRef = useRef(true);
   const fetchedRef = useRef(false);
   const readyNotifiedRef = useRef(false);
+  const playbackGenerationRef = useRef(0);
 
   useEffect(() => {
     aliveRef.current = true;
@@ -35,13 +40,17 @@ export function ShadowingScreen(props: {
     }
     return () => {
       aliveRef.current = false;
+      playbackGenerationRef.current++;
       stopPlayback();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function prepare() {
+    playbackGenerationRef.current++;
+    stopPlayback();
     setErrorMsg("");
+    setPlaybackFailed(false);
     setState("script");
     try {
       const { text: talkText, blob } = await prefetchModelTalkAudio(props.topic.id, (stage) => {
@@ -64,14 +73,26 @@ export function ShadowingScreen(props: {
 
   async function play() {
     if (!audioBlob) return;
+    const generation = ++playbackGenerationRef.current;
+    setPlaybackFailed(false);
     setState("playing");
+    let outcome: ShadowingPlaybackOutcome;
     try {
       const played = await playBlob(audioBlob);
-      if (played) props.onValidAttempt?.();
-    } catch (err) {
-      if (!aliveRef.current) return;
-      setErrorMsg(err instanceof Error ? err.message : String(err));
+      outcome = played ? "completed" : "stopped";
+    } catch {
+      outcome = "failed";
     }
+    if (!aliveRef.current || playbackGenerationRef.current !== generation) return;
+    const resolution = resolveShadowingPlaybackOutcome(outcome);
+    if (resolution.validAttempt) props.onValidAttempt?.();
+    setPlaybackFailed(resolution.showRetry);
+    setState(resolution.nextState);
+  }
+
+  function stop() {
+    playbackGenerationRef.current++;
+    stopPlayback();
     if (aliveRef.current) setState("ready");
   }
 
@@ -90,9 +111,19 @@ export function ShadowingScreen(props: {
       )}
       {(state === "ready" || state === "playing") && (
         <div className="stack">
-          <Button variant="primary" onClick={play} disabled={state === "playing"}>
-            {state === "playing" ? t.playing : t.play}
-          </Button>
+          {state === "ready" && playbackFailed && (
+            <Banner kind="error" action={<Button onClick={play}>{t.playbackRetry}</Button>}>
+              {t.playbackError}
+            </Banner>
+          )}
+          <PlaybackButton
+            playing={state === "playing"}
+            onPlay={play}
+            onStop={stop}
+            playLabel={t.play}
+            stopLabel={playback.stop}
+            playVariant="primary"
+          />
           {!showScript && (
             <Button variant="secondary" onClick={() => setShowScript(true)}>{t.showScript}</Button>
           )}

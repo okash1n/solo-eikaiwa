@@ -105,6 +105,7 @@ export function WarmupReadingScreen(props: {
               )}
               <ChunkList
                 chunks={chunks} playingIdx={playRow.playingKey} onPlay={(i, text) => playRow.play(i, text)} showJa={showJa}
+                onStop={playRow.stop} stopLabel={STR[props.lang].playback.stop}
                 playAria={(en) => STR[props.lang].chunkList.playAria(en)}
               />
             </>
