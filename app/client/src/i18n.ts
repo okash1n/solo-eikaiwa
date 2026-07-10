@@ -302,7 +302,7 @@ type SentencesStrings = {
     hideNoteLabel: string;
     audioFirstLabel: string;
     newPerDayLabel: string;
-    newPerDayNote: string;
+    hideNoteTiming: string; audioFirstTiming: string; newPerDayTiming: string; newPerDayApply: string;
     loading: string; retry: string;
     remaining: (left: number, graded: number) => string;
     sayItFirst: string;
@@ -724,7 +724,10 @@ export const STR: Record<Lang, Strings> = {
       hideNoteLabel: "Hide hints",
       audioFirstLabel: "Start from audio",
       newPerDayLabel: "New/day",
-      newPerDayNote: "Applies the next time practice loads.",
+      hideNoteTiming: "Applies to this card immediately.",
+      audioFirstTiming: "Applies from the next card.",
+      newPerDayTiming: "Rebuilds the practice queue. Finish this card before applying it.",
+      newPerDayApply: "Reload practice with this number",
       loading: "Loading…", retry: "Retry",
       remaining: (left, graded) => `${left} left (${graded} graded)`,
       sayItFirst: "↑ Say it in English out loud first",
@@ -1192,7 +1195,10 @@ export const STR: Record<Lang, Strings> = {
       hideNoteLabel: "ヒントを隠す",
       audioFirstLabel: "音から始める",
       newPerDayLabel: "1日の新規",
-      newPerDayNote: "次に練習タブを開いたときから反映されます。",
+      hideNoteTiming: "このカードにすぐ反映されます。",
+      audioFirstTiming: "次のカードから反映されます。",
+      newPerDayTiming: "練習キューを作り直します。今のカードを終えてから適用してください。",
+      newPerDayApply: "この件数で練習を読み直す",
       loading: "読み込み中…", retry: "再試行",
       remaining: (left, graded) => `残り ${left} 文（うち評価済み ${graded}）`,
       sayItFirst: "↑ を英語で、まず声に出して言ってみる",

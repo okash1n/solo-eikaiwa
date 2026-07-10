@@ -362,10 +362,11 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 }
 .mr-past-item:hover { color: var(--accent); }
 
-.sentences-toolbar { align-items: center; }
-.hide-note-toggle { display: inline-flex; align-items: center; gap: var(--sp-1); margin-left: auto; cursor: pointer; user-select: none; }
-/* トグルが複数並ぶとき、2つ目以降は auto にしない（両方 auto だと余白が間に割れて離れてしまう） */
-.hide-note-toggle ~ .hide-note-toggle { margin-left: var(--sp-3); }
+.sentences-toolbar { align-items: flex-start; }
+.sentence-setting { display: flex; flex-direction: column; gap: 2px; }
+.sentence-setting--hints { margin-left: auto; }
+.hide-note-toggle { display: inline-flex; align-items: center; gap: var(--sp-1); cursor: pointer; user-select: none; }
+.sentence-setting-timing { margin: 0; max-width: 22rem; }
 .hide-note-toggle input { accent-color: var(--accent); }
 
 /* 多聴スクリプト: 1本の文章として段落を流し、再生中の段落だけ淡くハイライト（box-shadowでレイアウトシフトなし） */
