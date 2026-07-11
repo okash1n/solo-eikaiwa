@@ -31,7 +31,6 @@ pub fn run() {
       )?;
       app.manage(sidecar::SidecarState::default());
       attach::spawn_initial_attach(app.handle().clone());
-      updater::spawn_startup_check(app.handle().clone());
 
       // macOS: 最初のSubmenuがラベルに関係なくアプリ名メニューになる（公式仕様）。
       // Menu::default()の先頭Submenu（About(0)/Separator(1)/Services(2)/...）のAbout直後
@@ -45,9 +44,12 @@ pub fn run() {
           true,
           None::<&str>,
         )?;
+        app.manage(updater::UpdateMenuState::new(item.clone()));
         app_submenu.insert(&item, 1)?;
       }
       app.set_menu(menu)?;
+      // 更新フローが状態を変更する前に、表示対象のメニューを登録しておく。
+      updater::spawn_startup_check(app.handle().clone());
       Ok(())
     })
     .on_menu_event(|app, event| {
