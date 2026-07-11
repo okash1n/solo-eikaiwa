@@ -120,8 +120,8 @@ export function ShadowingScreen(props: {
         <div className="stack">
           {state === "ready" && playbackFailed && (
             <Banner kind="error" action={<Button onClick={play}>{t.playbackRetry}</Button>}>
-              <p>{t.playbackError}</p>
-              {errorMsg && <p className="text-sm text-muted">{errorMsg}</p>}
+              <span className="block">{t.playbackError}</span>
+              {errorMsg && <span className="block text-sm text-muted">{errorMsg}</span>}
             </Banner>
           )}
           <PlaybackButton
