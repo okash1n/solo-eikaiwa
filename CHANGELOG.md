@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.29.0] - 2026-07-11
+
 ### Added
 
 - WAL稼働中でもトランザクション整合性を保つSQLite backup/restore CLIを追加した。snapshotはmanifest・SHA-256・schema fingerprint・integrity checkで検証し、復元前の現DBを自動退避して、切替失敗時は元データへ戻す
@@ -93,9 +95,7 @@
 - Keychain値をプロセス環境へ展開せず、すべてのサーバ子プロセスを固定allowlist環境で起動するようにした。Claude/Codexのサブスクリプション認証では親環境のAPIキーを除去し、APIキーモードでは対象providerの鍵だけを渡す
 - OpenAI互換LLM・TTSの鍵を正規化済みoriginへ束縛し、別origin・非loopback HTTPへ送らないようにした。認証付き通信はredirectを追従せず、userinfo・非HTTP(S) scheme・曖昧なquery/fragmentを接続設定で拒否する
 
-## [0.29.0] - 2026-07-10
-
-### Added
+### Added（デスクトップ配布・更新）
 
 - **デスクトップアプリの自動アップデート（半自動）**: 起動時に新しいバージョンを自動チェックし、あればダイアログでお知らせするようになった。「更新する」を押すとダウンロード・適用・自動再起動まで完了する（「今回はしない」を選べば何も起きず、次回起動時にまた1回だけ案内される。強制更新はしない）。アプリメニューに「アップデートを確認…」も追加し、いつでも手動で確認できる。更新パッケージは署名検証（minisign）に合格したものだけが適用される
 - **リリース一括スクリプト**: `./scripts/release-desktop.sh <version>` で検証ゲート → ビルド → Developer ID 署名 → Apple 公証 → 更新アーティファクト生成 → GitHub Release（draft→publish の原子的公開）まで一括実行できるようになった（証明書・鍵・APIキーはすべてローカルの `~/.config/solo-eikaiwa/release.env` から注入。リポジトリには置かない）
@@ -109,13 +109,14 @@
 ### Changed
 
 - **【Breaking】環境変数で設定できるのは API キーのみに**: `LLM_PROVIDER` / `OPENAI_COMPAT_BASE_URL` / `OPENAI_COMPAT_MODEL` / `CODEX_MODEL` / `TTS_BASE_URL` / `TTS_MODEL` / `TTS_VOICE` の env フォールバックを廃止した（設定の真実は UI/DB のみ）。**これらの env だけで運用していた場合、更新後は既定（Claude / 既定TTS）で動くため、⚙️ 設定から再設定が必要**。旧「環境変数に従う」選択肢も廃止（保存済みの場合は Claude として扱う）。教材生成 CLI（`scripts/generate-content.ts` 等）だけは従来どおり env 駆動
-- **配布アプリが Developer ID 署名 + Apple 公証済みに**: 初回起動時の Gatekeeper 回避手順（システム設定→「このまま開く」）が不要になり、ダブルクリックだけで開けるようになった
+- **Developer ID 署名 + Apple 公証に対応する標準リリース経路を整備**: 証明書を利用できる公開では、初回起動時の Gatekeeper 回避手順なしで起動できるようにした。v0.29.0 の公開物は証明書準備を後回しにしたため、例外的に ad-hoc 署名・未公証で提供する
 - デスクトップアプリが release ビルドでもログを出力するようになった（`~/Library/Logs/com.local.solo-eikaiwa.desktop/`。更新・同梱サーバの不具合診断用）
 
 ### 注意（v0.28.x 以前からの更新）
 
 - 自動更新機構は v0.29.0 で導入されたため、**v0.28.x 以前からは今回のみ手動で dmg を入れ替える**必要がある（以後は自動）
-- 署名方式が ad-hoc から Developer ID に変わったため、更新後の初回にマイクの許可を一度だけ再度求められる（macOS の許可データベースが署名の変更で別アプリ扱いにするため。以後の更新では維持される）
+- v0.29.0 は ad-hoc 署名・未公証のため、初回起動時に macOS の「このまま開く」操作が必要。アプリを置き換えた後にマイク許可を再度求められる場合がある
+- 将来 Developer ID 署名へ切り替える版では、署名要件が変わるためマイク許可を一度だけ再度求められる可能性がある
 
 ## [0.28.0] - 2026-07-09
 
