@@ -35,7 +35,7 @@ cargo tauri build --bundles app --config ../e2e-updater/old.conf.json
 mkdir -p /private/tmp/solo-e2e-app
 cp -R target/release/bundle/macos/solo-eikaiwa.app /private/tmp/solo-e2e-app/
 
-# 3) 配信して起動（自動承認フックでダイアログをスキップ。ダイアログ自体の確認は手動smoke時に）
+# 3) 配信して起動（自動承認フックで更新・再起動の確認ダイアログをスキップ。ダイアログ自体の確認は手動smoke時に）
 #    ⚠️ 過去のE2Eインスタンスが残っていると 3112 を専有して sidecar 検証が乱れる。
 #    事前に pkill -f solo-e2e-app しておく。
 (cd /tmp/solo-e2e && python3 -m http.server 8930 &)
@@ -45,11 +45,13 @@ SOLO_EIKAIWA_NO_ATTACH=1 SOLO_EIKAIWA_UPDATER_AUTO=1 /private/tmp/solo-e2e-app/s
 ## 合格条件
 
 1. 起動後まもなく更新が自動適用され、アプリが自動で再起動する（stdoutに
-   `updater: downloading and installing v99.0.0` → `updater: installed v99.0.0; restarting`）
+   `updater: downloading and installing v99.0.0` → `updater: installed v99.0.0; waiting for restart choice` →
+   `updater: SOLO_EIKAIWA_UPDATER_AUTO=1 (E2E hook); restarting after install`）
 2. `plutil -p /private/tmp/solo-e2e-app/solo-eikaiwa.app/Contents/Info.plist | grep ShortVersion` → `99.0.0`
 3. `pgrep -fl solo-server` → 更新をまたいで旧 sidecar が残っていない（新アプリの1本のみ）
-4. 手動確認（任意）: `SOLO_EIKAIWA_UPDATER_AUTO` を付けずに起動すると確認ダイアログが出て、
-   「今回はしない」で何も起きず、次回起動時にまた1回だけ聞かれる
+4. 手動確認（任意）: `SOLO_EIKAIWA_UPDATER_AUTO` を付けずに起動すると更新確認ダイアログが出て、
+   「今回はしない」で何も起きず、次回起動時にまた1回だけ聞かれる。更新を適用した場合は、再起動前にも
+   「今すぐ再起動」/「あとで再起動」の確認が出る
 
 ## 実施記録
 

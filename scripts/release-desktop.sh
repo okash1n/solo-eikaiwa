@@ -169,6 +169,11 @@ SIG="$TARGZ.sig"
 for p in "$APP" "$DMG" "$TARGZ" "$SIG"; do
   [[ -e "$p" ]] || { echo "ERROR: 生成物がありません: $p（.sig 欠落なら TAURI_SIGNING_PRIVATE_KEY を確認）" >&2; exit 1; }
 done
+# updater署名検証用の補助binを追加しても、Tauriが主アプリ（Cargoのdefault-run）を梱包すること。
+[[ -x "$APP/Contents/MacOS/app" ]] || {
+  echo "ERROR: .app に主アプリ実行ファイルがありません（Cargo.toml の default-run を確認）" >&2
+  exit 1
+}
 echo "-- 署名・公証の検証"
 codesign --verify --deep --strict "$APP"
 xcrun stapler validate "$APP"
