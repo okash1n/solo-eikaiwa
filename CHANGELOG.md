@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.29.2] - 2026-07-13
+
 ### Added
 
 - アプリ内から開けるプライバシーポリシーと公開サポートページを追加した
@@ -539,7 +541,8 @@
 - 学習データ（録音・トランスクリプト・進捗・DB・キャッシュ）は `data/` のローカルファイルで、リポジトリにコミットされない
 - 音声データはマシン外に出ない（外部送信はテキストのみ: Claude への発話テキスト、OpenAI TTS への応答テキスト）
 
-[Unreleased]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.1...HEAD
+[Unreleased]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.2...HEAD
+[0.29.2]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.1...v0.29.2
 [0.29.1]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.0...v0.29.1
 [0.29.0]: https://github.com/btajp/solo-eikaiwa/compare/v0.28.0...v0.29.0
 [0.21.0]: https://github.com/btajp/solo-eikaiwa/compare/v0.20.0...v0.21.0
