@@ -15,9 +15,10 @@ describe("llm-settings API", () => {
     const res = await makeFetchHandler(deps)(getReq("/api/llm-settings"));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
-      provider: "claude", baseUrl: null, model: null, codexModel: null,
+      provider: "claude", baseUrl: null, model: null, openaiModel: null, codexModel: null,
       apiKeyConfigured: false,
       apiKeyApproved: false,
+      openAiKeyConfigured: false,
       roles: {
         conversation: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
         assist: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
@@ -45,9 +46,10 @@ describe("llm-settings API", () => {
     });
     const res = await makeFetchHandler(deps)(getReq("/api/llm-settings"));
     expect(await res.json()).toEqual({
-      provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null,
+      provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", openaiModel: null, codexModel: null,
       apiKeyConfigured: true,
       apiKeyApproved: false,
+      openAiKeyConfigured: false,
       roles: {
         conversation: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
         assist: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
@@ -85,7 +87,9 @@ describe("llm-settings API", () => {
     expect(await res.json()).toMatchObject({
       provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", applied: true, error: null,
     });
-    expect(saved[0]).toEqual({ provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null });
+    expect(saved[0]).toEqual({
+      provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", openaiModel: null, codexModel: null,
+    });
     expect(applied[0]).toEqual(saved[0]);
   });
 
@@ -96,10 +100,10 @@ describe("llm-settings API", () => {
       llmEnv: () => ({ provider: "claude", apiKeyConfigured: true }),
     });
     await makeFetchHandler(deps)(putJson("/api/llm-settings", {
-      provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3", codexModel: "gpt-5-codex",
+      provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3", openaiModel: null, codexModel: "gpt-5-codex",
     }));
     expect(saved[0]).toEqual({
-      provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3", codexModel: "gpt-5-codex",
+      provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3", openaiModel: null, codexModel: "gpt-5-codex",
     });
   });
 
@@ -110,7 +114,31 @@ describe("llm-settings API", () => {
       llmEnv: () => ({ apiKeyConfigured: false }),
     });
     await makeFetchHandler(deps)(putJson("/api/llm-settings", { provider: "codex", codexModel: "o4-mini" }));
-    expect(saved[0]).toEqual({ provider: "codex", baseUrl: null, model: null, codexModel: "o4-mini" });
+    expect(saved[0]).toEqual({ provider: "codex", baseUrl: null, model: null, openaiModel: null, codexModel: "o4-mini" });
+  });
+
+  test("PUT openai: 公式モデルを専用バンクへ保存し、互換設定も保持する", async () => {
+    const saved: LlmSettings[] = [];
+    const { deps } = makeTestDeps({
+      saveLlmSettings: (s) => saved.push(s),
+      getLlmSettings: () => null,
+      llmEnv: () => ({ apiKeyConfigured: false, openAiKeyConfigured: true }),
+    });
+    const res = await makeFetchHandler(deps)(putJson("/api/llm-settings", {
+      provider: "openai",
+      openaiModel: "gpt-4.1-mini",
+      baseUrl: "http://localhost:11434/v1",
+      model: "llama3",
+      codexModel: "gpt-5-codex",
+    }));
+    expect(res.status).toBe(200);
+    expect(saved[0]).toEqual({
+      provider: "openai",
+      openaiModel: "gpt-4.1-mini",
+      baseUrl: "http://localhost:11434/v1",
+      model: "llama3",
+      codexModel: "gpt-5-codex",
+    });
   });
 
   test("PUT 400: 廃止済みの provider \"env\" は拒否し、何も保存しない", async () => {
@@ -182,6 +210,22 @@ describe("llm-settings roles API", () => {
     expect((await res.json()).roles.conversation).toEqual({ provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null });
   });
 
+  test("PUT /roles: OpenAI公式を互換URLなしで用途へ割り当てられる", async () => {
+    const saved: Array<{ role: LlmRole; settings: unknown }> = [];
+    const { deps } = makeTestDeps({
+      saveLlmRoleSettings: (role, settings) => saved.push({ role, settings }),
+      llmEnv: () => ({ apiKeyConfigured: false, openAiKeyConfigured: true }),
+    });
+    const res = await makeFetchHandler(deps)(putJson("/api/llm-settings/roles", {
+      roles: { conversation: { provider: "openai", model: "gpt-4.1-mini" } },
+    }));
+    expect(res.status).toBe(200);
+    expect(saved).toEqual([{
+      role: "conversation",
+      settings: { provider: "openai", baseUrl: null, model: "gpt-4.1-mini", codexModel: null },
+    }]);
+  });
+
   test("PUT /roles: 個別ロール上書きを保存し applied:true を返す", async () => {
     const savedRoles: Array<{ role: string; s: LlmSettings & { provider: string } }> = [];
     const appliedGlobals: LlmSettings[] = [];
@@ -198,7 +242,9 @@ describe("llm-settings roles API", () => {
     expect(await res.json()).toMatchObject({ applied: true, error: null });
     expect(savedRoles).toEqual([{ role: "generation", s: { provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null } }]);
     // 保存後に「現在の全体設定 + 保存済みロール」で再解決する（effectiveGlobal は未設定→既定 claude）
-    expect(appliedGlobals).toEqual([{ provider: "claude", baseUrl: null, model: null, codexModel: null }]);
+    expect(appliedGlobals).toEqual([{
+      provider: "claude", baseUrl: null, model: null, openaiModel: null, codexModel: null,
+    }]);
   });
 
   test("PUT /roles: global も同時に更新できる（全体設定 + ロールを一括保存）", async () => {
@@ -218,7 +264,9 @@ describe("llm-settings roles API", () => {
         generation: { provider: "inherit" }, assessment: { provider: "inherit" },
       },
     }));
-    expect(savedGlobals).toEqual([{ provider: "claude", baseUrl: null, model: null, codexModel: null }]);
+    expect(savedGlobals).toEqual([{
+      provider: "claude", baseUrl: null, model: null, openaiModel: null, codexModel: null,
+    }]);
     expect(savedRoles.sort()).toEqual(["assessment", "assist", "coaching", "conversation", "generation"]);
   });
 

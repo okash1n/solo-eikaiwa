@@ -225,12 +225,12 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 .lang-toggle button:hover { color: var(--text); }
 .lang-toggle button.is-active { background: var(--accent-soft); color: var(--accent); font-weight: 650; }
 .feedback-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
-.settings-tabs { align-self: flex-start; }
+.settings-tabs { align-self: flex-start; flex-wrap: wrap; }
 /* 設定画面のセクション見出し・区切り（どこからどこまでが何の設定かを視覚的に分ける） */
 .settings-section-title { font-size: var(--fs-lg); font-weight: 650; margin: var(--sp-2) 0 0; }
 .settings-divider { border: none; border-top: 1px solid var(--border); margin: var(--sp-3) 0 var(--sp-1); width: 100%; }
-.secret-key-row { display: flex; gap: var(--sp-2); align-items: center; }
-.secret-key-row .llm-input { flex: 1; }
+.secret-key-row { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; }
+.secret-key-row .llm-input { flex: 1 1 18rem; }
 /* サポートパネルのラベル行 + ⓘ ヘルプ */
 .support-label-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
 .info-btn {
@@ -256,17 +256,18 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 .level-edit-btn { font: inherit; font-size: var(--fs-sm); background: none; border: none; color: var(--accent); cursor: pointer; padding: 2px; }
 .level-edit-error { font-size: var(--fs-sm); color: var(--danger); margin-top: 2px; }
 .proposal-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-2); }
-/* サイドバー下部のフッター的リンク行（GitHub / About）。ナビ項目ではなく控えめな見た目にする */
+/* サイドバー下部のプロジェクトリンクと権利表記 */
+.sidebar-footer { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-1); }
 .sidebar-links { display: flex; align-items: center; gap: var(--sp-3); }
 .side-link {
-  display: inline-flex; align-items: center; gap: var(--sp-1);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
   font: inherit; font-size: var(--fs-sm); color: var(--text-muted);
   background: none; border: none; padding: 0; cursor: pointer; text-decoration: none;
+  transition: color var(--ease), background var(--ease);
 }
-.side-link:hover { color: var(--text); }
-.side-link.is-active { color: var(--accent); font-weight: 650; }
-/* About画面のLP/GitHubボタン行 */
-.about-actions { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
+.side-link:hover { color: var(--text); background: var(--accent-soft); }
+.sidebar-copyright { margin: 0; color: var(--text-muted); font-size: 11px; line-height: 1.45; }
 @media (max-width: 860px) {
   .shell { flex-direction: column; }
   .sidebar {
@@ -281,7 +282,7 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
   .sidebar-spacer { display: none; }
   .sidebar-quick { display: flex; flex: 1 1 100%; flex-direction: row; flex-wrap: wrap; }
   .sidebar-quick .lang-toggle { flex: 1 1 10rem; }
-  .support-panel, .stat-box, .sidebar-links { flex: 1 1 100%; }
+  .support-panel, .stat-box, .sidebar-footer { flex: 1 1 100%; }
   .stat-box { margin-left: 0; }
   .sidebar-links { display: flex; }
 }

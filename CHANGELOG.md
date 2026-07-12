@@ -4,6 +4,19 @@
 
 ## [Unreleased]
 
+## [0.29.1] - 2026-07-12
+
+### Changed
+
+- GitHub Releasesのデスクトップ版をDeveloper IDで署名し、Apple公証とstapleを完了した状態で公開する標準経路へ切り替えた。v0.29.0から初めて更新する際は、署名要件の変更によりマイク許可を一度だけ再確認される場合がある
+- 「このアプリについて」画面への遷移を廃止し、サイドバー最下部からGitHubリポジトリと公式サイトを2つのアイコンで直接開けるようにした。BTAJPの著作権とMITライセンス表記も同じフッターへ追加した
+- APIキーと認証方式を専用タブへ集約し、Claude・Codex・OpenAI公式・OpenAI互換LLM/TTSの設定有無と保存元を一覧で確認できるようにした。公式OpenAIは固定URLと専用キー、互換接続は独自URLと接続先別キーとして分離し、利用可能な接続だけを用途へ選択できる
+- TTSの暗黙的な自動選択を廃止し、macOS say・OpenAI公式・OpenAI互換を明示選択する方式に変更した。HTTP合成失敗時は別エンジンへ黙って切り替えず、旧公式URL設定は公式OpenAIへ自動移行する
+
+### Fixed
+
+- remoteのOpenAI互換接続を、接続先へ承認済みのAPIキーが無い状態で用途へ新規割当できないようにした。モデル一覧の取得にも同じ承認済みキーを使用する
+
 ## [0.29.0] - 2026-07-11
 
 ### Added
@@ -517,7 +530,8 @@
 - 学習データ（録音・トランスクリプト・進捗・DB・キャッシュ）は `data/` のローカルファイルで、リポジトリにコミットされない
 - 音声データはマシン外に出ない（外部送信はテキストのみ: Claude への発話テキスト、OpenAI TTS への応答テキスト）
 
-[Unreleased]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.0...HEAD
+[Unreleased]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.1...HEAD
+[0.29.1]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.0...v0.29.1
 [0.29.0]: https://github.com/btajp/solo-eikaiwa/compare/v0.28.0...v0.29.0
 [0.21.0]: https://github.com/btajp/solo-eikaiwa/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/btajp/solo-eikaiwa/compare/v0.19.0...v0.20.0

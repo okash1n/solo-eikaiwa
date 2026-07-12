@@ -28,7 +28,7 @@ export type CatalogResult = {
   fetchedAt: string;
 };
 
-export type LlmModelsResponse = { claude: CatalogResult; codex: CatalogResult; local: CatalogResult };
+export type LlmModelsResponse = { claude: CatalogResult; openai: CatalogResult; codex: CatalogResult; local: CatalogResult };
 
 /** refresh=true で TTL キャッシュを無視した強制再取得を要求する（サーバは in-flight デデュープを持つ）。 */
 export async function fetchLlmModels(refresh = false): Promise<LlmModelsResponse> {

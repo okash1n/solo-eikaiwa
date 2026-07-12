@@ -16,7 +16,7 @@ export type LlmSettingsRoutesDeps = {
   saveLlmRoleTuning: (t: Partial<Record<TuningScope, Partial<RoleTuning>>>) => void;
   applyLlmSettings: (s: LlmSettings) => void;
   /** Keychain/env resolver由来のAPIキー状態のみ。値は返さない。 */
-  llmEnv: () => { apiKeyConfigured: boolean; apiKeyApproved?: boolean };
+  llmEnv: () => { apiKeyConfigured: boolean; apiKeyApproved?: boolean; openAiKeyConfigured?: boolean };
   /** 受信入口の fire-and-forget フック（conversation が openai-compat のときローカルモデルを温める）。llm-settings ルート自体は使わない。 */
   warmLlm: () => void;
   /** 認証モード（DB 由来。行不在は "subscription"）。 */
@@ -33,8 +33,8 @@ export type LlmSettingsRoutesDeps = {
   killCodexAppServerRegistry: () => void;
 };
 
-const PROVIDERS = ["claude", "openai-compat", "codex"] as const;
-const ROLE_PROVIDERS = ["inherit", "claude", "openai-compat", "codex"] as const;
+const PROVIDERS = ["claude", "openai", "openai-compat", "codex"] as const;
+const ROLE_PROVIDERS = ["inherit", "claude", "openai", "openai-compat", "codex"] as const;
 
 /** undefined/null/空文字 → null（未指定）、trim後1文字以上でmax以下の文字列 → trim値、それ以外 → undefined（不正） */
 function asOptionalStr(v: unknown, max: number): string | null | undefined {
@@ -44,8 +44,14 @@ function asOptionalStr(v: unknown, max: number): string | null | undefined {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-type SettingsInput = { provider?: unknown; baseUrl?: unknown; model?: unknown; codexModel?: unknown };
-type ParsedSettings = { provider: string; baseUrl: string | null; model: string | null; codexModel: string | null };
+type SettingsInput = { provider?: unknown; baseUrl?: unknown; model?: unknown; openaiModel?: unknown; codexModel?: unknown };
+type ParsedSettings = {
+  provider: string;
+  baseUrl: string | null;
+  model: string | null;
+  openaiModel: string | null;
+  codexModel: string | null;
+};
 
 /**
  * 全体設定/ロール設定の共通バリデータ。allowed で provider 集合を切替（全体=env含む・ロール=inherit含む）。
@@ -54,10 +60,38 @@ type ParsedSettings = { provider: string; baseUrl: string | null; model: string 
 function parseSettingsInput(
   b: SettingsInput,
   allowed: readonly string[],
+  scope: "global" | "role",
 ): { ok: true; value: ParsedSettings } | { ok: false; error: string } {
   if (typeof b.provider !== "string" || !allowed.includes(b.provider)) {
     return { ok: false, error: `provider must be one of ${allowed.join(", ")}` };
   }
+  if (scope === "global") {
+    const baseUrl = asOptionalStr(b.baseUrl, 500);
+    if (baseUrl === undefined) return { ok: false, error: "baseUrl must be a string of at most 500 characters" };
+    let normalizedBaseUrl = baseUrl;
+    if (baseUrl !== null) {
+      const parsedBase = parseRemoteBaseUrl(baseUrl);
+      if (!parsedBase.ok) return { ok: false, error: parsedBase.error };
+      normalizedBaseUrl = parsedBase.baseUrl;
+    }
+    const model = asOptionalStr(b.model, 200);
+    if (model === undefined) return { ok: false, error: "model must be a string of at most 200 characters" };
+    const openaiModel = asOptionalStr(b.openaiModel, 200);
+    if (openaiModel === undefined) return { ok: false, error: "openaiModel must be a string of at most 200 characters" };
+    const codexModel = asOptionalStr(b.codexModel, 200);
+    if (codexModel === undefined) return { ok: false, error: "codexModel must be a string of at most 200 characters" };
+    if (b.provider === "openai-compat" && (!normalizedBaseUrl || !model)) {
+      return { ok: false, error: "baseUrl and model are required for openai-compat" };
+    }
+    if (b.provider === "openai" && !openaiModel) {
+      return { ok: false, error: "openaiModel is required for openai" };
+    }
+    return {
+      ok: true,
+      value: { provider: b.provider, baseUrl: normalizedBaseUrl, model, openaiModel, codexModel },
+    };
+  }
+
   if (b.provider === "openai-compat") {
     const baseUrl = asOptionalStr(b.baseUrl, 500);
     if (!baseUrl) return { ok: false, error: "baseUrl must be a valid http(s) URL for openai-compat" };
@@ -65,19 +99,20 @@ function parseSettingsInput(
     if (!parsedBase.ok) return { ok: false, error: parsedBase.error };
     const model = asOptionalStr(b.model, 200);
     if (!model) return { ok: false, error: "model is required for openai-compat" };
-    // 接続ストア(llm_settings 単一行)にローカル(baseUrl/model)と Codex(codexModel)を同居させるため、
-    // openai-compat でも codexModel を保持する（未指定は null）。openai-compat 解決時は CODEX_MODEL は不使用で無害。
-    const codexModel = asOptionalStr(b.codexModel, 200);
-    if (codexModel === undefined) return { ok: false, error: "codexModel must be a string of at most 200 characters" };
-    return { ok: true, value: { provider: "openai-compat", baseUrl: parsedBase.baseUrl, model, codexModel } };
+    return { ok: true, value: { provider: "openai-compat", baseUrl: parsedBase.baseUrl, model, openaiModel: null, codexModel: null } };
+  }
+  if (b.provider === "openai") {
+    const model = asOptionalStr(b.model, 200);
+    if (!model) return { ok: false, error: "model is required for openai" };
+    return { ok: true, value: { provider: "openai", baseUrl: null, model, openaiModel: null, codexModel: null } };
   }
   if (b.provider === "codex") {
     const codexModel = asOptionalStr(b.codexModel, 200);
     if (codexModel === undefined) return { ok: false, error: "codexModel must be a string of at most 200 characters" };
-    return { ok: true, value: { provider: "codex", baseUrl: null, model: null, codexModel } };
+    return { ok: true, value: { provider: "codex", baseUrl: null, model: null, openaiModel: null, codexModel } };
   }
   // claude / inherit: 付随フィールドは持たない（claude のモデルはグローバルチューニング〔tuning.global〕が担う）
-  return { ok: true, value: { provider: b.provider, baseUrl: null, model: null, codexModel: null } };
+  return { ok: true, value: { provider: b.provider, baseUrl: null, model: null, openaiModel: null, codexModel: null } };
 }
 
 /** GET と PUT 応答の共通ビュー。APIキー値は決して含めない（有無の boolean のみ）。roles/tuning は additive。 */
@@ -103,9 +138,11 @@ function viewOf(deps: LlmSettingsRoutesDeps, applied?: boolean, error?: string |
     provider: s.provider,
     baseUrl: s.baseUrl,
     model: s.model,
+    openaiModel: s.openaiModel ?? null,
     codexModel: s.codexModel,
     apiKeyConfigured: env.apiKeyConfigured,
     apiKeyApproved: env.apiKeyApproved ?? false,
+    openAiKeyConfigured: env.openAiKeyConfigured ?? false,
     roles,
     globalTuning: deps.getLlmGlobalTuning(),
     tuning,
@@ -251,18 +288,19 @@ function applyResolved(deps: LlmSettingsRoutesDeps): { applied: boolean; error: 
   }
 }
 
-type Body = { provider?: unknown; baseUrl?: unknown; model?: unknown; codexModel?: unknown };
+type Body = { provider?: unknown; baseUrl?: unknown; model?: unknown; openaiModel?: unknown; codexModel?: unknown };
 
 async function handlePut(req: Request, deps: LlmSettingsRoutesDeps): Promise<Response> {
   const parsed = await parseJsonBody<Body>(req);
   if (!parsed.ok) return parsed.response;
-  const g = parseSettingsInput(parsed.body, PROVIDERS);
+  const g = parseSettingsInput(parsed.body, PROVIDERS, "global");
   if (!g.ok) return json({ error: g.error }, 400);
 
   deps.saveLlmSettings({
     provider: g.value.provider as LlmProvider,
     baseUrl: g.value.baseUrl,
     model: g.value.model,
+    openaiModel: g.value.openaiModel,
     codexModel: g.value.codexModel,
   });
   // fail-open: 検証済み入力は基本 throw しないが、万一失敗しても「保存は成功」として applied:false + error を返す。
@@ -280,7 +318,7 @@ async function handlePutRoles(req: Request, deps: LlmSettingsRoutesDeps): Promis
   let parsedGlobal: ParsedSettings | null = null;
   if (body.global !== undefined) {
     if (typeof body.global !== "object" || body.global === null) return json({ error: "global must be an object" }, 400);
-    const g = parseSettingsInput(body.global as SettingsInput, PROVIDERS);
+    const g = parseSettingsInput(body.global as SettingsInput, PROVIDERS, "global");
     if (!g.ok) return json({ error: g.error }, 400);
     parsedGlobal = g.value;
   }
@@ -293,7 +331,7 @@ async function handlePutRoles(req: Request, deps: LlmSettingsRoutesDeps): Promis
       if (!(LLM_ROLES as readonly string[]).includes(role)) return json({ error: `unknown role: ${role}` }, 400);
       const rv = rolesObj[role];
       if (typeof rv !== "object" || rv === null) return json({ error: `role ${role} must be an object` }, 400);
-      const p = parseSettingsInput(rv as SettingsInput, ROLE_PROVIDERS);
+      const p = parseSettingsInput(rv as SettingsInput, ROLE_PROVIDERS, "role");
       if (!p.ok) return json({ error: `${role}: ${p.error}` }, 400);
       parsedRoles.push({ role: role as LlmRole, value: p.value });
     }
@@ -356,6 +394,7 @@ async function handlePutRoles(req: Request, deps: LlmSettingsRoutesDeps): Promis
       provider: parsedGlobal.provider as LlmProvider,
       baseUrl: parsedGlobal.baseUrl,
       model: parsedGlobal.model,
+      openaiModel: parsedGlobal.openaiModel,
       codexModel: parsedGlobal.codexModel,
     });
   }

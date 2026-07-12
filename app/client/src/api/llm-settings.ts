@@ -1,11 +1,11 @@
 import { extractErrorMessage } from "./http";
 
 // 設定は UI/DB が唯一の真実（旧 "env"=環境変数に従う センチネルは廃止・v0.29）
-export type LlmProvider = "claude" | "openai-compat" | "codex";
+export type LlmProvider = "claude" | "openai" | "openai-compat" | "codex";
 
 export type LlmRole = "conversation" | "assist" | "coaching" | "generation" | "assessment";
 export const LLM_ROLES: readonly LlmRole[] = ["conversation", "assist", "coaching", "generation", "assessment"];
-export type LlmRoleProvider = "inherit" | "claude" | "openai-compat" | "codex";
+export type LlmRoleProvider = "inherit" | "claude" | "openai" | "openai-compat" | "codex";
 
 export type LlmRoleView = {
   provider: LlmRoleProvider;
@@ -35,10 +35,12 @@ export type LlmSettingsView = {
   provider: LlmProvider;
   baseUrl: string | null;
   model: string | null;
+  openaiModel?: string | null;
   codexModel: string | null;
   apiKeyConfigured: boolean;
   /** 現在のOpenAI互換originに対して保存済み鍵の利用が明示承認されているか。 */
   apiKeyApproved?: boolean;
+  openAiKeyConfigured?: boolean;
   /** PUT 応答のみ: 実行中プロセスへ適用できたか */
   applied?: boolean;
   /** PUT 応答のみ: 適用失敗時のメッセージ */
@@ -59,6 +61,7 @@ export type LlmSettingsInput = {
   provider: LlmProvider;
   baseUrl?: string | null;
   model?: string | null;
+  openaiModel?: string | null;
   codexModel?: string | null;
 };
 

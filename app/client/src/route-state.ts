@@ -8,8 +8,7 @@ export type RouteMode =
   | { kind: "placement" }
   | { kind: "progress" }
   | { kind: "feedback" }
-  | { kind: "settings" }
-  | { kind: "about" };
+  | { kind: "settings" };
 
 export type RouteNotice = "unknown" | "session-not-restored";
 
@@ -41,7 +40,6 @@ export function parseRouteHash(hash: string): ParsedRoute {
     case "/progress": return { mode: { kind: "progress" }, notice: null };
     case "/feedback": return { mode: { kind: "feedback" }, notice: null };
     case "/settings": return { mode: { kind: "settings" }, notice: null };
-    case "/about": return { mode: { kind: "about" }, notice: null };
     // セッションIDや途中状態をURLに置かない。再読込で安全に復元できないためHomeへ戻す。
     case "/session": return { mode: HOME, notice: "session-not-restored" };
     default: return { mode: HOME, notice: "unknown" };
@@ -59,6 +57,5 @@ export function routeHash(mode: RouteMode): string {
     case "progress": return "#/progress";
     case "feedback": return "#/feedback";
     case "settings": return "#/settings";
-    case "about": return "#/about";
   }
 }

@@ -2,13 +2,13 @@ import type { ModelInfo, SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";
 import { claudeSpawnEnv, getActiveAuthModes, getActiveAuthSecrets } from "../llm-auth-store";
 
 /**
- * モデルカタログ API（`GET /api/llm-models`）の中核: 3ソース（claude/codex/local）共通の型・
+ * モデルカタログ API（`GET /api/llm-models`）の中核: 4ソース（claude/openai/codex/local）共通の型・
  * TTL キャッシュ・実 fetcher 3種。設計は docs/superpowers/specs/2026-07-08-provider-overhaul-design.md §7。
  * 「UI 真実性の原則」（binding）に従い、取得失敗は throw ではなく available:false + reason で返す
  * （HTTP は常に 200・UI は「実体未確認」に劣化するだけで嘘の表示をしない）。
  */
 
-export type LlmCatalogProvider = "claude" | "codex" | "local";
+export type LlmCatalogProvider = "claude" | "openai" | "codex" | "local";
 
 export type CatalogModelEffort = { id: string; description?: string };
 export type CatalogModelTier = { id: string; name: string; description?: string };
@@ -46,7 +46,7 @@ export type ModelCatalogCache = {
 const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1h
 
 /**
- * 3ソース分の fetcher を束ね、成功結果だけを TTL キャッシュする。
+ * プロバイダ別 fetcher を束ね、成功結果だけを TTL キャッシュする。
  * 失敗（available:false）は次回呼び出しのために一切キャッシュしない（毎回 fetcher を叩き直す）ため、
  * 一過性の障害が「実体未確認」を恒久化させない。既存の成功キャッシュも失敗では上書きされない
  * （refresh=1 で強制再取得した結果が失敗でも、直前の成功キャッシュはそのまま活かされる）。
@@ -58,7 +58,7 @@ const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1h
  * は in-flight エントリを消すため、次回の呼び出しは新しい fetch を開始できる。
  */
 export function makeModelCatalogCache(
-  fetchers: Record<LlmCatalogProvider, CatalogFetcher>,
+  fetchers: Partial<Record<LlmCatalogProvider, CatalogFetcher>>,
   opts?: { ttlMs?: number; now?: () => number },
 ): ModelCatalogCache {
   const ttlMs = opts?.ttlMs ?? DEFAULT_TTL_MS;
@@ -78,7 +78,10 @@ export function makeModelCatalogCache(
 
       const p = (async () => {
         try {
-          const result = await fetchers[provider]();
+          const fetcher = fetchers[provider];
+          const result = fetcher
+            ? await fetcher()
+            : { available: false, reason: `${provider} catalog is not configured`, models: [], fetchedAt: new Date().toISOString() };
           if (result.available) cache.set(provider, { result, expiresAt: now() + ttlMs });
           return result;
         } finally {
@@ -261,6 +264,29 @@ const LOCAL_FETCH_TIMEOUT_MS = 4_000;
 type LocalModelsResponse = { data?: Array<{ id?: unknown }> };
 
 /**
+ * OpenAI公式の /models は画像・音声・埋め込み等も同じ一覧で返すため、会話モデル欄の候補から
+ * 明らかに別用途のfamilyだけを除外する。未知の将来モデルは隠さず候補に残す。
+ */
+export function isOpenAiConversationModelCandidate(id: string): boolean {
+  const value = id.toLowerCase();
+  return ![
+    /(?:^|-)audio(?:-|$)/,
+    /(?:^|-)codex(?:-|$)/,
+    /(?:^|-)embedding(?:-|$)/,
+    /(?:^|-)image(?:-|$)/,
+    /(?:^|-)instruct(?:-|$)/,
+    /(?:^|-)moderation(?:-|$)/,
+    /(?:^|-)realtime(?:-|$)/,
+    /(?:^|-)transcribe(?:-|$)/,
+    /(?:^|-)tts(?:-|$)/,
+    /(?:^|-)whisper(?:-|$)/,
+    /^babbage(?:-|$)/,
+    /^davinci(?:-|$)/,
+    /^sora(?:-|$)/,
+  ].some((pattern) => pattern.test(value));
+}
+
+/**
  * ローカル接続（Ollama/LM Studio 等の OpenAI 互換 /models）からモデル一覧を取る。
  * getBaseUrl は呼び出し都度の現在の baseUrl を返す（未設定なら null）— index.ts では
  * 保存済み llm_settings.baseUrl（openai-compat 選択中）→ 無ければ env OPENAI_COMPAT_BASE_URL の順で解決する。
@@ -268,6 +294,8 @@ type LocalModelsResponse = { data?: Array<{ id?: unknown }> };
 export function makeLocalCatalogFetcher(
   getBaseUrl: () => string | null,
   fetchFn: typeof fetch = fetch,
+  getApiKey: (baseUrl: string) => string | undefined = () => undefined,
+  opts?: { requireApiKey?: boolean; missingApiKeyReason?: string; includeModel?: (id: string) => boolean },
 ): CatalogFetcher {
   return async () => {
     const fetchedAt = new Date().toISOString();
@@ -276,8 +304,19 @@ export function makeLocalCatalogFetcher(
       return { available: false, reason: "ローカル接続(baseUrl)が未設定です", models: [], fetchedAt };
     }
     try {
+      const apiKey = getApiKey(baseUrl);
+      if (opts?.requireApiKey && !apiKey) {
+        return {
+          available: false,
+          reason: opts.missingApiKeyReason ?? "API key is not configured",
+          models: [],
+          fetchedAt,
+        };
+      }
       const res = await fetchFn(`${baseUrl.replace(/\/+$/, "")}/models`, {
         signal: AbortSignal.timeout(LOCAL_FETCH_TIMEOUT_MS),
+        redirect: "error",
+        ...(apiKey ? { headers: { Authorization: `Bearer ${apiKey}` } } : {}),
       });
       if (!res.ok) {
         return { available: false, reason: `local models fetch failed: ${res.status}`, models: [], fetchedAt };
@@ -285,6 +324,7 @@ export function makeLocalCatalogFetcher(
       const data = (await res.json()) as LocalModelsResponse;
       const models: CatalogModel[] = (data.data ?? [])
         .filter((m): m is { id: string } => typeof m?.id === "string")
+        .filter((m) => opts?.includeModel?.(m.id) ?? true)
         .map((m) => ({ id: m.id, displayName: m.id, description: "" }));
       return { available: true, models, fetchedAt };
     } catch (err) {

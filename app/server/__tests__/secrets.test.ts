@@ -160,9 +160,9 @@ describe("makeSecretsManager", () => {
     await mgr.remove("CODEX_API_KEY"); // throw しないこと
   });
 
-  test("KEYCHAIN_SECRET_NAMES は4鍵固定（OPENAI_API_KEY は含めない＝env/CLI専用）", () => {
+  test("KEYCHAIN_SECRET_NAMES は公式 OpenAI と互換 OpenAI を別鍵として持つ", () => {
     expect([...KEYCHAIN_SECRET_NAMES]).toEqual([
-      "ANTHROPIC_API_KEY", "CODEX_API_KEY", "OPENAI_COMPAT_API_KEY", "TTS_API_KEY",
+      "ANTHROPIC_API_KEY", "CODEX_API_KEY", "OPENAI_API_KEY", "OPENAI_COMPAT_API_KEY", "TTS_API_KEY",
     ]);
   });
 });

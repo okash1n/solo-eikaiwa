@@ -226,11 +226,12 @@ function mergeTuning(rt: RoleTuning, globalRt: RoleTuning): RoleTuning {
  */
 export function cliEnvSettings(env: Record<string, string | undefined> = Bun.env): LlmSettings {
   const raw = (env.LLM_PROVIDER ?? "claude").trim().toLowerCase();
-  const provider = (raw === "openai-compat" || raw === "codex" ? raw : "claude") as LlmSettings["provider"];
+  const provider = (raw === "openai" || raw === "openai-compat" || raw === "codex" ? raw : "claude") as LlmSettings["provider"];
   return {
     provider,
     baseUrl: env.OPENAI_COMPAT_BASE_URL?.trim() || null,
     model: env.OPENAI_COMPAT_MODEL?.trim() || null,
+    openaiModel: env.OPENAI_MODEL?.trim() || null,
     codexModel: env.CODEX_MODEL?.trim() || null,
   };
 }
@@ -239,7 +240,7 @@ export function cliEnvSettings(env: Record<string, string | undefined> = Bun.env
  * 「有効設定 + そのロールのチューニング」から1ロール分の runner を解決する核関数。
  * 有効プロバイダが claude（またはenv解決の結果claudeに落ちる場合）なら resolveClaudeRunner に委譲し
  * （tuning は resolveClaudeTuning で優先順位式を通す。circular import 回避のため llm-provider.ts の
- * selectRunner はここに関与しない）、それ以外（openai-compat/codex）は selectRunner に委譲する
+ * selectRunner はここに関与しない）、それ以外（openai/openai-compat/codex）は selectRunner に委譲する
  * （tuning.effort/serviceTier をそのまま渡し、codex 分岐でのみ消費される）。
  */
 function resolveRoleRunner(
@@ -247,8 +248,9 @@ function resolveRoleRunner(
   rt: RoleTuning,
   env: Record<string, string | undefined>,
   apiKeyForBaseUrl?: (baseUrl: string) => string | undefined,
+  openAiApiKey?: string,
 ): ClaudeRunner {
-  const roleEnv = settingsToEnv(settings, env, apiKeyForBaseUrl);
+  const roleEnv = settingsToEnv(settings, env, apiKeyForBaseUrl, openAiApiKey);
   const provider = resolveProviderKey(roleEnv);
   if (provider === "" || provider === "claude") {
     return resolveClaudeRunner(resolveClaudeTuning(rt));
@@ -310,7 +312,7 @@ export function getCurrentRunner(role: LlmRole = "conversation"): ClaudeRunner {
  * inherit ロールでチューニングも空（3項目とも null）のものは global の runner を共有参照する
  * （= 全 inherit かつ tuning 全 null なら全ロール同一参照＝既定挙動不変）。inherit でもそのロール自身の
  * チューニングが入っていれば独立に解決する（例: 全ロール claude 継承のまま assessment だけ opus/xhigh）。
- * OpenAI互換APIキーは接続先origin用resolverから受ける。不正 provider 等では selectRunner が throw しうるため、
+ * OpenAI互換APIキーは接続先origin用resolver、公式キーは専用引数から受ける。不正 provider 等では selectRunner が throw しうるため、
  * 起動時適用側（index.ts）とルート層で fail-open ガードする。
  */
 export function applyLlmRoleSettings(
@@ -320,11 +322,12 @@ export function applyLlmRoleSettings(
   tuning?: Record<LlmRole, RoleTuning>,
   globalTuning?: RoleTuning,
   apiKeyForBaseUrl?: (baseUrl: string) => string | undefined,
+  openAiApiKey?: string,
 ): void {
   // globalRunner は globalTuning 込みで解決する。inherit + ロール別 tuning 無しのロールは
   // これを共有参照するため、「global のモデル/effort 変更が全ロールへ効く」が1点で成立する。
   const globalRt = globalTuning ?? EMPTY_TUNING;
-  const globalRunner = resolveRoleRunner(global, globalRt, env, apiKeyForBaseUrl);
+  const globalRunner = resolveRoleRunner(global, globalRt, env, apiKeyForBaseUrl, openAiApiKey);
   for (const role of LLM_ROLES) {
     const rs = roles[role];
     const rt = tuning?.[role] ?? EMPTY_TUNING;
@@ -337,6 +340,7 @@ export function applyLlmRoleSettings(
             mergeTuning(rt, globalRt),
             env,
             apiKeyForBaseUrl,
+            openAiApiKey,
           ),
     );
   }
@@ -349,7 +353,7 @@ export function applyLlmRoleSettings(
   }
   // conversation の解決先が openai-compat のときだけ warm 対象を更新する（inherit なら global を辿る）。
   const convSetting = isInheritRole(roles.conversation) ? global : roleSettingToSettings(roles.conversation);
-  conversationWarmup.setTarget(openAICompatWarmTargetFromEnv(settingsToEnv(convSetting, env, apiKeyForBaseUrl)));
+  conversationWarmup.setTarget(openAICompatWarmTargetFromEnv(settingsToEnv(convSetting, env, apiKeyForBaseUrl, openAiApiKey)));
 }
 
 /**

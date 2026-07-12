@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # solo-eikaiwa デスクトップアプリのリリース（署名・公証・updaterアーティファクト・GitHub Release）。
-# 使い方: ./scripts/release-desktop.sh 0.29.0 [--allow-pubkey-rotation]
+# 使い方: ./scripts/release-desktop.sh 0.29.1 [--allow-pubkey-rotation]
 # 前提: ~/.config/solo-eikaiwa/release.env（無ければテンプレートを生成して終了する）
 #
 # やること（順に・失敗したら即中断）:
@@ -22,7 +22,7 @@ set -euo pipefail
 
 usage() {
   cat <<USAGE
-使い方: $0 <version 例: 0.29.0> [--allow-pubkey-rotation]
+使い方: $0 <version 例: 0.29.1> [--allow-pubkey-rotation]
 USAGE
 }
 

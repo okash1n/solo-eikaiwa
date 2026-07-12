@@ -8,7 +8,7 @@ import { detectAudioContainer, transcribeAudio, UnsupportedAudioContainerError, 
 import {
   makeSttGate, SttCancelledError, SttQueueFullError, SttRunTimeoutError, SttWaitTimeoutError, type SttGate,
 } from "../stt-gate";
-import { synthesize } from "../tts";
+import { synthesize, DEFAULT_TTS_BASE_URL } from "../tts";
 import type { TtsProvider } from "../tts";
 import type { TtsSettings } from "../tts";
 import { checkHealth } from "../health";
@@ -38,9 +38,9 @@ export type SystemRoutesDeps = {
   health: () => ReturnType<typeof checkHealth>;
   transcribe: typeof transcribeAudio;
   synthesize: typeof synthesize;
-  /** TTS の実効設定（DB 由来）。合成のたびに読む。省略時は現行既定（env/OpenAI/say）。 */
+  /** TTS の実効設定（DB 由来）。合成のたびに読む。 */
   getTtsSettings: () => TtsSettings | null;
-  /** TTS プロバイダの明示選択（DB 由来。行不在は "auto"）。 */
+  /** TTS プロバイダの明示選択（DB 由来。旧設定はstoreで明示値へ移行する）。 */
   getTtsProvider: () => TtsProvider;
   logFile: () => string;
   /** 省略時は実データディレクトリ（RECORDINGS_DIR）を使う。テストでは temp dir を注入する。 */
@@ -109,12 +109,14 @@ async function handleTts(req: Request, deps: SystemRoutesDeps): Promise<Response
     return json({ error: `voice must be a string of at most ${MAX_TTS_VOICE_CHARS} characters` }, 400);
   }
   const tts = deps.getTtsSettings();
+  const provider = deps.getTtsProvider();
+  const official = provider === "openai";
   const { audio, mime, engine } = await deps.synthesize(body.text, {
     // 優先順位（仕様・binding）: リクエスト voice > DB 設定 > 既定（同梱音声のテキスト単位一致に必要）
-    voice: body.voice ?? tts?.voice ?? undefined,
-    model: tts?.model ?? undefined,
-    baseUrl: tts?.baseUrl ?? undefined,
-    provider: deps.getTtsProvider(),
+    voice: body.voice ?? (official ? tts?.openaiVoice : tts?.voice) ?? undefined,
+    model: (official ? tts?.openaiModel : tts?.model) ?? undefined,
+    baseUrl: official ? DEFAULT_TTS_BASE_URL : tts?.baseUrl ?? undefined,
+    provider,
     signal: req.signal,
   });
   return new Response(audio as unknown as BodyInit, { headers: { "content-type": mime, "x-tts-engine": engine } });

@@ -1,9 +1,9 @@
 import { extractErrorMessage } from "./http";
 import { invalidateTtsCaches } from "./tts";
 
-/** TTS プロバイダの明示選択（サーバの tts_provider_settings と一致）。auto=従来の暗黙決定。 */
-export type TtsProvider = "auto" | "say" | "openai-compat";
-export const TTS_PROVIDER_OPTIONS: readonly TtsProvider[] = ["auto", "say", "openai-compat"];
+/** TTS プロバイダの明示選択（サーバの tts_provider_settings と一致）。 */
+export type TtsProvider = "say" | "openai" | "openai-compat";
+export const TTS_PROVIDER_OPTIONS: readonly TtsProvider[] = ["say", "openai", "openai-compat"];
 
 /** GET/PUT 応答。APIキー値は含まれない（有無のみ apiKeyConfigured）。 */
 export type TtsSettingsView = {
@@ -11,9 +11,12 @@ export type TtsSettingsView = {
   baseUrl: string | null;
   model: string | null;
   voice: string | null;
+  openaiModel?: string | null;
+  openaiVoice?: string | null;
   apiKeyConfigured: boolean;
   /** 現在のTTS originに対して保存済み鍵の利用が明示承認されているか。 */
   apiKeyApproved?: boolean;
+  openAiKeyConfigured?: boolean;
   defaults: { baseUrl: string; model: string; voice: string };
 };
 
@@ -23,6 +26,8 @@ export type TtsSettingsInput = {
   baseUrl?: string | null;
   model?: string | null;
   voice?: string | null;
+  openaiModel?: string | null;
+  openaiVoice?: string | null;
 };
 
 export async function fetchTtsSettings(): Promise<TtsSettingsView> {

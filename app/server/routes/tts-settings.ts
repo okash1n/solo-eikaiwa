@@ -6,11 +6,11 @@ import { parseRemoteBaseUrl } from "../remote-endpoint";
 export type TtsSettingsRoutesDeps = {
   getTtsSettings: () => TtsSettings | null;
   saveTtsSettings: (s: TtsSettings) => void;
-  /** TTS プロバイダの明示選択（行不在は "auto"）。 */
+  /** TTS プロバイダの明示選択。旧 auto は store で移行済み。 */
   getTtsProvider: () => TtsProvider;
   saveTtsProvider: (p: TtsProvider) => void;
   /** Keychain/env resolver由来のAPIキー状態のみ。値は返さない。 */
-  ttsEnv: () => { apiKeyConfigured: boolean; apiKeyApproved?: boolean };
+  ttsEnv: () => { apiKeyConfigured: boolean; apiKeyApproved?: boolean; openAiKeyConfigured?: boolean };
 };
 
 /** undefined/null/空文字 → null（未指定=既定へ）、trim後1文字以上でmax以下の文字列 → trim値、それ以外 → undefined（不正） */
@@ -30,13 +30,23 @@ function viewOf(deps: TtsSettingsRoutesDeps) {
     baseUrl: s?.baseUrl ?? null,
     model: s?.model ?? null,
     voice: s?.voice ?? null,
+    openaiModel: s?.openaiModel ?? null,
+    openaiVoice: s?.openaiVoice ?? null,
     apiKeyConfigured: keyState.apiKeyConfigured,
     apiKeyApproved: keyState.apiKeyApproved ?? false,
+    openAiKeyConfigured: keyState.openAiKeyConfigured ?? false,
     defaults: { baseUrl: DEFAULT_TTS_BASE_URL, model: DEFAULT_TTS_MODEL, voice: DEFAULT_TTS_VOICE },
   };
 }
 
-type Body = { provider?: unknown; baseUrl?: unknown; model?: unknown; voice?: unknown };
+type Body = {
+  provider?: unknown;
+  baseUrl?: unknown;
+  model?: unknown;
+  voice?: unknown;
+  openaiModel?: unknown;
+  openaiVoice?: unknown;
+};
 
 async function handlePut(req: Request, deps: TtsSettingsRoutesDeps): Promise<Response> {
   const parsed = await parseJsonBody<Body>(req);
@@ -58,6 +68,12 @@ async function handlePut(req: Request, deps: TtsSettingsRoutesDeps): Promise<Res
   const voice = asOptionalStr(b.voice, 100);
   if (voice === undefined) return json({ error: "voice must be a string of at most 100 characters" }, 400);
 
+  const openaiModel = asOptionalStr(b.openaiModel, 200);
+  if (openaiModel === undefined) return json({ error: "openaiModel must be a string of at most 200 characters" }, 400);
+
+  const openaiVoice = asOptionalStr(b.openaiVoice, 100);
+  if (openaiVoice === undefined) return json({ error: "openaiVoice must be a string of at most 100 characters" }, 400);
+
   // provider は任意（未指定なら変更しない）。指定時はホワイトリスト検証してから保存する。
   let provider: TtsProvider | undefined;
   if (b.provider !== undefined) {
@@ -67,7 +83,12 @@ async function handlePut(req: Request, deps: TtsSettingsRoutesDeps): Promise<Res
     provider = b.provider as TtsProvider;
   }
 
-  deps.saveTtsSettings({ baseUrl: normalizedBaseUrl, model, voice });
+  const effectiveProvider = provider ?? deps.getTtsProvider();
+  if (effectiveProvider === "openai-compat" && (!normalizedBaseUrl || !model)) {
+    return json({ error: "baseUrl and model are required for openai-compat" }, 400);
+  }
+
+  deps.saveTtsSettings({ baseUrl: normalizedBaseUrl, model, voice, openaiModel, openaiVoice });
   if (provider !== undefined) deps.saveTtsProvider(provider);
   return json(viewOf(deps));
 }

@@ -12,18 +12,24 @@ import {
  */
 export const CODEX_EFFORT_OPTIONS: readonly EffortOption[] = EFFORT_OPTIONS.filter((e) => e !== "max");
 
-/** ロール割当の3値（UI が直接選ぶ）。inherit/env は UI に出さない。 */
-export type RoleTarget = "claude" | "local" | "codex";
+/** ロール割当（UI が直接選ぶ）。inherit/env は UI に出さない。 */
+export type RoleTarget = "claude" | "openai" | "local" | "codex";
 export type RoleTargets = Record<LlmRole, RoleTarget>;
 
 /** 優先クラウド（プリセットの "claude" 枠に代入するクラウド先）。 */
-export type CloudTarget = "claude" | "codex";
+export type CloudTarget = "claude" | "openai" | "codex";
 
 /** 接続入力（接続セクションの3フィールド。空文字＝未指定）。 */
-export type Connection = { baseUrl: string; model: string; codexModel: string };
+export type Connection = { baseUrl: string; model: string; openaiModel?: string; codexModel: string };
 
 export type EndpointLocation = "loopback" | "lan" | "remote" | "invalid";
 export type EndpointClassification = { location: EndpointLocation; origin: string | null };
+const OPENAI_OFFICIAL_BASE_URL = "https://api.openai.com/v1";
+export type RoleTargetAvailabilityReason = "connection" | "authentication";
+export type RoleTargetAvailability = Record<
+  RoleTarget,
+  { available: boolean; reason?: RoleTargetAvailabilityReason }
+>;
 
 function normalizeEndpointHostname(hostname: string): string {
   let lower = hostname.trim().toLowerCase();
@@ -76,6 +82,17 @@ export function classifyOpenAiEndpoint(raw: string): EndpointClassification {
   return { location: "remote", origin: url.origin };
 }
 
+/** サーバの parseRemoteBaseUrl.credentialsAllowed と同じ、資格情報を送信可能な接続先判定。 */
+export function endpointAllowsCredentials(raw: string): boolean {
+  const endpoint = classifyOpenAiEndpoint(raw);
+  if (endpoint.location === "invalid") return false;
+  try {
+    return new URL(raw.trim()).protocol === "https:" || endpoint.location === "loopback";
+  } catch {
+    return false;
+  }
+}
+
 /** プリセット識別子。 */
 export type PresetId = "all-local" | "balanced" | "high-quality";
 
@@ -92,6 +109,44 @@ export const PRESETS: Record<PresetId, RoleTargets> = {
 /** baseUrl と model が両方非空ならローカル接続は定義済み。 */
 export function isLocalDefined(conn: Connection): boolean {
   return conn.baseUrl.trim().length > 0 && conn.model.trim().length > 0;
+}
+
+/**
+ * 用途タブで選択できる接続だけを返す。
+ * Claude/Codex の subscription はキー不要、api-key は対応キーが必須。OpenAI互換は
+ * loopback/LANなら接続定義だけでよいが、remoteはorigin承認済みキーを必要とする。
+ * 既存割当は呼び出し側で表示を残し、この結果によって黙って書き換えない。
+ */
+export function roleTargetAvailability(
+  view: LlmSettingsView,
+  conn: Connection,
+): RoleTargetAvailability {
+  const authModes = hydrateAuthModes(view);
+  const authKeys = hydrateAuthKeys(view);
+  const cloud = (mode: AuthMode, keyConfigured: boolean) => mode === "subscription" || keyConfigured
+    ? { available: true }
+    : { available: false, reason: "authentication" as const };
+
+  let local: RoleTargetAvailability["local"];
+  const endpoint = classifyOpenAiEndpoint(conn.baseUrl);
+  if (!isLocalDefined(conn) || endpoint.location === "invalid") {
+    local = { available: false, reason: "connection" };
+  } else if (endpoint.location !== "remote" || view.apiKeyApproved === true) {
+    local = { available: true };
+  } else {
+    local = { available: false, reason: "authentication" };
+  }
+
+  return {
+    claude: cloud(authModes.claude, authKeys.anthropic),
+    openai: !(conn.openaiModel ?? "").trim()
+      ? { available: false, reason: "connection" }
+      : view.openAiKeyConfigured === true
+      ? { available: true }
+      : { available: false, reason: "authentication" },
+    local,
+    codex: cloud(authModes.codex, authKeys.codex),
+  };
 }
 
 /** ローカルを含むプリセットはローカル定義が必要。high-quality は常に可。 */
@@ -225,10 +280,12 @@ export function hydrateConnection(view: LlmSettingsView): Connection {
   // ロール行の欠落に耐える（旧サーバ応答に新設ロールの行が無い場合。additive API の後方互換）
   const roleList = LLM_ROLES.map((r) => view.roles[r]).filter((r) => r != null);
   const localRole = roleList.find((r) => r.provider === "openai-compat" && r.baseUrl && r.model);
+  const openAiRole = roleList.find((r) => r.provider === "openai" && r.model);
   const codexRole = roleList.find((r) => r.provider === "codex" && r.codexModel);
   return {
     baseUrl: view.baseUrl ?? localRole?.baseUrl ?? "",
     model: view.model ?? localRole?.model ?? "",
+    openaiModel: view.openaiModel ?? openAiRole?.model ?? "",
     codexModel: view.codexModel ?? codexRole?.codexModel ?? "",
   };
 }
@@ -240,8 +297,12 @@ export function hydrateTargets(view: LlmSettingsView): RoleTargets {
   for (const role of LLM_ROLES) {
     // 行欠落は inherit 扱い（旧サーバ応答に新設ロールの行が無い場合。additive API の後方互換）
     const raw = view.roles[role]?.provider ?? "inherit";
-    const p = raw === "inherit" ? global : raw;
-    out[role] = p === "openai-compat" ? "local" : p === "codex" ? "codex" : "claude";
+    // サーバのbindingと一致させる: assistのinheritはglobalではなくcoachingの解決先を継承する。
+    const coaching = view.roles.coaching?.provider ?? "inherit";
+    const p = raw === "inherit"
+      ? role === "assist" && coaching !== "inherit" ? coaching : global
+      : raw;
+    out[role] = p === "openai-compat" ? "local" : p === "openai" ? "openai" : p === "codex" ? "codex" : "claude";
   }
   return out;
 }
@@ -254,12 +315,29 @@ export function hydrateTargets(view: LlmSettingsView): RoleTargets {
  *   （プリセット適用は tuning を変更しない — 呼び出し側が現在の tuning state をそのまま渡す）。
  */
 /** 接続タブだけが保存する global 設定を直列化する。 */
-export function buildGlobalConnectionPayload(conn: Connection): LlmSettingsInput {
+export function buildGlobalConnectionPayload(conn: Connection, currentProvider?: LlmSettingsView["provider"]): LlmSettingsInput {
   const baseUrl = conn.baseUrl.trim();
   const model = conn.model.trim();
+  const openaiModel = (conn.openaiModel ?? "").trim();
   const codexModel = conn.codexModel.trim() || null;
-  if (baseUrl && model) return { provider: "openai-compat", baseUrl, model, codexModel };
-  return codexModel ? { provider: "codex", codexModel } : { provider: "claude" };
+  const localDefined = Boolean(baseUrl && model);
+  const usable = (provider: LlmSettingsView["provider"]) =>
+    provider === "openai-compat" ? localDefined
+    : provider === "openai" ? Boolean(openaiModel)
+    : provider === "codex" ? Boolean(codexModel)
+    : true;
+  const provider = currentProvider && usable(currentProvider)
+    ? currentProvider
+    : localDefined ? "openai-compat"
+    : openaiModel ? "openai"
+    : codexModel ? "codex"
+    : "claude";
+  return {
+    provider,
+    ...(localDefined ? { baseUrl, model } : {}),
+    ...(openaiModel ? { openaiModel } : {}),
+    ...(codexModel ? { codexModel } : provider === "openai-compat" ? { codexModel: null } : {}),
+  };
 }
 
 export function buildRoleAssignmentPayload(
@@ -271,6 +349,7 @@ export function buildRoleAssignmentPayload(
 ): { roles: Record<LlmRole, LlmRoleInput>; tuning: Partial<Record<LlmRole | "global", Partial<RoleTuning>>> } {
   const baseUrl = conn.baseUrl.trim();
   const model = conn.model.trim();
+  const openaiModel = (conn.openaiModel ?? "").trim();
   const codexModel = conn.codexModel.trim() || null;
   const localDefined = baseUrl.length > 0 && model.length > 0;
 
@@ -279,6 +358,7 @@ export function buildRoleAssignmentPayload(
     const t = !localDefined && targets[role] === "local" ? cloud : targets[role];
     roles[role] =
       t === "local" ? { provider: "openai-compat", baseUrl, model }
+      : t === "openai" ? { provider: "openai", model: openaiModel }
       : t === "codex" ? { provider: "codex", codexModel }
       : { provider: "claude" };
   }
@@ -295,11 +375,14 @@ export function buildSavedRoleConnectionPatch(
 ): Partial<Record<LlmRole, LlmRoleInput>> {
   const baseUrl = conn.baseUrl.trim();
   const model = conn.model.trim();
+  const openaiModel = (conn.openaiModel ?? "").trim();
   const codexModel = conn.codexModel.trim() || null;
   const patch: Partial<Record<LlmRole, LlmRoleInput>> = {};
   for (const role of LLM_ROLES) {
     if (savedRoles[role].provider === "openai-compat") {
       patch[role] = { provider: "openai-compat", baseUrl, model };
+    } else if (savedRoles[role].provider === "openai") {
+      patch[role] = { provider: "openai", model: openaiModel };
     } else if (savedRoles[role].provider === "codex") {
       patch[role] = { provider: "codex", codexModel };
     }
@@ -310,6 +393,11 @@ export function buildSavedRoleConnectionPatch(
 /** 保存済みロールにローカル接続を直接参照するものがあるか。接続を空にする前に割当変更を促す。 */
 export function hasSavedLocalRole(savedRoles: Record<LlmRole, LlmRoleView>): boolean {
   return LLM_ROLES.some((role) => savedRoles[role].provider === "openai-compat");
+}
+
+/** 保存済みロールに OpenAI 公式モデルを直接参照するものがあるか。 */
+export function hasSavedOpenAiRole(savedRoles: Record<LlmRole, LlmRoleView>): boolean {
+  return LLM_ROLES.some((role) => savedRoles[role].provider === "openai");
 }
 
 /**
@@ -338,7 +426,7 @@ export function buildRolesPayload(
  */
 export function matchPreset(targets: RoleTargets): { id: PresetId; cloud: CloudTarget } | "custom" {
   const ids = Object.keys(PRESETS) as PresetId[];
-  const clouds: CloudTarget[] = ["claude", "codex"];
+  const clouds: CloudTarget[] = ["claude", "openai", "codex"];
   for (const id of ids) {
     for (const cloud of clouds) {
       if (LLM_ROLES.every((r) => presetTargets(id, cloud)[r] === targets[r])) {
@@ -353,8 +441,8 @@ export function matchPreset(targets: RoleTargets): { id: PresetId; cloud: CloudT
 // モデルカタログ（GET /api/llm-models）由来の選択肢・実効モデル解決
 // ---------------------------------------------------------------------------
 
-/** 3プロバイダ分のカタログ（App 側の catalog state の形。未取得は undefined）。 */
-export type LlmModelCatalog = { claude: CatalogResult; codex: CatalogResult; local: CatalogResult };
+/** プロバイダ別カタログ（App 側の catalog state の形。未取得は undefined）。 */
+export type LlmModelCatalog = { claude: CatalogResult; openai?: CatalogResult; codex: CatalogResult; local: CatalogResult };
 
 /** claude ロールの既定エイリアス（コード定数。catalog の isDefault 行は CLI 自身の既定であり別物のため使わない）。 */
 const CLAUDE_DEFAULT_ALIAS = "sonnet";
@@ -439,6 +527,9 @@ export function localModelSelectOptions(catalog: CatalogResult | undefined): Arr
   return catalog.models.map((m) => ({ value: m.id, label: m.displayName }));
 }
 
+/** OpenAI 公式モデルの選択肢（公式 /models 由来）。 */
+export const openAiModelSelectOptions = localModelSelectOptions;
+
 /** 実効モデルの解決結果（表示用）。confirmed=true のときのみ text はカタログ確認済みの具体ID。 */
 export type EffectiveModelInfo =
   | { confirmed: true; text: string }
@@ -459,7 +550,7 @@ const EMPTY_ROLE_TUNING: RoleTuning = { claudeModel: null, effort: null, service
 
 /** env 解決済み文字列 / ロールプロバイダ文字列を3値の RoleTarget へ正規化する（hydrateTargets と共通の写像）。 */
 function normalizeProviderKey(p: string): RoleTarget {
-  return p === "openai-compat" ? "local" : p === "codex" ? "codex" : "claude";
+  return p === "openai-compat" ? "local" : p === "openai" ? "openai" : p === "codex" ? "codex" : "claude";
 }
 
 /**
@@ -500,6 +591,20 @@ export function resolveEffective(
       effort: null,
       tier: null,
       endpoint: classifyOpenAiEndpoint(baseUrl),
+    };
+  }
+
+  if (provider === "openai") {
+    const modelValue = (roleSetting?.provider === "openai" ? roleSetting.model : view.openaiModel) ?? "";
+    const row = catalog?.openai?.available
+      ? catalog.openai.models.find((m) => m.id === modelValue)
+      : undefined;
+    return {
+      provider,
+      model: row ? { confirmed: true, text: row.id } : { confirmed: false, text: modelValue },
+      effort: null,
+      tier: null,
+      endpoint: classifyOpenAiEndpoint(OPENAI_OFFICIAL_BASE_URL),
     };
   }
 

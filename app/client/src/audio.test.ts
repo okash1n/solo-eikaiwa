@@ -52,7 +52,7 @@ afterEach(() => {
 });
 
 const ttsSettingsView = {
-  provider: "auto" as const,
+  provider: "say" as const,
   baseUrl: null,
   model: null,
   voice: null,
@@ -64,6 +64,7 @@ const secretMutationView = {
   secrets: {
     ANTHROPIC_API_KEY: { configured: false, source: null },
     CODEX_API_KEY: { configured: false, source: null },
+    OPENAI_API_KEY: { configured: false, source: null },
     OPENAI_COMPAT_API_KEY: { configured: false, source: null },
     TTS_API_KEY: { configured: true, source: "keychain" },
   },

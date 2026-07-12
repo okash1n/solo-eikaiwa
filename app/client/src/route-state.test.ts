@@ -12,6 +12,7 @@ describe("route-state", () => {
 
   test("不明なURLとセッションURLは説明対象を残してHomeへ戻す", () => {
     expect(parseRouteHash("#/not-a-screen")).toEqual({ mode: { kind: "start" }, notice: "unknown" });
+    expect(parseRouteHash("#/about")).toEqual({ mode: { kind: "start" }, notice: "unknown" });
     expect(parseRouteHash("#/session")).toEqual({ mode: { kind: "start" }, notice: "session-not-restored" });
   });
 });

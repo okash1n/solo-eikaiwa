@@ -33,16 +33,16 @@ import { conversationWarmup } from "./llm-warmup";
 import { DEFAULT_LLM_SETTINGS, LLM_ROLES } from "./llm-provider";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import { getCodexAppServerClient, __resetCodexAppServerRegistry } from "./providers/codex-app-server";
-import { makeClaudeCatalogFetcher, makeCodexCatalogFetcher, makeLocalCatalogFetcher, makeModelCatalogCache } from "./providers/model-catalog";
+import { isOpenAiConversationModelCandidate, makeClaudeCatalogFetcher, makeCodexCatalogFetcher, makeLocalCatalogFetcher, makeModelCatalogCache } from "./providers/model-catalog";
 import { modelDownloadManager } from "./model-download";
 import { makeSecretsManager } from "./secrets";
 import {
   makeApiKeyOriginStore,
   resolveOriginBoundSecret,
-  resolveOriginBoundSecretWithFixedFallback,
   type OriginBoundSecretName,
 } from "./api-key-origin-store";
 import { makeSrsReviewStore } from "./srs-review-store";
+import { OPENAI_BASE_URL } from "./openai";
 
 ensureDirs();
 const PORT = resolvePort(Bun.env);
@@ -68,17 +68,16 @@ function originBoundKey(name: OriginBoundSecretName, baseUrl: string): string | 
   return resolveOriginBoundSecret(apiKeyOriginStore, name, baseUrl, (secretName) => secretsManager.get(secretName));
 }
 
-function ttsApiKeyForBaseUrl(baseUrl: string): string | undefined {
-  // TTS_API_KEYが存在する場合はその承認結果を優先し、未承認時に別の課金鍵へ黙って切り替えない。
-  // OPENAI_API_KEYはTTS_API_KEY自体が無い場合だけ、OpenAI公式origin向けに限定して使う。
-  return resolveOriginBoundSecretWithFixedFallback(
-    apiKeyOriginStore,
-    "TTS_API_KEY",
-    baseUrl,
-    (name) => secretsManager.get(name),
-    DEFAULT_TTS_BASE_URL,
-    () => Bun.env.OPENAI_API_KEY?.trim() || undefined,
-  );
+function openAiOfficialKey(): string | undefined {
+  const direct = secretsManager.get("OPENAI_API_KEY");
+  if (direct) return direct;
+  // 旧版で公式URLへ束縛済みだった互換/TTSキーだけを移行用に読む。任意originの鍵は流用しない。
+  return originBoundKey("OPENAI_COMPAT_API_KEY", OPENAI_BASE_URL)
+    ?? originBoundKey("TTS_API_KEY", OPENAI_BASE_URL);
+}
+
+function ttsCompatKey(baseUrl: string): string | undefined {
+  return originBoundKey("TTS_API_KEY", baseUrl);
 }
 
 function runtimeSecretEnv(): Record<string, string | undefined> {
@@ -87,7 +86,7 @@ function runtimeSecretEnv(): Record<string, string | undefined> {
     CODEX_API_KEY: secretsManager.get("CODEX_API_KEY"),
     OPENAI_COMPAT_API_KEY: secretsManager.get("OPENAI_COMPAT_API_KEY"),
     TTS_API_KEY: secretsManager.get("TTS_API_KEY"),
-    OPENAI_API_KEY: Bun.env.OPENAI_API_KEY,
+    OPENAI_API_KEY: openAiOfficialKey(),
   };
 }
 
@@ -124,11 +123,19 @@ function libraryTopics(): Map<string, { title: string; titleJa: string }> {
 const feedbackStore = makeFeedbackStore(db);
 const llmSettingsStore = makeLlmSettingsStore(db);
 const ttsSettingsStore = makeTtsSettingsStore(db);
-const ttsProviderStore = makeTtsProviderStore(db);
+const ttsProviderStore = makeTtsProviderStore(db, () => {
+  if (ttsSettingsStore.get()?.baseUrl) return "openai-compat";
+  return openAiOfficialKey() ? "openai" : "say";
+});
+function currentTtsProvider() {
+  const provider = ttsProviderStore.get();
+  // 旧 explicit openai-compat + 公式既定URLは、設定storeの仮想移行後はcustom baseUrlが空になる。
+  return provider === "openai-compat" && !ttsSettingsStore.get()?.baseUrl ? "openai" as const : provider;
+}
 const llmRoleSettingsStore = makeLlmRoleSettingsStore(db);
 const llmRoleTuningStore = makeLlmRoleTuningStore(db);
 const llmAuthStore = makeLlmAuthStore(db);
-// モデルカタログ（GET /api/llm-models）: 3ソースを TTL キャッシュ付きで束ねる。
+// モデルカタログ（GET /api/llm-models）: 4ソースを TTL キャッシュ付きで束ねる。
 // codex はカタログ取得も runner と同じ常駐プロセスを共有する（getCodexAppServerClient・exec フォールバックなし）。
 // local の baseUrl は「保存済み openai-compat 設定 → 無ければ env」の順で解決する（グローバル設定に閉じる。
 // ロール別 baseUrl は対象外＝カタログは接続単位ではなくプロバイダ単位の一覧のため）。
@@ -136,9 +143,23 @@ const modelCatalogCache = makeModelCatalogCache({
   // sidecarモード（SOLO_EIKAIWA_RESOURCES_DIR設定時）ではCLAUDE_EXECUTABLE_PATHがBun.which("claude")の絶対パスに
   // 解決される（converse.tsのclaudeRunnerと同じ解決値を共有）。非sidecarモードはundefinedのままでバイト等価。
   claude: makeClaudeCatalogFetcher(query, { claudeExecutablePath: CLAUDE_EXECUTABLE_PATH }),
+  openai: makeLocalCatalogFetcher(
+    () => OPENAI_BASE_URL,
+    fetch,
+    () => openAiOfficialKey(),
+    {
+      requireApiKey: true,
+      missingApiKeyReason: "OpenAI API key is not configured",
+      includeModel: isOpenAiConversationModelCandidate,
+    },
+  ),
   codex: makeCodexCatalogFetcher(() => getCodexAppServerClient()),
   // ローカルLLMのカタログ取得先は保存済み設定（DB）のみから解決する（env フォールバック廃止・v0.29）。
-  local: makeLocalCatalogFetcher(() => llmSettingsStore.get()?.baseUrl?.trim() || null),
+  local: makeLocalCatalogFetcher(
+    () => llmSettingsStore.get()?.baseUrl?.trim() || null,
+    fetch,
+    (baseUrl) => originBoundKey("OPENAI_COMPAT_API_KEY", baseUrl),
+  ),
 });
 const assembleMonthData = makeAssembleMonthData({
   db,
@@ -152,12 +173,17 @@ const assembleMonthData = makeAssembleMonthData({
 const realDeps: RouteDeps = {
   transcribe: transcribeAudio,
   synthesize: (text, opts = {}) => {
+    const provider = opts.provider ?? currentTtsProvider();
     const baseUrl = opts.baseUrl?.trim() || DEFAULT_TTS_BASE_URL;
-    return synthesize(text, { ...opts, apiKey: ttsApiKeyForBaseUrl(baseUrl), env: {} });
+    const apiKey = provider === "openai"
+      ? openAiOfficialKey()
+      : provider === "openai-compat"
+      ? ttsCompatKey(baseUrl)
+      : undefined;
+    return synthesize(text, { ...opts, provider, apiKey, env: {} });
   },
   converse: (args) => converseTurn({ ...args, runner: runnerFor("conversation") }),
-  // llmSettings: health.llmReady（claude/codex/openai-compatのいずれかが実際に使えるかの集約判定）が
-  // openai-compat経路の判定に使う。DB未設定時はcheckHealth側でenv直接運用として扱う。
+  // llmSettings: health.llmReadyがOpenAI公式/互換経路の実効設定を判定するために使う。
   health: () => checkHealth({ llmSettings: llmSettingsStore.get(), env: runtimeHealthEnv() }),
   logFile: () => sessionLogPath(new Date()),
   recordingsDir: RECORDINGS_DIR,
@@ -238,12 +264,14 @@ const realDeps: RouteDeps = {
       llmRoleTuningStore.getAll(),
       llmRoleTuningStore.getGlobal(),
       (baseUrl) => originBoundKey("OPENAI_COMPAT_API_KEY", baseUrl),
+      openAiOfficialKey(),
     ),
   llmEnv: () => {
     const baseUrl = llmSettingsStore.get()?.baseUrl;
     return {
       apiKeyConfigured: Boolean(secretsManager.get("OPENAI_COMPAT_API_KEY")),
       apiKeyApproved: Boolean(baseUrl && originBoundKey("OPENAI_COMPAT_API_KEY", baseUrl)),
+      openAiKeyConfigured: Boolean(openAiOfficialKey()),
     };
   },
   warmLlm: () => conversationWarmup.maybeWarm(),
@@ -265,13 +293,14 @@ const realDeps: RouteDeps = {
   getModelCatalog: (provider, refresh) => modelCatalogCache.get(provider, refresh),
   getTtsSettings: () => ttsSettingsStore.get(),
   saveTtsSettings: (s) => ttsSettingsStore.save(s),
-  getTtsProvider: () => ttsProviderStore.get(),
+  getTtsProvider: () => currentTtsProvider(),
   saveTtsProvider: (p) => ttsProviderStore.save(p),
   ttsEnv: () => {
-    const baseUrl = ttsSettingsStore.get()?.baseUrl ?? DEFAULT_TTS_BASE_URL;
+    const baseUrl = ttsSettingsStore.get()?.baseUrl;
     return {
-      apiKeyConfigured: Boolean(secretsManager.get("TTS_API_KEY") ?? Bun.env.OPENAI_API_KEY?.trim()),
-      apiKeyApproved: Boolean(ttsApiKeyForBaseUrl(baseUrl)),
+      apiKeyConfigured: Boolean(secretsManager.get("TTS_API_KEY")),
+      apiKeyApproved: Boolean(baseUrl && ttsCompatKey(baseUrl)),
+      openAiKeyConfigured: Boolean(openAiOfficialKey()),
     };
   },
   // API キーの Keychain 設定（routes/secrets.ts）。値はいかなる応答にも含めない。
@@ -292,7 +321,13 @@ const realDeps: RouteDeps = {
       throw new Error("claude auth mode is api-key but no key is configured; save a key or switch to subscription");
     }
   },
-  getSecretsStatus: () => secretsManager.status(),
+  getSecretsStatus: () => {
+    const status = secretsManager.status();
+    if (!status.OPENAI_API_KEY.configured && openAiOfficialKey()) {
+      status.OPENAI_API_KEY = { configured: true, source: "legacy" };
+    }
+    return status;
+  },
   saveSecret: (name, value) => secretsManager.save(name, value),
   removeSecret: (name) => secretsManager.remove(name),
   bindSecretOrigin: (name, origin) => apiKeyOriginStore.set(name, origin),
@@ -309,6 +344,7 @@ const realDeps: RouteDeps = {
         llmRoleTuningStore.getAll(),
         llmRoleTuningStore.getGlobal(),
         (baseUrl) => originBoundKey("OPENAI_COMPAT_API_KEY", baseUrl),
+        openAiOfficialKey(),
       );
       return { applied: true, error: null };
     } catch (err) {
@@ -343,6 +379,7 @@ if (savedLlm || hasRoleOverride || hasTuningOverride) {
       savedTuning,
       savedGlobalTuning,
       (baseUrl) => originBoundKey("OPENAI_COMPAT_API_KEY", baseUrl),
+      openAiOfficialKey(),
     );
   } catch (err) {
     console.warn(`[llm] failed to apply saved settings, falling back to environment/claude: ${String(err)}`);

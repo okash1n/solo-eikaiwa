@@ -10,10 +10,12 @@ describe("tts-settings API", () => {
     const res = await makeFetchHandler(deps)(getReq("/api/tts-settings"));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
-      provider: "auto",
+      provider: "say",
       baseUrl: null, model: null, voice: null,
+      openaiModel: null, openaiVoice: null,
       apiKeyConfigured: false,
       apiKeyApproved: false,
+      openAiKeyConfigured: false,
       defaults: { baseUrl: "https://api.openai.com/v1", model: "gpt-4o-mini-tts", voice: "alloy" },
     });
   });
@@ -43,7 +45,10 @@ describe("tts-settings API", () => {
       baseUrl: "http://localhost:8880/v1", model: "kokoro", voice: "af_sky",
     }));
     expect(res.status).toBe(200);
-    expect(saved).toEqual([{ baseUrl: "http://localhost:8880/v1", model: "kokoro", voice: "af_sky" }]);
+    expect(saved).toEqual([{
+      baseUrl: "http://localhost:8880/v1", model: "kokoro", voice: "af_sky",
+      openaiModel: null, openaiVoice: null,
+    }]);
     expect((await res.json()).baseUrl).toBe("http://localhost:8880/v1");
   });
 
@@ -52,7 +57,7 @@ describe("tts-settings API", () => {
     const { deps } = makeTestDeps({ saveTtsSettings: (s) => saved.push(s), getTtsSettings: () => null });
     const res = await makeFetchHandler(deps)(putJson("/api/tts-settings", { baseUrl: "", model: "", voice: "" }));
     expect(res.status).toBe(200);
-    expect(saved).toEqual([{ baseUrl: null, model: null, voice: null }]);
+    expect(saved).toEqual([{ baseUrl: null, model: null, voice: null, openaiModel: null, openaiVoice: null }]);
   });
 
   test("PUT 400: baseUrl が http(s) でない・保存しない", async () => {
@@ -76,10 +81,10 @@ describe("tts-settings API", () => {
     }
   });
 
-  test("PUT: provider を保存できる（say/openai-compat/auto）・不正値は 400 で何も保存しない", async () => {
+  test("PUT: provider を保存できる（say/openai/openai-compat）・不正値は 400 で何も保存しない", async () => {
     const savedProviders: string[] = [];
     const savedSettings: TtsSettings[] = [];
-    let current = "auto" as "auto" | "say" | "openai-compat";
+    let current = "say" as "say" | "openai" | "openai-compat";
     const { deps } = makeTestDeps({
       getTtsSettings: () => null,
       saveTtsSettings: (s) => savedSettings.push(s),
@@ -93,10 +98,15 @@ describe("tts-settings API", () => {
     expect((await ok.json()).provider).toBe("say");
     expect(savedProviders).toEqual(["say"]);
 
+    const official = await h(putJson("/api/tts-settings", { provider: "openai", openaiModel: "gpt-4o-mini-tts" }));
+    expect(official.status).toBe(200);
+    expect((await official.json()).provider).toBe("openai");
+    expect(savedProviders).toEqual(["say", "openai"]);
+
     const bad = await h(putJson("/api/tts-settings", { provider: "sparkle" }));
     expect(bad.status).toBe(400);
-    expect(savedProviders).toEqual(["say"]);
-    expect(savedSettings).toHaveLength(1); // 不正 provider のリクエストでは settings も保存されない
+    expect(savedProviders).toEqual(["say", "openai"]);
+    expect(savedSettings).toHaveLength(2); // 不正 provider のリクエストでは settings も保存されない
   });
 
   test("PUT: provider 未指定なら変更しない（settings のみ更新）", async () => {
@@ -111,5 +121,18 @@ describe("tts-settings API", () => {
     expect(res.status).toBe(200);
     expect((await res.json()).provider).toBe("say");
     expect(savedProviders).toHaveLength(0);
+  });
+
+  test("PUT: 保存済みproviderがopenai-compatなら省略更新でも接続の必須項目を検証する", async () => {
+    const saved: TtsSettings[] = [];
+    const { deps } = makeTestDeps({
+      getTtsProvider: () => "openai-compat",
+      saveTtsSettings: (settings) => saved.push(settings),
+    });
+
+    const res = await makeFetchHandler(deps)(putJson("/api/tts-settings", { voice: "af_sky" }));
+
+    expect(res.status).toBe(400);
+    expect(saved).toHaveLength(0);
   });
 });

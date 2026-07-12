@@ -2,7 +2,7 @@ import { anyWhisperModelInstalled } from "./stt";
 // package.json を静的 import することで compile（bun build --compile）時もバンドラーが値を
 // インライン化する — 実行時に fs でファイルを読みに行かないため、Resources レイアウトに依存しない。
 import pkg from "../package.json";
-import { isOpenAiCompatReady, type LlmSettings } from "./llm-provider";
+import { isOpenAiCompatReady, isOpenAiReady, type LlmSettings } from "./llm-provider";
 
 export type WhichFn = (bin: string) => string | null;
 
@@ -24,7 +24,7 @@ export type Health = {
     instanceId: string;
   };
   /**
-   * Tauri Phase 2 T3 fix: claude/codex/openai-compatのいずれかの会話系ルートが実際に使えるかの集約判定。
+   * Tauri Phase 2 T3 fix: claude/codex/openai/openai-compatのいずれかの会話系ルートが実際に使えるかの集約判定。
    * `claude` 単体だと local-only/codex-only構成（例: Ollama運用）で「LLM未導入」の偽陽性通知が出て
    * しまうため追加した（ok の算出式は変更していない — 既存のセットアップ完了判定はclaude前提のまま）。
    */
@@ -61,7 +61,9 @@ export function checkHealth(opts: {
   const codex = Boolean(which("codex"));
   const ttsKey = Boolean(env.TTS_API_KEY?.trim() || env.OPENAI_API_KEY?.trim());
   const modelFile = modelExists();
-  const llmReady = claude || codex || isOpenAiCompatReady(opts.llmSettings ?? null, env);
+  const llmReady = claude || codex
+    || isOpenAiReady(opts.llmSettings ?? null, env)
+    || isOpenAiCompatReady(opts.llmSettings ?? null, env);
   const sidecar = desktopSidecarIdentity(env);
 
   return {

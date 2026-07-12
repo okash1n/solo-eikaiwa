@@ -6,17 +6,18 @@ export type LlmModelsRoutesDeps = {
   getModelCatalog: (provider: LlmCatalogProvider, refresh: boolean) => Promise<CatalogResult>;
 };
 
-/** ルートは薄く保つ: refresh クエリを読み取り、3ソースを並行取得して合成するだけ。HTTP は常に 200。 */
+/** ルートは薄く保つ: refresh クエリを読み取り、4ソースを並行取得して合成するだけ。HTTP は常に 200。 */
 export function makeLlmModelsRoutes(deps: LlmModelsRoutesDeps): RouteEntry[] {
   return [
     exact("GET", "/api/llm-models", async (_req, url) => {
       const refresh = url.searchParams.get("refresh") === "1";
-      const [claude, codex, local] = await Promise.all([
+      const [claude, openai, codex, local] = await Promise.all([
         deps.getModelCatalog("claude", refresh),
+        deps.getModelCatalog("openai", refresh),
         deps.getModelCatalog("codex", refresh),
         deps.getModelCatalog("local", refresh),
       ]);
-      return json({ claude, codex, local });
+      return json({ claude, openai, codex, local });
     }),
   ];
 }

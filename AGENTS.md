@@ -54,3 +54,17 @@ macOS ローカルで完結する英会話練習アプリ。Bun + TypeScript サ
 - クライアントのみの変更: `cd app/client && bun run build`（dist 直配信のため即反映）。
 - サーバ変更あり: 上記 + `launchctl kickstart -k gui/$(id -u)/com.local.solo-eikaiwa.server`。
 - `scripts/install-daemon.sh` は初回導入用（稼働中は自分のデーモンを検出して拒否する）。
+
+## Apple・デスクトップ公開
+
+- Apple Storeで利用者に表示される組織名・開発元・販売元は、既存iOSアプリと同じ正式表記
+  `Business Technology Association Japan` に統一する。`BTAJP` はアプリ内・Web等の短縮ブランドに限り、
+  `BTA-JP` など別表記を新設しない。
+- Copyrightは `© <YEAR> Business Technology Association Japan` を基準とする。人物名が必要な連絡先欄では
+  `Shintaro Okamura` を使用できるが、Appleがmembershipの法人名を表示する欄を人物名へ置き換えない。
+- GitHub Releases版はDeveloper ID Applicationで署名し、Apple公証とstapleを完了してから公開する。
+  Mac App Store版は別のStore専用設定でApp Sandboxを有効にし、self-updaterを無効化して提出する。
+- 公開前に `CHANGELOG.md`、README、`app/package.json`、Tauri config、Cargo manifest/lockのversionを揃え、
+  `./scripts/verify.sh release` を通したpush済み・cleanな`main`から標準リリーススクリプトを実行する。
+- 証明書の実名、Team ID、API Key ID / Issuer ID、秘密鍵、ローカルの秘密情報パスを、コード、文書、
+  Issue、PR、コミット、ログへ記録しない。必要な値はKeychainまたはリポジトリ外のrelease環境だけで扱う。

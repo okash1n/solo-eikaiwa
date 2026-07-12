@@ -11,6 +11,7 @@ function delReq(path: string): Request {
 const EMPTY_STATUS: Record<SecretName, SecretStatus> = {
   ANTHROPIC_API_KEY: { configured: false, source: null },
   CODEX_API_KEY: { configured: false, source: null },
+  OPENAI_API_KEY: { configured: false, source: null },
   OPENAI_COMPAT_API_KEY: { configured: false, source: null },
   TTS_API_KEY: { configured: false, source: null },
 };
@@ -29,6 +30,7 @@ describe("secrets API", () => {
     expect(await res.json()).toEqual({
       ANTHROPIC_API_KEY: { configured: true, source: "keychain" },
       CODEX_API_KEY: { configured: false, source: null },
+      OPENAI_API_KEY: { configured: false, source: null },
       OPENAI_COMPAT_API_KEY: { configured: false, source: null },
       TTS_API_KEY: { configured: true, source: "env" },
     });
@@ -78,7 +80,7 @@ describe("secrets API", () => {
     const saved: unknown[] = [];
     const { deps } = makeTestDeps({ saveSecret: async (n, v) => { saved.push([n, v]); } });
     const h = makeFetchHandler(deps);
-    const r1 = await h(putJson("/api/secrets", { name: "OPENAI_API_KEY", value: "sk-x" }));
+    const r1 = await h(putJson("/api/secrets", { name: "GEMINI_API_KEY", value: "sk-x" }));
     expect(r1.status).toBe(400);
     const r2 = await h(putJson("/api/secrets", { name: "TTS_API_KEY", value: 'bad value"with quotes' }));
     expect(r2.status).toBe(400);

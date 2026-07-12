@@ -3,36 +3,38 @@ import {
   fetchLlmSettings, saveLlmRoleSettings, LLM_ROLES,
   fetchTtsSettings, saveTtsSettings,
   fetchLlmModels,
-  EFFORT_OPTIONS, SERVICE_TIER_OPTIONS, AUTH_MODE_OPTIONS, TTS_PROVIDER_OPTIONS,
+  EFFORT_OPTIONS, SERVICE_TIER_OPTIONS,
   type LlmRole, type LlmSettingsView, type TtsSettingsView, type RoleTuning, type LlmModelsResponse, type CatalogModelEffort,
   type AuthMode, type LlmAuthProvider, type TtsProvider,
 } from "../api";
-import { fetchSecrets, saveSecret, deleteSecret, type SecretName, type SecretsView, type SecretStatus, type SecretMutationResult } from "../api";
+import { fetchSecrets, saveSecret, deleteSecret, effectiveSecretsView, type SecretName, type SecretsView, type SecretMutationResult } from "../api";
 import {
-  isLocalDefined, presetEnabled, presetTargets, matchPreset, hydrateConnection, hydrateTargets, hydrateTuning,
+  isLocalDefined, presetTargets, matchPreset, hydrateConnection, hydrateTargets, hydrateTuning,
   hydrateGlobalTuning, hydrateAuthModes, hydrateAuthKeys, buildAuthPatch,
-  buildGlobalConnectionPayload, buildRoleAssignmentPayload, buildSavedRoleConnectionPatch, hasSavedLocalRole,
+  buildGlobalConnectionPayload, buildRoleAssignmentPayload, buildSavedRoleConnectionPatch, hasSavedLocalRole, hasSavedOpenAiRole,
   defaultTuning, applyRecommendedTuning,
   claudeModelSelectOptions, effortOptionsForClaudeAlias, codexModelSelectOptions, effortOptionsForCodexModel,
-  tierOptionsForCodexModel, codexDefaultEffortLabel, codexDefaultModelLabel, localModelSelectOptions, resolveEffective, clampClaudeEffort,
-  classifyOpenAiEndpoint, CODEX_EFFORT_OPTIONS,
-  type RoleTarget, type RoleTargets, type Connection, type PresetId, type CloudTarget, type EffectiveResolution,
-  type EndpointClassification,
+  tierOptionsForCodexModel, codexDefaultEffortLabel, codexDefaultModelLabel, localModelSelectOptions, openAiModelSelectOptions, resolveEffective, clampClaudeEffort,
+  classifyOpenAiEndpoint, endpointAllowsCredentials, roleTargetAvailability, CODEX_EFFORT_OPTIONS,
+  type RoleTarget, type RoleTargets, type Connection, type PresetId, type CloudTarget,
 } from "../lib/llm-assignments";
 import { loadPreferredCloud, savePreferredCloud } from "../lib/preferred-cloud";
 import {
-  connectionDraftChanged, makeLatestGeneration, makeSaveGenerationTracker, mergeConnectionSaveView, mergeRolesSaveView,
+  authDraftChanged, connectionDraftChanged, makeSaveGenerationTracker, mergeAuthSaveView, mergeConnectionSaveView, mergeRolesSaveView,
   rolesDraftChanged, ttsDraftChanged, type ConnectionDraft,
 } from "../lib/settings-save-scopes";
-import { ttsAutoResolution } from "../lib/tts-resolution";
 import { STR, type Lang } from "../i18n";
 import { formatClientError } from "../lib/user-error";
 import { Button } from "../ui/Button";
-import { Banner } from "../ui/Banner";
 import { useLoad } from "../useLoad";
+import { ApiKeysTab } from "./settings/ApiKeysTab";
+import { DisplaySettingsTab } from "./settings/DisplaySettingsTab";
+import { RoleTargetToggle } from "./settings/RoleTargetToggle";
+import { SettingsLoadErrors } from "./settings/SettingsLoadErrors";
+import { TtsSettingsPanel } from "./settings/TtsSettingsPanel";
+import { effectiveLine, endpointLine } from "./settings/effective-line";
 
 export type UiScale = "small" | "medium" | "large" | "xlarge";
-
 type Props = {
   lang: Lang;
   uiScale: UiScale;
@@ -43,151 +45,24 @@ type Props = {
 
 type SaveState = { phase: "idle" | "saving" | "saved" | "error"; message: string | null };
 const IDLE_SAVE: SaveState = { phase: "idle", message: null };
-
-type VoiceProviderKind = "kokoro" | "openai";
-const VOICE_PRESETS: Record<VoiceProviderKind, { female: string; male: string }> = {
-  kokoro: { female: "af_heart", male: "am_michael" },
-  openai: { female: "nova", male: "onyx" },
-};
-const VOICE_PRESET_FEMALE_VALUES = Object.values(VOICE_PRESETS).map((p) => p.female);
-const VOICE_PRESET_MALE_VALUES = Object.values(VOICE_PRESETS).map((p) => p.male);
-
-/** baseUrl から音声プロバイダを推定する（8880 または kokoro を含めば Kokoro系、それ以外は OpenAI系）。 */
-function detectVoiceProviderKind(baseUrl: string): VoiceProviderKind {
-  const lower = baseUrl.toLowerCase();
-  return lower.includes("8880") || lower.includes("kokoro") ? "kokoro" : "openai";
-}
-
-/** API キー1件の write-only 入力欄。値の表示・再取得はできない（置換 or 削除のみ・ソースを必ず明示）。 */
-function SecretKeyField(props: {
-  lang: Lang;
-  name: SecretName;
-  status: SecretStatus | undefined;
-  disabled: boolean;
-  approvalRequired?: boolean;
-  str: {
-    label: string; statusKeychain: string; statusEnv: string; statusMissing: string;
-    placeholderSet: string; placeholderNew: string; save: string; del: string;
-    deleteConfirm: string; saving: string; deleting: string;
-    saved: string; deleted: string;
-    approvalRequired: string;
-    notApplied: (reason: string) => string;
-  };
-  onSave: (name: SecretName, value: string) => Promise<SecretMutationResult>;
-  onDelete: (name: SecretName) => Promise<SecretMutationResult>;
-}) {
-  const [value, setValue] = useState("");
-  const [result, setResult] = useState<string | null>(null);
-  const [busyAction, setBusyAction] = useState<"save" | "delete" | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const generationRef = useRef(makeLatestGeneration());
-  const busy = busyAction !== null;
-  const st = props.status;
-  const statusText = st?.configured
-    ? st.source === "keychain" ? props.str.statusKeychain : props.str.statusEnv
-    : props.str.statusMissing;
-
-  async function run(kind: "save" | "delete", action: () => Promise<SecretMutationResult>, doneMsg: string) {
-    const generation = generationRef.current.begin();
-    setResult(null);
-    setBusyAction(kind);
-    try {
-      const r = await action();
-      if (!generationRef.current.isCurrent(generation)) return;
-      setValue("");
-      // 保存自体は成功しても実行中プロセスへの適用に失敗した場合（applied:false）は、
-      // 「保存し、適用しました」と嘘をつかず、内部理由を出さない再適用案内を表示する（UI 真実性）。
-      setResult(r.applied === false
-        ? props.str.notApplied(formatClientError(props.lang, r.error ?? "settings apply failed", "apply"))
-        : doneMsg);
-    } catch (err) {
-      if (!generationRef.current.isCurrent(generation)) return;
-      setResult(formatClientError(props.lang, err, "save"));
-    } finally {
-      if (generationRef.current.isCurrent(generation)) setBusyAction(null);
-    }
-  }
-
-  return (
-    <div className="llm-field" aria-busy={busy || undefined}>
-      <span className="text-sm text-muted">{props.str.label} — {statusText}</span>
-      <div className="secret-key-row">
-        <input
-          className="llm-input"
-          type="password"
-          autoComplete="off"
-          value={value}
-          placeholder={st?.configured ? props.str.placeholderSet : props.str.placeholderNew}
-          disabled={props.disabled || busy}
-          onChange={(e) => { setValue(e.target.value); setDeleteConfirm(false); }}
-        />
-        <Button variant="primary" loading={busyAction === "save"} disabled={props.disabled || busy || value.trim().length === 0}
-          onClick={() => void run("save", () => props.onSave(props.name, value.trim()), props.str.saved)}>
-          {busyAction === "save" ? props.str.saving : props.str.save}
-        </Button>
-        {st?.source === "keychain" && (
-          <Button variant={deleteConfirm ? "danger" : "secondary"} loading={busyAction === "delete"} disabled={props.disabled || busy}
-            onClick={() => {
-              if (!deleteConfirm) { setDeleteConfirm(true); return; }
-              setDeleteConfirm(false);
-              void run("delete", () => props.onDelete(props.name), props.str.deleted);
-            }}>
-            {busyAction === "delete" ? props.str.deleting : deleteConfirm ? props.str.deleteConfirm : props.str.del}
-          </Button>
-        )}
-      </div>
-      {result && <div className="info-pop" role="status">{result}</div>}
-      {props.approvalRequired && <div className="info-pop">{props.str.approvalRequired}</div>}
-    </div>
-  );
-}
-
-/** 1ロールの割当トグル（Claude / ローカル / Codex）。ローカル未定義時はローカルを非活性 + 中立案内。 */
-function RoleTargetToggle(props: {
-  value: RoleTarget;
-  localEnabled: boolean;
-  labels: Record<RoleTarget, string>;
-  localDisabledNote: string;
-  ariaLabel: string;
-  disabled: boolean;
-  onChange: (t: RoleTarget) => void;
-}) {
-  const order: RoleTarget[] = ["claude", "local", "codex"];
-  return (
-    <div className="stack">
-      <div className="lang-toggle llm-provider-toggle" role="group" aria-label={props.ariaLabel}>
-        {order.map((t) => (
-          <button
-            key={t}
-            className={props.value === t ? "is-active" : ""}
-            aria-pressed={props.value === t}
-            disabled={props.disabled || (t === "local" && !props.localEnabled)}
-            onClick={() => props.onChange(t)}
-          >
-            {props.labels[t]}
-          </button>
-        ))}
-      </div>
-      {!props.localEnabled && <div className="text-sm text-muted">{props.localDisabledNote}</div>}
-    </div>
-  );
-}
-
+type SettingsTab = "keys" | "conn" | "roles" | "display";
 export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealthChanged }: Props) {
   const s = STR[lang];
   const llmSettingsLoad = useLoad(fetchLlmSettings);
   const ttsSettingsLoad = useLoad(fetchTtsSettings);
   const secretsLoad = useLoad(fetchSecrets);
   const [view, setView] = useState<LlmSettingsView | null>(null);
+  const [authSave, setAuthSave] = useState<SaveState>(IDLE_SAVE);
   const [connectionSave, setConnectionSave] = useState<SaveState>(IDLE_SAVE);
   const [rolesSave, setRolesSave] = useState<SaveState>(IDLE_SAVE);
   const [ttsSave, setTtsSave] = useState<SaveState>(IDLE_SAVE);
-  const [tab, setTab] = useState<"conn" | "roles" | "display">("conn");
+  const [tab, setTab] = useState<SettingsTab>("keys");
   const saveGenerationRef = useRef(makeSaveGenerationTracker());
   // モデルカタログ（GET /api/llm-models）。用途タブを開いたときに遅延取得する（app起動時には叩かない）。
   const [catalog, setCatalog] = useState<LlmModelsResponse | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const catalogFetchedRef = useRef(false);
+  const catalogRefreshRequiredRef = useRef(false);
   // プリセット適用時のクラウド枠（課金先）。localStorage永続・既存割当には影響しない。
   const [preferredCloud, setPreferredCloudState] = useState<CloudTarget>(() => loadPreferredCloud());
   function setPreferredCloud(c: CloudTarget) {
@@ -198,8 +73,9 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
   // 接続の編集状態
   const [connBaseUrl, setConnBaseUrl] = useState("");
   const [connModel, setConnModel] = useState("");
+  const [connOpenAi, setConnOpenAi] = useState("");
   const [connCodex, setConnCodex] = useState("");
-  // ロール割当の編集状態（3値）
+  // ロール割当の編集状態（4値）
   const [targets, setTargets] = useState<RoleTargets>({
     conversation: "claude", assist: "claude", coaching: "claude", generation: "claude", assessment: "claude",
   });
@@ -212,6 +88,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
   const [authCodex, setAuthCodex] = useState<AuthMode>("subscription");
   // 各保存タブの直近保存済みsnapshot。別タブの編集中値を別scopeの保存で確定しないために使う。
   const [savedConnection, setSavedConnection] = useState<ConnectionDraft | null>(null);
+  const [savedAuth, setSavedAuth] = useState<Record<LlmAuthProvider, AuthMode> | null>(null);
   const [savedTargets, setSavedTargets] = useState<RoleTargets | null>(null);
   const [savedTuning, setSavedTuning] = useState<Record<LlmRole, RoleTuning> | null>(null);
   const authKeys = view ? hydrateAuthKeys(view) : { anthropic: false, codex: false };
@@ -219,17 +96,19 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
   const [secrets, setSecrets] = useState<SecretsView | null>(null);
   // 音声（TTS）の編集状態
   const [ttsView, setTtsView] = useState<TtsSettingsView | null>(null);
-  const [ttsProvider, setTtsProvider] = useState<TtsProvider>("auto");
+  const [ttsProvider, setTtsProvider] = useState<TtsProvider>("say");
   const [ttsBaseUrl, setTtsBaseUrl] = useState("");
   const [ttsModel, setTtsModel] = useState("");
   const [ttsVoice, setTtsVoice] = useState("");
-  const voiceInputRef = useRef<HTMLInputElement | null>(null);
+  const [ttsOpenAiModel, setTtsOpenAiModel] = useState("");
+  const [ttsOpenAiVoice, setTtsOpenAiVoice] = useState("");
 
   function hydrateInitial(v: LlmSettingsView) {
     setView(v);
     const conn = hydrateConnection(v);
     setConnBaseUrl(conn.baseUrl);
     setConnModel(conn.model);
+    setConnOpenAi(conn.openaiModel ?? "");
     setConnCodex(conn.codexModel);
     setTargets(hydrateTargets(v));
     setTuning(hydrateTuning(v));
@@ -240,18 +119,20 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
     setSavedConnection({
       connection: conn,
       globalClaudeModel: hydrateGlobalTuning(v).claudeModel ?? "",
-      auth: authModes,
     });
+    setSavedAuth(authModes);
     setSavedTargets(hydrateTargets(v));
     setSavedTuning(hydrateTuning(v));
   }
 
   function hydrateTts(v: TtsSettingsView) {
     setTtsView(v);
-    setTtsProvider(v.provider ?? "auto");
+    setTtsProvider(v.provider ?? "say");
     setTtsBaseUrl(v.baseUrl ?? "");
     setTtsModel(v.model ?? "");
     setTtsVoice(v.voice ?? "");
+    setTtsOpenAiModel(v.openaiModel ?? "");
+    setTtsOpenAiVoice(v.openaiVoice ?? "");
   }
 
   useEffect(() => {
@@ -269,42 +150,57 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
   /** refresh=true は「モデル一覧を更新」ボタン用（?refresh=1）。失敗は fail-quiet — カタログは
    * null のままとなり、選択肢・実効表示は静的フォールバック/「実体未確認」へ劣化する（嘘の表示をしない）。 */
   function refreshCatalog(refresh: boolean) {
+    const forceRefresh = refresh || catalogRefreshRequiredRef.current;
+    catalogRefreshRequiredRef.current = false;
     setCatalogLoading(true);
-    fetchLlmModels(refresh)
+    fetchLlmModels(forceRefresh)
       .then(setCatalog)
       .catch(() => {})
       .finally(() => setCatalogLoading(false));
   }
 
   useEffect(() => {
-    // 接続タブ・用途タブのどちらもモデル一覧を使うため、先に開いた方が一度だけ取得する
-    // （表示タブは使わないため対象外・app 起動時には叩かない＝Settings 画面を開いて初めて取得する）。
-    if (tab === "display" || catalogFetchedRef.current) return;
+    // 接続タブ・用途タブのどちらもモデル一覧を使うため、先に開いた方が一度だけ取得する。
+    // APIキー・表示タブでは不要なので取得しない。
+    if (tab === "display" || tab === "keys" || catalogFetchedRef.current) return;
     catalogFetchedRef.current = true;
     refreshCatalog(false);
   }, [tab]);
 
-  const conn: Connection = { baseUrl: connBaseUrl, model: connModel, codexModel: connCodex };
+  const conn: Connection = { baseUrl: connBaseUrl, model: connModel, openaiModel: connOpenAi, codexModel: connCodex };
   const savedRoleConnection = savedConnection?.connection ?? conn;
-  const localDefined = isLocalDefined(savedRoleConnection);
   const endpoint = classifyOpenAiEndpoint(connBaseUrl);
+  const availability = view
+    ? roleTargetAvailability(view, savedRoleConnection)
+    : {
+        claude: { available: false, reason: "authentication" as const },
+        openai: { available: false, reason: "authentication" as const },
+        local: { available: false, reason: "connection" as const },
+        codex: { available: false, reason: "authentication" as const },
+      };
+  const selectedTargetsAvailable = LLM_ROLES.every((role) => availability[targets[role]].available);
+  const compatKeyTarget = savedConnection?.connection.baseUrl.trim() || null;
+  const ttsKeyTarget = ttsView?.baseUrl?.trim() || "";
 
   const connectionDraft: ConnectionDraft = {
     connection: conn,
     globalClaudeModel,
-    auth: { claude: authClaude, codex: authCodex },
   };
-  const connectionDirty = connectionDraftChanged(savedConnection, connectionDraft);
-  const authModeDirty = savedConnection !== null
-    && (savedConnection.auth.claude !== authClaude || savedConnection.auth.codex !== authCodex);
-  const rolesDirty = rolesDraftChanged(savedTargets, targets, savedTuning, tuning);
-  const ttsDirty = ttsDraftChanged(ttsView, ttsProvider, ttsBaseUrl, ttsModel, ttsVoice);
+  const authDraft: Record<LlmAuthProvider, AuthMode> = { claude: authClaude, codex: authCodex };
+  const connectionDirty = savedConnection !== null && connectionDraftChanged(savedConnection, connectionDraft);
+  const authDirty = savedAuth !== null && authDraftChanged(savedAuth, authDraft);
+  const rolesDirty = savedTargets !== null && savedTuning !== null
+    && rolesDraftChanged(savedTargets, targets, savedTuning, tuning);
+  const ttsDirty = ttsDraftChanged(
+    ttsView, ttsProvider, ttsBaseUrl, ttsModel, ttsVoice, ttsOpenAiModel, ttsOpenAiVoice,
+  );
   const connectionSaving = connectionSave.phase === "saving";
+  const authSaving = authSave.phase === "saving";
   const rolesSaving = rolesSave.phase === "saving";
   const ttsSaving = ttsSave.phase === "saving";
   // 接続保存は保存済みの接続依存ロールも更新するため、別scopeを同時に保存させない。
   // タブ移動で pending state を消すと古い応答が後から入力を戻し得るので、設定全体を一時ロックする。
-  const settingsSaving = connectionSaving || rolesSaving || ttsSaving;
+  const settingsSaving = connectionSaving || authSaving || rolesSaving || ttsSaving;
 
   function appliedMessage(v: LlmSettingsView): string {
     return v.applied === false
@@ -324,9 +220,10 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
     if (!ttsSaving) setTtsSave(IDLE_SAVE);
   }
 
-  function switchSettingsTab(next: "conn" | "roles" | "display") {
+  function switchSettingsTab(next: SettingsTab) {
     if (settingsSaving) return;
     setTab(next);
+    setAuthSave(IDLE_SAVE);
     setConnectionSave(IDLE_SAVE);
     setRolesSave(IDLE_SAVE);
     setTtsSave(IDLE_SAVE);
@@ -338,32 +235,34 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
       setConnectionSave({ phase: "error", message: s.settings.localRoleConnectionRequired });
       return;
     }
+    if (!(conn.openaiModel ?? "").trim() && hasSavedOpenAiRole(view.roles)) {
+      setConnectionSave({ phase: "error", message: s.settings.openAiRoleConnectionRequired });
+      return;
+    }
     const generation = saveGenerationRef.current.begin("connection");
     setConnectionSave({ phase: "saving", message: null });
     try {
       // 接続変更で既に保存済みのローカル/Codex割当が古い接続先を参照し続けないよう、
       // 接続依存の保存済みロールだけを同じ接続で更新する。編集中の割当/tuningは送らない。
       const roles = buildSavedRoleConnectionPatch(view.roles, conn);
-      const authPatch = buildAuthPatch(savedConnection?.auth ?? hydrateAuthModes(view), connectionDraft.auth);
       const saved = await saveLlmRoleSettings({
-        global: buildGlobalConnectionPayload(conn),
+        global: buildGlobalConnectionPayload(conn, view.provider),
         roles,
         tuning: { global: { claudeModel: globalClaudeModel.trim() || null } },
-        ...(authPatch ? { auth: authPatch } : {}),
       });
       if (!saveGenerationRef.current.isCurrent("connection", generation)) return;
       const nextConnection = hydrateConnection(saved);
-      const nextAuth = hydrateAuthModes(saved);
       const nextGlobalModel = hydrateGlobalTuning(saved).claudeModel ?? "";
       setView((current) => mergeConnectionSaveView(current, saved));
       setConnBaseUrl(nextConnection.baseUrl);
       setConnModel(nextConnection.model);
+      setConnOpenAi(nextConnection.openaiModel ?? "");
       setConnCodex(nextConnection.codexModel);
       setGlobalClaudeModel(nextGlobalModel);
-      setAuthClaude(nextAuth.claude);
-      setAuthCodex(nextAuth.codex);
-      setSavedConnection({ connection: nextConnection, globalClaudeModel: nextGlobalModel, auth: nextAuth });
+      setSavedConnection({ connection: nextConnection, globalClaudeModel: nextGlobalModel });
       setConnectionSave({ phase: saved.applied === false ? "error" : "saved", message: appliedMessage(saved) });
+      catalogFetchedRef.current = true;
+      refreshCatalog(true);
       onHealthChanged();
     } catch (err) {
       if (!saveGenerationRef.current.isCurrent("connection", generation)) return;
@@ -371,8 +270,33 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
     }
   }
 
+  async function saveAuthentication() {
+    if (!view || !savedAuth) return;
+    const patch = buildAuthPatch(savedAuth, authDraft);
+    if (!patch) return;
+    const generation = saveGenerationRef.current.begin("auth");
+    setAuthSave({ phase: "saving", message: null });
+    try {
+      const saved = await saveLlmRoleSettings({ auth: patch });
+      if (!saveGenerationRef.current.isCurrent("auth", generation)) return;
+      const nextAuth = hydrateAuthModes(saved);
+      setView((current) => mergeAuthSaveView(current, saved));
+      setAuthClaude(nextAuth.claude);
+      setAuthCodex(nextAuth.codex);
+      setSavedAuth(nextAuth);
+      catalogFetchedRef.current = false;
+      catalogRefreshRequiredRef.current = true;
+      setCatalog(null);
+      setAuthSave({ phase: saved.applied === false ? "error" : "saved", message: appliedMessage(saved) });
+      onHealthChanged();
+    } catch (err) {
+      if (!saveGenerationRef.current.isCurrent("auth", generation)) return;
+      setAuthSave({ phase: "error", message: formatClientError(lang, err, "save") });
+    }
+  }
+
   async function saveRoles() {
-    if (!view || !savedConnection || connectionDirty) return;
+    if (!view || !savedConnection || connectionDirty || authDirty || !selectedTargetsAvailable) return;
     const generation = saveGenerationRef.current.begin("roles");
     setRolesSave({ phase: "saving", message: null });
     try {
@@ -411,19 +335,24 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
   }
 
   /**
-   * 鍵の保存/削除。鍵の有無で認証モードの選択可否（authKeys は view から導出）・TTS「自動」の
-   * 解決表示（ttsView.apiKeyConfigured）が変わるため view/ttsView だけを再取得する。
+   * 鍵の保存/削除。鍵の有無で認証モード・OpenAI公式・remote互換接続の選択可否が変わるため、
+   * view/ttsViewだけを再取得する。
    * hydrate/hydrateTts は呼ばない — 編集中の接続・TTS 入力（未保存）をサーバ値で上書きして
    * 破棄してしまうため（レビュー指摘 2026-07-10）。
    */
   async function onSaveSecret(name: SecretName, value: string): Promise<SecretMutationResult> {
     const baseUrl = name === "OPENAI_COMPAT_API_KEY"
-      ? connBaseUrl.trim()
+      ? savedConnection?.connection.baseUrl.trim()
       : name === "TTS_API_KEY"
-      ? ttsBaseUrl.trim() || ttsView?.defaults.baseUrl
+      ? ttsView?.baseUrl?.trim()
       : undefined;
     const r = await saveSecret(name, value, baseUrl);
     setSecrets(r.secrets);
+    if (name !== "TTS_API_KEY") {
+      catalogFetchedRef.current = false;
+      catalogRefreshRequiredRef.current = true;
+      setCatalog(null);
+    }
     onHealthChanged();
     fetchLlmSettings().then(setView).catch(() => {});
     fetchTtsSettings().then(setTtsView).catch(() => {});
@@ -432,40 +361,16 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
   async function onDeleteSecret(name: SecretName): Promise<SecretMutationResult> {
     const r = await deleteSecret(name);
     setSecrets(r.secrets);
+    if (name !== "TTS_API_KEY") {
+      catalogFetchedRef.current = false;
+      catalogRefreshRequiredRef.current = true;
+      setCatalog(null);
+    }
     onHealthChanged();
     fetchLlmSettings().then(setView).catch(() => {});
     fetchTtsSettings().then(setTtsView).catch(() => {});
     return r;
   }
-  const secretStr = {
-    label: s.settings.secretKeyLabel,
-    statusKeychain: s.settings.secretStatusKeychain,
-    statusEnv: s.settings.secretStatusEnv,
-    statusMissing: s.settings.secretStatusMissing,
-    placeholderSet: s.settings.secretPlaceholderSet,
-    placeholderNew: s.settings.secretPlaceholderNew,
-    save: s.settings.secretSave,
-    del: s.settings.secretDelete,
-    deleteConfirm: s.settings.secretDeleteConfirm,
-    saving: s.settings.secretSaving,
-    deleting: s.settings.secretDeleting,
-    saved: s.settings.secretSaved,
-    deleted: s.settings.secretDeleted,
-    approvalRequired: s.settings.secretApprovalRequired,
-    notApplied: s.llm.notApplied,
-  };
-
-  const voicePreset: "female" | "male" | "custom" = VOICE_PRESET_FEMALE_VALUES.includes(ttsVoice.trim())
-    ? "female"
-    : VOICE_PRESET_MALE_VALUES.includes(ttsVoice.trim())
-    ? "male"
-    : "custom";
-
-  function applyVoicePreset(kind: "female" | "male") {
-    setTtsVoice(VOICE_PRESETS[detectVoiceProviderKind(ttsBaseUrl)][kind]);
-    markTtsEdited();
-  }
-
   async function onSaveTts() {
     if (!ttsView) return;
     const generation = saveGenerationRef.current.begin("tts");
@@ -476,6 +381,8 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
         baseUrl: ttsBaseUrl.trim() || null,
         model: ttsModel.trim() || null,
         voice: ttsVoice.trim() || null,
+        openaiModel: ttsOpenAiModel.trim() || null,
+        openaiVoice: ttsOpenAiVoice.trim() || null,
       });
       if (!saveGenerationRef.current.isCurrent("tts", generation)) return;
       hydrateTts(saved);
@@ -488,47 +395,25 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
   }
 
   function stageResetTts() {
-    const changed = ttsProvider !== "auto" || ttsBaseUrl !== "" || ttsModel !== "" || ttsVoice !== "";
-    setTtsProvider("auto");
+    const changed = ttsProvider !== "say" || ttsBaseUrl !== "" || ttsModel !== "" || ttsVoice !== ""
+      || ttsOpenAiModel !== "" || ttsOpenAiVoice !== "";
+    setTtsProvider("say");
     setTtsBaseUrl("");
     setTtsModel("");
     setTtsVoice("");
+    setTtsOpenAiModel("");
+    setTtsOpenAiVoice("");
     setTtsSave(changed ? { phase: "idle", message: s.settings.ttsResetStaged } : IDLE_SAVE);
   }
 
   const targetLabels: Record<RoleTarget, string> = {
-    claude: s.settings.targetClaude, local: s.settings.targetLocal, codex: s.settings.targetCodex,
+    claude: s.settings.targetClaude, openai: s.settings.targetOpenAi,
+    local: s.settings.targetLocal, codex: s.settings.targetCodex,
   };
   const tierLabels: Record<(typeof SERVICE_TIER_OPTIONS)[number], string> = {
     fast: s.settings.tuningTierFast, standard: s.settings.tuningTierStandard,
   };
-
-  function endpointLine(value: EndpointClassification): string {
-    const label = {
-      loopback: s.settings.endpointLoopback,
-      lan: s.settings.endpointLan,
-      remote: s.settings.endpointRemote,
-      invalid: s.settings.endpointInvalid,
-    }[value.location];
-    return value.origin ? `${label} · ${value.origin}` : label;
-  }
-
-  /** 用途タブの「実効」サマリ1行を組み立てる（表示専用。判定ロジックは resolveEffective が純関数で担う）。 */
-  function effectiveLine(eff: EffectiveResolution): string {
-    const providerLabel = targetLabels[eff.provider];
-    const modelText = eff.model.confirmed
-      ? eff.model.text
-      : s.settings.effectiveUnconfirmedWith(eff.model.cliDefault ? s.settings.cliDefaultLabel : eff.model.text);
-    const destination = eff.endpoint ? endpointLine(eff.endpoint) : s.settings.endpointCloudManaged;
-    const parts = [`${providerLabel} · ${destination} · ${modelText}`];
-    if (eff.effort) {
-      parts.push(`${s.settings.tuningEffort} ${eff.effort.value === "sdk-standard" ? s.settings.tuningSdkStandard : eff.effort.value}`);
-    }
-    if (eff.tier) {
-      parts.push(`${s.settings.tuningTier} ${tierLabels[eff.tier.value as (typeof SERVICE_TIER_OPTIONS)[number]] ?? eff.tier.value}`);
-    }
-    return `${s.settings.effectiveLabel} ${parts.join(" · ")}`;
-  }
+  const apiKeysLoading = llmSettingsLoad.state.status === "loading" || ttsSettingsLoad.state.status === "loading" || secretsLoad.state.status === "loading";
 
   return (
     <div className="stack">
@@ -537,25 +422,53 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
       </div>
 
       <div className="lang-toggle settings-tabs" role="tablist" aria-label={s.settings.title}>
+        <button role="tab" aria-selected={tab === "keys"} className={tab === "keys" ? "is-active" : ""} disabled={settingsSaving} onClick={() => switchSettingsTab("keys")}>{s.settings.apiKeysSection}</button>
         <button role="tab" aria-selected={tab === "conn"} className={tab === "conn" ? "is-active" : ""} disabled={settingsSaving} onClick={() => switchSettingsTab("conn")}>{s.settings.connectionSection}</button>
         <button role="tab" aria-selected={tab === "roles"} className={tab === "roles" ? "is-active" : ""} disabled={settingsSaving} onClick={() => switchSettingsTab("roles")}>{s.settings.roleAssignSection}</button>
         <button role="tab" aria-selected={tab === "display"} className={tab === "display" ? "is-active" : ""} disabled={settingsSaving} onClick={() => switchSettingsTab("display")}>{s.settings.displaySection}</button>
       </div>
 
-      {llmSettingsLoad.state.status === "error" && (
-        <Banner kind="error" action={<Button onClick={llmSettingsLoad.reload}>{s.settings.retry}</Button>}>
-          {s.settings.loadLlmFailed} {formatClientError(lang, llmSettingsLoad.state.error, "load")}
-        </Banner>
+      <SettingsLoadErrors
+        lang={lang}
+        llmError={llmSettingsLoad.state.status === "error" ? llmSettingsLoad.state.error : null}
+        ttsError={ttsSettingsLoad.state.status === "error" ? ttsSettingsLoad.state.error : null}
+        secretsError={secretsLoad.state.status === "error" ? secretsLoad.state.error : null}
+        reloadLlm={llmSettingsLoad.reload}
+        reloadTts={ttsSettingsLoad.reload}
+        reloadSecrets={secretsLoad.reload}
+      />
+
+      {tab === "keys" && apiKeysLoading && (
+        <section className="support-panel stack"><div className="text-sm text-muted">{s.settings.loading}</div></section>
       )}
-      {ttsSettingsLoad.state.status === "error" && (
-        <Banner kind="error" action={<Button onClick={ttsSettingsLoad.reload}>{s.settings.retry}</Button>}>
-          {s.settings.loadTtsFailed} {formatClientError(lang, ttsSettingsLoad.state.error, "load")}
-        </Banner>
-      )}
-      {secretsLoad.state.status === "error" && (
-        <Banner kind="error" action={<Button onClick={secretsLoad.reload}>{s.settings.retry}</Button>}>
-          {s.settings.loadSecretsFailed} {formatClientError(lang, secretsLoad.state.error, "load")}
-        </Banner>
+
+      {tab === "keys" && view && ttsView && secretsLoad.state.status === "ready" && secrets && (
+        <ApiKeysTab
+          lang={lang}
+          disabled={settingsSaving || !view}
+          secretsReady={secretsLoad.state.status === "ready"}
+          secrets={effectiveSecretsView(secrets, Boolean(view.openAiKeyConfigured || ttsView.openAiKeyConfigured))}
+          auth={authDraft}
+          authKeys={authKeys}
+          authDirty={authDirty}
+          authSaving={authSaving}
+          authMessage={authSave.message}
+          compatTarget={compatKeyTarget}
+          compatRemote={Boolean(compatKeyTarget && classifyOpenAiEndpoint(compatKeyTarget).location === "remote")}
+          compatKeyAllowed={Boolean(compatKeyTarget && endpointAllowsCredentials(compatKeyTarget))}
+          compatKeyApproved={view?.apiKeyApproved === true}
+          ttsTarget={ttsKeyTarget}
+          ttsKeyAllowed={endpointAllowsCredentials(ttsKeyTarget)}
+          ttsKeyApproved={ttsView?.apiKeyApproved === true}
+          onAuthChange={(provider, mode) => {
+            if (provider === "claude") setAuthClaude(mode);
+            else setAuthCodex(mode);
+            setAuthSave(IDLE_SAVE);
+          }}
+          onSaveAuth={() => void saveAuthentication()}
+          onSaveSecret={onSaveSecret}
+          onDeleteSecret={onDeleteSecret}
+        />
       )}
 
       {tab === "conn" && (
@@ -563,25 +476,6 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
           <div className="llm-fields stack">
             <h3 className="settings-section-title">{s.settings.targetClaude}</h3>
             <div className="text-sm text-muted">{s.settings.claudeNoSetup}</div>
-            <label className="llm-field">
-              <span className="text-sm text-muted">{s.settings.authModeLabel}</span>
-              <select
-                className="llm-input" value={authClaude} disabled={settingsSaving || !view}
-                onChange={(e) => { setAuthClaude(e.target.value as AuthMode); markConnectionEdited(); }}
-              >
-                {AUTH_MODE_OPTIONS.map((m) => (
-                  <option key={m} value={m} disabled={m === "api-key" && !authKeys.anthropic}>
-                    {m === "subscription" ? s.settings.authSubscription : s.settings.authApiKey}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {view?.authModes?.claude === "api-key" && !authKeys.anthropic && (
-              <div className="info-pop">{s.settings.claudeAuthMissingKey}</div>
-            )}
-            <SecretKeyField lang={lang} name="ANTHROPIC_API_KEY" status={secrets?.ANTHROPIC_API_KEY} disabled={settingsSaving || !view || secretsLoad.state.status !== "ready"}
-              str={secretStr} onSave={onSaveSecret} onDelete={onDeleteSecret} />
-            <div className="text-sm text-muted">{s.settings.authApiKeyNote}</div>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.settings.claudeGlobalModelLabel}</span>
               {(() => {
@@ -600,12 +494,29 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
           </div>
           <hr className="settings-divider" />
           <div className="llm-fields stack">
+            <h3 className="settings-section-title">{s.settings.targetOpenAi}</h3>
+            <div className="text-sm text-muted">{s.settings.openAiConnNote}</div>
+            <label className="llm-field">
+              <span className="text-sm text-muted">{s.llm.modelLabel}</span>
+              {(() => {
+                const opts = openAiModelSelectOptions(catalog?.openai);
+                return (
+                  <>
+                    <input className="llm-input" list="openai-conversation-models" value={connOpenAi} placeholder="gpt-4.1-mini" disabled={settingsSaving || !view} onChange={(e) => { setConnOpenAi(e.target.value); markConnectionEdited(); }} />
+                    <datalist id="openai-conversation-models">{opts.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</datalist>
+                  </>
+                );
+              })()}
+            </label>
+          </div>
+          <hr className="settings-divider" />
+          <div className="llm-fields stack">
             <h3 className="settings-section-title">{s.settings.localConnTitle}</h3>
             <label className="llm-field">
               <span className="text-sm text-muted">{s.llm.baseUrlLabel}</span>
               <input className="llm-input" value={connBaseUrl} placeholder={s.llm.baseUrlPlaceholder} disabled={settingsSaving || !view} onChange={(e) => { setConnBaseUrl(e.target.value); markConnectionEdited(); }} />
             </label>
-            <div className="text-sm text-muted">{s.settings.endpointLabel}: {endpointLine(endpoint)}</div>
+            <div className="text-sm text-muted">{s.settings.endpointLabel}: {endpointLine(lang, endpoint)}</div>
             {endpoint.location === "remote" && <div className="info-pop">{s.settings.endpointRemoteDisclosure}</div>}
             {endpoint.location === "lan" && <div className="text-sm text-muted">{s.settings.endpointLanDisclosure}</div>}
             {endpoint.location === "loopback" && <div className="text-sm text-muted">{s.settings.endpointLoopbackDisclosure}</div>}
@@ -627,9 +538,6 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
                 );
               })()}
             </label>
-            <SecretKeyField lang={lang} name="OPENAI_COMPAT_API_KEY" status={secrets?.OPENAI_COMPAT_API_KEY} disabled={settingsSaving || !view || secretsLoad.state.status !== "ready"}
-              approvalRequired={Boolean(secrets?.OPENAI_COMPAT_API_KEY.configured && view?.apiKeyApproved !== true)}
-              str={secretStr} onSave={onSaveSecret} onDelete={onDeleteSecret} />
           </div>
           <hr className="settings-divider" />
           <div className="llm-fields stack">
@@ -656,90 +564,37 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
                 );
               })()}
             </label>
-            <label className="llm-field">
-              <span className="text-sm text-muted">{s.settings.authModeLabel}</span>
-              <select
-                className="llm-input" value={authCodex} disabled={settingsSaving || !view}
-                onChange={(e) => { setAuthCodex(e.target.value as AuthMode); markConnectionEdited(); }}
-              >
-                {AUTH_MODE_OPTIONS.map((m) => (
-                  <option key={m} value={m} disabled={m === "api-key" && !authKeys.codex}>
-                    {m === "subscription" ? s.settings.authSubscription : s.settings.authApiKey}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <SecretKeyField lang={lang} name="CODEX_API_KEY" status={secrets?.CODEX_API_KEY} disabled={settingsSaving || !view || secretsLoad.state.status !== "ready"}
-              str={secretStr} onSave={onSaveSecret} onDelete={onDeleteSecret} />
-            <div className="text-sm text-muted">{s.settings.authApiKeyNote}</div>
           </div>
           <div className="text-sm text-muted">{s.llm.help}</div>
           <div className="text-sm text-muted">{s.settings.connectionSaveNote}</div>
-          {authModeDirty && <div className="info-pop" role="status">{s.settings.authModeSaveRequired}</div>}
           <Button variant="primary" loading={connectionSaving} onClick={() => void saveConnection()} disabled={settingsSaving || !view || !connectionDirty}>
             {connectionSaving ? s.llm.saving : s.settings.saveConnection}
           </Button>
           {connectionDirty && <div className="info-pop" role="status">{s.settings.unsavedChanges}</div>}
           {connectionSave.message && <div className="info-pop" role="status">{connectionSave.message}</div>}
 
-          <hr className="settings-divider" />
-          <h3 className="settings-section-title">{s.settings.ttsSection}</h3>
-          <div className="text-sm text-muted">{s.settings.ttsDesc}</div>
-          <div className="llm-fields stack">
-            <label className="llm-field">
-              <span className="text-sm text-muted">{s.settings.ttsProviderLabel}</span>
-              {(() => {
-                // 「自動」が今どちらに解決されるかをラベルに併記する（編集中の Base URL でライブに変わる）
-                const resolved = ttsAutoResolution(
-                  ttsView?.apiKeyApproved ?? false,
-                  ttsBaseUrl,
-                  ttsView?.defaults.baseUrl ?? "",
-                );
-                const resolvedLabel = resolved === "say" ? s.settings.ttsProviderShortSay : s.settings.ttsProviderShortHttp;
-                return (
-                  <select className="llm-input" value={ttsProvider} disabled={settingsSaving || !ttsView} onChange={(e) => { setTtsProvider(e.target.value as TtsProvider); markTtsEdited(); }}>
-                    {TTS_PROVIDER_OPTIONS.map((p) => (
-                      <option key={p} value={p}>
-                        {p === "auto" ? s.settings.ttsProviderAutoWith(resolvedLabel) : p === "say" ? s.settings.ttsProviderSay : s.settings.ttsProviderHttp}
-                      </option>
-                    ))}
-                  </select>
-                );
-              })()}
-            </label>
-            <div className="text-sm text-muted">{s.settings.ttsProviderNote}</div>
-            <label className="llm-field">
-              <span className="text-sm text-muted">{s.settings.ttsBaseUrlLabel}</span>
-              <input className="llm-input" value={ttsBaseUrl} placeholder={s.settings.ttsBaseUrlPlaceholder} disabled={settingsSaving || !ttsView} onChange={(e) => { setTtsBaseUrl(e.target.value); markTtsEdited(); }} />
-            </label>
-            <label className="llm-field">
-              <span className="text-sm text-muted">{s.settings.ttsModelLabel}</span>
-              <input className="llm-input" value={ttsModel} placeholder={s.settings.ttsModelPlaceholder} disabled={settingsSaving || !ttsView} onChange={(e) => { setTtsModel(e.target.value); markTtsEdited(); }} />
-            </label>
-            <div className="llm-field">
-              <span className="text-sm text-muted">{s.settings.ttsVoicePresetLabel}</span>
-              <div className="lang-toggle" role="group" aria-label={s.settings.ttsVoicePresetLabel}>
-                <button className={voicePreset === "female" ? "is-active" : ""} aria-pressed={voicePreset === "female"} disabled={settingsSaving || !ttsView} onClick={() => applyVoicePreset("female")}>{s.settings.ttsVoiceFemale}</button>
-                <button className={voicePreset === "male" ? "is-active" : ""} aria-pressed={voicePreset === "male"} disabled={settingsSaving || !ttsView} onClick={() => applyVoicePreset("male")}>{s.settings.ttsVoiceMale}</button>
-                <button className={voicePreset === "custom" ? "is-active" : ""} aria-pressed={voicePreset === "custom"} disabled={settingsSaving || !ttsView} onClick={() => voiceInputRef.current?.focus()}>{s.settings.ttsVoiceCustom}</button>
-              </div>
-              <span className="text-sm text-muted">{s.settings.ttsVoicePresetNote}</span>
-            </div>
-            <label className="llm-field">
-              <span className="text-sm text-muted">{s.settings.ttsVoiceLabel}</span>
-              <input ref={voiceInputRef} className="llm-input" value={ttsVoice} placeholder={s.settings.ttsVoicePlaceholder} disabled={settingsSaving || !ttsView} onChange={(e) => { setTtsVoice(e.target.value); markTtsEdited(); }} />
-            </label>
-            <SecretKeyField lang={lang} name="TTS_API_KEY" status={secrets?.TTS_API_KEY} disabled={settingsSaving || !ttsView || secretsLoad.state.status !== "ready"}
-              approvalRequired={Boolean(secrets?.TTS_API_KEY.configured && ttsView?.apiKeyApproved !== true)}
-              str={secretStr} onSave={onSaveSecret} onDelete={onDeleteSecret} />
-            <div className="text-sm text-muted">{s.settings.ttsApiKeyOptionalNote}</div>
-          </div>
-          <div className="text-sm text-muted">{s.settings.ttsSaveNote}</div>
-          <Button variant="primary" loading={ttsSaving} onClick={onSaveTts} disabled={settingsSaving || !ttsView || !ttsDirty}>{ttsSaving ? s.llm.saving : s.llm.save}</Button>
-          <div className="text-sm text-muted">{s.settings.ttsResetDescWith(ttsView?.defaults.model ?? "gpt-4o-mini-tts", ttsView?.defaults.voice ?? "alloy")}</div>
-          <Button variant="secondary" onClick={stageResetTts} disabled={settingsSaving || !ttsView}>{s.settings.ttsReset}</Button>
-          {ttsDirty && <div className="info-pop" role="status">{s.settings.unsavedChanges}</div>}
-          {ttsSave.message && <div className="info-pop" role="status">{ttsSave.message}</div>}
+          <TtsSettingsPanel
+            lang={lang}
+            view={ttsView}
+            provider={ttsProvider}
+            baseUrl={ttsBaseUrl}
+            model={ttsModel}
+            voice={ttsVoice}
+            openaiModel={ttsOpenAiModel}
+            openaiVoice={ttsOpenAiVoice}
+            disabled={settingsSaving}
+            saving={ttsSaving}
+            dirty={ttsDirty}
+            message={ttsSave.message}
+            onProviderChange={(value) => { setTtsProvider(value); markTtsEdited(); }}
+            onBaseUrlChange={(value) => { setTtsBaseUrl(value); markTtsEdited(); }}
+            onModelChange={(value) => { setTtsModel(value); markTtsEdited(); }}
+            onVoiceChange={(value) => { setTtsVoice(value); markTtsEdited(); }}
+            onOpenAiModelChange={(value) => { setTtsOpenAiModel(value); markTtsEdited(); }}
+            onOpenAiVoiceChange={(value) => { setTtsOpenAiVoice(value); markTtsEdited(); }}
+            onSave={() => void onSaveTts()}
+            onReset={stageResetTts}
+          />
         </section>
       )}
 
@@ -761,8 +616,9 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
             <div className="llm-field">
               <span className="text-sm text-muted">{s.settings.preferredCloudLabel}</span>
               <div className="lang-toggle" role="group" aria-label={s.settings.preferredCloudLabel}>
-                <button className={preferredCloud === "claude" ? "is-active" : ""} aria-pressed={preferredCloud === "claude"} disabled={settingsSaving} onClick={() => setPreferredCloud("claude")}>{s.settings.targetClaude}</button>
-                <button className={preferredCloud === "codex" ? "is-active" : ""} aria-pressed={preferredCloud === "codex"} disabled={settingsSaving} onClick={() => setPreferredCloud("codex")}>{s.settings.targetCodex}</button>
+                <button className={preferredCloud === "claude" ? "is-active" : ""} aria-pressed={preferredCloud === "claude"} disabled={settingsSaving || !availability.claude.available} onClick={() => setPreferredCloud("claude")}>{s.settings.targetClaude}</button>
+                <button className={preferredCloud === "openai" ? "is-active" : ""} aria-pressed={preferredCloud === "openai"} disabled={settingsSaving || !availability.openai.available} onClick={() => setPreferredCloud("openai")}>{s.settings.targetOpenAi}</button>
+                <button className={preferredCloud === "codex" ? "is-active" : ""} aria-pressed={preferredCloud === "codex"} disabled={settingsSaving || !availability.codex.available} onClick={() => setPreferredCloud("codex")}>{s.settings.targetCodex}</button>
               </div>
               <span className="text-sm text-muted">{s.settings.preferredCloudNote}</span>
             </div>
@@ -781,15 +637,15 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
                     }}
                   >
                     {current === "custom" && <option value="custom" disabled>{s.settings.presetCustom}</option>}
-                    <option value="all-local" disabled={!presetEnabled("all-local", savedRoleConnection)}>{s.settings.presetAllLocal}</option>
-                    <option value="balanced" disabled={!presetEnabled("balanced", savedRoleConnection)}>{s.settings.presetBalancedOption}</option>
-                    <option value="high-quality">{s.settings.presetHighQuality}</option>
+                    <option value="all-local" disabled={!availability.local.available}>{s.settings.presetAllLocal}</option>
+                    <option value="balanced" disabled={!availability.local.available || !availability[preferredCloud].available}>{s.settings.presetBalancedOption}</option>
+                    <option value="high-quality" disabled={!availability[preferredCloud].available}>{s.settings.presetHighQuality}</option>
                   </select>
                   {current === "all-local" && <div className="text-sm text-muted">{s.settings.presetAllLocalDesc}</div>}
                   {m !== "custom" && current === "balanced" && <div className="text-sm text-muted">{s.settings.presetBalancedDesc(m.cloud)}</div>}
                   {m !== "custom" && current === "high-quality" && <div className="text-sm text-muted">{s.settings.presetHighQualityDesc(m.cloud)}</div>}
                   <div className="text-sm text-muted">{s.settings.presetSaveNote}</div>
-                  {!localDefined && <div className="text-sm text-muted">{s.settings.presetLocalRequired}</div>}
+                  {!availability.local.available && <div className="text-sm text-muted">{s.settings.presetLocalRequired}</div>}
                 </>
               );
             })()}
@@ -800,7 +656,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
             <Button
               variant="secondary"
               onClick={() => { setTuning(applyRecommendedTuning(tuning, targets)); markRolesEdited(); }}
-              disabled={settingsSaving || !view}
+              disabled={settingsSaving || !view || !selectedTargetsAvailable}
             >
               {s.settings.applyRecommendedTuning}
             </Button>
@@ -827,6 +683,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
                 : SERVICE_TIER_OPTIONS;
               const codexEffortDefaultLabel = codexDefaultEffortLabel(catalogCodex, connCodex);
               const effective = view ? resolveEffective(role, view, catalog ?? undefined) : null;
+              const targetAvailable = availability[targets[role]].available;
               return (
                 <div key={role} className="stack">
                   <div className="text-sm">{s.settings.roleName[role]}</div>
@@ -834,19 +691,19 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
                   <div className="text-sm text-muted">{s.settings.roleReason[role]}</div>
                   <RoleTargetToggle
                     value={targets[role]}
-                    localEnabled={localDefined}
+                    availability={availability}
                     labels={targetLabels}
-                    localDisabledNote={s.settings.targetLocalDisabled}
+                    unavailableNote={s.settings.targetUnavailableNote}
                     ariaLabel={s.settings.roleName[role]}
                     disabled={settingsSaving || !view}
                     onChange={(t) => setTarget(role, t)}
                   />
                   {/* 実効サマリ（常時表示）: 現在この用途で実際に使われているプロバイダ・具体モデル・effort・配信 */}
-                  {effective && <div className="text-sm text-muted">{effectiveLine(effective)}</div>}
+                  {effective && <div className="text-sm text-muted">{effectiveLine(lang, effective)}</div>}
                   {/* ローカル割当は openai-compat 経路が tuning（model/effort/serviceTier）を完全に無視するため
                       （llm-provider.ts の selectRunner・README にも明記）、詳細設定自体を出さない
                       （出しても中身が空になる＝意味のない disclosure を見せない） */}
-                  {targets[role] !== "local" && (
+                  {(targets[role] === "claude" || targets[role] === "codex") && (
                     <details className="stack">
                       <summary className="text-sm text-muted">{s.settings.tuningDetails}</summary>
                       <div className="stack">
@@ -856,7 +713,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
                             <select
                               className="llm-input"
                               value={tuning[role].claudeModel ?? ""}
-                              disabled={settingsSaving || !view}
+                              disabled={settingsSaving || !view || !targetAvailable}
                               onChange={(e) => {
                                 const newAlias = (e.target.value || null) as RoleTuning["claudeModel"];
                                 // モデル切替で選択中の effort が新モデルで無効化される場合（実測: 非対応 effort は
@@ -877,7 +734,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
                           <select
                             className="llm-input"
                             value={tuning[role].effort ?? ""}
-                            disabled={settingsSaving || !view}
+                            disabled={settingsSaving || !view || !targetAvailable}
                             onChange={(e) => setTuningField(role, "effort", (e.target.value || null) as RoleTuning["effort"])}
                           >
                             {/* claude の既定effortはSDK標準（未指定）、codex はカタログのdefaultEffort優先（不可時コード既定medium）。
@@ -900,7 +757,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
                             <select
                               className="llm-input"
                               value={tuning[role].serviceTier ?? ""}
-                              disabled={settingsSaving || !view}
+                              disabled={settingsSaving || !view || !targetAvailable}
                               onChange={(e) => setTuningField(role, "serviceTier", (e.target.value || null) as RoleTuning["serviceTier"])}
                             >
                               <option value="">{s.settings.tuningDefaultWith(tierLabels.fast)}</option>
@@ -916,7 +773,9 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
             })}
             <div className="text-sm text-muted">{s.settings.rolesSaveNote}</div>
             {connectionDirty && <div className="info-pop">{s.settings.saveConnectionFirst}</div>}
-            <Button variant="primary" loading={rolesSaving} onClick={() => void saveRoles()} disabled={settingsSaving || !view || !rolesDirty || connectionDirty}>
+            {authDirty && <div className="info-pop">{s.settings.saveAuthFirst}</div>}
+            {!selectedTargetsAvailable && <div className="info-pop">{s.settings.selectedTargetUnavailable}</div>}
+            <Button variant="primary" loading={rolesSaving} onClick={() => void saveRoles()} disabled={settingsSaving || !view || !rolesDirty || connectionDirty || authDirty || !selectedTargetsAvailable}>
               {rolesSaving ? s.llm.saving : s.settings.saveAssignments}
             </Button>
           </div>
@@ -927,20 +786,7 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
       )}
 
       {tab === "display" && (
-        <section className="support-panel stack">
-          <div className="stat-title">{s.settings.displaySection}</div>
-          <div className="text-sm text-muted">{s.settings.displayImmediateNote}</div>
-          <div className="lang-toggle" role="group" aria-label={s.appShell.textSize}>
-            <button className={uiScale === "small" ? "is-active" : ""} aria-pressed={uiScale === "small"} onClick={() => setUiScale("small")}>{s.uiScale.small}</button>
-            <button className={uiScale === "medium" ? "is-active" : ""} aria-pressed={uiScale === "medium"} onClick={() => setUiScale("medium")}>{s.uiScale.medium}</button>
-            <button className={uiScale === "large" ? "is-active" : ""} aria-pressed={uiScale === "large"} onClick={() => setUiScale("large")}>{s.uiScale.large}</button>
-            <button className={uiScale === "xlarge" ? "is-active" : ""} aria-pressed={uiScale === "xlarge"} onClick={() => setUiScale("xlarge")}>{s.uiScale.xlarge}</button>
-          </div>
-          <div className="lang-toggle" role="group" aria-label={s.appShell.language}>
-            <button className={lang === "en" ? "is-active" : ""} aria-pressed={lang === "en"} onClick={() => switchLang("en")}>EN</button>
-            <button className={lang === "ja" ? "is-active" : ""} aria-pressed={lang === "ja"} onClick={() => switchLang("ja")}>日本語</button>
-          </div>
-        </section>
+        <DisplaySettingsTab lang={lang} uiScale={uiScale} setUiScale={setUiScale} switchLang={switchLang} />
       )}
     </div>
   );

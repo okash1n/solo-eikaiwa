@@ -1,5 +1,6 @@
 import type { Database } from "bun:sqlite";
 import { LLM_ROLES, type LlmRole, type LlmRoleProvider, type LlmRoleSetting } from "./llm-provider";
+import { isOfficialOpenAiBaseUrl } from "./openai";
 
 /**
  * ロール別 LLM 設定の永続化（role 主キーの複数行）。全体設定の llm_settings（単一行）とは別テーブル。
@@ -36,8 +37,14 @@ export function makeLlmRoleSettingsStore(db: Database): LlmRoleSettingsStore {
       const out = {} as Record<LlmRole, LlmRoleSetting>;
       for (const role of LLM_ROLES) {
         const r = byRole.get(role);
+        const legacyOfficial = r?.provider === "openai-compat" && isOfficialOpenAiBaseUrl(r.base_url);
         out[role] = r
-          ? { provider: r.provider as LlmRoleProvider, baseUrl: r.base_url, model: r.model, codexModel: r.codex_model }
+          ? {
+              provider: (legacyOfficial ? "openai" : r.provider) as LlmRoleProvider,
+              baseUrl: legacyOfficial ? null : r.base_url,
+              model: r.model,
+              codexModel: r.codex_model,
+            }
           : { provider: "inherit", baseUrl: null, model: null, codexModel: null };
       }
       return out;

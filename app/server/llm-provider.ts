@@ -3,12 +3,15 @@ import { makeOpenAICompatRunner } from "./providers/openai-compat";
 import { makeCodexRunner } from "./providers/codex";
 import { getCodexAppServerRunner } from "./providers/codex-app-server";
 import { withFallback, withTimeout } from "./providers/decorators";
+import { OPENAI_BASE_URL } from "./openai";
 
 /** サイドバー設定UIで選べる LLM プロバイダ。設定は UI/DB が唯一の真実（env フォールバック廃止・v0.29）。 */
-export type LlmProvider = "claude" | "openai-compat" | "codex";
+export type LlmProvider = "claude" | "openai" | "openai-compat" | "codex";
 
 /** DB 行が無いときの既定設定（コード定数）。旧 "env"（環境変数に従う）センチネルは廃止し、store 読込時に claude へ正規化する。 */
-export const DEFAULT_LLM_SETTINGS: LlmSettings = { provider: "claude", baseUrl: null, model: null, codexModel: null };
+export const DEFAULT_LLM_SETTINGS: LlmSettings = {
+  provider: "claude", baseUrl: null, model: null, openaiModel: null, codexModel: null,
+};
 
 /**
  * LLM 呼び出しの用途ロール（5つ固定）。各ロールは全体設定を継承(inherit)するか、独自プロバイダを持つ。
@@ -21,7 +24,7 @@ export type LlmRole = "conversation" | "assist" | "coaching" | "generation" | "a
 export const LLM_ROLES: readonly LlmRole[] = ["conversation", "assist", "coaching", "generation", "assessment"];
 
 /** ロール別プロバイダ。"inherit" は「全体設定に従う」センチネル。それ以外は LlmProvider の部分集合（"env" はロールでは扱わない）。 */
-export type LlmRoleProvider = "inherit" | "claude" | "openai-compat" | "codex";
+export type LlmRoleProvider = "inherit" | "claude" | "openai" | "openai-compat" | "codex";
 
 /** ロール別の永続化設定。APIキーは含めず、resolverから実行時に注入する。inherit のときフィールドは null。 */
 export type LlmRoleSetting = {
@@ -38,7 +41,14 @@ export function isInheritRole(s: LlmRoleSetting): boolean {
 
 /** 非 inherit のロール設定を settingsToEnv が食える LlmSettings へ写す（inherit では呼ばない前提）。 */
 export function roleSettingToSettings(s: LlmRoleSetting): LlmSettings {
-  return { provider: s.provider as LlmProvider, baseUrl: s.baseUrl, model: s.model, codexModel: s.codexModel };
+  const official = s.provider === "openai";
+  return {
+    provider: s.provider as LlmProvider,
+    baseUrl: official ? null : s.baseUrl,
+    model: official ? null : s.model,
+    openaiModel: official ? s.model : null,
+    codexModel: s.codexModel,
+  };
 }
 
 /** DB(llm_settings 単一行)に永続化する LLM 設定。APIキーは含めず、resolverから実行時に注入する。 */
@@ -46,6 +56,8 @@ export type LlmSettings = {
   provider: LlmProvider;
   baseUrl: string | null;
   model: string | null;
+  /** OpenAI 公式用モデル。旧呼び出し元との後方互換のため省略時は null 扱い。 */
+  openaiModel?: string | null;
   codexModel: string | null;
 };
 
@@ -65,9 +77,9 @@ export type SelectRunnerArgs = {
   tuning?: { effort?: string; serviceTier?: string };
 };
 
-function requireEnv(env: Record<string, string | undefined>, key: string): string {
+function requireEnv(env: Record<string, string | undefined>, key: string, provider = "openai-compat"): string {
   const v = env[key];
-  if (!v || !v.trim()) throw new Error(`${key} is required when LLM_PROVIDER=openai-compat`);
+  if (!v || !v.trim()) throw new Error(`${key} is required when LLM_PROVIDER=${provider}`);
   return v.trim();
 }
 
@@ -132,6 +144,16 @@ export function selectRunner(args: SelectRunnerArgs): ClaudeRunner {
         }),
       );
 
+    case "openai":
+      return withTimeout(
+        makeOpenAICompatRunner({
+          baseUrl: OPENAI_BASE_URL,
+          apiKey: env.OPENAI_API_KEY?.trim() || undefined,
+          model: requireEnv(env, "OPENAI_MODEL", "openai"),
+          defaultSystemPrompt: args.defaultSystemPrompt,
+        }),
+      );
+
     case "codex": {
       // codex app-server（常駐プロセス）を既定経路にし、transport 障害（TransportError）時のみ
       // codex exec（ワンショット）へ委譲する。両経路はwithFallbackの総deadlineを共有する。
@@ -142,7 +164,7 @@ export function selectRunner(args: SelectRunnerArgs): ClaudeRunner {
     }
 
     default:
-      throw new Error(`Unknown LLM_PROVIDER: ${provider} (expected claude | openai-compat | codex)`);
+      throw new Error(`Unknown LLM_PROVIDER: ${provider} (expected claude | openai | openai-compat | codex)`);
   }
 }
 
@@ -155,11 +177,13 @@ export function settingsToEnv(
   s: LlmSettings,
   env: Record<string, string | undefined> = Bun.env,
   apiKeyForBaseUrl?: (baseUrl: string) => string | undefined,
+  openAiApiKey?: string,
 ): Record<string, string | undefined> {
   const out: Record<string, string | undefined> = {
     LLM_PROVIDER: s.provider,
     OPENAI_COMPAT_BASE_URL: s.baseUrl ?? undefined,
     OPENAI_COMPAT_MODEL: s.model ?? undefined,
+    OPENAI_MODEL: s.openaiModel ?? undefined,
     CODEX_MODEL: s.codexModel ?? undefined,
   };
   // LLM runnerへ渡すsecretは選択providerが実際に使う1種類だけ。サーバ経路ではorigin承認resolverを
@@ -168,6 +192,9 @@ export function settingsToEnv(
     out.OPENAI_COMPAT_API_KEY = apiKeyForBaseUrl
       ? apiKeyForBaseUrl(s.baseUrl)
       : env.OPENAI_COMPAT_API_KEY?.trim() || undefined;
+  }
+  if (s.provider === "openai") {
+    out.OPENAI_API_KEY = openAiApiKey ?? (env.OPENAI_API_KEY?.trim() || undefined);
   }
   return out;
 }
@@ -189,4 +216,15 @@ export function isOpenAiCompatReady(
     Boolean(effectiveEnv.OPENAI_COMPAT_BASE_URL?.trim()) &&
     Boolean(effectiveEnv.OPENAI_COMPAT_MODEL?.trim())
   );
+}
+
+/** OpenAI 公式経路が選択され、モデルと専用キーが揃っているかを判定する。 */
+export function isOpenAiReady(
+  settings: LlmSettings | null,
+  env: Record<string, string | undefined> = Bun.env,
+): boolean {
+  const effectiveEnv = settingsToEnv(settings ?? DEFAULT_LLM_SETTINGS, env);
+  return resolveProviderKey(effectiveEnv) === "openai"
+    && Boolean(effectiveEnv.OPENAI_MODEL?.trim())
+    && Boolean(effectiveEnv.OPENAI_API_KEY?.trim());
 }

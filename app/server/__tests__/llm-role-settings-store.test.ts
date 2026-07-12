@@ -32,4 +32,15 @@ describe("llm-role-settings-store", () => {
     store.save("generation", { provider: "inherit", baseUrl: null, model: null, codexModel: null });
     expect(store.getAll().generation).toEqual({ provider: "inherit", baseUrl: null, model: null, codexModel: null });
   });
+
+  test("旧 openai-compat ロールが公式URLなら公式 OpenAI へ仮想移行する", () => {
+    const db = new Database(":memory:");
+    ensureLlmRoleSettingsSchema(db);
+    db.run(
+      "INSERT INTO llm_role_settings (role, provider, base_url, model, codex_model, updated_at) VALUES ('conversation', 'openai-compat', 'https://api.openai.com/v1', 'gpt-4.1-mini', NULL, '2026-01-01T00:00:00Z')",
+    );
+    expect(makeLlmRoleSettingsStore(db).getAll().conversation).toEqual({
+      provider: "openai", baseUrl: null, model: "gpt-4.1-mini", codexModel: null,
+    });
+  });
 });

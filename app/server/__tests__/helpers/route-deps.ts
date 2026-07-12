@@ -280,11 +280,12 @@ export function makeTestDeps(overrides: Partial<RouteDeps> = {}): {
       available: true, models: [], fetchedAt: "2026-07-08T00:00:00.000Z",
     }),
     getTtsSettings: () => null,
-    getTtsProvider: () => "auto" as const,
+    getTtsProvider: () => "say" as const,
     saveTtsProvider: (_p) => {},
     getSecretsStatus: () => ({
       ANTHROPIC_API_KEY: { configured: false, source: null },
       CODEX_API_KEY: { configured: false, source: null },
+      OPENAI_API_KEY: { configured: false, source: null },
       OPENAI_COMPAT_API_KEY: { configured: false, source: null },
       TTS_API_KEY: { configured: false, source: null },
     }),

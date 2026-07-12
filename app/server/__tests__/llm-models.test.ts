@@ -7,6 +7,7 @@ import {
   makeClaudeCatalogFetcher,
   makeCodexCatalogFetcher,
   makeLocalCatalogFetcher,
+  isOpenAiConversationModelCandidate,
   type CatalogResult,
   type CatalogQueryFn,
 } from "../providers/model-catalog";
@@ -19,7 +20,7 @@ beforeEach(() => {
 });
 
 describe("GET /api/llm-models", () => {
-  test("claude/codex/localの3ソースをdeps.getModelCatalog経由で合成して返す", async () => {
+  test("claude/openai/codex/localの4ソースをdeps.getModelCatalog経由で合成して返す", async () => {
     const calls: Array<{ provider: string; refresh: boolean }> = [];
     const RESULT: CatalogResult = { available: true, models: [], fetchedAt: "2026-07-08T00:00:00.000Z" };
     const { deps } = makeTestDeps({
@@ -30,11 +31,12 @@ describe("GET /api/llm-models", () => {
     });
     const res = await makeFetchHandler(deps)(getReq("/api/llm-models?refresh=1"));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ claude: RESULT, codex: RESULT, local: RESULT });
+    expect(await res.json()).toEqual({ claude: RESULT, openai: RESULT, codex: RESULT, local: RESULT });
     expect(calls.sort((a, b) => a.provider.localeCompare(b.provider))).toEqual([
       { provider: "claude", refresh: true },
       { provider: "codex", refresh: true },
       { provider: "local", refresh: true },
+      { provider: "openai", refresh: true },
     ]);
   });
 
@@ -48,7 +50,7 @@ describe("GET /api/llm-models", () => {
     });
     const res = await makeFetchHandler(deps)(getReq("/api/llm-models"));
     expect(res.status).toBe(200);
-    expect(refreshes).toEqual([false, false, false]);
+    expect(refreshes).toEqual([false, false, false, false]);
   });
 
   test("ソース失敗時もHTTP 200のままavailable:falseを返す(劣化パス)", async () => {
@@ -355,6 +357,58 @@ describe("makeLocalCatalogFetcher", () => {
       { id: "qwen2.5", displayName: "qwen2.5", description: "" },
     ]);
     expect(calls[0]).toBe("http://localhost:11434/v1/models");
+  });
+
+  test("承認済みAPIキーがある場合はモデル一覧取得にもBearer認証を使う", async () => {
+    const authorizations: Array<string | null> = [];
+    const fetchFn = (async (_url: string | URL | Request, init?: RequestInit) => {
+      authorizations.push(new Headers(init?.headers).get("authorization"));
+      return new Response(JSON.stringify({ data: [{ id: "gpt-4.1-mini" }] }), { status: 200 });
+    }) as unknown as typeof fetch;
+    const fetcher = makeLocalCatalogFetcher(
+      () => "https://api.openai.com/v1",
+      fetchFn,
+      () => "secret-key",
+    );
+    const result = await fetcher();
+    expect(result.available).toBe(true);
+    expect(authorizations).toEqual(["Bearer secret-key"]);
+  });
+
+  test("キー必須接続は未設定時に外部へリクエストしない", async () => {
+    let calls = 0;
+    const fetchFn = (async () => {
+      calls++;
+      return new Response(JSON.stringify({ data: [] }), { status: 200 });
+    }) as unknown as typeof fetch;
+    const fetcher = makeLocalCatalogFetcher(
+      () => "https://api.openai.com/v1",
+      fetchFn,
+      () => undefined,
+      { requireApiKey: true, missingApiKeyReason: "OpenAI API key is not configured" },
+    );
+
+    expect(await fetcher()).toMatchObject({
+      available: false,
+      reason: "OpenAI API key is not configured",
+      models: [],
+    });
+    expect(calls).toBe(0);
+  });
+
+  test("OpenAI公式の候補では会話以外のモデルfamilyを除外し、未知の将来モデルは残す", async () => {
+    const fetchFn = (async () => Response.json({ data: [
+      { id: "gpt-5" }, { id: "o3" }, { id: "gpt-4o-mini-tts" },
+      { id: "text-embedding-3-small" }, { id: "gpt-image-1" }, { id: "future-chat-model" },
+    ] })) as unknown as typeof fetch;
+    const fetcher = makeLocalCatalogFetcher(
+      () => "https://api.openai.com/v1",
+      fetchFn,
+      () => "secret-key",
+      { includeModel: isOpenAiConversationModelCandidate },
+    );
+
+    expect((await fetcher()).models.map((model) => model.id)).toEqual(["gpt-5", "o3", "future-chat-model"]);
   });
 
   test("非2xxはavailable:falseを返す", async () => {

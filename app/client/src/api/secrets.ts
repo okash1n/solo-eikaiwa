@@ -2,11 +2,23 @@ import { extractErrorMessage } from "./http";
 import { invalidateTtsCaches } from "./tts";
 
 /** UI から設定できる API キー（サーバの KEYCHAIN_SECRET_NAMES と一致・binding）。 */
-export type SecretName = "ANTHROPIC_API_KEY" | "CODEX_API_KEY" | "OPENAI_COMPAT_API_KEY" | "TTS_API_KEY";
+export type SecretName = "ANTHROPIC_API_KEY" | "CODEX_API_KEY" | "OPENAI_API_KEY" | "OPENAI_COMPAT_API_KEY" | "TTS_API_KEY";
 
 /** 鍵の有無とソース。値はサーバがいかなる応答にも含めない（write-only API）。 */
-export type SecretStatus = { configured: boolean; source: "keychain" | "env" | null };
+export type SecretStatus = { configured: boolean; source: "keychain" | "env" | "legacy" | null };
 export type SecretsView = Record<SecretName, SecretStatus>;
+
+/**
+ * 専用 OPENAI_API_KEY 未設定でも、旧版の公式URL束縛キーが実行時に有効なら移行元として示す。
+ * OPENAI_API_KEY 自身の Keychain/env 状態は常に優先する。
+ */
+export function effectiveSecretsView(view: SecretsView, legacyOpenAiKeyConfigured: boolean): SecretsView;
+export function effectiveSecretsView(view: null, legacyOpenAiKeyConfigured: boolean): null;
+export function effectiveSecretsView(view: SecretsView | null, legacyOpenAiKeyConfigured: boolean): SecretsView | null;
+export function effectiveSecretsView(view: SecretsView | null, legacyOpenAiKeyConfigured: boolean): SecretsView | null {
+  if (!view || view.OPENAI_API_KEY.configured || !legacyOpenAiKeyConfigured) return view;
+  return { ...view, OPENAI_API_KEY: { configured: true, source: "legacy" } };
+}
 
 export async function fetchSecrets(): Promise<SecretsView> {
   const res = await fetch("/api/secrets");

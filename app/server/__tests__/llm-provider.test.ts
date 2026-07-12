@@ -37,6 +37,21 @@ describe("selectRunner", () => {
     expect(typeof r).toBe("function");
   });
 
+  test("openai: 公式固定URL・専用キー・専用モデルで runner を返す", () => {
+    const r = selectRunner(args({
+      LLM_PROVIDER: "openai",
+      OPENAI_API_KEY: "sk-openai",
+      OPENAI_MODEL: "gpt-4.1-mini",
+    }));
+    expect(r).not.toBe(sentinel);
+    expect(typeof r).toBe("function");
+  });
+
+  test("openai: MODEL 欠落は明示エラー", () => {
+    expect(() => selectRunner(args({ LLM_PROVIDER: "openai", OPENAI_API_KEY: "sk-openai" })))
+      .toThrow(/OPENAI_MODEL/);
+  });
+
   test("openai-compat: BASE_URL 欠落は明示エラー", () => {
     expect(() => selectRunner(args({ LLM_PROVIDER: "openai-compat", OPENAI_COMPAT_MODEL: "m" })))
       .toThrow(/OPENAI_COMPAT_BASE_URL/);
@@ -113,6 +128,30 @@ describe("settingsToEnv", () => {
     expect(out.OPENAI_COMPAT_MODEL).toBe("llama3");
     // APIキーは settings に存在しない。必ず env（.env）から来る
     expect(out.OPENAI_COMPAT_API_KEY).toBe("sk-from-env");
+  });
+
+  test("provider=openai: 互換接続情報を混ぜず、公式モデルと公式キーだけを合成する", () => {
+    const out = settingsToEnv(
+      {
+        provider: "openai",
+        baseUrl: "http://localhost:11434/v1",
+        model: "llama3",
+        openaiModel: "gpt-4.1-mini",
+        codexModel: "gpt-5-codex",
+      },
+      { OPENAI_API_KEY: "ambient", OPENAI_COMPAT_API_KEY: "compat" },
+      () => "approved-compat",
+      "approved-openai",
+    );
+    expect(out).toEqual({
+      LLM_PROVIDER: "openai",
+      OPENAI_COMPAT_BASE_URL: "http://localhost:11434/v1",
+      OPENAI_COMPAT_MODEL: "llama3",
+      OPENAI_MODEL: "gpt-4.1-mini",
+      CODEX_MODEL: "gpt-5-codex",
+      OPENAI_API_KEY: "approved-openai",
+    });
+    expect(out.OPENAI_COMPAT_API_KEY).toBeUndefined();
   });
 
   test("server用resolverを渡した場合はその接続先に承認されたキーだけを採用する", () => {
@@ -204,7 +243,9 @@ describe("role settings helpers", () => {
 
   test("roleSettingToSettings は provider/フィールドをそのまま LlmSettings へ写す", () => {
     const rs: LlmRoleSetting = { provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null };
-    expect(roleSettingToSettings(rs)).toEqual({ provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", codexModel: null });
+    expect(roleSettingToSettings(rs)).toEqual({
+      provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "llama3", openaiModel: null, codexModel: null,
+    });
   });
 });
 

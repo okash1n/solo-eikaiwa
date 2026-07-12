@@ -4,7 +4,8 @@ const KEY = "llm.preferredCloud";
 
 /** プリセット適用時のクラウド枠に使う優先クラウド（クライアント専用・localStorage永続）。 */
 export function loadPreferredCloud(): CloudTarget {
-  return localStorage.getItem(KEY) === "codex" ? "codex" : "claude";
+  const value = localStorage.getItem(KEY);
+  return value === "openai" || value === "codex" ? value : "claude";
 }
 export function savePreferredCloud(c: CloudTarget): void {
   localStorage.setItem(KEY, c);

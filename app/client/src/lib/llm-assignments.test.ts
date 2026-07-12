@@ -8,12 +8,12 @@ import {
   claudeModelSelectOptions, effortOptionsForClaudeAlias, codexModelSelectOptions, effortOptionsForCodexModel,
   tierOptionsForCodexModel, codexDefaultEffortLabel, codexDefaultModelLabel, localModelSelectOptions, resolveEffective, clampClaudeEffort,
   hydrateAuthModes, hydrateAuthKeys, buildAuthPatch, CODEX_EFFORT_OPTIONS,
-  classifyOpenAiEndpoint,
+  classifyOpenAiEndpoint, endpointAllowsCredentials, roleTargetAvailability,
   type RoleTargets,
 } from "./llm-assignments";
 
-const LOCAL_CONN = { baseUrl: "http://localhost:11434/v1", model: "qwen3", codexModel: "" };
-const EMPTY_CONN = { baseUrl: "", model: "", codexModel: "" };
+const LOCAL_CONN = { baseUrl: "http://localhost:11434/v1", model: "qwen3", openaiModel: "", codexModel: "" };
+const EMPTY_CONN = { baseUrl: "", model: "", openaiModel: "", codexModel: "" };
 
 describe("classifyOpenAiEndpoint", () => {
   test("localhost・127.0.0.1・IPv6 loopbackをこのMacとして分類しoriginを正規化する", () => {
@@ -40,13 +40,66 @@ describe("classifyOpenAiEndpoint", () => {
       expect(classifyOpenAiEndpoint(url)).toEqual({ location: "invalid", origin: null });
     }
   });
+
+  test("APIキー送信はHTTPSまたはloopback HTTPだけを許可する", () => {
+    expect(endpointAllowsCredentials("https://api.openai.com/v1")).toBe(true);
+    expect(endpointAllowsCredentials("https://ollama.local/v1")).toBe(true);
+    expect(endpointAllowsCredentials("http://localhost:11434/v1")).toBe(true);
+    expect(endpointAllowsCredentials("http://192.168.1.2:11434/v1")).toBe(false);
+    expect(endpointAllowsCredentials("http://example.com/v1")).toBe(false);
+    expect(endpointAllowsCredentials("")).toBe(false);
+  });
+});
+
+describe("roleTargetAvailability", () => {
+  test("OpenAI公式は専用キーと公式モデルが揃った場合だけ選択できる", () => {
+    expect(roleTargetAvailability(mkView(), { ...EMPTY_CONN, openaiModel: "gpt-4.1-mini" }).openai)
+      .toEqual({ available: false, reason: "authentication" });
+    expect(roleTargetAvailability(mkView({ openAiKeyConfigured: true }), EMPTY_CONN).openai)
+      .toEqual({ available: false, reason: "connection" });
+    expect(roleTargetAvailability(
+      mkView({ openAiKeyConfigured: true }),
+      { ...EMPTY_CONN, openaiModel: "gpt-4.1-mini" },
+    ).openai.available).toBe(true);
+  });
+
+  test("subscription はキー不要、api-key は対応キーがある場合だけ選択できる", () => {
+    const subscription = roleTargetAvailability(mkView(), LOCAL_CONN);
+    expect(subscription.claude.available).toBe(true);
+    expect(subscription.codex.available).toBe(true);
+
+    const apiKey = roleTargetAvailability(mkView({
+      authModes: { claude: "api-key", codex: "api-key" },
+      authKeys: { anthropic: true, codex: false },
+    }), LOCAL_CONN);
+    expect(apiKey.claude.available).toBe(true);
+    expect(apiKey.codex).toEqual({ available: false, reason: "authentication" });
+  });
+
+  test("OpenAI互換は接続未設定を除外し、loopback/LANはキーなしでも選択できる", () => {
+    expect(roleTargetAvailability(mkView(), EMPTY_CONN).local).toEqual({
+      available: false, reason: "connection",
+    });
+    expect(roleTargetAvailability(mkView(), LOCAL_CONN).local.available).toBe(true);
+    expect(roleTargetAvailability(mkView(), {
+      baseUrl: "http://192.168.1.2:11434/v1", model: "qwen3", codexModel: "",
+    }).local.available).toBe(true);
+  });
+
+  test("remote OpenAI互換は接続先へ承認済みのキーがある場合だけ選択できる", () => {
+    const remote = { baseUrl: "https://api.openai.com/v1", model: "gpt-4.1-mini", codexModel: "" };
+    expect(roleTargetAvailability(mkView({ apiKeyApproved: false }), remote).local).toEqual({
+      available: false, reason: "authentication",
+    });
+    expect(roleTargetAvailability(mkView({ apiKeyApproved: true }), remote).local.available).toBe(true);
+  });
 });
 
 /** テスト用の LlmSettingsView 生成（roles は既定 inherit・tuning は既定全null・上書き可）。 */
 function mkView(over: Partial<LlmSettingsView> = {}): LlmSettingsView {
   const inherit = { provider: "inherit" as const, baseUrl: null, model: null, codexModel: null };
   return {
-    provider: "claude", baseUrl: null, model: null, codexModel: null,
+    provider: "claude", baseUrl: null, model: null, openaiModel: null, codexModel: null,
     apiKeyConfigured: false,
     roles: { conversation: inherit, assist: inherit, coaching: inherit, generation: inherit, assessment: inherit },
     tuning: defaultTuning(),
@@ -89,6 +142,22 @@ describe("isLocalDefined / presetEnabled", () => {
 });
 
 describe("buildRolesPayload", () => {
+  test("OpenAI公式は固定URLをペイロードへ出さず、公式モデルだけを用途へ割り当てる", () => {
+    const conn = { ...LOCAL_CONN, openaiModel: "gpt-4.1-mini", codexModel: "gpt-5-codex" };
+    const targets: RoleTargets = {
+      conversation: "openai", assist: "local", coaching: "claude", generation: "codex", assessment: "openai",
+    };
+    const payload = buildRolesPayload(targets, conn, "openai");
+    expect(payload.roles.conversation).toEqual({ provider: "openai", model: "gpt-4.1-mini" });
+    expect(payload.roles.assessment).toEqual({ provider: "openai", model: "gpt-4.1-mini" });
+    expect(payload.global).toMatchObject({
+      openaiModel: "gpt-4.1-mini",
+      baseUrl: LOCAL_CONN.baseUrl,
+      model: LOCAL_CONN.model,
+      codexModel: "gpt-5-codex",
+    });
+  });
+
   test("オールローカル: global=openai-compat・全ロール openai-compat インライン", () => {
     expect(buildRolesPayload(PRESETS["all-local"], LOCAL_CONN)).toEqual({
       global: { provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3", codexModel: null },
@@ -208,6 +277,27 @@ describe("設定画面の保存スコープ用ペイロード", () => {
 });
 
 describe("hydrateTargets（inherit の読み替え）", () => {
+  test("assistのinheritはcoachingの明示接続を継承し、実効表示と選択状態を一致させる", () => {
+    const view = mkView({
+      provider: "openai-compat",
+      roles: {
+        conversation: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+        assist: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+        coaching: { provider: "claude", baseUrl: null, model: null, codexModel: null },
+        generation: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+        assessment: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
+      },
+    });
+
+    expect(hydrateTargets(view).assist).toBe("claude");
+    expect(resolveEffective("assist", view).provider).toBe("claude");
+  });
+
+  test("OpenAI公式のglobal/roleをopenaiターゲットへ復元する", () => {
+    const view = mkView({ provider: "openai", openaiModel: "gpt-4.1-mini" });
+    expect(hydrateTargets(view).conversation).toBe("openai");
+  });
+
   test("既存ユーザー: llm_settings=openai-compat・全ロール inherit → 全ロール local", () => {
     const view = mkView({ provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3" });
     expect(hydrateTargets(view)).toEqual({ conversation: "local", assist: "local", coaching: "local", generation: "local", assessment: "local" });
@@ -234,9 +324,15 @@ describe("hydrateTargets（inherit の読み替え）", () => {
 });
 
 describe("hydrateConnection", () => {
+  test("OpenAI公式モデルを互換モデルとは別に復元する", () => {
+    const view = mkView({ openaiModel: "gpt-4.1-mini", model: "qwen3" });
+    expect(hydrateConnection(view).openaiModel).toBe("gpt-4.1-mini");
+    expect(hydrateConnection(view).model).toBe("qwen3");
+  });
+
   test("llm_settings から接続入力を復元する", () => {
     const view = mkView({ provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3", codexModel: "gpt-5-codex" });
-    expect(hydrateConnection(view)).toEqual({ baseUrl: "http://localhost:11434/v1", model: "qwen3", codexModel: "gpt-5-codex" });
+    expect(hydrateConnection(view)).toEqual({ baseUrl: "http://localhost:11434/v1", model: "qwen3", openaiModel: "", codexModel: "gpt-5-codex" });
   });
   test("llm_settings に無ければロール行からフォールバックする", () => {
     const view = mkView({
@@ -249,10 +345,10 @@ describe("hydrateConnection", () => {
         assessment: { provider: "inherit", baseUrl: null, model: null, codexModel: null },
       },
     });
-    expect(hydrateConnection(view)).toEqual({ baseUrl: "http://localhost:11434/v1", model: "qwen3", codexModel: "gpt-5-codex" });
+    expect(hydrateConnection(view)).toEqual({ baseUrl: "http://localhost:11434/v1", model: "qwen3", openaiModel: "", codexModel: "gpt-5-codex" });
   });
   test("何も無ければ空文字", () => {
-    expect(hydrateConnection(mkView())).toEqual({ baseUrl: "", model: "", codexModel: "" });
+    expect(hydrateConnection(mkView())).toEqual({ baseUrl: "", model: "", openaiModel: "", codexModel: "" });
   });
 });
 
@@ -399,7 +495,7 @@ describe("旧サーバ応答への後方互換（ロール行の欠落）", () =
     const view = mkView({ provider: "openai-compat", baseUrl: "http://localhost:11434/v1", model: "qwen3:30b-instruct" });
     delete (view.roles as Record<string, unknown>).assist;
     expect(hydrateConnection(view)).toEqual({
-      baseUrl: "http://localhost:11434/v1", model: "qwen3:30b-instruct", codexModel: "",
+      baseUrl: "http://localhost:11434/v1", model: "qwen3:30b-instruct", openaiModel: "", codexModel: "",
     });
   });
   test("tuningキー自体が無い旧応答でもhydrateTuningは壊れず全ロールnullで復元する", () => {
@@ -592,6 +688,24 @@ describe("localModelSelectOptions", () => {
 });
 
 describe("resolveEffective", () => {
+  test("OpenAI公式: 専用モデルを公式カタログで確認し、effort/tierは持たない", () => {
+    const view = mkView({ provider: "openai", openaiModel: "gpt-4.1-mini" });
+    const openai: CatalogResult = {
+      available: true,
+      fetchedAt: "2026-07-08T00:00:00.000Z",
+      models: [{ id: "gpt-4.1-mini", displayName: "GPT-4.1 mini", description: "" }],
+    };
+    expect(resolveEffective("conversation", view, {
+      claude: UNAVAILABLE_CATALOG, openai, codex: UNAVAILABLE_CATALOG, local: UNAVAILABLE_CATALOG,
+    })).toEqual({
+      provider: "openai",
+      model: { confirmed: true, text: "gpt-4.1-mini" },
+      effort: null,
+      tier: null,
+      endpoint: { location: "remote", origin: "https://api.openai.com" },
+    });
+  });
+
   test("claude・tuning全null・カタログ未取得: エイリアスsonnet(未確認)・effortはSDK標準・tierはnull", () => {
     const view = mkView({ provider: "claude" });
     expect(resolveEffective("conversation", view)).toEqual({

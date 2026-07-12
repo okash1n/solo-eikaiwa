@@ -14,12 +14,12 @@ const KEYCHAIN_SERVICE = "solo-eikaiwa";
 
 /**
  * UI/Keychain で扱う鍵のホワイトリスト（binding・spec §2）。
- * OPENAI_API_KEY は含めない（TTS は TTS_API_KEY が優先解決されるため UI 上はこれで完結。
- * OPENAI_API_KEY は教材生成 CLI・レガシーフォールバック用に env のみ）。
+ * OpenAI 公式と OpenAI 互換は別の鍵として扱い、互換キーを公式以外へ流用しない。
  */
 export const KEYCHAIN_SECRET_NAMES = [
   "ANTHROPIC_API_KEY",
   "CODEX_API_KEY",
+  "OPENAI_API_KEY",
   "OPENAI_COMPAT_API_KEY",
   "TTS_API_KEY",
 ] as const;
@@ -97,7 +97,7 @@ async function spawnWithTimeout(
   }
 }
 
-export type SecretSource = "keychain" | "env" | null;
+export type SecretSource = "keychain" | "env" | "legacy" | null;
 export type SecretStatus = { configured: boolean; source: SecretSource };
 
 export type SecretsManager = {
@@ -128,7 +128,7 @@ export function makeSecretsManager(opts?: {
 
   return {
     async load() {
-      // 4鍵を従来どおり直列に読むが、全体deadlineを共有する。1鍵目がハングしても最大5秒で
+      // 鍵を直列に読むが、全体deadlineを共有する。1鍵目がハングしても最大5秒で
       // 残りをenvへfail-openし、sidecarのhealth待ち上限より前にlistenへ到達できる。
       const deadline = performance.now() + timeoutMs;
       for (const name of KEYCHAIN_SECRET_NAMES) {

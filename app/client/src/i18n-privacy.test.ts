@@ -9,10 +9,11 @@ describe("provider location disclosure i18n", () => {
     expect(STR.ja.settings.endpointRemoteDisclosure).toContain("Macの外へ送信");
   });
 
-  test("EN/JAのAboutがローカル保存と選択providerへの送信を区別する", () => {
-    expect(STR.en.about.desc).toContain("stay on your Mac");
-    expect(STR.en.about.desc).toContain("providers you select");
-    expect(STR.ja.about.desc).toContain("このMacに保存");
-    expect(STR.ja.about.desc).toContain("プロバイダへ送信");
+  test("EN/JAの外部リンク名が行き先と新しいタブで開くことを伝える", () => {
+    expect(STR.en.footer.githubLabel).toContain("GitHub repository");
+    expect(STR.en.footer.websiteLabel).toContain("opens in a new tab");
+    expect(STR.ja.footer.githubLabel).toContain("GitHub リポジトリ");
+    expect(STR.ja.footer.websiteLabel).toContain("新しいタブで開く");
+    expect(STR.en.footer.copyright).toBe(STR.ja.footer.copyright);
   });
 });

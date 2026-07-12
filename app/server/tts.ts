@@ -5,9 +5,10 @@ import { tmpdir } from "node:os";
 import { BUNDLED_AUDIO_DIR, TTS_CACHE_DIR } from "./paths";
 import { realSpawn, type SpawnFn } from "./spawn";
 import { parseRemoteBaseUrl } from "./remote-endpoint";
+import { OPENAI_BASE_URL } from "./openai";
 
 /** 既定の OpenAI 互換エンドポイント。未設定時はここに向く（＝現行と完全同一）。 */
-export const DEFAULT_TTS_BASE_URL = "https://api.openai.com/v1";
+export const DEFAULT_TTS_BASE_URL = OPENAI_BASE_URL;
 /** 既定モデル。同梱バンドルの cacheKey もこの値で生成済み（凍結・変更不可）。 */
 export const DEFAULT_TTS_MODEL = "gpt-4o-mini-tts";
 /** 既定 voice。同梱バンドルの cacheKey もこの値で生成済み。 */
@@ -22,16 +23,18 @@ export type TtsSettings = {
   baseUrl: string | null;
   model: string | null;
   voice: string | null;
+  /** OpenAI 公式用設定。旧呼び出し元との後方互換のため省略時は null 扱い。 */
+  openaiModel?: string | null;
+  openaiVoice?: string | null;
 };
 
 /**
  * TTS プロバイダの明示選択（DB/UI 由来・v0.29）。
- * - "auto": 従来の暗黙決定（鍵あり or カスタム baseUrl なら HTTP → 失敗/該当なしは say）
  * - "say": HTTP を試さず常に macOS say
- * - "openai-compat": 暗黙判定をスキップして常に HTTP を試す（失敗時の say フォールバックは維持 —
- *   「固定」は試行順の固定であり、音声が出ないより劣化再生のほうが学習体験を壊さないため）
+ * - "openai": OpenAI 公式固定 URL を使う
+ * - "openai-compat": 利用者指定の互換 URL を使う
  */
-export type TtsProvider = "auto" | "say" | "openai-compat";
+export type TtsProvider = "say" | "openai" | "openai-compat";
 
 /** 解決済みの実効設定（synthesize が実際に使う値）。 */
 export type ResolvedTtsConfig = {
@@ -46,7 +49,7 @@ export type SynthesizeOpts = {
   model?: string;
   baseUrl?: string;
   apiKey?: string;
-  /** プロバイダの明示選択（DB/UI 由来）。省略時 "auto"（従来の暗黙決定）。 */
+  /** プロバイダの明示選択（DB/UI 由来）。省略は内部呼び出しの後方互換時だけ許可する。 */
   provider?: TtsProvider;
   cacheDir?: string;
   /** 同梱音声生成CLIだけが凍結済みlegacy keyへ書く。通常実行は接続分離済みruntime key。 */
@@ -56,7 +59,7 @@ export type SynthesizeOpts = {
   fetchFn?: typeof fetch;
   spawnFn?: SpawnFn;
   signal?: AbortSignal;
-  /** HTTP→say fallbackを含む総処理時間。テスト注入可能な既定60秒。 */
+  /** 合成全体の処理時間。省略providerの後方互換経路ではHTTP→sayも同じ期限に含む。 */
   timeoutMs?: number;
   /** say一時ディレクトリの親。テスト用 seam。 */
   tempRoot?: string;
@@ -242,14 +245,16 @@ export async function synthesize(
     throwIfAborted(signal);
     const cfg = resolveTtsConfig(opts, opts.env ?? Bun.env);
     const cacheDir = opts.cacheDir ?? TTS_CACHE_DIR;
-    const provider = opts.provider ?? "auto";
+    const explicitProvider = opts.provider !== undefined;
     const parsedBase = parseRemoteBaseUrl(cfg.baseUrl);
     const isDefaultEndpoint = parsedBase.ok && parsedBase.baseUrl === DEFAULT_TTS_BASE_URL;
+    const provider: TtsProvider = opts.provider
+      ?? (isDefaultEndpoint ? (cfg.apiKey ? "openai" : "say") : "openai-compat");
     const bundledKey = cacheKeyFor(cfg.model, cfg.voice, text);
 
     // 同梱音声は凍結済み旧キーを維持し、OpenAI既定接続・既定model/voiceでのみ参照する。
     // custom endpointやsay固定が同じラベルを使っても、別providerの音声へ短絡しない。
-    const canUseBundled = provider !== "say"
+    const canUseBundled = (provider === "openai" || !explicitProvider)
       && isDefaultEndpoint
       && cfg.model === DEFAULT_TTS_MODEL
       && cfg.voice === DEFAULT_TTS_VOICE;
@@ -265,11 +270,7 @@ export async function synthesize(
       console.warn(`tts: bundled audio read failed for ${bundledPath}: ${String(err)}`);
     }
 
-    const shouldTryHttp = provider === "say"
-      ? false
-      : provider === "openai-compat"
-      ? true
-      : Boolean(cfg.apiKey) || !isDefaultEndpoint;
+    const shouldTryHttp = provider === "openai" || provider === "openai-compat";
 
     if (shouldTryHttp) {
       if (opts.cacheTarget === "bundled" && !canUseBundled) {
@@ -303,6 +304,7 @@ export async function synthesize(
         return { audio, mime: "audio/mpeg", engine: "openai" };
       } catch (err) {
         if (signal.aborted) throw abortReason(signal);
+        if (explicitProvider) throw err;
         console.warn(`tts: HTTP synthesis failed (provider=${provider}), falling back to say: ${String(err)}`);
       }
     }

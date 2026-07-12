@@ -9,6 +9,6 @@ describe("ホームのナビゲーション状態", () => {
 
   test("独立画面ではホームを現在地にしない", () => {
     expect(isHomeNavigationActive("free")).toBe(false);
-    expect(isHomeNavigationActive("about")).toBe(false);
+    expect(isHomeNavigationActive("settings")).toBe(false);
   });
 });

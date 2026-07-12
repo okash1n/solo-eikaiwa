@@ -48,10 +48,10 @@ describe("tts", () => {
 
   test("HTTP cache keyはschema/provider/正規化base URL/model/voiceを分離する", () => {
     const cfg = { baseUrl: "https://api.openai.com/v1", model: "m", voice: "v" };
-    const key = httpCacheKeyFor("auto", cfg, "Hello");
-    expect(key).toBe(httpCacheKeyFor("auto", { ...cfg, baseUrl: "https://api.openai.com/v1/" }, "Hello"));
+    const key = httpCacheKeyFor("openai", cfg, "Hello");
+    expect(key).toBe(httpCacheKeyFor("openai", { ...cfg, baseUrl: "https://api.openai.com/v1/" }, "Hello"));
     expect(key).not.toBe(httpCacheKeyFor("openai-compat", cfg, "Hello"));
-    expect(key).not.toBe(httpCacheKeyFor("auto", { ...cfg, baseUrl: "https://other.example/v1" }, "Hello"));
+    expect(key).not.toBe(httpCacheKeyFor("openai", { ...cfg, baseUrl: "https://other.example/v1" }, "Hello"));
     expect(key).toMatch(/^[0-9a-f]{64}$/);
   });
 
@@ -302,6 +302,19 @@ describe("tts", () => {
 });
 
 describe("tts provider config", () => {
+  test("明示した OpenAI 公式が失敗しても say へ黙って切り替えない", async () => {
+    let spawnCalls = 0;
+    await expect(synthesize("No fallback", {
+      provider: "openai",
+      apiKey: "sk-test",
+      fetchFn: (async () => new Response("failed", { status: 500 })) as unknown as typeof fetch,
+      spawnFn: async () => { spawnCalls++; return { exitCode: 0, stderr: "" }; },
+      cacheDir: mkdtempSync(path.join(tmpdir(), "tts-")),
+      env: {},
+    })).rejects.toThrow(/TTS HTTP failed/);
+    expect(spawnCalls).toBe(0);
+  });
+
   test("resolveTtsConfig: 未指定なら既定（OpenAI/gpt-4o-mini-tts/alloy）に解決し鍵は env フォールバック", () => {
     const cfg = resolveTtsConfig({}, { OPENAI_API_KEY: "sk-openai" });
     expect(cfg).toEqual({
@@ -405,15 +418,15 @@ describe("tts provider config", () => {
     expect(r.engine).toBe("openai");
   });
 
-  test("provider=openai-compat: HTTP 失敗時は従来どおり say へフォールバックする（固定は試行順の固定）", async () => {
+  test("provider=openai-compat: HTTP 失敗時は say へ黙って切り替えない", async () => {
     const cacheDir = mkdtempSync(path.join(tmpdir(), "tts-"));
     const fakeFetch = (async () => new Response("boom", { status: 500 })) as unknown as typeof fetch;
-    const spawned: string[][] = [];
-    const r = await synthesize("Broken http", {
-      provider: "openai-compat", cacheDir, fetchFn: fakeFetch, spawnFn: makeFakeSpawn(spawned), env: {},
-    });
-    expect(r.engine).toBe("say");
-    expect(spawned.length).toBeGreaterThan(0);
+    let spawnCalls = 0;
+    await expect(synthesize("Broken http", {
+      provider: "openai-compat", cacheDir, fetchFn: fakeFetch,
+      spawnFn: async () => { spawnCalls++; return { exitCode: 0, stderr: "" }; }, env: {},
+    })).rejects.toThrow(/TTS HTTP failed/);
+    expect(spawnCalls).toBe(0);
   });
 
   test("カスタム model/voice は cacheKeyFor が変わり同梱バンドルにヒットせず HTTP を叩く", async () => {
@@ -460,7 +473,7 @@ describe("tts provider config", () => {
       return new Response(new Uint8Array([calls]), { status: 200 });
     }) as unknown as typeof fetch;
 
-    await synthesize("Shared labels", { provider: "auto", apiKey: "sk", cacheDir, fetchFn: fakeFetch, env: {} });
+    await synthesize("Shared labels", { provider: "openai", apiKey: "sk", cacheDir, fetchFn: fakeFetch, env: {} });
     await synthesize("Shared labels", {
       provider: "openai-compat", apiKey: "sk", cacheDir, fetchFn: fakeFetch, env: {},
     });

@@ -75,7 +75,6 @@ type BannerStrings = {
     serverDownDev: string;
     serverDownDesktop: string;
     retry: string;
-    ttsKeyMissing: string;
   };
 };
 type ErrorStrings = { errors: {
@@ -148,6 +147,7 @@ type SettingsStrings = {
     loadLlmFailed: string;
     loadTtsFailed: string;
     loadSecretsFailed: string;
+    loading: string;
     retry: string;
     roleName: Record<LlmRole, string>;
     roleDesc: Record<LlmRole, string>;
@@ -166,10 +166,21 @@ type SettingsStrings = {
     preferredCloudNote: string;
     applyRecommendedTuning: string;
     applyRecommendedTuningNote: string;
+    apiKeysSection: string;
+    apiKeysIntro: string;
+    apiKeyTargetWith: (target: string) => string;
+    apiKeyTargetRequired: string;
+    apiKeyTransportBlocked: string;
+    apiKeyLocalOptional: string;
+    apiKeyRemoteRequired: string;
+    saveAuthentication: string;
+    authenticationSaveNote: string;
     connectionSection: string;
     claudeNoSetup: string;
     claudeGlobalModelLabel: string;
     claudeGlobalModelNote: string;
+    openAiConnNote: string;
+    openAiOfficialKeyNote: string;
     localConnTitle: string;
     endpointLabel: string;
     endpointLoopback: string;
@@ -188,9 +199,11 @@ type SettingsStrings = {
     secretKeyLabel: string;
     secretStatusKeychain: string;
     secretStatusEnv: string;
+    secretStatusLegacy: string;
     secretStatusMissing: string;
     secretApprovalRequired: string;
     claudeAuthMissingKey: string;
+    authMissingKeyWith: (provider: string) => string;
     secretPlaceholderSet: string;
     secretPlaceholderNew: string;
     secretSave: string;
@@ -204,9 +217,12 @@ type SettingsStrings = {
     roleAssignSection: string;
     roleAssignDesc: string;
     targetClaude: string;
+    targetOpenAi: string;
     targetLocal: string;
     targetCodex: string;
     targetLocalDisabled: string;
+    targetUnavailableNote: string;
+    selectedTargetUnavailable: string;
     tuningDetails: string;
     tuningModel: string;
     tuningEffort: string;
@@ -229,8 +245,10 @@ type SettingsStrings = {
     rolesSaveNote: string;
     presetSaveNote: string;
     saveConnectionFirst: string;
+    saveAuthFirst: string;
     authModeSaveRequired: string;
     localRoleConnectionRequired: string;
+    openAiRoleConnectionRequired: string;
     ttsSaveNote: string;
     ttsResetStaged: string;
     displayImmediateNote: string;
@@ -238,12 +256,14 @@ type SettingsStrings = {
     ttsSection: string;
     ttsDesc: string;
     ttsProviderLabel: string;
-    ttsProviderAutoWith: (resolved: string) => string;
-    ttsProviderShortSay: string; ttsProviderShortHttp: string;
-    ttsProviderSay: string; ttsProviderHttp: string;
+    ttsProviderSay: string;
+    ttsProviderOpenAi: string;
+    ttsProviderCompat: string;
     ttsProviderNote: string;
+    ttsOpenAiKeyRequired: string;
+    ttsCompatConnectionRequired: string;
     ttsApiKeyOptionalNote: string;
-    ttsBaseUrlLabel: string; ttsBaseUrlPlaceholder: string;
+    ttsBaseUrlLabel: string;
     ttsModelLabel: string; ttsModelPlaceholder: string;
     ttsVoiceLabel: string; ttsVoicePlaceholder: string;
     ttsVoicePresetLabel: string;
@@ -463,7 +483,7 @@ type FeedbackScreenStrings = { feedbackScreen: {
   levelStage: (level: number | null, stage: number | null) => string;
 } };
 
-type AboutStrings = { about: { title: string; desc: string; lpButton: string; githubButton: string; license: string } };
+type FooterStrings = { footer: { linksLabel: string; githubLabel: string; websiteLabel: string; copyright: string } };
 
 type Strings =
   & NavStrings & UiScaleStrings & AppShellStrings & RouteStrings & SupportStrings & StatStrings & HeroStrings
@@ -473,7 +493,7 @@ type Strings =
   & WarmupStrings & Ftt432Strings & ReflectionStrings & ChunkListStrings & PlaybackStrings
   & ShadowingStrings & LibraryStrings & RoleplayStrings & FreeTalkScreenStrings & ListeningScreenStrings
   & LevelChipStrings & FeedbackRowStrings & FeedbackScreenStrings & LlmPanelStrings & SettingsStrings
-  & AboutStrings & LlmNoticeStrings & SetupStrings & PracticeReadinessStrings & BannerStrings & ErrorStrings;
+  & FooterStrings & LlmNoticeStrings & SetupStrings & PracticeReadinessStrings & BannerStrings & ErrorStrings;
 
 const WEEKDAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -505,7 +525,6 @@ export const STR: Record<Lang, Strings> = {
       serverDownDev: "Can't connect to the API server — run `cd app && bun run dev` to start it.",
       serverDownDesktop: "Can't connect to the local server. Please restart the app.",
       retry: "Try again",
-      ttsKeyMissing: "OPENAI_API_KEY isn't set, so text-to-speech falls back to macOS's say command.",
     },
     errors: {
       action: {
@@ -571,13 +590,14 @@ export const STR: Record<Lang, Strings> = {
       save: "Save", saving: "Saving…",
       applied: "Applied to the running app.",
       notApplied: (msg) => `Saved, but not applied: ${msg}`,
-      help: "Prompts and transcribed speech are sent to the provider assigned to each role (Claude is the default). API keys saved here stay in macOS Keychain; their values are never displayed or returned.",
+      help: "Prompts and transcribed speech are sent to the provider assigned to each role (Claude is the default). Manage credentials in the API keys tab; key values are never displayed or returned.",
     },
     settings: {
       title: "Settings",
       loadLlmFailed: "Couldn't load the model connection settings. Nothing has been changed.",
       loadTtsFailed: "Couldn't load the voice settings. Nothing has been changed.",
       loadSecretsFailed: "Couldn't load API-key status. Key changes are unavailable until it is loaded.",
+      loading: "Loading settings…",
       retry: "Try again",
       roleName: {
         conversation: "Conversation",
@@ -606,27 +626,40 @@ export const STR: Record<Lang, Strings> = {
       presetAllLocalDesc: "Every role uses the configured OpenAI-compatible endpoint. Check its location and origin before applying; a remote endpoint sends text off this Mac.",
       presetBalancedDesc: (cloud) => cloud === "claude"
         ? "Conversation and content generation use the configured OpenAI-compatible endpoint; coaching and assessment use Claude, where the quality gap is largest and the usage least frequent."
+        : cloud === "openai"
+        ? "Conversation and content generation use the configured OpenAI-compatible endpoint; coaching and assessment use OpenAI."
         : "Conversation and content generation use the configured OpenAI-compatible endpoint; coaching and assessment use Codex, where the quality gap is largest and the usage least frequent.",
       presetHighQuality: "Best quality",
-      presetHighQualityDesc: (cloud) => cloud === "claude" ? "Every role uses Claude, the tested baseline." : "Every role uses Codex.",
+      presetHighQualityDesc: (cloud) => cloud === "claude" ? "Every role uses Claude, the tested baseline." : cloud === "openai" ? "Every role uses OpenAI." : "Every role uses Codex.",
       presetLocalRequired: "Set up an OpenAI-compatible endpoint in the Model connections tab to enable endpoint-based presets.",
       presetCustom: "Custom",
       presetBalancedOption: "Balanced (Recommended)",
       preferredCloudLabel: "Preferred cloud",
       preferredCloudNote: "Saved on this device as soon as you choose it. It is used for cloud slots only when you choose a preset, then Save assignments.",
       applyRecommendedTuning: "Apply recommended tuning",
-      applyRecommendedTuningNote: "Sets the recommended model/effort/delivery for Claude/Codex roles. OpenAI-compatible roles are left as-is. Save assignments to confirm.",
+      applyRecommendedTuningNote: "Sets the recommended model/effort/delivery for Claude/Codex roles. OpenAI and OpenAI-compatible roles are left as-is. Save assignments to confirm.",
+      apiKeysSection: "API keys",
+      apiKeysIntro: "Review and manage all credentials here. Only connections that are configured and usable here or in Model connections can be chosen in Model per role. Key values are write-only and stay in macOS Keychain.",
+      apiKeyTargetWith: (target) => `Key destination: ${target}`,
+      apiKeyTargetRequired: "Save a Base URL in Model connections before adding this key.",
+      apiKeyTransportBlocked: "API keys can only be sent to HTTPS or loopback HTTP. This endpoint may still be used without a key.",
+      apiKeyLocalOptional: "This Mac/LAN endpoint can be used without a key. Add one only when the endpoint itself requires authentication.",
+      apiKeyRemoteRequired: "A remote OpenAI-compatible endpoint must have a key approved for its current origin before it can be assigned to a role.",
+      saveAuthentication: "Save authentication",
+      authenticationSaveNote: "Key changes apply as soon as each key is saved. Claude/Codex authentication-mode changes apply after Save authentication.",
       connectionSection: "Model connections",
-      claudeNoSetup: "Claude is a cloud service and the default provider. Assigned prompts and transcribed speech are sent through your Claude subscription.",
+      claudeNoSetup: "Claude is a cloud service and the default provider. Choose Subscription or API key in the API keys tab.",
       claudeGlobalModelLabel: "Default model (all roles)",
       claudeGlobalModelNote: "Applies to every role assigned to Claude unless a role overrides it in the Model per role tab.",
+      openAiConnNote: "Official OpenAI API. The endpoint is fixed to https://api.openai.com/v1; choose a model after saving its dedicated key in API keys.",
+      openAiOfficialKeyNote: "Used only with the official https://api.openai.com/v1 endpoint, for both LLM and Voice (TTS). It is never sent to an OpenAI-compatible custom endpoint.",
       localConnTitle: "OpenAI-compatible endpoint",
       endpointLabel: "Processing location",
       endpointLoopback: "This Mac (loopback)",
       endpointLan: "Local network (LAN)",
       endpointRemote: "Remote endpoint",
       endpointInvalid: "Not set or invalid URL",
-      endpointCloudManaged: "Cloud destination managed by CLI",
+      endpointCloudManaged: "Provider-managed cloud service",
       endpointLoopbackDisclosure: "Requests to this endpoint stay on this Mac.",
       endpointLanDisclosure: "Requests are sent to another device on your local network. API-key credentials are not sent over non-loopback HTTP.",
       endpointRemoteDisclosure: "Prompts and transcribed speech assigned here leave your Mac. Authentication, data handling, and billing depend on the endpoint operator.",
@@ -638,9 +671,11 @@ export const STR: Record<Lang, Strings> = {
       secretKeyLabel: "API key",
       secretStatusKeychain: "Set (stored in Keychain)",
       secretStatusEnv: "Set (detected from app/.env)",
+      secretStatusLegacy: "Set (using a migrated legacy key)",
       secretStatusMissing: "Not set",
       secretApprovalRequired: "Stored, but not used for this connection. Save the key again to approve the current HTTPS or loopback address.",
       claudeAuthMissingKey: "API-key authentication is selected, but no Anthropic key is available. Save a key or switch to Subscription; requests will not fall back silently.",
+      authMissingKeyWith: (provider) => `${provider} is set to API-key authentication, but no key is available. Save a key or switch to Subscription; requests will not fall back silently.`,
       secretPlaceholderSet: "Enter a new key to replace the current one",
       secretPlaceholderNew: "Paste your API key",
       secretSave: "Save key",
@@ -652,11 +687,14 @@ export const STR: Record<Lang, Strings> = {
       secretDeleted: "Key removed from Keychain.",
       authApiKeyNote: "API keys are billed pay-as-you-go via api.openai.com / the Anthropic API (separate from your subscription allowance). The key itself is never stored in the UI.",
       roleAssignSection: "Model per role",
-      roleAssignDesc: "Choose which model handles each role. The Effective line always shows the processing location and origin.",
+      roleAssignDesc: "Choose which available connection handles each role. Unconfigured connections cannot be selected; the Effective line always shows the processing location and origin.",
       targetClaude: "Claude",
+      targetOpenAi: "OpenAI",
       targetLocal: "OpenAI-compatible",
       targetCodex: "Codex",
       targetLocalDisabled: "Set up an OpenAI-compatible endpoint in the Model connections tab to choose it.",
+      targetUnavailableNote: "Unavailable choices are disabled. Configure credentials in API keys or the endpoint in Model connections.",
+      selectedTargetUnavailable: "A current assignment uses an unavailable connection. Choose an available connection before saving.",
       tuningDetails: "Advanced",
       tuningModel: "Model",
       tuningEffort: "Effort (thinking depth)",
@@ -671,41 +709,44 @@ export const STR: Record<Lang, Strings> = {
       cliDefaultBadgeWith: (label) => `${label} (CLI default)`,
       refreshCatalog: "Refresh model list",
       refreshingCatalog: "Refreshing…",
-      catalogNote: "Fetches the real model list from Claude / Codex / the configured OpenAI-compatible endpoint to power the pickers below and the “Effective” line. If a source can't be reached, it degrades to “unconfirmed” rather than guessing.",
+      catalogNote: "Fetches real model lists from Claude, OpenAI, Codex, and the configured OpenAI-compatible endpoint. If a source can't be reached, it shows “unconfirmed” rather than guessing.",
       saveConnection: "Save connections",
       saveAssignments: "Save assignments",
       unsavedChanges: "Unsaved changes",
-      connectionSaveNote: "Saves connections, the default Claude model, authentication modes, and connection values used by already saved local or Codex roles. It does not save unsaved role choices or tuning.",
+      connectionSaveNote: "Saves provider models and endpoints, including values used by already saved OpenAI, OpenAI-compatible, or Codex roles. It does not save authentication, unsaved role choices, or role tuning.",
       rolesSaveNote: "Saves role choices and tuning. Connection edits in the other tab are not saved here.",
       presetSaveNote: "Choosing a preset stages its role assignments. Save assignments to apply them.",
       saveConnectionFirst: "Save the connection changes first so role assignments use the saved endpoint and model.",
-      authModeSaveRequired: "Authentication mode changes take effect only after Save connections.",
+      saveAuthFirst: "Save the authentication changes first so role assignments use the selected sign-in method.",
+      authModeSaveRequired: "Authentication mode changes take effect only after Save authentication.",
       localRoleConnectionRequired: "Some saved roles use the OpenAI-compatible endpoint. Assign those roles to a cloud provider before clearing the endpoint and model.",
+      openAiRoleConnectionRequired: "Some saved roles use OpenAI. Assign those roles elsewhere before clearing the OpenAI model.",
       ttsSaveNote: "Voice changes are staged here and take effect after Save.",
       ttsResetStaged: "Defaults are staged in the fields. Choose Save to apply them.",
       displayImmediateNote: "Text size and language apply immediately on this device.",
       displaySection: "Display",
       ttsSection: "Voice (TTS)",
-      ttsDesc: "Point speech synthesis at an OpenAI-compatible endpoint. Leave blank to use the default (OpenAI when a key is set, otherwise macOS say). A local server such as kokoro-fastapi needs no API key.",
+      ttsDesc: "Choose macOS say, the official OpenAI API, or a separate OpenAI-compatible endpoint. The selected engine is used as-is and is never changed silently after a request fails.",
       ttsProviderLabel: "Engine",
-      ttsProviderAutoWith: (resolved) => `Auto — currently: ${resolved}`,
-      ttsProviderShortSay: "macOS say", ttsProviderShortHttp: "OpenAI-compatible (HTTP)",
-      ttsProviderSay: "macOS say (offline)", ttsProviderHttp: "OpenAI-compatible (HTTP)",
-      ttsProviderNote: "Auto uses HTTP when a key or custom Base URL is set, otherwise macOS say. Fixing to HTTP still falls back to say if the request fails.",
+      ttsProviderSay: "macOS say (offline)",
+      ttsProviderOpenAi: "OpenAI (official API)",
+      ttsProviderCompat: "OpenAI-compatible (custom endpoint)",
+      ttsProviderNote: "OpenAI uses its fixed official endpoint and dedicated key. OpenAI-compatible uses the Base URL and optional endpoint-specific key below.",
+      ttsOpenAiKeyRequired: "Save an OpenAI API key in the API keys tab before using the official OpenAI engine.",
+      ttsCompatConnectionRequired: "Enter both the OpenAI-compatible Base URL and model before saving this engine.",
       ttsBaseUrlLabel: "Base URL",
-      ttsBaseUrlPlaceholder: "https://api.openai.com/v1",
       ttsModelLabel: "Model",
-      ttsModelPlaceholder: "gpt-4o-mini-tts",
+      ttsModelPlaceholder: "kokoro",
       ttsVoiceLabel: "Voice",
-      ttsVoicePlaceholder: "alloy",
+      ttsVoicePlaceholder: "af_sky",
       ttsVoicePresetLabel: "Voice type",
       ttsVoiceFemale: "Female",
       ttsVoiceMale: "Male",
       ttsVoiceCustom: "Custom",
       ttsVoicePresetNote: "Presets fill a matching voice for the current Base URL (OpenAI / Kokoro). For a custom voice, select Custom to focus the field below and type its name.",
       ttsReset: "Reset to default",
-      ttsResetDescWith: (model, voice) => `Clear the overrides and return to the defaults (engine: Auto, OpenAI ${model} / ${voice} when a key is set, otherwise macOS say).`,
-      ttsApiKeyOptionalNote: "A key is only needed for endpoints that require one (e.g. OpenAI); local servers work without it.",
+      ttsResetDescWith: (model, voice) => `Stage the safe defaults (engine: macOS say; OpenAI defaults remain ${model} / ${voice}).`,
+      ttsApiKeyOptionalNote: "This key is only for a custom OpenAI-compatible endpoint that requires authentication. Local servers usually work without it.",
     },
     stat: { title: "Days with practice", thisWeekUnit: "days practiced this week", total: (n) => `${n} practiced days total` },
     hero: {
@@ -1015,12 +1056,11 @@ export const STR: Record<Lang, Strings> = {
       levelStage: (level, stage) =>
         [level !== null ? `Lv${level}` : null, stage !== null ? `Stage${stage}` : null].filter(Boolean).join(" · ") || "—",
     },
-    about: {
-      title: "About",
-      desc: "Recordings, transcripts, and practice history stay on your Mac. Text is sent to the LLM and speech providers you select; a fully local setup is optional.",
-      lpButton: "Website & privacy details",
-      githubButton: "View on GitHub",
-      license: "Open source under the MIT License.",
+    footer: {
+      linksLabel: "Project links",
+      githubLabel: "GitHub repository (opens in a new tab)",
+      websiteLabel: "Official website (opens in a new tab)",
+      copyright: "© 2026 BTAJP. All Rights Reserved. Licensed under the MIT License.",
     },
   },
   ja: {
@@ -1048,7 +1088,6 @@ export const STR: Record<Lang, Strings> = {
       serverDownDev: "APIサーバに接続できません — `cd app && bun run dev` で起動してください",
       serverDownDesktop: "ローカルサーバに接続できません。アプリを再起動してください。",
       retry: "再試行",
-      ttsKeyMissing: "OPENAI_API_KEY 未設定のため TTS は say フォールバックです",
     },
     errors: {
       action: {
@@ -1114,13 +1153,14 @@ export const STR: Record<Lang, Strings> = {
       save: "保存", saving: "保存中…",
       applied: "実行中のアプリに適用しました。",
       notApplied: (msg) => `保存しましたが適用できませんでした: ${msg}`,
-      help: "プロンプトと文字起こしは用途ごとに割り当てたproviderへ送信されます（既定はClaude）。ここで保存したAPIキーはmacOS Keychainに保管し、値は表示・再取得しません。",
+      help: "プロンプトと文字起こしは用途ごとに割り当てたproviderへ送信されます（既定はClaude）。認証情報は「APIキー」タブで管理し、キーの値は表示・再取得しません。",
     },
     settings: {
       title: "設定",
       loadLlmFailed: "モデル接続設定を取得できませんでした。設定は変更していません。",
       loadTtsFailed: "音声設定を取得できませんでした。設定は変更していません。",
       loadSecretsFailed: "APIキーの設定状態を取得できませんでした。取得できるまでキーの変更はできません。",
+      loading: "設定を読み込んでいます…",
       retry: "再試行",
       roleName: {
         conversation: "会話",
@@ -1149,27 +1189,40 @@ export const STR: Record<Lang, Strings> = {
       presetAllLocalDesc: "すべての用途を設定済みのOpenAI互換接続先で動かします。適用前に場所とoriginを確認してください。remote接続先ではテキストがMacの外へ送信されます。",
       presetBalancedDesc: (cloud) => cloud === "claude"
         ? "会話・教材生成は設定済みのOpenAI互換接続先、コーチング・測定は品質差が最も大きく実行頻度も低いため Claude を使います。"
+        : cloud === "openai"
+        ? "会話・教材生成は設定済みのOpenAI互換接続先、コーチング・測定は OpenAI を使います。"
         : "会話・教材生成は設定済みのOpenAI互換接続先、コーチング・測定は品質差が最も大きく実行頻度も低いため Codex を使います。",
       presetHighQuality: "最高品質",
-      presetHighQualityDesc: (cloud) => cloud === "claude" ? "すべての用途を Claude（動作確認済みの基準）で動かします。" : "すべての用途を Codex で動かします。",
+      presetHighQualityDesc: (cloud) => cloud === "claude" ? "すべての用途を Claude（動作確認済みの基準）で動かします。" : cloud === "openai" ? "すべての用途を OpenAI で動かします。" : "すべての用途を Codex で動かします。",
       presetLocalRequired: "「モデル接続設定」タブでOpenAI互換接続先を設定すると、接続先を使うプリセットが選べます。",
       presetCustom: "カスタム",
       presetBalancedOption: "バランス（推奨）",
       preferredCloudLabel: "優先クラウド",
       preferredCloudNote: "選ぶとこの端末にすぐ保存されます。プリセットを選んでから「割当を保存」したときに、クラウド枠へ使われます。",
       applyRecommendedTuning: "推奨チューニングを適用",
-      applyRecommendedTuningNote: "Claude/Codex割当の用途に推奨のモデル/effort/配信を設定します（OpenAI互換割当は変更しません）。「割当を保存」で確定します。",
+      applyRecommendedTuningNote: "Claude/Codex割当の用途に推奨のモデル/effort/配信を設定します（OpenAI公式・OpenAI互換割当は変更しません）。「割当を保存」で確定します。",
+      apiKeysSection: "APIキー",
+      apiKeysIntro: "すべての認証情報をここで確認・管理します。ここ、または「モデル接続設定」で設定され、利用可能になった接続だけを「用途ごとのモデル」で選べます。キーはwrite-onlyでmacOS Keychainに保管します。",
+      apiKeyTargetWith: (target) => `キーの送信先: ${target}`,
+      apiKeyTargetRequired: "先に「モデル接続設定」でベースURLを保存してください。",
+      apiKeyTransportBlocked: "APIキーを送信できるのはHTTPSまたはloopback HTTPだけです。この接続先はキーなしで利用できる場合があります。",
+      apiKeyLocalOptional: "このMac/LANの接続先はキーなしでも利用できます。接続先自体が認証を要求する場合だけキーを設定してください。",
+      apiKeyRemoteRequired: "remoteのOpenAI互換接続先は、現在のoriginを承認したキーが設定されるまで用途へ割り当てられません。",
+      saveAuthentication: "認証方法を保存",
+      authenticationSaveNote: "キーは各「キーを保存」で即時反映します。Claude/Codexの認証方法は「認証方法を保存」で反映します。",
       connectionSection: "モデル接続設定",
-      claudeNoSetup: "Claudeはクラウドサービスで、既定providerです。割り当てた用途のプロンプトと文字起こしをClaudeサブスクリプション経由で送信します。",
+      claudeNoSetup: "Claudeはクラウドサービスで、既定providerです。サブスクリプション/APIキーの選択は「APIキー」タブで行います。",
       claudeGlobalModelLabel: "既定モデル（全用途共通）",
       claudeGlobalModelNote: "Claude に割り当てた全ての用途に適用されます（用途ごとのモデルタブで用途別に上書き可能）。",
+      openAiConnNote: "OpenAI公式APIです。接続先は https://api.openai.com/v1 固定です。「APIキー」で専用キーを保存してからモデルを選びます。",
+      openAiOfficialKeyNote: "公式 https://api.openai.com/v1 だけに使用し、LLMと音声（TTS）で共用します。OpenAI互換の独自接続先には送信しません。",
       localConnTitle: "OpenAI互換接続先",
       endpointLabel: "処理場所",
       endpointLoopback: "このMac（loopback）",
       endpointLan: "ローカルネットワーク（LAN）",
       endpointRemote: "remote接続先",
       endpointInvalid: "未設定または無効なURL",
-      endpointCloudManaged: "CLIが管理するクラウド送信先",
+      endpointCloudManaged: "providerが管理するクラウドサービス",
       endpointLoopbackDisclosure: "この接続先へのリクエストは、このMac内で完結します。",
       endpointLanDisclosure: "リクエストはLAN上の別端末へ送信されます。loopback以外のHTTP接続にはAPIキーを送信しません。",
       endpointRemoteDisclosure: "ここへ割り当てた用途のプロンプトと文字起こしはMacの外へ送信されます。認証・データ取扱い・課金は接続先の運営者に従います。",
@@ -1181,9 +1234,11 @@ export const STR: Record<Lang, Strings> = {
       secretKeyLabel: "API キー",
       secretStatusKeychain: "設定済み（Keychain に保存）",
       secretStatusEnv: "設定済み（app/.env から検出）",
+      secretStatusLegacy: "設定済み（旧キーを移行利用中）",
       secretStatusMissing: "未設定",
       secretApprovalRequired: "キーは保存済みですが、この接続先には使用しません。現在の HTTPS または loopback 接続先を承認するには、キーを再保存してください。",
       claudeAuthMissingKey: "APIキー認証が選択されていますが、Anthropic のキーがありません。キーを保存するかサブスクリプションへ切り替えてください。会話時に無言で認証方式を切り替えることはありません。",
+      authMissingKeyWith: (provider) => `${provider}でAPIキー認証が選択されていますが、キーがありません。キーを保存するかサブスクリプションへ切り替えてください。認証方式を自動では切り替えません。`,
       secretPlaceholderSet: "置き換える場合は新しいキーを入力",
       secretPlaceholderNew: "API キーを貼り付け",
       secretSave: "キーを保存",
@@ -1195,11 +1250,14 @@ export const STR: Record<Lang, Strings> = {
       secretDeleted: "キーを Keychain から削除しました。",
       authApiKeyNote: "APIキーは api.openai.com / Anthropic API の従量課金です（サブスクの利用枠とは別）。キーは UI には保存されません。",
       roleAssignSection: "用途ごとのモデル",
-      roleAssignDesc: "各用途をどのモデルに任せるか選びます。「実効」行には処理場所とoriginを常時表示します。",
+      roleAssignDesc: "各用途を利用可能な接続のどれに任せるか選びます。未設定の接続は選択できず、「実効」行には処理場所とoriginを常時表示します。",
       targetClaude: "Claude",
+      targetOpenAi: "OpenAI",
       targetLocal: "OpenAI互換",
       targetCodex: "Codex",
       targetLocalDisabled: "「モデル接続設定」タブでOpenAI互換接続先を設定すると選べます。",
+      targetUnavailableNote: "利用できない選択肢は無効です。「APIキー」で認証を、「モデル接続設定」で接続先を設定してください。",
+      selectedTargetUnavailable: "現在の割当に利用できない接続があります。利用可能な接続へ変更してから保存してください。",
       tuningDetails: "詳細設定",
       tuningModel: "モデル",
       tuningEffort: "Effort（思考の深さ）",
@@ -1214,41 +1272,44 @@ export const STR: Record<Lang, Strings> = {
       cliDefaultBadgeWith: (label) => `${label}（CLI既定）`,
       refreshCatalog: "モデル一覧を更新",
       refreshingCatalog: "更新中…",
-      catalogNote: "Claude/Codex/設定済みのOpenAI互換接続先から実際のモデル一覧を取得し、下の選択肢と「実効」表示に反映します。取得できないソースは推測せず「実体未確認」に留めます。",
+      catalogNote: "Claude・OpenAI公式・Codex・設定済みのOpenAI互換接続先から実際のモデル一覧を取得します。取得できないソースは推測せず「実体未確認」に留めます。",
       saveConnection: "接続を保存",
       saveAssignments: "割当を保存",
       unsavedChanges: "未保存の変更があります",
-      connectionSaveNote: "接続・Claudeの既定モデル・認証モードと、保存済みのローカル/Codex用途が使う接続値を保存します。用途の未保存の割当やチューニングは保存しません。",
+      connectionSaveNote: "各providerのモデルと接続先を、保存済みのOpenAI公式・OpenAI互換・Codex用途が使う値も含めて保存します。認証・未保存の用途割当・ロール別チューニングは保存しません。",
       rolesSaveNote: "用途ごとの割当とチューニングを保存します。別タブの接続変更はここでは保存しません。",
       presetSaveNote: "プリセットを選ぶと用途の割当を入力欄に準備します。「割当を保存」で反映します。",
       saveConnectionFirst: "用途の割当で保存済みの接続先・モデルを使うため、先に接続変更を保存してください。",
-      authModeSaveRequired: "認証モードの変更は「接続を保存」で反映されます。",
+      saveAuthFirst: "用途の割当で選択済みの認証方法を使うため、先に認証方法の変更を保存してください。",
+      authModeSaveRequired: "認証方法の変更は「認証方法を保存」で反映されます。",
       localRoleConnectionRequired: "保存済みの一部の用途がOpenAI互換接続先を使っています。接続先とモデルを空にする前に、それらの用途をクラウドへ割り当ててください。",
+      openAiRoleConnectionRequired: "保存済みの一部の用途がOpenAIを使っています。OpenAIモデルを空にする前に、それらの用途を別の接続へ割り当ててください。",
       ttsSaveNote: "音声の変更はこの画面で準備し、「保存」で反映します。",
       ttsResetStaged: "既定値を入力欄に準備しました。「保存」で反映します。",
       displayImmediateNote: "文字サイズと言語は、この端末ですぐに反映されます。",
       displaySection: "表示",
       ttsSection: "音声（TTS）",
-      ttsDesc: "音声合成の向き先を OpenAI 互換エンドポイントに変更できます。空欄なら既定（キー設定時は OpenAI・無ければ macOS say）。kokoro-fastapi 等のローカルサーバは API キー不要です。",
+      ttsDesc: "macOS say・OpenAI公式API・OpenAI互換の独自接続先から明示的に選びます。通信失敗後に別のエンジンへ自動で切り替えません。",
       ttsProviderLabel: "エンジン",
-      ttsProviderAutoWith: (resolved) => `自動 — 現在: ${resolved}`,
-      ttsProviderShortSay: "macOS say", ttsProviderShortHttp: "OpenAI 互換（HTTP）",
-      ttsProviderSay: "macOS say（オフライン）", ttsProviderHttp: "OpenAI 互換（HTTP）",
-      ttsProviderNote: "自動は、キーまたはカスタム Base URL があれば HTTP、無ければ macOS say を使います。HTTP 固定でも通信に失敗したときは say で再生します。",
+      ttsProviderSay: "macOS say（オフライン）",
+      ttsProviderOpenAi: "OpenAI（公式API）",
+      ttsProviderCompat: "OpenAI互換（独自接続先）",
+      ttsProviderNote: "OpenAIは公式固定URLと専用キーを使います。OpenAI互換は下のベースURLと接続先専用キーを使います。",
+      ttsOpenAiKeyRequired: "OpenAI公式エンジンを使う前に、「APIキー」タブでOpenAI APIキーを保存してください。",
+      ttsCompatConnectionRequired: "OpenAI互換エンジンを保存するには、ベースURLとモデルの両方を入力してください。",
       ttsBaseUrlLabel: "ベース URL",
-      ttsBaseUrlPlaceholder: "https://api.openai.com/v1",
       ttsModelLabel: "モデル",
-      ttsModelPlaceholder: "gpt-4o-mini-tts",
+      ttsModelPlaceholder: "kokoro",
       ttsVoiceLabel: "voice",
-      ttsVoicePlaceholder: "alloy",
+      ttsVoicePlaceholder: "af_sky",
       ttsVoicePresetLabel: "声のタイプ",
       ttsVoiceFemale: "女性",
       ttsVoiceMale: "男性",
       ttsVoiceCustom: "カスタム",
       ttsVoicePresetNote: "現在の Base URL（OpenAI / Kokoro）に合った声を入力欄にセットします。独自の声は「カスタム」を押して下の入力欄に名前を直接入力してください。",
       ttsReset: "既定に戻す",
-      ttsResetDescWith: (model, voice) => `上書きを消して、既定（エンジン: 自動・キー設定時は OpenAI ${model} / ${voice}・無ければ macOS say）に戻します。`,
-      ttsApiKeyOptionalNote: "キーが必要なのは OpenAI 等の鍵必須エンドポイントのみです（ローカルサーバは不要）。",
+      ttsResetDescWith: (model, voice) => `安全な既定（エンジン: macOS say。OpenAIの既定値は ${model} / ${voice}）を入力欄に準備します。`,
+      ttsApiKeyOptionalNote: "このキーは認証が必要なOpenAI互換の独自接続先だけに使います。ローカルサーバでは通常不要です。",
     },
     stat: { title: "練習した日", thisWeekUnit: "日（今週の練習）", total: (n) => `練習日 累計${n}日` },
     hero: {
@@ -1558,12 +1619,11 @@ export const STR: Record<Lang, Strings> = {
       levelStage: (level, stage) =>
         [level !== null ? `Lv${level}` : null, stage !== null ? `Stage${stage}` : null].filter(Boolean).join(" · ") || "—",
     },
-    about: {
-      title: "このアプリについて",
-      desc: "録音・文字起こし・練習履歴はこのMacに保存されます。テキストは選択したLLM・音声プロバイダへ送信され、完全ローカル構成は任意で選べます。",
-      lpButton: "紹介・プライバシー説明を開く",
-      githubButton: "GitHub リポジトリを開く",
-      license: "MIT ライセンスのオープンソースです。",
+    footer: {
+      linksLabel: "プロジェクトリンク",
+      githubLabel: "GitHub リポジトリ（新しいタブで開く）",
+      websiteLabel: "公式ウェブサイト（新しいタブで開く）",
+      copyright: "© 2026 BTAJP. All Rights Reserved. Licensed under the MIT License.",
     },
   },
 };

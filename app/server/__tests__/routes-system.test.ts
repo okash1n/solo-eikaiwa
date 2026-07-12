@@ -164,6 +164,30 @@ function deferred<T>() {
 }
 
 describe("routes: tts", () => {
+  test("OpenAI公式と互換はそれぞれ専用のモデル・音声・URLを synthesize へ渡す", async () => {
+    const calls: unknown[] = [];
+    const synthesize = async (_text: string, opts?: unknown) => {
+      calls.push(opts);
+      return { audio: new Uint8Array([1]), mime: "audio/mpeg", engine: "openai" as const };
+    };
+    const settings = {
+      baseUrl: "http://localhost:8880/v1", model: "kokoro", voice: "af_sky",
+      openaiModel: "gpt-4o-mini-tts", openaiVoice: "nova",
+    };
+    const official = makeTestDeps({ synthesize, getTtsSettings: () => settings, getTtsProvider: () => "openai" }).deps;
+    await makeFetchHandler(official)(postJson("/api/tts", { text: "official" }));
+    const compat = makeTestDeps({ synthesize, getTtsSettings: () => settings, getTtsProvider: () => "openai-compat" }).deps;
+    await makeFetchHandler(compat)(postJson("/api/tts", { text: "compat" }));
+    expect(calls).toEqual([
+      expect.objectContaining({
+        provider: "openai", baseUrl: "https://api.openai.com/v1", model: "gpt-4o-mini-tts", voice: "nova",
+      }),
+      expect.objectContaining({
+        provider: "openai-compat", baseUrl: "http://localhost:8880/v1", model: "kokoro", voice: "af_sky",
+      }),
+    ]);
+  });
+
   test("textが空なら400", async () => {
     const { deps } = makeTestDeps();
     const handler = makeFetchHandler(deps);
