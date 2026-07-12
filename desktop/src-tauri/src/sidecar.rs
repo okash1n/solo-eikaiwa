@@ -22,10 +22,16 @@ use tauri_plugin_shell::ShellExt;
 use crate::attach;
 use crate::diagnostic_log::RotatingLog;
 
-/// サーバの既定ポート（LaunchAgentデーモン・sidecar共通）。
+/// サーバの既定ポート。Store版は直接配布版との同居時にも衝突しない専用ポートを使う。
+#[cfg(not(feature = "app-store"))]
 pub(crate) const DEFAULT_PORT: u16 = 3111;
+#[cfg(feature = "app-store")]
+pub(crate) const DEFAULT_PORT: u16 = 3211;
 /// `DEFAULT_PORT`が使用中だった場合に1回だけ試すフォールバック先。
+#[cfg(not(feature = "app-store"))]
 const FALLBACK_PORT: u16 = 3112;
+#[cfg(feature = "app-store")]
+const FALLBACK_PORT: u16 = 3212;
 /// attach側でも使う（Force Quit等でport 3112にsidecarがorphan化した場合の再アタッチのため）。
 pub(crate) const CANDIDATE_PORTS: [u16; 2] = [DEFAULT_PORT, FALLBACK_PORT];
 
@@ -33,6 +39,7 @@ pub(crate) const CANDIDATE_PORTS: [u16; 2] = [DEFAULT_PORT, FALLBACK_PORT];
 const OWN_SIDECAR_POLL_ATTEMPTS: u32 = 20;
 const OWN_SIDECAR_POLL_INTERVAL: Duration = Duration::from_millis(500);
 /// ログインシェルでの`$PATH`解決を待つ上限（壊れた.zshrc等で無限に待たないための保険）。
+#[cfg(not(feature = "app-store"))]
 const LOGIN_SHELL_PATH_TIMEOUT: Duration = Duration::from_secs(3);
 const SIDECAR_PROTOCOL: u8 = 1;
 const INSTANCE_ID_FILE: &str = ".sidecar-instance-id";
@@ -71,7 +78,9 @@ fn status_priority(status: StartupStatus) -> u8 {
 }
 
 pub(crate) fn note_startup_status(app: &AppHandle, next: StartupStatus) {
-    let Some(state) = app.try_state::<SidecarState>() else { return };
+    let Some(state) = app.try_state::<SidecarState>() else {
+        return;
+    };
     let mut current = state.status.lock().unwrap();
     if status_priority(next) >= status_priority(*current) {
         *current = next;
@@ -79,7 +88,9 @@ pub(crate) fn note_startup_status(app: &AppHandle, next: StartupStatus) {
 }
 
 pub(crate) fn reset_startup_status(app: &AppHandle) {
-    let Some(state) = app.try_state::<SidecarState>() else { return };
+    let Some(state) = app.try_state::<SidecarState>() else {
+        return;
+    };
     *state.status.lock().unwrap() = StartupStatus::Starting;
 }
 
@@ -90,7 +101,10 @@ pub(crate) fn startup_status(app: &AppHandle) -> StartupStatus {
 }
 
 fn valid_instance_id(value: &str) -> bool {
-    value.len() == 32 && value.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    value.len() == 32
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
 }
 
 fn read_instance_id(path: &Path) -> std::io::Result<String> {
@@ -98,7 +112,10 @@ fn read_instance_id(path: &Path) -> std::io::Result<String> {
     if valid_instance_id(&value) {
         Ok(value)
     } else {
-        Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "invalid sidecar instance id"))
+        Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "invalid sidecar instance id",
+        ))
     }
 }
 
@@ -145,7 +162,9 @@ pub(crate) fn data_root_id(data_dir: &Path) -> std::io::Result<String> {
     Ok(encoded)
 }
 
-fn expected_identity_for_data_dir(data_dir: &Path) -> std::io::Result<attach::ExpectedSidecarIdentity> {
+fn expected_identity_for_data_dir(
+    data_dir: &Path,
+) -> std::io::Result<attach::ExpectedSidecarIdentity> {
     let instance_id = load_or_create_instance_id(data_dir)?;
     Ok(attach::ExpectedSidecarIdentity {
         app_version: env!("CARGO_PKG_VERSION").to_string(),
@@ -156,7 +175,9 @@ fn expected_identity_for_data_dir(data_dir: &Path) -> std::io::Result<attach::Ex
     })
 }
 
-pub(crate) fn expected_identity(app: &AppHandle) -> Result<attach::ExpectedSidecarIdentity, String> {
+pub(crate) fn expected_identity(
+    app: &AppHandle,
+) -> Result<attach::ExpectedSidecarIdentity, String> {
     let data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
     expected_identity_for_data_dir(&data_dir).map_err(|e| e.to_string())
 }
@@ -192,13 +213,25 @@ pub fn kill_on_exit(app: &AppHandle) {
 /// （claude/codexがbrew/npm/公式インストーラのどこに入っていても`Bun.which()`で解決できるように
 /// するため）を土台にする。ログインシェルのPATHが取れなければプロセス継承分にフォールバックする
 /// （劣化はするが安全）。
-pub(crate) fn effective_path(whisper_bin_dir: &str, login_shell_path: Option<&str>, inherited_path: &str) -> String {
-    let base = login_shell_path.filter(|p| !p.is_empty()).unwrap_or(inherited_path);
+#[cfg(any(not(feature = "app-store"), test))]
+pub(crate) fn effective_path(
+    whisper_bin_dir: &str,
+    login_shell_path: Option<&str>,
+    inherited_path: &str,
+) -> String {
+    let base = login_shell_path
+        .filter(|p| !p.is_empty())
+        .unwrap_or(inherited_path);
     if base.is_empty() {
         whisper_bin_dir.to_string()
     } else {
         format!("{whisper_bin_dir}:{base}")
     }
+}
+
+#[cfg(any(feature = "app-store", test))]
+fn app_store_path(whisper_bin_dir: &str) -> String {
+    format!("{whisper_bin_dir}:/usr/bin:/bin:/usr/sbin:/sbin")
 }
 
 /// ある試行の後、次の候補ポートを試すべきかを判定する（純粋ロジック）。
@@ -220,7 +253,10 @@ pub(crate) fn should_try_next_port(identified: bool, process_exited: bool) -> bo
 /// 通常モード（検証付き再利用経由）ではこのガードを使わない: 再利用側で既に
 /// identity一致を確認した上でspawnにフォールバックしてきているので、spawn_and_attach内で
 /// 重ねて同じチェックをする理由が無い（`should_try_next_port`側の早期終了で十分）。
-pub(crate) fn should_skip_spawn_due_to_existing_identity(no_attach: bool, port_already_identified: bool) -> bool {
+pub(crate) fn should_skip_spawn_due_to_existing_identity(
+    no_attach: bool,
+    port_already_identified: bool,
+) -> bool {
     no_attach && port_already_identified
 }
 
@@ -230,11 +266,14 @@ pub(crate) fn should_skip_spawn_due_to_existing_identity(no_attach: bool, port_a
 /// 壊れたPATHになってしまう（`Bun.which("claude")`がサイレントにnullになりLLM未導入相当へ
 /// 劣化する形で顕在化。2026-07-10 実機再現）。マーカーで挟むことで雑音を無視して確実に
 /// PATH本体だけを取り出す。
+#[cfg(any(not(feature = "app-store"), test))]
 const PATH_MARKER_START: &str = "<SOLO_EIKAIWA_PATH>";
+#[cfg(any(not(feature = "app-store"), test))]
 const PATH_MARKER_END: &str = "</SOLO_EIKAIWA_PATH>";
 
 /// ログインシェルの標準出力からマーカー間のPATH文字列を抜き出す（純粋関数）。
 /// マーカーが無い・空の場合はNone（呼び出し元が継承PATHへフォールバックする）。
+#[cfg(any(not(feature = "app-store"), test))]
 pub(crate) fn extract_marked_path(output: &str) -> Option<String> {
     let start = output.find(PATH_MARKER_START)? + PATH_MARKER_START.len();
     let rest = &output[start..];
@@ -250,6 +289,7 @@ pub(crate) fn extract_marked_path(output: &str) -> Option<String> {
 /// （殺さずに`recv_timeout`だけ諦めると、壊れた.zshrc等でハングした`zsh`プロセスが
 /// 親の終了後もlaunchd配下に孤児として残り続ける実害があるため）。
 /// 失敗/タイムアウト時はNoneを返す（呼び出し元は継承PATHにフォールバックする）。
+#[cfg(not(feature = "app-store"))]
 fn capture_login_shell_path() -> Option<String> {
     let script = format!("echo -n \"{PATH_MARKER_START}$PATH{PATH_MARKER_END}\"");
     let mut child = match std::process::Command::new("/bin/zsh")
@@ -293,7 +333,10 @@ fn capture_login_shell_path() -> Option<String> {
         }
     };
     if !output.status.success() {
-        log::warn!("sidecar: login shell PATH capture exited non-zero (code {:?})", output.status.code());
+        log::warn!(
+            "sidecar: login shell PATH capture exited non-zero (code {:?})",
+            output.status.code()
+        );
         return None;
     }
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -304,8 +347,14 @@ fn capture_login_shell_path() -> Option<String> {
 /// `#[non_exhaustive]`な列挙なので将来の変種は無視する（ログが1行減るだけで安全側に倒れる）。
 pub(crate) fn format_command_event(event: &CommandEvent) -> Option<String> {
     match event {
-        CommandEvent::Stdout(bytes) => Some(format!("[stdout] {}", String::from_utf8_lossy(bytes).trim_end())),
-        CommandEvent::Stderr(bytes) => Some(format!("[stderr] {}", String::from_utf8_lossy(bytes).trim_end())),
+        CommandEvent::Stdout(bytes) => Some(format!(
+            "[stdout] {}",
+            String::from_utf8_lossy(bytes).trim_end()
+        )),
+        CommandEvent::Stderr(bytes) => Some(format!(
+            "[stderr] {}",
+            String::from_utf8_lossy(bytes).trim_end()
+        )),
         CommandEvent::Error(err) => Some(format!("[error] {err}")),
         CommandEvent::Terminated(payload) => Some(format!(
             "[terminated] code={:?} signal={:?}",
@@ -339,14 +388,31 @@ fn spawn_solo_server(
         }
     };
     let command = command
-        .env("SOLO_EIKAIWA_RESOURCES_DIR", resources_dir.display().to_string())
+        .env(
+            "SOLO_EIKAIWA_RESOURCES_DIR",
+            resources_dir.display().to_string(),
+        )
         .env("SOLO_EIKAIWA_DATA_DIR", data_dir.display().to_string())
         .env("SOLO_EIKAIWA_PORT", port.to_string())
-        .env("SOLO_EIKAIWA_SIDECAR_PROTOCOL", identity.protocol.to_string())
+        .env(
+            "SOLO_EIKAIWA_SIDECAR_PROTOCOL",
+            identity.protocol.to_string(),
+        )
         .env("SOLO_EIKAIWA_SIDECAR_BUILD_ID", &identity.build_id)
         .env("SOLO_EIKAIWA_DATA_ROOT_ID", &identity.data_root_id)
         .env("SOLO_EIKAIWA_SIDECAR_INSTANCE_ID", &identity.instance_id)
         .env("PATH", path_env);
+    #[cfg(feature = "app-store")]
+    let command = command.env("SOLO_EIKAIWA_DISTRIBUTION", "app-store").env(
+        "SOLO_EIKAIWA_KEYCHAIN_HELPER",
+        resources_dir
+            .parent()
+            .unwrap_or(resources_dir)
+            .join("MacOS")
+            .join("solo-keychain")
+            .display()
+            .to_string(),
+    );
 
     let (mut rx, child) = match command.spawn() {
         Ok(pair) => pair,
@@ -391,7 +457,11 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
         log::error!("sidecar: SidecarState is not managed (internal bug); cannot spawn");
         return false;
     };
-    if state.starting.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst).is_err() {
+    if state
+        .starting
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_err()
+    {
         log::warn!("sidecar: a spawn is already in progress; skipping this concurrent request");
         return false;
     }
@@ -427,9 +497,18 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
     };
 
     let whisper_bin_dir = resources_dir.join("whisper-bin");
-    let login_path = capture_login_shell_path();
-    let inherited_path = std::env::var("PATH").unwrap_or_default();
-    let path_env = effective_path(&whisper_bin_dir.display().to_string(), login_path.as_deref(), &inherited_path);
+    #[cfg(not(feature = "app-store"))]
+    let path_env = {
+        let login_path = capture_login_shell_path();
+        let inherited_path = std::env::var("PATH").unwrap_or_default();
+        effective_path(
+            &whisper_bin_dir.display().to_string(),
+            login_path.as_deref(),
+            &inherited_path,
+        )
+    };
+    #[cfg(feature = "app-store")]
+    let path_env = app_store_path(&whisper_bin_dir.display().to_string());
 
     let no_attach = attach::no_attach_forced();
 
@@ -437,10 +516,15 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
         let existing = attach::probe_identity(port, &identity);
         match existing {
             attach::IdentityStatus::Stale => note_startup_status(app, StartupStatus::StaleSidecar),
-            attach::IdentityStatus::Foreign => note_startup_status(app, StartupStatus::PortOccupied),
+            attach::IdentityStatus::Foreign => {
+                note_startup_status(app, StartupStatus::PortOccupied)
+            }
             _ => {}
         }
-        if should_skip_spawn_due_to_existing_identity(no_attach, existing == attach::IdentityStatus::Match) {
+        if should_skip_spawn_due_to_existing_identity(
+            no_attach,
+            existing == attach::IdentityStatus::Match,
+        ) {
             note_startup_status(app, StartupStatus::PortOccupied);
             log::warn!(
                 "sidecar: NO_ATTACH set but port {port} already answers as solo-eikaiwa; \
@@ -451,7 +535,13 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
 
         log::info!("sidecar: spawning solo-server on port {port}");
         let Some((child, exited)) = spawn_solo_server(
-            app, port, &resources_dir, &data_dir, &path_env, &log_path, &identity,
+            app,
+            port,
+            &resources_dir,
+            &data_dir,
+            &path_env,
+            &log_path,
+            &identity,
         ) else {
             // 起動自体に失敗（バイナリ欠落等）。ポートを変えても無意味なので諦める。
             note_startup_status(app, StartupStatus::InternalError);
@@ -485,14 +575,25 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
 
         if identified {
             let navigated = attach::navigate_to(app, port);
-            note_startup_status(app, if navigated { StartupStatus::Ready } else { StartupStatus::InternalError });
+            note_startup_status(
+                app,
+                if navigated {
+                    StartupStatus::Ready
+                } else {
+                    StartupStatus::InternalError
+                },
+            );
             return navigated;
         }
 
         if should_try_next_port(identified, exited.load(Ordering::SeqCst)) {
             note_startup_status(
                 app,
-                if port_is_open(port) { StartupStatus::PortOccupied } else { StartupStatus::InternalError },
+                if port_is_open(port) {
+                    StartupStatus::PortOccupied
+                } else {
+                    StartupStatus::InternalError
+                },
             );
             log::warn!("sidecar: solo-server on port {port} exited quickly (likely port conflict); trying next port");
             continue;
@@ -511,13 +612,29 @@ pub fn spawn_and_attach(app: &AppHandle) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        data_root_id, effective_path, expected_identity_for_data_dir, extract_marked_path,
-        format_command_event, load_or_create_instance_id, should_skip_spawn_due_to_existing_identity,
-        should_try_next_port, status_priority, StartupStatus, INSTANCE_ID_FILE,
+        app_store_path, data_root_id, effective_path, expected_identity_for_data_dir,
+        extract_marked_path, format_command_event, load_or_create_instance_id,
+        should_skip_spawn_due_to_existing_identity, should_try_next_port, status_priority,
+        StartupStatus, INSTANCE_ID_FILE,
     };
     use std::fs;
     use std::sync::atomic::{AtomicBool, Ordering};
     use tauri_plugin_shell::process::{CommandEvent, TerminatedPayload};
+
+    #[test]
+    fn app_store_path_excludes_login_shell_locations() {
+        let path = app_store_path("/app/whisper-bin");
+        assert_eq!(path, "/app/whisper-bin:/usr/bin:/bin:/usr/sbin:/sbin");
+        assert!(!path.contains("homebrew"));
+    }
+
+    #[test]
+    fn distribution_uses_separate_ports() {
+        #[cfg(feature = "app-store")]
+        assert_eq!(super::CANDIDATE_PORTS, [3211, 3212]);
+        #[cfg(not(feature = "app-store"))]
+        assert_eq!(super::CANDIDATE_PORTS, [3111, 3112]);
+    }
 
     fn unique_temp_dir(label: &str) -> std::path::PathBuf {
         std::env::temp_dir().join(format!("solo-eikaiwa-{label}-{}", uuid::Uuid::new_v4()))
@@ -531,7 +648,9 @@ mod tests {
         let second = load_or_create_instance_id(&dir).unwrap();
         assert_eq!(first, second);
         assert_eq!(first.len(), 32);
-        assert!(first.bytes().all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase()));
+        assert!(first
+            .bytes()
+            .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase()));
         fs::remove_dir_all(dir).unwrap();
     }
 
@@ -551,10 +670,22 @@ mod tests {
 
     #[test]
     fn startup_status_has_stable_ui_codes_and_failure_priority() {
-        assert_eq!(serde_json::to_string(&StartupStatus::StaleSidecar).unwrap(), r#""stale-sidecar""#);
-        assert_eq!(serde_json::to_string(&StartupStatus::PortOccupied).unwrap(), r#""port-occupied""#);
-        assert!(status_priority(StartupStatus::StaleSidecar) > status_priority(StartupStatus::PortOccupied));
-        assert!(status_priority(StartupStatus::PortOccupied) > status_priority(StartupStatus::InternalError));
+        assert_eq!(
+            serde_json::to_string(&StartupStatus::StaleSidecar).unwrap(),
+            r#""stale-sidecar""#
+        );
+        assert_eq!(
+            serde_json::to_string(&StartupStatus::PortOccupied).unwrap(),
+            r#""port-occupied""#
+        );
+        assert!(
+            status_priority(StartupStatus::StaleSidecar)
+                > status_priority(StartupStatus::PortOccupied)
+        );
+        assert!(
+            status_priority(StartupStatus::PortOccupied)
+                > status_priority(StartupStatus::InternalError)
+        );
     }
 
     #[test]
@@ -578,7 +709,9 @@ mod tests {
         fs::create_dir_all(&dir).unwrap();
         let build_id = expected_identity_for_data_dir(&dir).unwrap().build_id;
         assert_eq!(build_id.len(), 64);
-        assert!(build_id.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)));
+        assert!(build_id
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)));
         fs::remove_dir_all(dir).unwrap();
     }
 
@@ -597,7 +730,10 @@ mod tests {
     #[test]
     fn extract_marked_path_returns_value_between_markers() {
         assert_eq!(
-            extract_marked_path("<SOLO_EIKAIWA_PATH>/usr/bin:/opt/homebrew/bin</SOLO_EIKAIWA_PATH>").unwrap(),
+            extract_marked_path(
+                "<SOLO_EIKAIWA_PATH>/usr/bin:/opt/homebrew/bin</SOLO_EIKAIWA_PATH>"
+            )
+            .unwrap(),
             "/usr/bin:/opt/homebrew/bin",
         );
     }
@@ -607,7 +743,10 @@ mod tests {
         // .zshenv/.zprofile 等がMOTD・バージョン警告を標準出力に書く場合を想定した回帰テスト。
         let noisy = "nvm: version outdated\nWarning: something\n\
             <SOLO_EIKAIWA_PATH>/usr/bin:/opt/homebrew/bin</SOLO_EIKAIWA_PATH>\ntrailing noise";
-        assert_eq!(extract_marked_path(noisy).unwrap(), "/usr/bin:/opt/homebrew/bin");
+        assert_eq!(
+            extract_marked_path(noisy).unwrap(),
+            "/usr/bin:/opt/homebrew/bin"
+        );
     }
 
     #[test]
@@ -617,7 +756,10 @@ mod tests {
 
     #[test]
     fn extract_marked_path_none_when_empty_between_markers() {
-        assert_eq!(extract_marked_path("<SOLO_EIKAIWA_PATH></SOLO_EIKAIWA_PATH>"), None);
+        assert_eq!(
+            extract_marked_path("<SOLO_EIKAIWA_PATH></SOLO_EIKAIWA_PATH>"),
+            None
+        );
     }
 
     #[test]
@@ -625,10 +767,16 @@ mod tests {
         // spawn_and_attach の並行実行ガードが使うCAS操作そのものの意味論を固定するテスト
         // （AtomicBool/CompareExchangeの標準挙動だが、ガード実装の前提を明示的に確認する）。
         let flag = AtomicBool::new(false);
-        assert!(flag.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst).is_ok());
-        assert!(flag.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst).is_err());
+        assert!(flag
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .is_ok());
+        assert!(flag
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .is_err());
         flag.store(false, Ordering::SeqCst);
-        assert!(flag.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst).is_ok());
+        assert!(flag
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .is_ok());
     }
 
     #[test]
@@ -683,7 +831,11 @@ mod tests {
             "[error] boom",
         );
         assert_eq!(
-            format_command_event(&CommandEvent::Terminated(TerminatedPayload { code: Some(1), signal: None })).unwrap(),
+            format_command_event(&CommandEvent::Terminated(TerminatedPayload {
+                code: Some(1),
+                signal: None
+            }))
+            .unwrap(),
             "[terminated] code=Some(1) signal=None",
         );
     }

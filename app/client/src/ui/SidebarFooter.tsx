@@ -1,15 +1,17 @@
 export const GITHUB_URL = "https://github.com/btajp/solo-eikaiwa";
 export const WEBSITE_URL = "https://btajp.github.io/solo-eikaiwa/";
+export const PRIVACY_URL = "https://btajp.github.io/solo-eikaiwa/privacy.html";
 
 type SidebarFooterProps = {
   linksLabel: string;
   githubLabel: string;
   websiteLabel: string;
+  privacyLabel: string;
   copyright: string;
 };
 
 /** プロジェクトの外部リンクと権利表記。外部リンクは現在の練習状態を残して新しいタブで開く。 */
-export function SidebarFooter({ linksLabel, githubLabel, websiteLabel, copyright }: SidebarFooterProps) {
+export function SidebarFooter({ linksLabel, githubLabel, websiteLabel, privacyLabel, copyright }: SidebarFooterProps) {
   return (
     <footer className="sidebar-footer">
       <nav className="sidebar-links" aria-label={linksLabel}>
@@ -23,6 +25,7 @@ export function SidebarFooter({ linksLabel, githubLabel, websiteLabel, copyright
           </svg>
         </a>
       </nav>
+      <a className="sidebar-policy-link" href={PRIVACY_URL} target="_blank" rel="noopener noreferrer">{privacyLabel}</a>
       <p className="sidebar-copyright">{copyright}</p>
     </footer>
   );

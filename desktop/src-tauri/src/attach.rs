@@ -37,7 +37,8 @@ fn args_have_poc_stt_flag(mut args: impl Iterator<Item = String>) -> bool {
 }
 
 fn poc_stt_requested() -> bool {
-    args_have_poc_stt_flag(std::env::args()) || std::env::var("SOLO_EIKAIWA_POC").as_deref() == Ok("stt")
+    args_have_poc_stt_flag(std::env::args())
+        || std::env::var("SOLO_EIKAIWA_POC").as_deref() == Ok("stt")
 }
 
 fn server_url(port: u16) -> String {
@@ -122,7 +123,11 @@ fn identity_status(body: &str, expected: &ExpectedSidecarIdentity) -> IdentitySt
         && sidecar.build_id.as_deref() == Some(expected.build_id.as_str())
         && sidecar.data_root_id.as_deref() == Some(expected.data_root_id.as_str())
         && sidecar.instance_id.as_deref() == Some(expected.instance_id.as_str());
-    if matches { IdentityStatus::Match } else { IdentityStatus::Stale }
+    if matches {
+        IdentityStatus::Match
+    } else {
+        IdentityStatus::Stale
+    }
 }
 
 /// 指定ポートを1回だけ調べ、接続不能も含めて分類する。
@@ -166,7 +171,9 @@ pub(crate) fn navigate_to(app: &AppHandle, port: u16) -> bool {
 /// （sidecar起動へ委ねる）。
 fn try_attach_to_existing(app: &AppHandle) -> bool {
     if no_attach_forced() {
-        log::info!("attach: SOLO_EIKAIWA_NO_ATTACH set, skipping attach and going straight to own sidecar");
+        log::info!(
+            "attach: SOLO_EIKAIWA_NO_ATTACH set, skipping attach and going straight to own sidecar"
+        );
         return false;
     }
     let expected = match sidecar::expected_identity(app) {
@@ -184,7 +191,11 @@ fn try_attach_to_existing(app: &AppHandle) -> bool {
                     let navigated = navigate_to(app, port);
                     sidecar::note_startup_status(
                         app,
-                        if navigated { sidecar::StartupStatus::Ready } else { sidecar::StartupStatus::InternalError },
+                        if navigated {
+                            sidecar::StartupStatus::Ready
+                        } else {
+                            sidecar::StartupStatus::InternalError
+                        },
                     );
                     return navigated;
                 }
@@ -297,7 +308,12 @@ mod tests {
 
     #[test]
     fn args_have_poc_stt_flag_detects_the_flag_anywhere_in_argv() {
-        let args = |v: &[&str]| v.iter().map(|s| s.to_string()).collect::<Vec<_>>().into_iter();
+        let args = |v: &[&str]| {
+            v.iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>()
+                .into_iter()
+        };
         assert!(args_have_poc_stt_flag(args(&["bin", "--poc=stt"])));
         assert!(args_have_poc_stt_flag(args(&["bin", "--foo", "--poc=stt"])));
         assert!(!args_have_poc_stt_flag(args(&["bin"])));
@@ -317,7 +333,10 @@ mod tests {
     #[test]
     fn identity_status_matches_only_the_complete_expected_handshake() {
         let body = r#"{"app":"solo-eikaiwa","version":"0.29.0","sidecar":{"protocol":1,"buildId":"com.local.solo-eikaiwa.desktop@0.29.0","dataRootId":"root-a","instanceId":"instance-a"}}"#;
-        assert_eq!(identity_status(body, &expected_identity()), IdentityStatus::Match);
+        assert_eq!(
+            identity_status(body, &expected_identity()),
+            IdentityStatus::Match
+        );
     }
 
     #[test]
@@ -329,15 +348,27 @@ mod tests {
             r#"{"app":"solo-eikaiwa","version":"0.29.0","sidecar":{"protocol":1,"buildId":"com.local.solo-eikaiwa.desktop@0.29.0","dataRootId":"root-a","instanceId":"instance-b"}}"#,
             r#"{"app":"solo-eikaiwa","version":"0.29.0"}"#,
         ] {
-            assert_eq!(identity_status(body, &expected_identity()), IdentityStatus::Stale);
+            assert_eq!(
+                identity_status(body, &expected_identity()),
+                IdentityStatus::Stale
+            );
         }
     }
 
     #[test]
     fn identity_status_distinguishes_foreign_or_fake_health() {
-        assert_eq!(identity_status(r#"{"app":"some-other-app"}"#, &expected_identity()), IdentityStatus::Foreign);
-        assert_eq!(identity_status(r#"{"ok":true}"#, &expected_identity()), IdentityStatus::Foreign);
-        assert_eq!(identity_status("not json", &expected_identity()), IdentityStatus::Foreign);
+        assert_eq!(
+            identity_status(r#"{"app":"some-other-app"}"#, &expected_identity()),
+            IdentityStatus::Foreign
+        );
+        assert_eq!(
+            identity_status(r#"{"ok":true}"#, &expected_identity()),
+            IdentityStatus::Foreign
+        );
+        assert_eq!(
+            identity_status("not json", &expected_identity()),
+            IdentityStatus::Foreign
+        );
     }
 
     /// ローカルに1回だけ固定の応答を返す使い捨てサーバを立て、その待受ポートを返す。
@@ -387,7 +418,10 @@ mod tests {
             body,
         );
         let port = spawn_response_server(Box::leak(response.into_boxed_str()));
-        assert_eq!(probe_identity(port, &expected_identity()), IdentityStatus::Stale);
+        assert_eq!(
+            probe_identity(port, &expected_identity()),
+            IdentityStatus::Stale
+        );
     }
 
     #[test]
@@ -399,7 +433,10 @@ mod tests {
             body,
         );
         let port = spawn_response_server(Box::leak(response.into_boxed_str()));
-        assert_eq!(probe_identity(port, &expected_identity()), IdentityStatus::Foreign);
+        assert_eq!(
+            probe_identity(port, &expected_identity()),
+            IdentityStatus::Foreign
+        );
     }
 
     #[test]

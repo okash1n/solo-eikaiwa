@@ -36,6 +36,7 @@ import { getCodexAppServerClient, __resetCodexAppServerRegistry } from "./provid
 import { isOpenAiConversationModelCandidate, makeClaudeCatalogFetcher, makeCodexCatalogFetcher, makeLocalCatalogFetcher, makeModelCatalogCache } from "./providers/model-catalog";
 import { modelDownloadManager } from "./model-download";
 import { makeSecretsManager } from "./secrets";
+import { resolveDistribution } from "./distribution";
 import {
   makeApiKeyOriginStore,
   resolveOriginBoundSecret,
@@ -82,6 +83,7 @@ function ttsCompatKey(baseUrl: string): string | undefined {
 
 function runtimeSecretEnv(): Record<string, string | undefined> {
   return {
+    SOLO_EIKAIWA_DISTRIBUTION: Bun.env.SOLO_EIKAIWA_DISTRIBUTION,
     ANTHROPIC_API_KEY: secretsManager.get("ANTHROPIC_API_KEY"),
     CODEX_API_KEY: secretsManager.get("CODEX_API_KEY"),
     OPENAI_COMPAT_API_KEY: secretsManager.get("OPENAI_COMPAT_API_KEY"),
@@ -247,6 +249,7 @@ const realDeps: RouteDeps = {
   findListening: (id) => findListening(id),
   listeningStore,
   feedbackStore,
+  getDistribution: () => resolveDistribution(),
   getLlmSettings: () => llmSettingsStore.get(),
   saveLlmSettings: (s) => llmSettingsStore.save(s),
   getLlmRoleSettings: () => llmRoleSettingsStore.getAll(),

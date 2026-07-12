@@ -2,6 +2,7 @@ import type { RoleTarget, RoleTargetAvailability } from "../../lib/llm-assignmen
 
 type Props = {
   value: RoleTarget;
+  targets: readonly RoleTarget[];
   availability: RoleTargetAvailability;
   labels: Record<RoleTarget, string>;
   unavailableNote: string;
@@ -12,12 +13,12 @@ type Props = {
 
 /** 1用途の接続割当。設定済み・利用可能な接続だけを選択可能にする。 */
 export function RoleTargetToggle(props: Props) {
-  const order: RoleTarget[] = ["claude", "openai", "local", "codex"];
-  const hasUnavailable = order.some((target) => !props.availability[target].available);
+  const hasUnavailable = !props.availability[props.value].available
+    || props.targets.some((target) => !props.availability[target].available);
   return (
     <div className="stack">
       <div className="lang-toggle llm-provider-toggle" role="group" aria-label={props.ariaLabel}>
-        {order.map((target) => (
+        {props.targets.map((target) => (
           <button
             key={target}
             className={props.value === target ? "is-active" : ""}

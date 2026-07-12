@@ -82,6 +82,7 @@ dependencies = [
  "base64 0.22.1",
  "log",
  "minisign-verify",
+ "security-framework",
  "serde",
  "serde_json",
  "sha2",

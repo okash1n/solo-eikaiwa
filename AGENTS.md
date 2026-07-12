@@ -4,7 +4,7 @@
 
 ## プロジェクト概要
 
-macOS ローカルで完結する英会話練習アプリ。Bun + TypeScript サーバ（`app/server`・127.0.0.1:3111）、React + Vite クライアント（`app/client`・ビルド済み dist を Caddy が配信）、whisper.cpp ローカル STT、LLM は既定 Claude Agent SDK（`LLM_PROVIDER` で切替可）。
+macOS ローカルで完結する英会話練習アプリ。Bun + TypeScript サーバ（`app/server`・直接配布版は127.0.0.1:3111）、React + Vite クライアント（`app/client`・ビルド済み dist を Caddy が配信）、whisper.cpp ローカル STT。LLM設定はUI/DBが唯一の真実で、直接配布版の既定はClaude、Mac App Store版の既定はOpenAI。
 
 ## 検証ゲート（変更の種類を問わず必須）
 
@@ -46,7 +46,7 @@ macOS ローカルで完結する英会話練習アプリ。Bun + TypeScript サ
 
 - 教材（`content/`）は frontmatter 付き Markdown / JSON。**AI 生成コンテンツの手修正は禁止**（検証 NG なら再生成）。
 - `data/` はローカル専用（gitignore 済み）。コミットしない。
-- API キー等の secrets は **macOS Keychain（設定 UI 経由・`security` CLI）または `app/.env`** のみ（優先順位: Keychain > env）。`.env.local`等の派生ファイルはランタイムが読んでも運用には使わない（全階層でgitignore済み）。DB・API レスポンス・ログ・plist・argv に出さない（`/api/secrets` は write-only・値を返さない）。
+- API キー等の secrets は **macOS Keychain（設定 UI 経由。直接配布版は`security` CLI、Store版はSecurity framework helper）または `app/.env`** のみ（優先順位: Keychain > env）。`.env.local`等の派生ファイルはランタイムが読んでも運用には使わない（全階層でgitignore済み）。DB・API レスポンス・ログ・plist・argv に出さない（`/api/secrets` は write-only・値を返さない）。
 - このリポジトリは PUBLIC。個人情報・私有パス・転載素材をコミットしない。
 
 ## デプロイ（LaunchAgent 常駐運用）
@@ -64,6 +64,10 @@ macOS ローカルで完結する英会話練習アプリ。Bun + TypeScript サ
   `Shintaro Okamura` を使用できるが、Appleがmembershipの法人名を表示する欄を人物名へ置き換えない。
 - GitHub Releases版はDeveloper ID Applicationで署名し、Apple公証とstapleを完了してから公開する。
   Mac App Store版は別のStore専用設定でApp Sandboxを有効にし、self-updaterを無効化して提出する。
+- Mac App Store版のBundle IDは`io.tsumugi.solo-eikaiwa`、sidecar portは3211/3212とする。外部CLIをspawnする
+  Claude/Codex連携はStore版だけ無効化し、OpenAI公式・OpenAI互換HTTP経路に限定する。直接配布版の機能は変えない。
+- Store向けのsandbox確認は`./scripts/build-app-store.sh sandbox`、署名・pkg検証は`package`、検証後のuploadは
+  `upload`を使う。公開値と秘密値はリポジトリ外の`app-store.env`に置き、Store証明書とprofileを混同しない。
 - GitHub Releasesのdmg生成は標準スクリプトのCI経路を使い、Finder AppleScriptへ依存させない。
   `desktop/src-tauri/target/` は生成物であり、ShellCheckやコミットの対象に含めない。
 - 公開前に `CHANGELOG.md`、README、`app/package.json`、Tauri config、Cargo manifest/lockのversionを揃え、

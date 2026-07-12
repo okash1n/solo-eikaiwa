@@ -103,6 +103,7 @@ function SecretKeyField(props: SecretKeyFieldProps) {
 
 type Props = {
   lang: Lang;
+  distribution: "direct" | "app-store";
   disabled: boolean;
   secretsReady: boolean;
   secrets: SecretsView | null;
@@ -127,6 +128,7 @@ type Props = {
 export function ApiKeysTab(props: Props) {
   const s = STR[props.lang];
   const keyDisabled = props.disabled || !props.secretsReady;
+  const appStore = props.distribution === "app-store";
 
   function authSelect(provider: LlmAuthProvider, keyConfigured: boolean) {
     return (
@@ -151,8 +153,9 @@ export function ApiKeysTab(props: Props) {
   return (
     <section className="support-panel stack">
       <div className="info-pop">{s.settings.apiKeysIntro}</div>
+      {appStore && <div className="info-pop">{s.settings.appStoreProviderNote}</div>}
 
-      <div className="llm-fields stack">
+      {!appStore && <><div className="llm-fields stack">
         <h3 className="settings-section-title">{s.settings.targetClaude}</h3>
         {authSelect("claude", props.authKeys.anthropic)}
         {props.auth.claude === "api-key" && !props.authKeys.anthropic && (
@@ -179,6 +182,8 @@ export function ApiKeysTab(props: Props) {
       </Button>
       {props.authDirty && <div className="info-pop" role="status">{s.settings.authModeSaveRequired}</div>}
       {props.authMessage && <div className="info-pop" role="status">{props.authMessage}</div>}
+
+      </>}
 
       <hr className="settings-divider" />
       <div className="llm-fields stack">

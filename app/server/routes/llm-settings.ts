@@ -3,8 +3,15 @@ import { DEFAULT_LLM_SETTINGS, LLM_ROLES, type LlmSettings, type LlmProvider, ty
 import { EFFORTS, CODEX_EFFORTS, SERVICE_TIERS, type RoleTuning, type TuningScope } from "../llm-role-tuning-store";
 import { AUTH_MODES, type AuthMode, type LlmAuthModes, type LlmAuthProvider } from "../llm-auth-store";
 import { parseRemoteBaseUrl } from "../remote-endpoint";
+import {
+  availableLlmProviders,
+  defaultLlmProvider,
+  type AppDistribution,
+} from "../distribution";
 
 export type LlmSettingsRoutesDeps = {
+  /** 配布経路。省略時は後方互換のdirect版。 */
+  getDistribution?: () => AppDistribution;
   getLlmSettings: () => LlmSettings | null;
   saveLlmSettings: (s: LlmSettings) => void;
   getLlmRoleSettings: () => Record<LlmRole, LlmRoleSetting>;
@@ -33,8 +40,24 @@ export type LlmSettingsRoutesDeps = {
   killCodexAppServerRegistry: () => void;
 };
 
-const PROVIDERS = ["claude", "openai", "openai-compat", "codex"] as const;
-const ROLE_PROVIDERS = ["inherit", "claude", "openai", "openai-compat", "codex"] as const;
+function distributionOf(deps: LlmSettingsRoutesDeps): AppDistribution {
+  return deps.getDistribution?.() ?? "direct";
+}
+
+function providersOf(deps: LlmSettingsRoutesDeps): readonly LlmProvider[] {
+  return availableLlmProviders(distributionOf(deps));
+}
+
+function roleProvidersOf(deps: LlmSettingsRoutesDeps): readonly string[] {
+  return ["inherit", ...providersOf(deps)];
+}
+
+function defaultSettingsOf(deps: LlmSettingsRoutesDeps): LlmSettings {
+  return {
+    ...DEFAULT_LLM_SETTINGS,
+    provider: defaultLlmProvider(distributionOf(deps)),
+  };
+}
 
 /** undefined/null/空文字 → null（未指定）、trim後1文字以上でmax以下の文字列 → trim値、それ以外 → undefined（不正） */
 function asOptionalStr(v: unknown, max: number): string | null | undefined {
@@ -119,7 +142,11 @@ function parseSettingsInput(
 function viewOf(deps: LlmSettingsRoutesDeps, applied?: boolean, error?: string | null) {
   const stored = deps.getLlmSettings();
   const env = deps.llmEnv();
-  const s: LlmSettings = stored ?? DEFAULT_LLM_SETTINGS;
+  const distribution = distributionOf(deps);
+  const availableProviders = providersOf(deps);
+  const s: LlmSettings = stored && availableProviders.includes(stored.provider)
+    ? stored
+    : defaultSettingsOf(deps);
   const roleSettings = deps.getLlmRoleSettings();
   const roles = {} as Record<LlmRole, { provider: LlmRoleProvider; baseUrl: string | null; model: string | null; codexModel: string | null }>;
   for (const role of LLM_ROLES) {
@@ -148,6 +175,8 @@ function viewOf(deps: LlmSettingsRoutesDeps, applied?: boolean, error?: string |
     tuning,
     authModes: { claude: authModes.claude, codex: authModes.codex },
     authKeys: { anthropic: authKeys.anthropic, codex: authKeys.codex },
+    distribution,
+    availableProviders,
     ...(applied === undefined ? {} : { applied }),
     ...(error === undefined ? {} : { error }),
   };
@@ -273,13 +302,16 @@ function resolveEffortWhitelist(
   const chainRole: LlmRole = role === "assist" && providerOf("assist") === "inherit" ? "coaching" : role;
   const roleProvider = providerOf(chainRole);
   if (roleProvider !== "inherit") return roleProvider === "codex" ? CODEX_EFFORTS : EFFORTS;
-  const globalProvider = parsedGlobal?.provider ?? storedGlobal?.provider ?? DEFAULT_LLM_SETTINGS.provider;
+  const globalProvider = parsedGlobal?.provider ?? storedGlobal?.provider ?? defaultSettingsOf(deps).provider;
   return globalProvider === "codex" ? CODEX_EFFORTS : EFFORTS;
 }
 
 /** 「現在の全体設定 + 保存済みロール」で全ロール runner を再解決する。fail-open で applied/error を返す。 */
 function applyResolved(deps: LlmSettingsRoutesDeps): { applied: boolean; error: string | null } {
-  const effectiveGlobal = deps.getLlmSettings() ?? DEFAULT_LLM_SETTINGS;
+  const stored = deps.getLlmSettings();
+  const effectiveGlobal = stored && providersOf(deps).includes(stored.provider)
+    ? stored
+    : defaultSettingsOf(deps);
   try {
     deps.applyLlmSettings(effectiveGlobal);
     return { applied: true, error: null };
@@ -293,7 +325,7 @@ type Body = { provider?: unknown; baseUrl?: unknown; model?: unknown; openaiMode
 async function handlePut(req: Request, deps: LlmSettingsRoutesDeps): Promise<Response> {
   const parsed = await parseJsonBody<Body>(req);
   if (!parsed.ok) return parsed.response;
-  const g = parseSettingsInput(parsed.body, PROVIDERS, "global");
+  const g = parseSettingsInput(parsed.body, providersOf(deps), "global");
   if (!g.ok) return json({ error: g.error }, 400);
 
   deps.saveLlmSettings({
@@ -318,7 +350,7 @@ async function handlePutRoles(req: Request, deps: LlmSettingsRoutesDeps): Promis
   let parsedGlobal: ParsedSettings | null = null;
   if (body.global !== undefined) {
     if (typeof body.global !== "object" || body.global === null) return json({ error: "global must be an object" }, 400);
-    const g = parseSettingsInput(body.global as SettingsInput, PROVIDERS, "global");
+    const g = parseSettingsInput(body.global as SettingsInput, providersOf(deps), "global");
     if (!g.ok) return json({ error: g.error }, 400);
     parsedGlobal = g.value;
   }
@@ -331,7 +363,7 @@ async function handlePutRoles(req: Request, deps: LlmSettingsRoutesDeps): Promis
       if (!(LLM_ROLES as readonly string[]).includes(role)) return json({ error: `unknown role: ${role}` }, 400);
       const rv = rolesObj[role];
       if (typeof rv !== "object" || rv === null) return json({ error: `role ${role} must be an object` }, 400);
-      const p = parseSettingsInput(rv as SettingsInput, ROLE_PROVIDERS, "role");
+      const p = parseSettingsInput(rv as SettingsInput, roleProvidersOf(deps), "role");
       if (!p.ok) return json({ error: `${role}: ${p.error}` }, 400);
       parsedRoles.push({ role: role as LlmRole, value: p.value });
     }
@@ -356,7 +388,7 @@ async function handlePutRoles(req: Request, deps: LlmSettingsRoutesDeps): Promis
       const effortWhitelist =
         r === "global"
           ? (() => {
-              const globalProvider = parsedGlobal?.provider ?? storedGlobal?.provider ?? DEFAULT_LLM_SETTINGS.provider;
+              const globalProvider = parsedGlobal?.provider ?? storedGlobal?.provider ?? defaultSettingsOf(deps).provider;
               const providerOf = (rr: LlmRole): string =>
                 parsedRoles.find((p) => p.role === rr)?.value.provider ?? storedRoles[rr].provider;
               const anyCodex = LLM_ROLES.some((rr) => {
@@ -374,6 +406,9 @@ async function handlePutRoles(req: Request, deps: LlmSettingsRoutesDeps): Promis
 
   let parsedAuth: Partial<Record<LlmAuthProvider, AuthMode>> | null = null;
   if (body.auth !== undefined) {
+    if (distributionOf(deps) === "app-store") {
+      return json({ error: "Claude/Codex authentication is unavailable in the App Store build" }, 400);
+    }
     const a = parseAuthInput(body.auth, deps.getAuthKeysConfigured());
     if (!a.ok) return json({ error: a.error }, 400);
     parsedAuth = a.value;

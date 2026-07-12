@@ -38,20 +38,19 @@ provisioning profileを作り、開発担当者にはApp ManagerまたはDevelop
 Appleがmembershipの法人名から生成する表示を任意の人物名へ置き換えない。`BTAJP` や `BTA-JP` を
 Storeの開発元名として新設せず、既存アプリと同じ正式表記を使う。
 
-残る次の項目を決めるまで、App IDやApp Store Connectのアプリレコードを作らない。
+公開識別子とURLは次のとおり確定した。
 
-- 組織の正式なTeam ID
-- App Store用の本番Bundle ID
-- GitHub配布版とStore版でBundle IDとデータを共通化するか、別アプリとして分離するか
-- 無料か有料か。有料ならAccount HolderによるPaid Apps Agreement、税務、銀行情報が必要
-- 配布地域
-- プライバシーポリシーURL、サポートURL
+- Mac App Store版Bundle ID: `io.tsumugi.solo-eikaiwa`
+- GitHub配布版Bundle ID: `com.local.solo-eikaiwa.desktop`（変更しない）
+- プライバシーポリシーURL: `https://btajp.github.io/solo-eikaiwa/privacy.html`
+- サポートURL: `https://btajp.github.io/solo-eikaiwa/support.html`
 
-現行Bundle IDは `com.local.solo-eikaiwa.desktop` である。公開用の逆DNS名としてそのまま登録するかは、
-組織が管理するドメインと移行影響を確認してから決める。App Store Connectへbuildを一度アップロードするとBundle IDは変更できない。
+Bundle IDを分けるため、Store版とGitHub配布版はmacOS上で別アプリ・別データ領域・別Keychain/TCC権限として扱う。
+両方を同時に起動してもsidecarが競合しないよう、GitHub版は3111/3112、Store版は3211/3212を使う。
+App Store Connectへbuildを一度アップロードした後はBundle IDを変更しない。
 
-Bundle IDを変えると、macOS上では別アプリ・別データ領域・別Keychain/TCC権限として扱われる可能性がある。
-既存GitHub配布版からの移行方法も同時に設計する。
+価格と配布地域はStore提出前に確定する。有料にする場合だけ、Account HolderによるPaid Apps Agreement、
+税務、銀行情報の完了が必要になる。
 
 ## 3. Account Holderが最初に行う操作
 
@@ -222,27 +221,23 @@ xcrun stapler validate /Applications/solo-eikaiwa.app
 Mac App Store版は、現在のGitHub配布版をそのままpkg化して提出できない。
 AppleはMac App StoreアプリにApp Sandboxを必須としている。
 
-現状との差分:
+実装状況:
 
-| 項目 | 現状 | Store版で必要な対応 |
-| --- | --- | --- |
-| Bundle ID | `com.local.solo-eikaiwa.desktop` | 組織で本番IDを確定し、Explicit App IDを登録 |
-| App Sandbox | 未有効 | Store専用entitlementsで有効化 |
-| main app entitlements | microphone、JIT、unsigned executable memory | sandbox、microphone、network権限を最小化し、JIT系権限の必要性を再検証 |
-| solo-server | Tauri externalBinとしてspawn | sandbox継承helperとして署名し、sandbox内E2Eを通す |
-| whisper-cli | Resources内の実行ファイル | sandbox継承helperとして署名し、モデル・一時ファイルのcontainer内動作を確認 |
-| 外部CLI | login shell PATHからClaude/Codex等を探索 | Store版で無効化するか、Store審査可能なAPI/ローカルHTTP経路へ限定 |
-| Keychain | `security` CLIをspawn | sandbox内動作を検証し、必要ならSecurity frameworkへ置換 |
-| 自動更新 | GitHubのlatest.jsonからappを差し替える | Store版では無効化し、Mac App Store更新へ一本化 |
-| Whisper model | 初回に0.5GBまたは1.6GBをダウンロード | 追加resourceで機能を有効化する審査リスクを解消。小モデル同梱またはApple-hosted asset等を検討 |
-| Store設定 | なし | category、Store専用Info.plist、entitlements、provisioning profile、build番号を追加 |
+| 項目 | Store版の実装 |
+| --- | --- |
+| Bundle ID・データ | `io.tsumugi.solo-eikaiwa`、Store専用container、3211/3212番port |
+| App Sandbox | main appにsandbox、マイク、network client/server、Bun実行に必要なJIT権限を付与 |
+| solo-server | sandbox継承とJIT権限で署名し、Store配布識別子を環境へ固定 |
+| whisper-cli・Keychain helper | sandbox継承署名。Keychainは`security` CLIを使わずSecurity frameworkで操作 |
+| LLM | Store版だけClaude/Codex CLIを候補・catalog・spawn経路から除外し、OpenAI公式・OpenAI互換に限定 |
+| 自動更新 | Store featureではupdater plugin、起動確認、メニューをコンパイル対象外にする |
+| Store設定 | 専用Tauri config、entitlements、profile埋込み、署名、pkg、Apple検証・upload scriptを追加 |
+| Whisper model | 固定URL・サイズ・SHA-256で検証して利用者が取得。追加resourceとしての審査判断はReview Notesへ明記 |
 
-特に重要なのはhelper署名である。Appleの手順では、sandboxed app内のコマンドラインtoolは
-`com.apple.security.app-sandbox=true` と `com.apple.security.inherit=true` を持つ署名が必要。
-現在のBun compile版solo-serverがその条件だけで実行できるか、最初に技術スパイクで確認する。
-動かなければ、sidecarのRust統合、XPC化、またはStore版の機能分離が必要になる。
-
-Store版の実装が完了するまでは、App Store Connectへbinaryをアップロードしない。
+技術スパイクでは、Appleがhelperの基本形として示すsandboxとinheritだけではBun runtimeが
+`SharedArrayBuffer`を初期化できず終了した。solo-serverにJITとunsigned executable memoryを追加した状態では、
+Sandbox内でmain app、sidecar、`/api/llm-settings`、`/api/llm-models`の起動を確認済みである。
+ただし、この組合せをAppleが受理するかは本番証明書で作ったpkgのvalidate結果を最終判定とする。
 
 ## 6. Mac App Store用のApple側資産
 
@@ -254,7 +249,7 @@ Account HolderまたはAdminが「Certificates, Identifiers & Profiles > Identif
 
 - Platform: App
 - Type: Explicit App ID
-- Bundle ID: 組織で確定した本番Bundle ID
+- Bundle ID: `io.tsumugi.solo-eikaiwa`
 - Capability: App Sandboxと実際に使う機能だけ
 
 ### 6.2 Store用証明書
@@ -280,16 +275,19 @@ Store専用Tauri configから `embedded.provisionprofile` としてapp bundleへ
 
 ## 7. Store用build、pkg、upload
 
-以下はStore対応実装と署名資産が揃った後の形である。現在のリポジトリにはStore専用configとscriptが未実装なので、
-そのままコピーして実行しない。
+Storeの公開値とローカル資産は、リポジトリ外の`app-store.env`へ置く。必要な項目はBundle ID、
+単調増加するbuild number、Team ID、app用とinstaller用のidentity、provisioning profile、
+App Store Connect API keyの識別子・issuer・秘密鍵pathである。ファイルは所有者だけが読める権限にする。
 
-1. Store専用configでself-updaterと外部CLI探索を無効化する
-2. Store専用entitlementsとprovisioning profileを適用する
-3. main app、solo-server、whisper-cliをそれぞれ正しいentitlementsで署名する
-4. sandbox状態で録音、STT、保存、ネットワーク、終了時の子プロセス停止をE2E確認する
-5. Apple Distribution系identityで `.app` をbuildする
-6. Mac Installer Distribution identityで `.pkg` を作る
-7. App Store Connectへvalidate/uploadする
+```bash
+chmod 600 "$HOME/.config/solo-eikaiwa/app-store.env"
+./scripts/build-app-store.sh sandbox  # ad-hoc署名でSandbox起動確認
+./scripts/build-app-store.sh package  # Store署名、pkg作成、Apple validate
+./scripts/build-app-store.sh upload   # packageとvalidate後、App Store Connectへupload
+```
+
+scriptはrelease検証、Store専用sidecar/resources、Tauri app、nested helper、main app、installer pkgの順に
+build・署名し、Bundle ID、build number、profile、署名を確認してからAppleへ送る。
 
 Tauri公式手順のpkg生成形式:
 

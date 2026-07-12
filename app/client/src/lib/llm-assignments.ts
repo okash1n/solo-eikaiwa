@@ -25,11 +25,23 @@ export type Connection = { baseUrl: string; model: string; openaiModel?: string;
 export type EndpointLocation = "loopback" | "lan" | "remote" | "invalid";
 export type EndpointClassification = { location: EndpointLocation; origin: string | null };
 const OPENAI_OFFICIAL_BASE_URL = "https://api.openai.com/v1";
-export type RoleTargetAvailabilityReason = "connection" | "authentication";
+export type RoleTargetAvailabilityReason = "connection" | "authentication" | "distribution";
 export type RoleTargetAvailability = Record<
   RoleTarget,
   { available: boolean; reason?: RoleTargetAvailabilityReason }
 >;
+
+const ROLE_TARGET_ORDER: readonly RoleTarget[] = ["claude", "openai", "local", "codex"];
+
+/** 配布経路が公開するproviderだけを、用途割当UIの表示順へ写像する。 */
+export function roleTargetsForAvailableProviders(
+  availableProviders?: readonly LlmSettingsView["provider"][],
+): RoleTarget[] {
+  if (!availableProviders) return [...ROLE_TARGET_ORDER];
+  return ROLE_TARGET_ORDER.filter((target) =>
+    availableProviders.includes(target === "local" ? "openai-compat" : target),
+  );
+}
 
 function normalizeEndpointHostname(hostname: string): string {
   let lower = hostname.trim().toLowerCase();
@@ -121,6 +133,9 @@ export function roleTargetAvailability(
   view: LlmSettingsView,
   conn: Connection,
 ): RoleTargetAvailability {
+  const availableProviders = view.availableProviders ?? ["claude", "openai", "openai-compat", "codex"];
+  const included = (provider: "claude" | "openai" | "openai-compat" | "codex") =>
+    availableProviders.includes(provider);
   const authModes = hydrateAuthModes(view);
   const authKeys = hydrateAuthKeys(view);
   const cloud = (mode: AuthMode, keyConfigured: boolean) => mode === "subscription" || keyConfigured
@@ -138,14 +153,20 @@ export function roleTargetAvailability(
   }
 
   return {
-    claude: cloud(authModes.claude, authKeys.anthropic),
-    openai: !(conn.openaiModel ?? "").trim()
+    claude: included("claude")
+      ? cloud(authModes.claude, authKeys.anthropic)
+      : { available: false, reason: "distribution" },
+    openai: !included("openai")
+      ? { available: false, reason: "distribution" }
+      : !(conn.openaiModel ?? "").trim()
       ? { available: false, reason: "connection" }
       : view.openAiKeyConfigured === true
       ? { available: true }
       : { available: false, reason: "authentication" },
-    local,
-    codex: cloud(authModes.codex, authKeys.codex),
+    local: included("openai-compat") ? local : { available: false, reason: "distribution" },
+    codex: included("codex")
+      ? cloud(authModes.codex, authKeys.codex)
+      : { available: false, reason: "distribution" },
   };
 }
 
@@ -315,7 +336,11 @@ export function hydrateTargets(view: LlmSettingsView): RoleTargets {
  *   （プリセット適用は tuning を変更しない — 呼び出し側が現在の tuning state をそのまま渡す）。
  */
 /** 接続タブだけが保存する global 設定を直列化する。 */
-export function buildGlobalConnectionPayload(conn: Connection, currentProvider?: LlmSettingsView["provider"]): LlmSettingsInput {
+export function buildGlobalConnectionPayload(
+  conn: Connection,
+  currentProvider?: LlmSettingsView["provider"],
+  availableProviders: readonly LlmSettingsView["provider"][] = ["claude", "openai", "openai-compat", "codex"],
+): LlmSettingsInput {
   const baseUrl = conn.baseUrl.trim();
   const model = conn.model.trim();
   const openaiModel = (conn.openaiModel ?? "").trim();
@@ -326,12 +351,14 @@ export function buildGlobalConnectionPayload(conn: Connection, currentProvider?:
     : provider === "openai" ? Boolean(openaiModel)
     : provider === "codex" ? Boolean(codexModel)
     : true;
-  const provider = currentProvider && usable(currentProvider)
+  const allowed = (provider: LlmSettingsView["provider"]) => availableProviders.includes(provider);
+  const provider = currentProvider && allowed(currentProvider) && usable(currentProvider)
     ? currentProvider
-    : localDefined ? "openai-compat"
-    : openaiModel ? "openai"
-    : codexModel ? "codex"
-    : "claude";
+    : localDefined && allowed("openai-compat") ? "openai-compat"
+    : openaiModel && allowed("openai") ? "openai"
+    : codexModel && allowed("codex") ? "codex"
+    : allowed("claude") ? "claude"
+    : availableProviders[0] ?? "openai";
   return {
     provider,
     ...(localDefined ? { baseUrl, model } : {}),

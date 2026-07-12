@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>プライバシーポリシー — solo-eikaiwa</title>
+<meta name="description" content="solo-eikaiwaのデータ保存、外部送信、保持と削除に関するプライバシーポリシー。">
+<link rel="canonical" href="https://btajp.github.io/solo-eikaiwa/privacy.html">
+<link rel="stylesheet" href="legal.css">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+</head>
+<body>
+<header class="wrap">
+  <a class="back" href="./">solo-eikaiwa に戻る</a>
+  <h1>プライバシーポリシー</h1>
+  <p class="meta">運営者: Business Technology Association Japan<br>制定・最終更新: 2026年7月12日</p>
+</header>
+<main class="wrap">
+  <h2>1. 基本方針</h2>
+  <p>solo-eikaiwaは、録音、文字起こし、練習履歴、進捗などの学習データを利用者のMac内に保存するlocal-firstアプリです。Business Technology Association Japan（以下「運営者」）が運営するサーバへ、これらの学習データを送信・収集する機能はありません。広告、トラッキング、利用分析用SDK、運営者アカウントも使用しません。</p>
+
+  <h2>2. Mac内で処理・保存するデータ</h2>
+  <ul>
+    <li>マイク録音と、whisper.cppによる文字起こし</li>
+    <li>会話、練習履歴、進捗、自己評価、設定、音声や教材のキャッシュ</li>
+    <li>利用者が登録したAPIキー。APIキーはmacOS Keychainへ保存し、画面、データベース、ログ、API応答へ値を表示しません</li>
+  </ul>
+  <p>マイク音声そのものをAI providerへ送信することはありません。</p>
+
+  <h2>3. 利用者が選択したAI providerへの送信</h2>
+  <p>会話、添削、解説、教材生成などのAI機能を実行するときだけ、発話の文字起こし、入力したテキスト、プロンプト、必要な会話文脈を、利用者が設定画面で選択したproviderへ送信します。クラウドTTSを選んだ場合は、読み上げ対象のテキストを送信します。</p>
+  <ul>
+    <li>OpenAI公式: OpenAIのAPIへ送信します</li>
+    <li>ClaudeまたはCodexを利用できる直接配布版: 選択したAnthropicまたはOpenAIの経路へ送信します</li>
+    <li>OpenAI互換: 利用者が指定したこのMac、LAN、またはHTTPS接続先へ送信します</li>
+  </ul>
+  <p>送信前の設定画面には、処理場所と接続先originを表示します。利用者がproviderを設定・選択してAI機能を実行することが、当該providerへの送信指示となります。送信後の取扱い、保持、削除、越境移転は各providerの規約とプライバシーポリシーに従います。利用者が独自のOpenAI互換接続先を指定する場合は、その運営者の取扱いを確認してください。</p>
+  <p>運営者が標準対応先として案内する第三者providerには、本ポリシーと適用法令が求めるものと同等以上の保護を利用者データへ適用することを求めます。利用者が独自に指定するOpenAI互換接続先は運営者が選定・管理するサービスではないため、利用者自身で保護内容を確認してください。</p>
+
+  <h2>4. 利用目的</h2>
+  <p>Mac内のデータと選択したproviderの処理結果は、英会話練習、文字起こし、会話応答、添削、解説、音声合成、進捗表示など、利用者が要求したアプリ機能の提供にだけ使用します。広告、販売、ユーザープロファイル作成、第三者横断トラッキングには使用しません。</p>
+
+  <h2>5. 保持、削除、同意の撤回</h2>
+  <p>Mac内の学習データは、利用者がアプリのデータコンテナを削除するまで保持されます。運営者はそのデータへアクセスできず、運営者側に削除対象となるクラウドアカウントや学習データはありません。APIキーは設定画面から削除できます。</p>
+  <p>外部送信を止めるには、クラウドproviderの割当を外す、OpenAI互換をこのMacの接続先へ変更する、またはAPIキーを削除してください。すでにproviderへ送信したデータの削除依頼は、そのproviderへ直接行う必要があります。</p>
+
+  <h2>6. セキュリティ</h2>
+  <p>アプリのローカルAPIはloopbackだけで待ち受け、許可していないHost、Origin、cross-site要求を拒否します。APIキーは用途と接続先を限定し、認証付き通信はHTTPSまたは許可したloopback HTTPだけを使用します。診断ログへAPIキー、認証header、発話本文を保存しません。</p>
+
+  <h2>7. 児童の利用</h2>
+  <p>本アプリは児童を主な対象としておらず、年齢、氏名、連絡先を収集しません。教育現場等で未成年者が利用する場合は、管理者または保護者が選択するAI providerの規約とデータ取扱いを確認してください。</p>
+
+  <h2>8. お問い合わせ</h2>
+  <p>本ポリシーとアプリのデータ取扱いに関する連絡は、<a href="support.html">サポートページ</a>または<a href="mailto:developer@btajp.org">developer@btajp.org</a>へお願いします。</p>
+
+  <section class="en" lang="en">
+    <h2>Privacy summary in English</h2>
+    <p>solo-eikaiwa stores recordings, transcripts, learning history, progress, and settings locally on your Mac. The operator, Business Technology Association Japan, does not operate a server that receives this learning data and does not use advertising, tracking, or analytics SDKs.</p>
+    <p>Microphone audio remains on your Mac and is transcribed locally. When you explicitly use an AI or cloud TTS feature, the app sends only the required text and context to the provider or OpenAI-compatible endpoint you selected. The provider's terms and privacy policy govern data after transmission.</p>
+    <p>Local data remains until you remove the app's data container. You can remove API keys in Settings and revoke future cloud transmission by changing provider assignments or removing keys. Contact us through the <a href="support.html">support page</a>.</p>
+  </section>
+</main>
+<footer><div class="wrap">© 2026 Business Technology Association Japan. All Rights Reserved.</div></footer>
+</body>
+</html>
