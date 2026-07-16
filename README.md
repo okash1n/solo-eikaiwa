@@ -198,7 +198,7 @@ echo "127.0.0.1 solo-eikaiwa" | sudo tee -a /etc/hosts   # https://solo-eikaiwa 
 
 #### 日常の更新（常駐化済みの場合）
 
-通常の更新では、依存をlockfileどおりに揃え、クライアントをビルドします。クライアントだけの変更はビルド完了時点で配信に反映されます。サーバ本体・サーバ依存・起動ラッパーを更新したときだけ、既存のLaunchAgentを再起動してください。
+通常の更新では、依存をlockfileどおりに揃え、クライアントをビルドします。クライアントだけの変更はビルド完了時点で配信に反映されます。サーバ本体・サーバ依存・起動ラッパーを更新したときだけ、既存のLaunchAgentを再起動してください。なお検証ゲート（`./scripts/verify.sh pr`）は検証専用の `dist-verify` へビルドするため、配信への反映には下記の `bun run build` が必要です。
 
 ```bash
 git pull --ff-only
@@ -493,13 +493,15 @@ Codex（`codex app-server`）は実験的プロトコルに依存するため、
 ## テスト
 
 ```bash
-./scripts/verify.sh pr       # build・型・shellcheck・全test・教材検証
+./scripts/verify.sh pr       # build(dist-verify)・型・shellcheck・全test・教材検証・a11y(Playwright)
 ./scripts/verify.sh desktop  # desktop変更時: cargo test + clippy（locked）
 ./scripts/verify.sh audit    # Bun/Cargo依存監査（定期実行と同じ）
 ./scripts/smoke-stt.sh       # STT 実機スモーク
 ```
 
-PRでは`core`・`desktop`・`accessibility`をread-only GitHub Actionsで確認する。依存監査は外部監査DB障害でPRを不安定にしないよう週次と手動実行に分離し、release時には必須で実行する。
+`verify.sh pr` の client build は検証専用の `app/client/dist-verify` へ出力するため、常駐サーバが配信している `app/client/dist` は変わりません（配信への反映は「日常の更新」の `bun run build` だけ）。a11y回帰テスト（Playwright + axe）も同ゲートに含まれ、初回実行時に Chromium を自動ダウンロードします。
+
+PRでは`core`・`desktop`・`accessibility`をread-only GitHub Actionsで確認する（3つとも main へのマージに必須のstatus check）。依存監査は外部監査DB障害でPRを不安定にしないよう週次と手動実行に分離し、release時には必須で実行する。
 
 ## ドキュメント
 
