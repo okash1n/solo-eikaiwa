@@ -223,9 +223,10 @@ describe("topic-assets / hasOfflineModelTalk（LLMなしで解決できるかの
   });
 
   test("同梱が無くてもDBキャッシュにあればtrue", () => {
-    const { topicsDir, assetsDir, cleanup } = makeDirs();
+    const { topicsDir, assetsDir, topicContent, cleanup } = makeDirs();
     const cache = makeTopicAssetCacheStore(openDb(":memory:"));
-    cache.saveModelTalk("t1", 3, "cached talk");
+    // #206以降のキャッシュキーは topicId|sourceHash|promptVersion の複合キー
+    cache.saveModelTalk(topicAssetCacheKey("t1", computeSourceHash(topicContent)), 3, "cached talk");
     expect(hasOfflineModelTalk("t1", 3, { assetsDir, topicsDir, cache })).toBe(true);
     expect(hasOfflineModelTalk("t1", 4, { assetsDir, topicsDir, cache })).toBe(false);
     cleanup();
