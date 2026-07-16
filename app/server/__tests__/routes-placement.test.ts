@@ -31,7 +31,8 @@ describe("placement API", () => {
       }),
     });
     const res = await makeFetchHandler(deps)(new Request("http://localhost/api/placement/submit", {
-      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ tasks: VALID_TASKS }),
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ tasks: VALID_TASKS, submissionId: "placement-route-0001" }),
     }));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ stage: 2, startLevel: 13, rationale: "簡単な文は安定しています。" });
@@ -39,17 +40,22 @@ describe("placement API", () => {
     expect(xpCalls).toEqual([{ kind: "placement", amount: 10 }]);
   });
 
-  test("POST submit の400系: 件数不足・未知taskId・重複taskId・空transcript・不正duration/wordCount", async () => {
+  test("POST submit の400系: 件数不足・未知taskId・重複taskId・空transcript・不正duration/wordCount・submissionId欠落", async () => {
     const { deps } = makeTestDeps();
     const handler = makeFetchHandler(deps);
-    const post = (tasks: unknown) =>
-      handler(new Request("http://localhost/api/placement/submit", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ tasks }) }));
+    const post = (tasks: unknown, submissionId: unknown = "placement-route-400x") =>
+      handler(new Request("http://localhost/api/placement/submit", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ tasks, submissionId }),
+      }));
     expect((await post(VALID_TASKS.slice(0, 2))).status).toBe(400);
     expect((await post([{ ...VALID_TASKS[0], taskId: "nope" }, VALID_TASKS[1], VALID_TASKS[2]])).status).toBe(400);
     expect((await post([VALID_TASKS[0], VALID_TASKS[0], VALID_TASKS[2]])).status).toBe(400);
     expect((await post([{ ...VALID_TASKS[0], transcript: "  " }, VALID_TASKS[1], VALID_TASKS[2]])).status).toBe(400);
     expect((await post([{ ...VALID_TASKS[0], durationSec: 0 }, VALID_TASKS[1], VALID_TASKS[2]])).status).toBe(400);
     expect((await post([{ ...VALID_TASKS[0], wordCount: -1 }, VALID_TASKS[1], VALID_TASKS[2]])).status).toBe(400);
+    expect((await post(VALID_TASKS, null)).status).toBe(400);
+    expect((await post(VALID_TASKS, "bad key!")).status).toBe(400);
   });
 
   test("POST submit: 評価が null なら 502 で保存しない", async () => {
@@ -61,7 +67,8 @@ describe("placement API", () => {
       }),
     });
     const res = await makeFetchHandler(deps)(new Request("http://localhost/api/placement/submit", {
-      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ tasks: VALID_TASKS }),
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ tasks: VALID_TASKS, submissionId: "placement-route-0502" }),
     }));
     expect(res.status).toBe(502);
     expect(saved).toHaveLength(0);

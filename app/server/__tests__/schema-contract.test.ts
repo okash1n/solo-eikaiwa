@@ -95,7 +95,33 @@ describe("database schema contract", () => {
     });
   });
 
-  test("必須indexの欠落を検出し、不完全なDBへindexを追加しない", () => {
+  test("後付けCREATE INDEXの欠落は非互換とせず、データを保ったまま起動時に自己修復する", () => {
+    withFixture((dbPath) => {
+      // v0.21以前のDB形状: xp_events はあるが idx_xp_events_ymd（v0.22で後付け）が無い
+      const fixture = new Database(dbPath, { create: true });
+      fixture.run(`CREATE TABLE xp_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ts TEXT NOT NULL,
+        ymd TEXT NOT NULL,
+        kind TEXT NOT NULL,
+        amount INTEGER NOT NULL,
+        meta TEXT
+      )`);
+      fixture.run(
+        "INSERT INTO xp_events (ts, ymd, kind, amount, meta) VALUES (?, ?, ?, ?, NULL)",
+        ["2026-07-10T00:00:00.000Z", "2026-07-10", "block", 6],
+      );
+      fixture.close();
+
+      const db = openDb(dbPath);
+      expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM xp_events").get()!.n).toBe(1);
+      const indexes = db.query<{ name: string }, []>("PRAGMA index_list('xp_events')").all();
+      expect(indexes.map((i) => i.name)).toContain("idx_xp_events_ymd");
+      db.close();
+    });
+  });
+
+  test("既存indexの定義不一致は非互換として拒否する（自己修復できない差分）", () => {
     withFixture((dbPath) => {
       const fixture = new Database(dbPath, { create: true });
       fixture.run(`CREATE TABLE xp_events (
@@ -106,18 +132,43 @@ describe("database schema contract", () => {
         amount INTEGER NOT NULL,
         meta TEXT
       )`);
+      // 同名で列が異なる index（CREATE INDEX IF NOT EXISTS では直せない）
+      fixture.run("CREATE INDEX idx_xp_events_ymd ON xp_events(kind)");
       fixture.close();
       const before = readFileSync(dbPath);
 
       const error = captureOpenError(dbPath);
       expect(error.message).toContain("xp_events.idx_xp_events_ymd");
+      expect(error.message).toContain("columns=[ymd]");
+      expect(error.message).toContain("columns=[kind]");
+      expect(readFileSync(dbPath)).toEqual(before);
+    });
+  });
+
+  test("UNIQUE制約由来のindex欠落は自己修復できないため引き続き拒否する", () => {
+    withFixture((dbPath) => {
+      // collected_chunks を UNIQUE 制約なしで作る（ensure の CREATE TABLE IF NOT EXISTS では直せない）
+      const fixture = new Database(dbPath, { create: true });
+      fixture.run(`CREATE TABLE collected_chunks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        created TEXT NOT NULL,
+        source TEXT NOT NULL,
+        prompt_text TEXT NOT NULL,
+        en TEXT NOT NULL,
+        norm_en TEXT NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
+        stage INTEGER NOT NULL DEFAULT 0,
+        due TEXT NOT NULL,
+        last_grade TEXT,
+        reviews INTEGER NOT NULL DEFAULT 0
+      )`);
+      fixture.close();
+      const before = readFileSync(dbPath);
+
+      const error = captureOpenError(dbPath);
+      expect(error.message).toContain("collected_chunks");
       expect(error.message).toContain("実際: missing");
       expect(readFileSync(dbPath)).toEqual(before);
-
-      const unchanged = new Database(dbPath, { readonly: true });
-      const indexes = unchanged.query<{ name: string }, []>("PRAGMA index_list('xp_events')").all();
-      expect(indexes).toEqual([]);
-      unchanged.close();
     });
   });
 });

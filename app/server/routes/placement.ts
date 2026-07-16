@@ -1,6 +1,7 @@
 import { PLACEMENT_TASKS, type PlacementEvaluation, type PlacementStore, type PlacementSubmission } from "../placement";
 import type { ProgressStore } from "../progress-store";
 import { PLACEMENT_XP } from "../progression";
+import { isIdempotencyKey } from "../idempotency-key";
 import { json, parseJsonBody, exact, bestEffort, type RouteEntry } from "./http";
 
 export type PlacementRoutesDeps = {
@@ -13,10 +14,22 @@ export type PlacementRoutesDeps = {
   invalidateMenuCache: () => void;
 };
 
+function evaluationResponse(ev: PlacementEvaluation): Response {
+  return json({ stage: ev.stage, startLevel: ev.startLevel, rationale: ev.rationaleJa });
+}
+
+/** submissionId が同じでもタスク内容が違う再利用を弾くための同一性キー（taskId順で正規化） */
+function tasksFingerprint(subs: PlacementSubmission[]): string {
+  return JSON.stringify([...subs].sort((a, b) => a.taskId.localeCompare(b.taskId)));
+}
+
 async function handlePlacementSubmit(req: Request, deps: PlacementRoutesDeps): Promise<Response> {
-  const parsed = await parseJsonBody<{ tasks?: unknown }>(req);
+  const parsed = await parseJsonBody<{ tasks?: unknown; submissionId?: unknown }>(req);
   if (!parsed.ok) return parsed.response;
-  const tasks = parsed.body.tasks;
+  const { tasks, submissionId } = parsed.body;
+  if (!isIdempotencyKey(submissionId)) {
+    return json({ error: "submissionId must be an idempotency key of 8..128 safe characters" }, 400);
+  }
   if (!Array.isArray(tasks) || tasks.length !== PLACEMENT_TASKS.length) {
     return json({ error: `tasks must be an array of ${PLACEMENT_TASKS.length} submissions` }, 400);
   }
@@ -39,19 +52,34 @@ async function handlePlacementSubmit(req: Request, deps: PlacementRoutesDeps): P
     }
     subs.push({ taskId: def.id, transcript: raw.transcript, durationSec: raw.durationSec, wordCount: raw.wordCount });
   }
+  const fingerprint = tasksFingerprint(subs);
+  // 応答消失後の再送: 台帳に初回結果があれば、LLM評価・保存・XP付与を再実行せず同じ応答を返す
+  const prior = deps.placementStore.findSubmission(submissionId);
+  if (prior) {
+    if (prior.fingerprint !== fingerprint) {
+      return json({ error: "submissionId was already used for different data" }, 409);
+    }
+    return evaluationResponse(prior.evaluation);
+  }
   const ev = await deps.evaluatePlacement(subs);
   if (!ev) return json({ error: "evaluation failed — please try submitting again" }, 502);
-  deps.placementStore.save({
-    stage: ev.stage, startLevel: ev.startLevel, rationale: ev.rationaleJa,
+  const outcome = deps.placementStore.recordSubmission({
+    submissionId,
+    fingerprint,
+    evaluation: ev,
     metrics: subs.map((s) => ({
       taskId: s.taskId, wordCount: s.wordCount, durationSec: s.durationSec,
       density: s.durationSec > 0 ? s.wordCount / s.durationSec : 0,
     })),
+  }, () => {
+    // 測定完了XP（スペック§4.1: 10固定）。付与失敗で測定結果は失敗させない
+    bestEffort("[placement] xp grant failed, continuing:", () =>
+      deps.progressStore.addXp("placement", PLACEMENT_XP, {}));
   });
-  // 測定完了XP（スペック§4.1: 10固定）。付与失敗で測定結果は失敗させない
-  bestEffort("[placement] xp grant failed, continuing:", () =>
-    deps.progressStore.addXp("placement", PLACEMENT_XP, {}));
-  return json({ stage: ev.stage, startLevel: ev.startLevel, rationale: ev.rationaleJa });
+  if (outcome.status === "conflict") {
+    return json({ error: "submissionId was already used for different data" }, 409);
+  }
+  return evaluationResponse(outcome.evaluation);
 }
 
 async function handlePlacementConfirm(req: Request, deps: PlacementRoutesDeps): Promise<Response> {
