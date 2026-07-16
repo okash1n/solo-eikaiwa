@@ -23,6 +23,7 @@ import {
   authDraftChanged, connectionDraftChanged, makeSaveGenerationTracker, mergeAuthSaveView, mergeConnectionSaveView, mergeRolesSaveView,
   rolesDraftChanged, ttsDraftChanged, type ConnectionDraft,
 } from "../lib/settings-save-scopes";
+import { makeSerialLatestOps } from "../lib/serial-latest-ops";
 import { STR, type Lang } from "../i18n";
 import { formatClientError } from "../lib/user-error";
 import { Button } from "../ui/Button";
@@ -58,6 +59,9 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
   const [ttsSave, setTtsSave] = useState<SaveState>(IDLE_SAVE);
   const [tab, setTab] = useState<SettingsTab>("keys");
   const saveGenerationRef = useRef(makeSaveGenerationTracker());
+  // 複数のAPIキー欄は並行に操作できるため、secret操作は全フィールド共通で直列化し、
+  // 応答（保存/削除の結果と後続のsettings再取得）は最後に開始した操作の系列だけを反映する。
+  const secretOpsRef = useRef(makeSerialLatestOps());
   // モデルカタログ（GET /api/llm-models）。用途タブを開いたときに遅延取得する（app起動時には叩かない）。
   const [catalog, setCatalog] = useState<LlmModelsResponse | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(false);
@@ -339,37 +343,36 @@ export function SettingsScreen({ lang, uiScale, setUiScale, switchLang, onHealth
    * view/ttsViewだけを再取得する。
    * hydrate/hydrateTts は呼ばない — 編集中の接続・TTS 入力（未保存）をサーバ値で上書きして
    * 破棄してしまうため（レビュー指摘 2026-07-10）。
+   * 異なるキーの操作が並行しても古い応答が画面へ戻らないよう、操作は直列化し、
+   * secrets/再取得の反映は最後に開始した操作の系列に限定する（#186）。
    */
-  async function onSaveSecret(name: SecretName, value: string): Promise<SecretMutationResult> {
+  async function runSecretMutation(name: SecretName, mutate: () => Promise<SecretMutationResult>): Promise<SecretMutationResult> {
+    const op = secretOpsRef.current.begin(mutate);
+    const r = await op.settled;
+    op.apply(() => {
+      setSecrets(r.secrets);
+      if (name !== "TTS_API_KEY") {
+        catalogFetchedRef.current = false;
+        catalogRefreshRequiredRef.current = true;
+        setCatalog(null);
+      }
+    });
+    onHealthChanged();
+    fetchLlmSettings().then((v) => op.apply(() => setView(v))).catch(() => {});
+    fetchTtsSettings().then((v) => op.apply(() => setTtsView(v))).catch(() => {});
+    return r;
+  }
+  function onSaveSecret(name: SecretName, value: string): Promise<SecretMutationResult> {
+    // baseUrl は操作開始時点（クリック時）の保存済み値を使う。キュー待ちの間の編集を拾わない。
     const baseUrl = name === "OPENAI_COMPAT_API_KEY"
       ? savedConnection?.connection.baseUrl.trim()
       : name === "TTS_API_KEY"
       ? ttsView?.baseUrl?.trim()
       : undefined;
-    const r = await saveSecret(name, value, baseUrl);
-    setSecrets(r.secrets);
-    if (name !== "TTS_API_KEY") {
-      catalogFetchedRef.current = false;
-      catalogRefreshRequiredRef.current = true;
-      setCatalog(null);
-    }
-    onHealthChanged();
-    fetchLlmSettings().then(setView).catch(() => {});
-    fetchTtsSettings().then(setTtsView).catch(() => {});
-    return r;
+    return runSecretMutation(name, () => saveSecret(name, value, baseUrl));
   }
-  async function onDeleteSecret(name: SecretName): Promise<SecretMutationResult> {
-    const r = await deleteSecret(name);
-    setSecrets(r.secrets);
-    if (name !== "TTS_API_KEY") {
-      catalogFetchedRef.current = false;
-      catalogRefreshRequiredRef.current = true;
-      setCatalog(null);
-    }
-    onHealthChanged();
-    fetchLlmSettings().then(setView).catch(() => {});
-    fetchTtsSettings().then(setTtsView).catch(() => {});
-    return r;
+  function onDeleteSecret(name: SecretName): Promise<SecretMutationResult> {
+    return runSecretMutation(name, () => deleteSecret(name));
   }
   async function onSaveTts() {
     if (!ttsView) return;

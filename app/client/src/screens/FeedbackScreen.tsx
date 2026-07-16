@@ -5,6 +5,7 @@ import {
   transitionClipboardCopyStatus,
   type ClipboardCopyStatus,
 } from "../clipboard-copy";
+import { formatYmdLong } from "../dates";
 import { STR, type Lang } from "../i18n";
 import { formatClientError } from "../lib/user-error";
 import { useLoad } from "../useLoad";
@@ -89,7 +90,7 @@ export function FeedbackScreen({ lang }: { lang: Lang }) {
               return (
                 <Card
                   key={e.id}
-                  header={<>{t.at(e.ymd)}{" "}<span className="text-sm text-muted">{blockLabel} · {t.rating[e.rating]}</span></>}
+                  header={<>{formatYmdLong(e.ymd, lang)}{" "}<span className="text-sm text-muted">{blockLabel} · {t.rating[e.rating]}</span></>}
                 >
                   <p className="text-sm text-muted">
                     {t.levelStage(e.level, e.stage)}{e.refId ? ` · ${e.refId}` : ""}
