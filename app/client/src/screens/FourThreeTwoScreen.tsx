@@ -27,12 +27,6 @@ import { isDisclosureOpen, splitBilingualHint, toggleDisclosure } from "../suppo
 const DEFAULT_ROUNDS_SEC = [120, 90, 60];
 const PREP_SECONDS = 180;
 
-const LISTENERS = [
-  "Listener: a colleague who doesn't know this topic yet.",
-  "New listener: your manager. Tell the same story, faster.",
-  "New listener: someone at a conference. Same story, shorter.",
-] as const;
-
 type Phase = { kind: "prep" } | { kind: "round"; index: number } | { kind: "ae" } | { kind: "done" };
 type RecState = "idle" | "starting" | "recording" | "transcribing";
 type PrepState = "loading" | "ready" | "error";
@@ -485,7 +479,7 @@ export function FourThreeTwoScreen(props: {
       <h3>
         {t.roundHeading(roundIndex + 1, formatMmSs(roundsSec[roundIndex]), props.topic.title)}
       </h3>
-      <p className="text-muted">{LISTENERS[roundIndex % LISTENERS.length]}</p>
+      <p className="text-muted">{t.listeners[roundIndex % t.listeners.length]}</p>
       {canRevealJa && (hasTopicJapaneseHints || hasPrepJapaneseHints) && (
         <Button variant="secondary" onClick={toggleJaHints}>
           {showJa ? t.hideJaHints : t.showJaHints}

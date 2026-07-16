@@ -33,6 +33,7 @@ import {
   dismissSetupBanner, isSetupBannerDismissed, resumeSetupBanner, shouldShowSetupBanner, shouldShowSetupResume,
 } from "./lib/whisper-setup";
 import { healthRetryDelay } from "./lib/health-retry";
+import { makeLatestGeneration } from "./lib/latest-generation";
 import { reportClientError } from "./api/http";
 
 type SessionMode = { kind: "session"; source: MenuSource; sessionId: string };
@@ -515,14 +516,24 @@ function PracticeStat({ lang }: { lang: Lang }) {
   const [editValue, setEditValue] = useState("");
   const [editError, setEditError] = useState("");
   const fetchedRef = useRef(false);
+  // XP付与が続けて起きても、最後に始めた日数取得だけを画面へ反映する（古い応答での巻き戻し防止）
+  const daysGenerationRef = useRef(makeLatestGeneration());
+  const reloadDays = useCallback(() => {
+    const generation = daysGenerationRef.current.begin();
+    fetchPracticeDays()
+      .then((v) => { if (daysGenerationRef.current.isCurrent(generation)) setDays(v.days); })
+      .catch(() => {});
+  }, []);
   useEffect(() => {
     if (fetchedRef.current) return;
     fetchedRef.current = true;
-    fetchPracticeDays().then((v) => setDays(v.days)).catch(() => {});
+    reloadDays();
     fetchProgressSummary().then(setSummary).catch(() => {});
-  }, []);
-  // 他画面でのXP付与・レベル操作（提案の承認等）を購読し、再取得なしで最新値に追従する
-  useEffect(() => onProgressUpdate(setSummary), []);
+  }, [reloadDays]);
+  // 他画面でのXP付与・レベル操作（提案の承認等）を購読し、summary は通知値で即時更新する。
+  // 練習日数はXPイベントで増える（サーバ側で days = practiceDays ∪ xpByDay）ため、
+  // 同じ通知を機に日数も再取得し、リロードなしで「今週/累計」をカレンダーと一致させる（#212）
+  useEffect(() => onProgressUpdate((s) => { setSummary(s); reloadDays(); }), [reloadDays]);
   const t = STR[lang];
   const now = new Date();
   const weekAgo = new Date(now);

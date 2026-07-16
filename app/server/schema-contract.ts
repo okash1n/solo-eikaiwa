@@ -132,6 +132,10 @@ function findMismatches(db: Database, expected: SchemaContract): string[] {
       const actualIndex = actualIndexes.get(expectedIndex.name);
       const target = `${tableName}.${expectedIndex.name}`;
       if (!actualIndex) {
+        // 後付けの CREATE INDEX（origin='c'）の欠落は、検査後の ensure が
+        // CREATE INDEX IF NOT EXISTS で自己修復できるため非互換にしない（旧DBからの直接アップグレード対応）。
+        // UNIQUE/PK 由来（origin='u'/'pk'）は CREATE TABLE IF NOT EXISTS では直せないので fail-stop を維持する。
+        if (expectedIndex.origin === "c") continue;
         mismatches.push(`${target} — 期待: ${formatIndex(expectedIndex)}; 実際: missing`);
       } else if (formatIndex(actualIndex) !== formatIndex(expectedIndex)) {
         mismatches.push(

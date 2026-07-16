@@ -103,11 +103,22 @@ export function makeFakeSrsReviewStore(overrides: Partial<SrsReviewStore> = {}):
 }
 
 export function makeFakePlacementStore(overrides: Partial<PlacementStore> = {}): PlacementStore {
-  return {
+  const store: PlacementStore = {
     save: (r) => ({ id: 1, ts: "2026-07-06T00:00:00.000Z", stage: r.stage, startLevel: r.startLevel, rationale: r.rationale }),
     latest: () => null,
+    findSubmission: (_submissionId) => null,
+    // 実装と同じく「結果保存 + XP付与」を1回の適用として扱う（transactionの代わりに逐次実行）
+    recordSubmission: (input, grantXp) => {
+      store.save({
+        stage: input.evaluation.stage, startLevel: input.evaluation.startLevel,
+        rationale: input.evaluation.rationaleJa, metrics: input.metrics,
+      });
+      grantXp();
+      return { status: "applied", evaluation: input.evaluation };
+    },
     ...overrides,
-  } satisfies PlacementStore;
+  };
+  return store satisfies PlacementStore;
 }
 
 export function makeFakeLibraryStore(overrides: Partial<LibraryStore> = {}): LibraryStore {

@@ -8,7 +8,9 @@ describe("client error classification", () => {
     { status: 403, code: "AUTHORIZATION" },
     { status: 404, code: "NOT_FOUND" },
     { status: 408, code: "TIMEOUT" },
+    { status: 429, code: "BUSY" },
     { status: 500, code: "SERVER" },
+    { status: 503, code: "BUSY" },
     { status: 504, code: "TIMEOUT" },
   ];
 

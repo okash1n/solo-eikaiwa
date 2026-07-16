@@ -52,6 +52,8 @@ export function PlacementScreen(props: { lang: Lang; onBeforeStart?: () => boole
   const [appliedLevel, setAppliedLevel] = useState<number | null>(null);
 
   const recorderRef = useRef(new Recorder());
+  // 提出の冪等キー。初回提出時に発番し、失敗後の「再試行」では同じIDを送って二重記録を防ぐ
+  const submissionIdRef = useRef<string | null>(null);
   const recStateRef = useRef<RecState>("idle");
   const stopInFlightRef = useRef(false);
   const activeTaskIndexRef = useRef(0);
@@ -167,13 +169,14 @@ export function PlacementScreen(props: { lang: Lang; onBeforeStart?: () => boole
 
   async function submitAll() {
     setStep({ kind: "submitting" });
+    submissionIdRef.current ??= crypto.randomUUID();
     try {
       const result = await submitPlacement(tasks.map((def, i) => ({
         taskId: def.id,
         transcript: transcripts[i],
         durationSec: durations[i],
         wordCount: wordCountOf(transcripts[i]),
-      })));
+      })), submissionIdRef.current);
       if (!aliveRef.current) return;
       setStep({ kind: "result", result });
     } catch (err) {

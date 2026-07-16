@@ -89,12 +89,28 @@ export async function evaluatePlacement(
 }
 
 export type PlacementResultRow = { id: number; ts: string; stage: number; startLevel: number; rationale: string };
+/** submissionId 台帳の既存行。fingerprint はタスク内容の同一性判定に使う */
+export type PlacementSubmissionRecord = { fingerprint: string; evaluation: PlacementEvaluation };
+export type PlacementRecordOutcome =
+  | { status: "applied" | "duplicate"; evaluation: PlacementEvaluation }
+  | { status: "conflict" };
+export type PlacementRecordInput = {
+  submissionId: string;
+  fingerprint: string;
+  evaluation: PlacementEvaluation;
+  metrics: unknown;
+};
 export type PlacementStore = {
   save(r: { stage: number; startLevel: number; rationale: string; metrics: unknown }): PlacementResultRow;
   latest(): PlacementResultRow | null;
+  /** submissionId の台帳照会。再送で LLM 評価を再実行しないための事前チェック */
+  findSubmission(submissionId: string): PlacementSubmissionRecord | null;
+  /** 台帳確保・結果保存・XP付与(grantXp)を単一transactionで行い、再送には初回結果を返す（srs-review-store と同型） */
+  recordSubmission(input: PlacementRecordInput, grantXp: () => void): PlacementRecordOutcome;
 };
 
 type DbRow = { id: number; ts: string; stage: number; start_level: number; rationale: string };
+type SubmissionRow = { tasks_fingerprint: string; stage: number; start_level: number; rationale: string };
 
 export function ensurePlacementSchema(db: Database): void {
   db.run(`CREATE TABLE IF NOT EXISTS placement_results (
@@ -102,24 +118,76 @@ export function ensurePlacementSchema(db: Database): void {
     ts TEXT NOT NULL, stage INTEGER NOT NULL, start_level INTEGER NOT NULL,
     rationale TEXT NOT NULL, metrics TEXT NOT NULL
   )`);
+  // submit 再試行の冪等台帳（応答消失後の再送による測定結果・XPの二重記録を防ぐ）
+  db.run(`CREATE TABLE IF NOT EXISTS placement_submission_events (
+    submission_id TEXT PRIMARY KEY,
+    tasks_fingerprint TEXT NOT NULL,
+    stage INTEGER NOT NULL,
+    start_level INTEGER NOT NULL,
+    rationale TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  )`);
 }
 
 export function makePlacementStore(db: Database): PlacementStore {
+  function saveResult(r: { stage: number; startLevel: number; rationale: string; metrics: unknown }): PlacementResultRow {
+    const ts = new Date().toISOString();
+    db.run(
+      "INSERT INTO placement_results (ts, stage, start_level, rationale, metrics) VALUES (?, ?, ?, ?, ?)",
+      [ts, r.stage, r.startLevel, r.rationale, JSON.stringify(r.metrics)],
+    );
+    return { id: insertReturningId(db), ts, stage: r.stage, startLevel: r.startLevel, rationale: r.rationale };
+  }
+
+  function findSubmission(submissionId: string): PlacementSubmissionRecord | null {
+    const row = db.query<SubmissionRow, [string]>(
+      `SELECT tasks_fingerprint, stage, start_level, rationale
+       FROM placement_submission_events WHERE submission_id = ?`,
+    ).get(submissionId);
+    if (!row) return null;
+    return {
+      fingerprint: row.tasks_fingerprint,
+      evaluation: { stage: row.stage, startLevel: row.start_level, rationaleJa: row.rationale },
+    };
+  }
+
+  const recordTransaction = db.transaction((input: PlacementRecordInput, grantXp: () => void): PlacementRecordOutcome => {
+    const existing = findSubmission(input.submissionId);
+    if (existing) {
+      if (existing.fingerprint !== input.fingerprint) return { status: "conflict" };
+      return { status: "duplicate", evaluation: existing.evaluation };
+    }
+    db.run(
+      `INSERT INTO placement_submission_events
+       (submission_id, tasks_fingerprint, stage, start_level, rationale, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        input.submissionId, input.fingerprint,
+        input.evaluation.stage, input.evaluation.startLevel, input.evaluation.rationaleJa,
+        new Date().toISOString(),
+      ],
+    );
+    saveResult({
+      stage: input.evaluation.stage,
+      startLevel: input.evaluation.startLevel,
+      rationale: input.evaluation.rationaleJa,
+      metrics: input.metrics,
+    });
+    grantXp();
+    return { status: "applied", evaluation: input.evaluation };
+  });
+
   return {
-    save(r) {
-      const ts = new Date().toISOString();
-      db.run(
-        "INSERT INTO placement_results (ts, stage, start_level, rationale, metrics) VALUES (?, ?, ?, ?, ?)",
-        [ts, r.stage, r.startLevel, r.rationale, JSON.stringify(r.metrics)],
-      );
-      return { id: insertReturningId(db), ts, stage: r.stage, startLevel: r.startLevel, rationale: r.rationale };
-    },
+    save: saveResult,
     latest() {
       const row = db
         .query<DbRow, []>("SELECT id, ts, stage, start_level, rationale FROM placement_results ORDER BY id DESC LIMIT 1")
         .get();
       if (!row) return null;
       return { id: row.id, ts: row.ts, stage: row.stage, startLevel: row.start_level, rationale: row.rationale };
+    },
+    findSubmission,
+    recordSubmission(input, grantXp) {
+      return recordTransaction.immediate(input, grantXp);
     },
   };
 }
