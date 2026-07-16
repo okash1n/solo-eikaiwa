@@ -8,6 +8,7 @@ export type ClientErrorCode =
   | "TIMEOUT"
   | "AUTHORIZATION"
   | "NOT_FOUND"
+  | "BUSY"
   | "SERVER"
   | "UNKNOWN";
 
@@ -20,7 +21,7 @@ export type ClientErrorDetail = {
 };
 
 const MARKER_PREFIX = "solo-eikaiwa-error";
-const MARKER = new RegExp(`\\[\\[${MARKER_PREFIX}:(VALIDATION|OFFLINE|TIMEOUT|AUTHORIZATION|NOT_FOUND|SERVER|UNKNOWN):([A-Za-z0-9-]+)\\]\\]`);
+const MARKER = new RegExp(`\\[\\[${MARKER_PREFIX}:(VALIDATION|OFFLINE|TIMEOUT|AUTHORIZATION|NOT_FOUND|BUSY|SERVER|UNKNOWN):([A-Za-z0-9-]+)\\]\\]`);
 const MAX_RETAINED_DETAILS = 100;
 const detailsByReference = new Map<string, ClientErrorDetail>();
 const reportedReferences = new Set<string>();
@@ -42,6 +43,9 @@ function codeForStatus(status: number): ClientErrorCode {
   if (status === 408 || status === 504) return "TIMEOUT";
   if (status === 401 || status === 403) return "AUTHORIZATION";
   if (status === 404) return "NOT_FOUND";
+  // 429/503 は混雑・多重実行によるサーバ側拒否（STT同時実行の上限等）。
+  // 入力不備（VALIDATION）ではなく「少し待って再試行」の案内へつなぐ。
+  if (status === 429 || status === 503) return "BUSY";
   if (status >= 500) return "SERVER";
   if (status >= 400) return "VALIDATION";
   return "UNKNOWN";

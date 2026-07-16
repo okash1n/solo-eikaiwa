@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { serializeClientError } from "../api/http";
+import { extractErrorMessage, serializeClientError } from "../api/http";
+import { STR } from "../i18n";
 import { formatClientError } from "./user-error";
 
 const realConsoleError = console.error;
@@ -18,5 +19,20 @@ describe("利用者向けエラー文", () => {
     expect(ja).toContain("参照番号:");
     expect(`${en}\n${ja}`).not.toContain("secret-value");
     expect(`${en}\n${ja}`).not.toContain("/Users/example");
+  });
+
+  test("429（STT同時実行の上限等）は混雑の案内になり、入力確認の文言を出さない", async () => {
+    console.error = () => {};
+    const marker = await extractErrorMessage(new Response(JSON.stringify({ error: "stt queue full" }), {
+      status: 429,
+      headers: { "x-request-id": "trace-busy" },
+    }));
+    const en = formatClientError("en", new Error(marker), "record");
+    const ja = formatClientError("ja", new Error(marker), "record");
+
+    expect(en).toContain(STR.en.errors.category.BUSY);
+    expect(ja).toContain(STR.ja.errors.category.BUSY);
+    expect(en).not.toContain(STR.en.errors.category.VALIDATION);
+    expect(ja).not.toContain(STR.ja.errors.category.VALIDATION);
   });
 });

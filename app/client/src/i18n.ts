@@ -83,7 +83,7 @@ type ErrorStrings = { errors: {
   };
   category: {
     VALIDATION: string; OFFLINE: string; TIMEOUT: string; AUTHORIZATION: string;
-    NOT_FOUND: string; SERVER: string; UNKNOWN: string;
+    NOT_FOUND: string; BUSY: string; SERVER: string; UNKNOWN: string;
   };
   reference: (id: string) => string;
 } };
@@ -422,6 +422,8 @@ type Ftt432Strings = { ftt432: {
   aeTitle: string; aeLoading: string; aeNoRecording: string; startRound2: (time: string) => string;
   doneBody: (count: number) => string;
   roundHeading: (n: number, time: string, topic: string) => string;
+  /** ラウンドごとの聞き手指示（4/3/2 の中核: 毎回別の聞き手に、同じ話をより速く・短く）。roundIndex % length で参照する */
+  listeners: readonly [string, string, string];
   roundTimerAria: (n: number, time: string) => string;
   transcriptYou: string;
   timeUp: string; recStop: string; recStarting: string; recTranscribing: string; recStart: string; roundFinish: string;
@@ -480,7 +482,6 @@ type FeedbackScreenStrings = { feedbackScreen: {
   copy: string; copying: string; copied: string; copyFailed: string;
   rating: { hard: string; "just-right": string; easy: string };
   block: { session: string; "free-talk": string; listening: string };
-  at: (ymd: string) => string;
   levelStage: (level: number | null, stage: number | null) => string;
 } };
 
@@ -543,6 +544,7 @@ export const STR: Record<Lang, Strings> = {
         TIMEOUT: "The request took too long. Try again.",
         AUTHORIZATION: "Check the connection settings, then try again.",
         NOT_FOUND: "This item is no longer available. Go back and try another item.",
+        BUSY: "The service is busy right now. Wait a moment, then try again.",
         SERVER: "The local service had a problem. Try again shortly.",
         UNKNOWN: "Try again. If it continues, use the reference below when asking for help.",
       },
@@ -976,6 +978,11 @@ export const STR: Record<Lang, Strings> = {
       aeNoRecording: "No recording, so there are no coach notes", startRound2: (time) => `Start Round 2 (${time})`,
       doneBody: (count) => `4/3/2 done! You told the same story ${count} times, a little faster each round.`,
       roundHeading: (n, time, topic) => `Round ${n} (${time}) — ${topic}`,
+      listeners: [
+        "Listener: a colleague who doesn't know this topic yet.",
+        "New listener: your manager. Tell the same story, faster.",
+        "New listener: someone at a conference. Same story, shorter.",
+      ],
       roundTimerAria: (n, time) => `Round ${n} speaking time remaining: ${time}.`,
       transcriptYou: "You:",
       timeUp: "— Time reached", recStop: "⏹ Stop recording", recStarting: "Requesting microphone…", recTranscribing: "📝 Transcribing…",
@@ -1054,7 +1061,6 @@ export const STR: Record<Lang, Strings> = {
       copy: "Copy as Markdown", copying: "Copying…", copied: "Copied.", copyFailed: "Couldn't copy. Check clipboard permission and try again.",
       rating: { hard: "Too hard", "just-right": "Just right", easy: "Too easy" },
       block: { session: "Session", "free-talk": "Free talk", listening: "Listening" },
-      at: (ymd) => ymd,
       levelStage: (level, stage) =>
         [level !== null ? `Lv${level}` : null, stage !== null ? `Stage${stage}` : null].filter(Boolean).join(" · ") || "—",
     },
@@ -1108,6 +1114,7 @@ export const STR: Record<Lang, Strings> = {
         TIMEOUT: "処理に時間がかかりすぎました。もう一度お試しください。",
         AUTHORIZATION: "接続設定を確認して、もう一度お試しください。",
         NOT_FOUND: "この項目は利用できなくなりました。戻って別の項目をお試しください。",
+        BUSY: "処理が混み合っています。少し待ってから、もう一度お試しください。",
         SERVER: "ローカルサービスで問題が発生しました。少し待ってからお試しください。",
         UNKNOWN: "もう一度お試しください。続く場合は、問い合わせ時に下の参照番号をお知らせください。",
       },
@@ -1541,6 +1548,11 @@ export const STR: Record<Lang, Strings> = {
       aeNoRecording: "録音がなかったのでコーチからのヒントはありません", startRound2: (time) => `Round 2 を始める（${time}）`,
       doneBody: (count) => `4/3/2 完了！同じ話を${count}回、少しずつ速く話せました。`,
       roundHeading: (n, time, topic) => `Round ${n}（${time}） — ${topic}`,
+      listeners: [
+        "聞き手: このトピックをまだ知らない同僚に話すつもりで。",
+        "聞き手が交代: 今度は上司です。同じ話を、より速く。",
+        "聞き手が交代: カンファレンスで出会った人です。同じ話を、より短く。",
+      ],
       roundTimerAria: (n, time) => `Round ${n} の発話残り時間: ${time}。`,
       transcriptYou: "あなた:",
       timeUp: "— 目安の時間になりました", recStop: "⏹ 録音を止める", recStarting: "マイクを準備中…", recTranscribing: "📝 文字起こし中…",
@@ -1619,7 +1631,6 @@ export const STR: Record<Lang, Strings> = {
       copy: "Markdownでコピー", copying: "コピー中…", copied: "コピーしました。", copyFailed: "コピーできませんでした。クリップボードの許可を確認して、もう一度お試しください。",
       rating: { hard: "難しすぎた", "just-right": "ちょうどよかった", easy: "簡単すぎた" },
       block: { session: "セッション", "free-talk": "自由会話", listening: "リスニング" },
-      at: (ymd) => ymd,
       levelStage: (level, stage) =>
         [level !== null ? `Lv${level}` : null, stage !== null ? `Stage${stage}` : null].filter(Boolean).join(" · ") || "—",
     },
