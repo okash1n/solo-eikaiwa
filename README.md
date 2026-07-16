@@ -36,7 +36,7 @@ A local-first, research-grounded English speaking practice app for daily self-st
 
 再生ボタンは待機中に「再生」、再生中に「停止」と表示が切り替わります。音声を再生できない場合も「答えを見る」で練習を続けられます。
 
-390文すべての音声はリポジトリに同梱済み（`content/sentences/audio/`、OpenAI TTS で事前生成したAI音声）なので、**OpenAI キーなしでもネイティブ品質の音声で練習できます**。
+390文すべての音声はリポジトリに同梱済み（`content/sentences/audio/`、OpenAI TTS で事前生成したAI音声）なので、**OpenAI キーなしでもネイティブ品質の音声で練習できます**。既定エンジンの macOS say のままでも同梱音声を優先して再生します。
 
 ### 🎧 リスニング
 
@@ -57,6 +57,8 @@ A local-first, research-grounded English speaking practice app for daily self-st
 初回は**レベル測定（約10分）**がおすすめ: 自己紹介 → 状況説明 → 意見の3タスクを録音すると、各タスクの制限時間で録音が自動停止・文字起こしされ、CEFR 記述子ベースのルーブリックで開始レベルが提示されます（反映するかはあなたが決めます）。結果では、Stage（1〜6の難易度帯）と、その帯で始めるおすすめのLvを分けて表示します。任意の開始Lvは1〜999の整数から選べ、適用後は次の練習にすぐ反映されます。測定途中でも画面上部からホームへ戻れ、その場合はこの測定で録音・文字起こしした内容が保存されないことを事前に示します。以後は30日ごとに月次測定の導線が出て、話す力の変化を定点観測できます。
 
 各暦月に1回、Progress 画面で**月次レビュー**も書いてもらえます。直近30日の練習時間・調音速度・例文の定着・収集フレーズなどをまとめた日本語の振り返りレポートです（情報表示のみ・ノルマや判定はありません）。日付はUI言語に合わせて表示され、最新レビューと履歴のどちらかだけを読み込めない場合も、読めた方を残したまま対象だけ再試行できます。
+
+Progress 画面の調音速度・ポーズ比率・言い直し率は、音声認識（whisper）がどこで録音を区切るかに依存する**推定値**として表示します（カード名に「推定値」と明記し、能力の判定として色分けしません）。録音が少ない週は率や前週比を確定値として出さず「まだ録音が少ない」ことを表示します。またポーズ比率は、文中の詰まりと文と文の間の考えるポーズを区別できない合算値です — 流暢さの研究で問題とされるのは文中の詰まりだけなので、ポーズ全部を減らす必要はない旨の注記を添え、月次レビューも同じ前提で書かれます（詳細は [指標定義](docs/metrics.md)）。
 
 ### 📚 ライブラリと練習記録
 
@@ -144,7 +146,7 @@ Claude Code CLI 未ログイン・OpenAI APIキー未設定・Codex 未導入・
 - [Bun](https://bun.sh) 1.3.14（期待版は `toolchain.json` が正本。版違いではsetup/buildを停止）
 - Homebrew（whisper-cpp / ffmpeg の導入に使用）
 - [Claude Code](https://claude.com/claude-code) CLI にログイン済みであること（既定の LLM。Ollama 等のローカル LLM や Codex への切替は「LLM プロバイダの切替」参照）
-- 任意: 高品質TTS。OpenAI API キー（`OPENAI_API_KEY`）を使うか、ローカル TTS（kokoro-fastapi 等・後述）に向ける。どちらも無ければ macOS `say` で動作
+- 任意: 高品質TTS。OpenAI API キー（`OPENAI_API_KEY`）を使うか、ローカル TTS（kokoro-fastapi 等・後述）に向ける。どちらも無くても同梱教材はネイティブ品質の同梱音声で再生され、同梱に無いテキストは macOS `say` で合成
 - Chrome 系ブラウザ推奨（録音が audio/webm 固定のため。Safari 非対応）
 
 ### セットアップ（初回のみ）
@@ -199,7 +201,7 @@ echo "127.0.0.1 solo-eikaiwa" | sudo tee -a /etc/hosts   # https://solo-eikaiwa 
 
 #### 日常の更新（常駐化済みの場合）
 
-通常の更新では、依存をlockfileどおりに揃え、クライアントをビルドします。クライアントだけの変更はビルド完了時点で配信に反映されます。サーバ本体・サーバ依存・起動ラッパーを更新したときだけ、既存のLaunchAgentを再起動してください。
+通常の更新では、依存をlockfileどおりに揃え、クライアントをビルドします。クライアントだけの変更はビルド完了時点で配信に反映されます。サーバ本体・サーバ依存・起動ラッパーを更新したときだけ、既存のLaunchAgentを再起動してください。なお検証ゲート（`./scripts/verify.sh pr`）は検証専用の `dist-verify` へビルドするため、配信への反映には下記の `bun run build` が必要です。
 
 ```bash
 git pull --ff-only
@@ -242,7 +244,7 @@ cd app/client && bun run dev # UI :5173（/api をプロキシ）
 
 Releaseの添付SBOM・第三者NOTICE・native依存manifest・依存監査結果・checksum・provenance JSONで、アプリに含まれる依存と各配布物のSHA-256を確認できます。
 
-会話・添削・解説などLLMを使う機能を使うには、claude / codex いずれかのCLI、OpenAI APIキー、またはローカルLLM（Ollama等）が必要です（未導入でも例文・リスニング・シャドーイング・録音の文字起こしはそのまま使えます）。CLIはログインシェルの PATH から解決します。読み上げ（TTS）は既定で macOS `say` を使い、エンジン・接続先・モデル・voiceは **⚙️ 設定 → モデル接続設定**、キーは **⚙️ 設定 → APIキー**で変更できます（Keychainに保存されるため、OpenAI公式のLLM/TTSも配布アプリ単体で利用できます）。
+会話・添削・解説などLLMを使う機能を使うには、claude / codex いずれかのCLI、OpenAI APIキー、またはローカルLLM（Ollama等）が必要です（未導入でも例文・リスニング・シャドーイング・録音の文字起こしはそのまま使えます）。CLIはログインシェルの PATH から解決します。読み上げ（TTS）の既定は macOS `say` で、同梱音声があればそれを再生し、無いテキストだけを `say` で合成します。エンジン・接続先・モデル・voiceは **⚙️ 設定 → モデル接続設定**、キーは **⚙️ 設定 → APIキー**で変更できます（Keychainに保存されるため、OpenAI公式のLLM/TTSも配布アプリ単体で利用できます）。
 
 機能はブラウザ版と共通ですが、学習データ（会話履歴・進捗・ダウンロード済みモデル・ログ）は `~/Library/Application Support/com.local.solo-eikaiwa.desktop` に保存されます。リポジトリを clone して動かす常駐運用・開発サーバとは完全に別の領域なので、混ざることはありません。
 
@@ -287,7 +289,7 @@ bun scripts/data-backup.ts restore "$SNAPSHOT" --confirm-stopped
 
 コーチ・会話・コンテンツ生成が使う LLM バックエンドの設定は **UI が唯一の真実**（v0.29〜。既定は Claude = Anthropic Claude Agent SDK）。**環境変数で設定できるのは API キーだけ**で、旧 `LLM_PROVIDER` / `OPENAI_COMPAT_BASE_URL` / `OPENAI_COMPAT_MODEL` / `CODEX_MODEL` の env はサーバは読まない（教材生成 CLI のみ従来どおり env 駆動・後述）。LaunchAgent の plist には秘密情報を書かない。切替は「記録・測定・設定」の **⚙️ 設定**（**APIキー** / **モデル接続設定** / **用途ごとのモデル**タブ）から行い、保存すると実行中のアプリへ再起動なしで即時適用される（設定は SQLite の `llm_settings`〔接続〕・`llm_role_settings`〔ロール割当〕・`llm_role_tuning`〔ロール別チューニング〕・`llm_auth`〔認証モード〕に保存。**API キーだけは DB に置かず、UI から保存すると macOS Keychain に保管されます**〔`app/.env` も併用可・Keychain が優先・値は UI にもサーバ応答にも表示されません〕）。
 
-**設定画面の構成（APIキー / モデル接続設定 / 用途ごとのモデル）**: **APIキー**タブにClaude・Codex・OpenAI公式・OpenAI互換LLM・OpenAI互換TTSのキー状態と保存/置換/削除を集約し、Claude/Codexの**認証モード**（サブスク/APIキー・後述）もここで選ぶ。**モデル接続設定**タブではOpenAI公式のモデル、OpenAI互換の Base URL・モデル、Codex の任意モデルを別々に定義する。公式OpenAIの接続先は `https://api.openai.com/v1` 固定で、互換接続のBase URLは入力中から **このMac（loopback）/ LAN / remote / 無効**に分類される。**用途ごとのモデル**タブでは、キーまたは接続が利用可能なproviderだけを5用途へ割り当てられ、各「実効」行でprovider・処理場所・originを常時確認できる。既存割当が利用不能になっても黙って変更せず、再設定が必要な状態として表示する。
+**設定画面の構成（APIキー / モデル接続設定 / 用途ごとのモデル）**: **APIキー**タブにClaude・Codex・OpenAI公式・OpenAI互換LLM・OpenAI互換TTSのキー状態と保存/置換/削除を集約し、Claude/Codexの**認証モード**（サブスク/APIキー・後述）もここで選ぶ。**モデル接続設定**タブではOpenAI公式のモデル、OpenAI互換の Base URL・モデル、Codex の任意モデルを別々に定義する。公式OpenAIの接続先は `https://api.openai.com/v1` 固定で、互換接続のBase URLは入力中から **このMac（loopback）/ LAN / remote / 無効**に分類される。互換のBase URLへ公式URL（`https://api.openai.com/v1`）を入れた場合は保存前に理由つきで拒否され（サーバも同様に400で拒否）、公式にはOpenAI公式接続を使うよう案内する — 保存した互換設定が読込時にOpenAI公式へ勝手に置き換わることはない。**用途ごとのモデル**タブでは、キーまたは接続が利用可能なproviderだけを5用途へ割り当てられ、各「実効」行でprovider・処理場所・originを常時確認できる。既存割当が利用不能になっても黙って変更せず、再設定が必要な状態として表示する。
 
 **保存の単位**: APIキーは各「キーを保存」でKeychainへ即時反映し、Claude/Codexの認証モードは「認証方法を保存」で確定する。「接続を保存」は接続と各providerのモデルだけを保存し、未保存の認証・用途割当・チューニングは確定しない（既にOpenAI公式・OpenAI互換・Codexへ保存済みの用途が使う接続値だけは追従更新する）。「割当を保存」は利用可能な接続への用途割当とチューニングだけを保存する。TTSはエンジンごとのモデル・voice・互換接続先を別々に保持し、選んだエンジンとその設定だけを使用する。
 
@@ -371,13 +373,13 @@ ollama pull qwen3:30b-instruct   # Qwen3-30B-A3B-Instruct（MoE・約18GB・RAM 
 
 ## 音声（TTS）プロバイダの切替
 
-読み上げ音声（AI応答・例文・モデルトーク）は、**macOS say（既定）/ OpenAI公式 / OpenAI互換の独自接続先**から明示的に選ぶ。公式OpenAIは固定URLと専用の `OPENAI_API_KEY`、互換接続は独自のBase URL・モデル・voiceと `TTS_API_KEY` を使い、両者の設定を混ぜない。
+読み上げ音声（AI応答・例文・モデルトーク）は、**macOS say（既定）/ OpenAI公式 / OpenAI互換の独自接続先**から明示的に選ぶ。macOS say（既定）は、既定モデル/voiceの同梱音声があればそれを再生し、同梱に無いテキストだけを macOS say でオフライン合成する。公式OpenAIは固定URLと専用の `OPENAI_API_KEY`、互換接続は独自のBase URL・モデル・voiceと `TTS_API_KEY` を使い、両者の設定を混ぜない。
 
 - 設定場所: **⚙️ 設定 → モデル接続設定 → 音声（TTS）**でエンジン・モデル・voice・互換接続先を設定し、**⚙️ 設定 → APIキー**でOpenAI公式キーまたは互換TTSキーを設定する。旧 `TTS_BASE_URL` / `TTS_MODEL` / `TTS_VOICE` のenvは読まない。
 - HTTPエンジンを明示選択した後の通信失敗は、その場でエラーを表示する。別エンジンへ黙って切り替えないため、課金先・処理場所・声が利用者の選択と食い違わない。macOS sayを使う場合は最初から選択する。
 - **APIキー値は UI・DB に保存されない**。OpenAI公式キーは公式固定URLだけに、`TTS_API_KEY`は保存時に承認したHTTPSまたはloopbackの互換originだけに送る。Kokoro等のLAN内HTTPは鍵なしで利用できる。
 - 旧設定で公式URLをOpenAI互換として使っていた場合は、公式OpenAIの設定へ自動移行する。旧接続先向けに安全に束縛済みのキーも移行元として認識し、専用の公式キーを保存すれば完全に切り離せる。
-- 暗記例文390・多聴42本・モデルトーク72通りの**同梱音声**はOpenAI公式の既定モデル/voiceで事前生成されている。OpenAI公式の既定設定ではキーなしでも同梱音声を再生でき、別モデル・voice・互換接続へ変えた場合は選択したエンジンで都度合成する。
+- 暗記例文390・多聴42本・モデルトーク72通りの**同梱音声**はOpenAI公式の既定モデル/voiceで事前生成されている。macOS say（既定）とOpenAI公式は、既定モデル/voiceのままならキーなし・通信なしで同梱音声をそのまま再生する。同梱に無いテキストのフォールバックは選択エンジンに従う: sayは macOS say でオフライン合成し、OpenAI公式はAPIで都度合成する（失敗時はエラー表示・別エンジンへ黙って切り替えない）。別モデル・voice・互換接続へ変えた場合は同梱音声を使わず、選択したエンジンで都度合成する。
 - キャッシュ（`data/tts-cache`）はエンジン・正規化した接続先・モデル・voice・生成形式で分離し、一時ファイルへの書き込み完了後だけ原子的に公開する。設定やTTSキーの保存・削除時はタブ内キャッシュも即時無効化されるため、リロードや手動削除なしで新しい声へ切り替わる。
 - macOS `say` はOS標準機能からAAC/M4Aを直接生成するため、読み上げ目的のffmpegや追加sidecarは不要。
 
@@ -387,7 +389,7 @@ ollama pull qwen3:30b-instruct   # Qwen3-30B-A3B-Instruct（MoE・約18GB・RAM 
 
 **前提**: 課金が発生するのは「動的に生成された英文をその場で読み上げる」ときだけです。
 
-- **無料**（同梱音声を再生するだけ・通信自体が発生しない）: 暗記例文390・多聴42本・モデルトーク72通りの読み上げ。いずれも `content/` 配下に既定モデル/voiceで事前生成済みの音声が同梱されており、既定設定のままなら常にこちらにヒットする
+- **無料**（同梱音声を再生するだけ・通信自体が発生しない）: 暗記例文390・多聴42本・モデルトーク72通りの読み上げ。いずれも `content/` 配下に既定モデル/voiceで事前生成済みの音声が同梱されており、既定の macOS say でも OpenAI公式でも、既定モデル/voiceのままなら常にこちらにヒットする（APIキー不要）
 - **初回のみ課金・以後は `data/tts-cache` からローカル再生で無料**: 音読ウォームアップ・4/3/2 の準備フレーズ（準備フレーズの音声は同梱対象外で、再生時にその場で合成される設計。上の「教材ラダー」節に既述）。モデルトーク一覧から、同梱外で動的に生成・保存した過去のモデルトークを再生する場合も同じ扱いです。同梱済みの72通りは上の無料対象です
 - **会話が続く限り毎回課金**: 自由会話・ロールプレイでの AI 応答読み上げ（返答は毎ターン新しい文章になるため、原理的にキャッシュが効かない）
 
@@ -494,13 +496,15 @@ Codex（`codex app-server`）は実験的プロトコルに依存するため、
 ## テスト
 
 ```bash
-./scripts/verify.sh pr       # build・型・shellcheck・全test・教材検証
+./scripts/verify.sh pr       # build(dist-verify)・型・shellcheck・全test・教材検証・a11y(Playwright)
 ./scripts/verify.sh desktop  # desktop変更時: cargo test + clippy（locked）
 ./scripts/verify.sh audit    # Bun/Cargo依存監査（定期実行と同じ）
 ./scripts/smoke-stt.sh       # STT 実機スモーク
 ```
 
-PRでは`core`・`desktop`・`accessibility`をread-only GitHub Actionsで確認する。依存監査は外部監査DB障害でPRを不安定にしないよう週次と手動実行に分離し、release時には必須で実行する。
+`verify.sh pr` の client build は検証専用の `app/client/dist-verify` へ出力するため、常駐サーバが配信している `app/client/dist` は変わりません（配信への反映は「日常の更新」の `bun run build` だけ）。a11y回帰テスト（Playwright + axe）も同ゲートに含まれ、初回実行時に Chromium を自動ダウンロードします。
+
+PRでは`core`・`desktop`・`accessibility`をread-only GitHub Actionsで確認する（3つとも main へのマージに必須のstatus check）。依存監査は外部監査DB障害でPRを不安定にしないよう週次と手動実行に分離し、release時には必須で実行する。
 
 ## ドキュメント
 

@@ -30,9 +30,9 @@ export type TtsSettings = {
 
 /**
  * TTS プロバイダの明示選択（DB/UI 由来・v0.29）。
- * - "say": HTTP を試さず常に macOS say
- * - "openai": OpenAI 公式固定 URL を使う
- * - "openai-compat": 利用者指定の互換 URL を使う
+ * - "say": 既定ラベルの同梱音声があればそれを再生し、無いテキストは macOS say（HTTP は試さない）
+ * - "openai": OpenAI 公式固定 URL を使う（既定ラベルなら同梱音声を優先）
+ * - "openai-compat": 利用者指定の互換 URL を使う（同梱音声へ短絡しない）
  */
 export type TtsProvider = "say" | "openai" | "openai-compat";
 
@@ -252,9 +252,11 @@ export async function synthesize(
       ?? (isDefaultEndpoint ? (cfg.apiKey ? "openai" : "say") : "openai-compat");
     const bundledKey = cacheKeyFor(cfg.model, cfg.voice, text);
 
-    // 同梱音声は凍結済み旧キーを維持し、OpenAI既定接続・既定model/voiceでのみ参照する。
-    // custom endpointやsay固定が同じラベルを使っても、別providerの音声へ短絡しない。
-    const canUseBundled = (provider === "openai" || !explicitProvider)
+    // 同梱音声は凍結済み旧キーを維持し、既定接続・既定model/voiceでのみ参照する。
+    // say（キーなしの既定解決を含む）とOpenAI公式は同梱を優先し、同梱に無いテキストだけを
+    // それぞれのエンジンで合成する（キーなしでも同梱672本のネイティブ品質を維持する契約）。
+    // custom endpoint（openai-compat）が同じラベルを使っても、別providerの音声へ短絡しない。
+    const canUseBundled = (provider === "openai" || provider === "say" || !explicitProvider)
       && isDefaultEndpoint
       && cfg.model === DEFAULT_TTS_MODEL
       && cfg.voice === DEFAULT_TTS_VOICE;

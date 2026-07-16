@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { Database } from "bun:sqlite";
 import { existsSync, mkdtempSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -6,6 +7,7 @@ import {
   cacheKeyFor, httpCacheKeyFor, synthesize, resolveTtsConfig, TtsTimeoutError,
   DEFAULT_TTS_BASE_URL, DEFAULT_TTS_MODEL, DEFAULT_TTS_VOICE,
 } from "../tts";
+import { ensureTtsProviderSchema, makeTtsProviderStore } from "../tts-provider-store";
 
 /**
  * Bun.env.OPENAI_API_KEY を一時的に取り除いた状態で fn を実行し、
@@ -81,7 +83,7 @@ describe("tts", () => {
     expect(Array.from(r.audio)).toEqual([5]);
   });
 
-  test("provider=sayは既定ラベルの同梱OpenAI音声を使わない", async () => {
+  test("provider=sayでも既定ラベルの同梱音声を優先し say を起動しない", async () => {
     const bundledDir = mkdtempSync(path.join(tmpdir(), "tts-bundle-"));
     const key = cacheKeyFor(DEFAULT_TTS_MODEL, DEFAULT_TTS_VOICE, "Use say");
     await Bun.write(path.join(bundledDir, `${key}.mp3`), new Uint8Array([5]));
@@ -91,9 +93,28 @@ describe("tts", () => {
       provider: "say", bundledDir, spawnFn: makeFakeSpawn(spawned), env: {},
     });
 
+    expect(result.engine).toBe("openai");
+    expect(Array.from(result.audio)).toEqual([5]);
+    expect(spawned).toHaveLength(0);
+  });
+
+  test("provider=say: 同梱に無いテキストは macOS say で合成する（HTTP は呼ばない）", async () => {
+    const bundledDir = mkdtempSync(path.join(tmpdir(), "tts-bundle-"));
+    const spawned: string[][] = [];
+    let fetchCalls = 0;
+    const fakeFetch = (async () => {
+      fetchCalls++;
+      return new Response(new Uint8Array([1]), { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const result = await synthesize("Not bundled text", {
+      provider: "say", bundledDir, spawnFn: makeFakeSpawn(spawned), fetchFn: fakeFetch, env: {},
+    });
+
     expect(result.engine).toBe("say");
     expect(Array.from(result.audio)).toEqual([9, 9]);
     expect(spawned).toHaveLength(1);
+    expect(fetchCalls).toBe(0);
   });
 
   test("APIキーがあれば OpenAI を呼び、2回目はキャッシュを使う", async () => {
@@ -484,6 +505,34 @@ describe("tts provider config", () => {
 
     expect(calls).toBe(3);
     expect(readdirSync(cacheDir)).toHaveLength(3);
+  });
+
+  test("既定解決（設定行なし・キーなし→say）でも同梱音声にヒットし、sayもHTTPも呼ばれない", async () => {
+    // index.ts の resolveLegacy と同じ既定解決を再現する:
+    // tts_provider_settings 行なし・互換baseUrlなし・公式キーなし → "say"
+    const db = new Database(":memory:");
+    ensureTtsProviderSchema(db);
+    const store = makeTtsProviderStore(db, () => "say");
+    expect(store.get()).toBe("say");
+
+    const bundledDir = mkdtempSync(path.join(tmpdir(), "tts-bundle-"));
+    const key = cacheKeyFor(DEFAULT_TTS_MODEL, DEFAULT_TTS_VOICE, "Fresh install sentence");
+    await Bun.write(path.join(bundledDir, `${key}.mp3`), new Uint8Array([6, 6]));
+    const spawned: string[][] = [];
+    let fetchCalls = 0;
+    const fakeFetch = (async () => {
+      fetchCalls++;
+      return new Response(new Uint8Array([1]), { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const r = await synthesize("Fresh install sentence", {
+      provider: store.get(), bundledDir, spawnFn: makeFakeSpawn(spawned), fetchFn: fakeFetch, env: {},
+    });
+
+    expect(r.engine).toBe("openai");
+    expect(Array.from(r.audio)).toEqual([6, 6]);
+    expect(spawned).toHaveLength(0);
+    expect(fetchCalls).toBe(0);
   });
 
   test("カスタムエンドポイントでも HTTP 失敗時は say にフォールバックする", async () => {

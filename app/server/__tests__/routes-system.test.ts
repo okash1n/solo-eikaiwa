@@ -1,11 +1,15 @@
 import { describe, expect, test } from "bun:test";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { Database } from "bun:sqlite";
+import { existsSync, mkdtempSync, readFileSync, readdirSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { localYmd } from "../dates";
 import { makeFetchHandler } from "../routes";
 import { MAX_STT_BODY_BYTES, MAX_TTS_TEXT_CHARS } from "../routes/system";
 import { makeSttGate } from "../stt-gate";
 import { UnsupportedAudioContainerError } from "../stt";
+import { cacheKeyFor, synthesize, DEFAULT_TTS_MODEL, DEFAULT_TTS_VOICE } from "../tts";
+import { ensureTtsProviderSchema, makeTtsProviderStore } from "../tts-provider-store";
 import { FAKE_HEALTH, makeTestDeps } from "./helpers/route-deps";
 import { getReq, postJson } from "./helpers/http";
 
@@ -186,6 +190,44 @@ describe("routes: tts", () => {
         provider: "openai-compat", baseUrl: "http://localhost:8880/v1", model: "kokoro", voice: "af_sky",
       }),
     ]);
+  });
+
+  test("初期状態（キーなし・TTS設定なし・provider行なし）の /api/tts は同梱音声を返し say/HTTP を呼ばない", async () => {
+    // index.ts と同じ配線を fresh store で再現する:
+    // 行不在の既定解決（互換baseUrlなし・公式キーなし）→ "say" を明示注入し、実 synthesize を通す。
+    const db = new Database(":memory:");
+    ensureTtsProviderSchema(db);
+    const providerStore = makeTtsProviderStore(db, () => "say");
+    const bundledDir = mkdtempSync(path.join(tmpdir(), "tts-bundle-"));
+    const key = cacheKeyFor(DEFAULT_TTS_MODEL, DEFAULT_TTS_VOICE, "Fresh bundled text");
+    await Bun.write(path.join(bundledDir, `${key}.mp3`), new Uint8Array([7, 7]));
+    const spawned: string[][] = [];
+    let fetchCalls = 0;
+    const fakeSpawn = async (cmd: string[]) => {
+      spawned.push(cmd);
+      return { exitCode: 1, stderr: "say must not run" };
+    };
+    const fakeFetch = (async () => {
+      fetchCalls++;
+      return new Response(new Uint8Array([1]), { status: 200 });
+    }) as unknown as typeof fetch;
+    const { deps } = makeTestDeps({
+      synthesize: (text, opts = {}) => synthesize(text, {
+        ...opts,
+        provider: opts.provider ?? providerStore.get(),
+        bundledDir, spawnFn: fakeSpawn, fetchFn: fakeFetch, env: {},
+      }),
+      getTtsSettings: () => null,
+      getTtsProvider: () => providerStore.get(),
+    });
+
+    const res = await makeFetchHandler(deps)(postJson("/api/tts", { text: "Fresh bundled text" }));
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("audio/mpeg");
+    expect(Array.from(new Uint8Array(await res.arrayBuffer()))).toEqual([7, 7]);
+    expect(spawned).toHaveLength(0);
+    expect(fetchCalls).toBe(0);
   });
 
   test("textが空なら400", async () => {

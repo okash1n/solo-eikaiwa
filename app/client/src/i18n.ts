@@ -192,6 +192,7 @@ type SettingsStrings = {
     endpointLanDisclosure: string;
     endpointRemoteDisclosure: string;
     endpointInvalidDisclosure: string;
+    officialOpenAiBaseUrlRejected: string;
     codexConnTitle: string;
     authModeLabel: string;
     authSubscription: string;
@@ -326,6 +327,7 @@ type ProgressStrings = {
     speakingTime: string; speakingMinUnit: string; speakingDay: (date: string, minutes: string) => string;
     articulation: string; articulationUnit: string; articulationDay: (date: string, wpm: number) => string;
     pauseCard: string; repetitionCard: string; weekOverWeek: string;
+    estimateNote: string; pauseNote: string; lowSample: string; noTrendData: string;
     levelHistory: string; currentLevel: (n: number) => string;
     empty: string;
     loading: string; retry: string;
@@ -682,6 +684,7 @@ export const STR: Record<Lang, Strings> = {
       endpointLanDisclosure: "Requests are sent to another device on your local network. API-key credentials are not sent over non-loopback HTTP.",
       endpointRemoteDisclosure: "Prompts and transcribed speech assigned here leave your Mac. Authentication, data handling, and billing depend on the endpoint operator.",
       endpointInvalidDisclosure: "Enter an absolute HTTP(S) URL without user info, a query, or a fragment.",
+      officialOpenAiBaseUrlRejected: "This Base URL is the official OpenAI API. Use the official OpenAI connection (its API key and model fields) instead — the compatible endpoint is for local or other OpenAI-compatible servers.",
       codexConnTitle: "Codex (optional)",
       authModeLabel: "Authentication",
       authSubscription: "Subscription (default)",
@@ -749,7 +752,7 @@ export const STR: Record<Lang, Strings> = {
       ttsProviderSay: "macOS say (offline)",
       ttsProviderOpenAi: "OpenAI (official API)",
       ttsProviderCompat: "OpenAI-compatible (custom endpoint)",
-      ttsProviderNote: "OpenAI uses its fixed official endpoint and dedicated key. OpenAI-compatible uses the Base URL and optional endpoint-specific key below.",
+      ttsProviderNote: "macOS say plays the bundled native-quality audio when available (no key or network needed) and synthesizes anything else offline with macOS say. OpenAI uses its fixed official endpoint and dedicated key. OpenAI-compatible uses the Base URL and optional endpoint-specific key below.",
       ttsOpenAiKeyRequired: "Save an OpenAI API key in the API keys tab before using the official OpenAI engine.",
       ttsCompatConnectionRequired: "Enter both the OpenAI-compatible Base URL and model before saving this engine.",
       ttsBaseUrlLabel: "Base URL",
@@ -827,8 +830,12 @@ export const STR: Record<Lang, Strings> = {
       actionError: "Couldn't apply. Refreshed the latest state.",
       title: "Progress",
       speakingTime: "Speaking time (last 14 days)", speakingMinUnit: "min", speakingDay: (date, minutes) => `${date}: ${minutes} minutes of speaking`,
-      articulation: "Articulation rate", articulationUnit: "wpm", articulationDay: (date, wpm) => `${date}: ${wpm} words per minute`,
-      pauseCard: "Pause ratio", repetitionCard: "Self-repetition", weekOverWeek: "vs last week",
+      articulation: "Articulation rate (estimate)", articulationUnit: "wpm", articulationDay: (date, wpm) => `${date}: ${wpm} words per minute`,
+      pauseCard: "Pause ratio (estimate)", repetitionCard: "Self-repetition (estimate)", weekOverWeek: "vs last week",
+      estimateNote: "Speed, pause, and repetition figures are estimated from how speech recognition splits your recordings, so they can wobble between sessions. Read them as rough trends, not exact measurements of ability.",
+      pauseNote: "This counts every silence, including thinking pauses between sentences — research suggests those are fine. The app can't yet tell them apart from mid-sentence hesitations, so there's no need to cut down all pauses.",
+      lowSample: "Not enough recordings this week for a stable figure yet.",
+      noTrendData: "Too few recordings last week to compare.",
       levelHistory: "Level history", currentLevel: (n) => `Now Lv ${n}`,
       empty: "Start speaking and your metrics will show up here.",
       loading: "Loading…", retry: "Retry",
@@ -1266,6 +1273,7 @@ export const STR: Record<Lang, Strings> = {
       endpointLanDisclosure: "リクエストはLAN上の別端末へ送信されます。loopback以外のHTTP接続にはAPIキーを送信しません。",
       endpointRemoteDisclosure: "ここへ割り当てた用途のプロンプトと文字起こしはMacの外へ送信されます。認証・データ取扱い・課金は接続先の運営者に従います。",
       endpointInvalidDisclosure: "userinfo・query・fragmentを含まない絶対HTTP(S) URLを入力してください。",
+      officialOpenAiBaseUrlRejected: "このBase URLはOpenAI公式APIです。互換接続先はローカルや他のOpenAI互換サーバ用のため、公式にはOpenAI公式接続（専用のAPIキーとモデル欄）を使ってください。",
       codexConnTitle: "Codex（任意）",
       authModeLabel: "認証",
       authSubscription: "サブスクリプション（既定）",
@@ -1333,7 +1341,7 @@ export const STR: Record<Lang, Strings> = {
       ttsProviderSay: "macOS say（オフライン）",
       ttsProviderOpenAi: "OpenAI（公式API）",
       ttsProviderCompat: "OpenAI互換（独自接続先）",
-      ttsProviderNote: "OpenAIは公式固定URLと専用キーを使います。OpenAI互換は下のベースURLと接続先専用キーを使います。",
+      ttsProviderNote: "macOS sayは同梱音声があればそれを再生し（キー・通信不要）、無いテキストだけをmacOS sayで合成します。OpenAIは公式固定URLと専用キーを使います。OpenAI互換は下のベースURLと接続先専用キーを使います。",
       ttsOpenAiKeyRequired: "OpenAI公式エンジンを使う前に、「APIキー」タブでOpenAI APIキーを保存してください。",
       ttsCompatConnectionRequired: "OpenAI互換エンジンを保存するには、ベースURLとモデルの両方を入力してください。",
       ttsBaseUrlLabel: "ベース URL",
@@ -1411,8 +1419,12 @@ export const STR: Record<Lang, Strings> = {
       actionError: "適用できませんでした。最新の状態に更新しました",
       title: "進捗",
       speakingTime: "話した時間（直近14日）", speakingMinUnit: "分", speakingDay: (date, minutes) => `${date}: ${minutes}分話しました`,
-      articulation: "調音速度", articulationUnit: "wpm", articulationDay: (date, wpm) => `${date}: ${wpm} wpm`,
-      pauseCard: "ポーズ比率", repetitionCard: "言い直し率", weekOverWeek: "前週比",
+      articulation: "調音速度（推定値）", articulationUnit: "wpm", articulationDay: (date, wpm) => `${date}: ${wpm} wpm`,
+      pauseCard: "ポーズ比率（推定値）", repetitionCard: "言い直し率（推定値）", weekOverWeek: "前週比",
+      estimateNote: "速度・ポーズ・言い直しの数値は、音声認識の区切りから推定した参考値です。区切り方によってセッションごとに揺れるため、能力の正確な測定ではなく、おおまかな傾向として見てください。",
+      pauseNote: "文と文の間の考えるポーズも含めた合算値です。研究上、問題になるのは文の途中の詰まりだけですが、アプリはまだ両者を区別できません。ポーズ全部を減らす必要はありません。",
+      lowSample: "今週はまだ録音が少なく、値が安定していません。",
+      noTrendData: "前週の録音が少ないため、比較は表示していません。",
       levelHistory: "レベル履歴", currentLevel: (n) => `現在 Lv ${n}`,
       empty: "話すと、ここに記録が貯まりはじめます。",
       loading: "読み込み中…", retry: "再試行",
