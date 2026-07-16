@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.29.3] - 2026-07-17
+
 ### Fixed
 
 - 暗記例文・マイフレーズの評価送信が失敗した後に別の評価ボタンを押したとき、初回の評価が無言で再送されて選び直しが記録されない問題を修正した。選び直した評価がそのまま記録されるようになり、初回の評価がすでにサーバへ記録済みだった場合はその旨を表示して次のカードへ進む
@@ -545,7 +547,8 @@
 - 学習データ（録音・トランスクリプト・進捗・DB・キャッシュ）は `data/` のローカルファイルで、リポジトリにコミットされない
 - 音声データはマシン外に出ない（外部送信はテキストのみ: Claude への発話テキスト、OpenAI TTS への応答テキスト）
 
-[Unreleased]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.2...HEAD
+[Unreleased]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.3...HEAD
+[0.29.3]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.2...v0.29.3
 [0.29.2]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.1...v0.29.2
 [0.29.1]: https://github.com/btajp/solo-eikaiwa/compare/v0.29.0...v0.29.1
 [0.29.0]: https://github.com/btajp/solo-eikaiwa/compare/v0.28.0...v0.29.0
