@@ -192,6 +192,7 @@ type SettingsStrings = {
     endpointLanDisclosure: string;
     endpointRemoteDisclosure: string;
     endpointInvalidDisclosure: string;
+    officialOpenAiBaseUrlRejected: string;
     codexConnTitle: string;
     authModeLabel: string;
     authSubscription: string;
@@ -668,6 +669,7 @@ export const STR: Record<Lang, Strings> = {
       endpointLanDisclosure: "Requests are sent to another device on your local network. API-key credentials are not sent over non-loopback HTTP.",
       endpointRemoteDisclosure: "Prompts and transcribed speech assigned here leave your Mac. Authentication, data handling, and billing depend on the endpoint operator.",
       endpointInvalidDisclosure: "Enter an absolute HTTP(S) URL without user info, a query, or a fragment.",
+      officialOpenAiBaseUrlRejected: "This Base URL is the official OpenAI API. Use the official OpenAI connection (its API key and model fields) instead — the compatible endpoint is for local or other OpenAI-compatible servers.",
       codexConnTitle: "Codex (optional)",
       authModeLabel: "Authentication",
       authSubscription: "Subscription (default)",
@@ -735,7 +737,7 @@ export const STR: Record<Lang, Strings> = {
       ttsProviderSay: "macOS say (offline)",
       ttsProviderOpenAi: "OpenAI (official API)",
       ttsProviderCompat: "OpenAI-compatible (custom endpoint)",
-      ttsProviderNote: "OpenAI uses its fixed official endpoint and dedicated key. OpenAI-compatible uses the Base URL and optional endpoint-specific key below.",
+      ttsProviderNote: "macOS say plays the bundled native-quality audio when available (no key or network needed) and synthesizes anything else offline with macOS say. OpenAI uses its fixed official endpoint and dedicated key. OpenAI-compatible uses the Base URL and optional endpoint-specific key below.",
       ttsOpenAiKeyRequired: "Save an OpenAI API key in the API keys tab before using the official OpenAI engine.",
       ttsCompatConnectionRequired: "Enter both the OpenAI-compatible Base URL and model before saving this engine.",
       ttsBaseUrlLabel: "Base URL",
@@ -1242,6 +1244,7 @@ export const STR: Record<Lang, Strings> = {
       endpointLanDisclosure: "リクエストはLAN上の別端末へ送信されます。loopback以外のHTTP接続にはAPIキーを送信しません。",
       endpointRemoteDisclosure: "ここへ割り当てた用途のプロンプトと文字起こしはMacの外へ送信されます。認証・データ取扱い・課金は接続先の運営者に従います。",
       endpointInvalidDisclosure: "userinfo・query・fragmentを含まない絶対HTTP(S) URLを入力してください。",
+      officialOpenAiBaseUrlRejected: "このBase URLはOpenAI公式APIです。互換接続先はローカルや他のOpenAI互換サーバ用のため、公式にはOpenAI公式接続（専用のAPIキーとモデル欄）を使ってください。",
       codexConnTitle: "Codex（任意）",
       authModeLabel: "認証",
       authSubscription: "サブスクリプション（既定）",
@@ -1309,7 +1312,7 @@ export const STR: Record<Lang, Strings> = {
       ttsProviderSay: "macOS say（オフライン）",
       ttsProviderOpenAi: "OpenAI（公式API）",
       ttsProviderCompat: "OpenAI互換（独自接続先）",
-      ttsProviderNote: "OpenAIは公式固定URLと専用キーを使います。OpenAI互換は下のベースURLと接続先専用キーを使います。",
+      ttsProviderNote: "macOS sayは同梱音声があればそれを再生し（キー・通信不要）、無いテキストだけをmacOS sayで合成します。OpenAIは公式固定URLと専用キーを使います。OpenAI互換は下のベースURLと接続先専用キーを使います。",
       ttsOpenAiKeyRequired: "OpenAI公式エンジンを使う前に、「APIキー」タブでOpenAI APIキーを保存してください。",
       ttsCompatConnectionRequired: "OpenAI互換エンジンを保存するには、ベースURLとモデルの両方を入力してください。",
       ttsBaseUrlLabel: "ベース URL",
