@@ -36,7 +36,7 @@ A local-first, research-grounded English speaking practice app for daily self-st
 
 再生ボタンは待機中に「再生」、再生中に「停止」と表示が切り替わります。音声を再生できない場合も「答えを見る」で練習を続けられます。
 
-390文すべての音声はリポジトリに同梱済み（`content/sentences/audio/`、OpenAI TTS で事前生成したAI音声）なので、**OpenAI キーなしでもネイティブ品質の音声で練習できます**。
+390文すべての音声はリポジトリに同梱済み（`content/sentences/audio/`、OpenAI TTS で事前生成したAI音声）なので、**OpenAI キーなしでもネイティブ品質の音声で練習できます**。既定エンジンの macOS say のままでも同梱音声を優先して再生します。
 
 ### 🎧 リスニング
 
@@ -143,7 +143,7 @@ Claude Code CLI 未ログイン・OpenAI APIキー未設定・Codex 未導入・
 - [Bun](https://bun.sh) 1.3.14（期待版は `toolchain.json` が正本。版違いではsetup/buildを停止）
 - Homebrew（whisper-cpp / ffmpeg の導入に使用）
 - [Claude Code](https://claude.com/claude-code) CLI にログイン済みであること（既定の LLM。Ollama 等のローカル LLM や Codex への切替は「LLM プロバイダの切替」参照）
-- 任意: 高品質TTS。OpenAI API キー（`OPENAI_API_KEY`）を使うか、ローカル TTS（kokoro-fastapi 等・後述）に向ける。どちらも無ければ macOS `say` で動作
+- 任意: 高品質TTS。OpenAI API キー（`OPENAI_API_KEY`）を使うか、ローカル TTS（kokoro-fastapi 等・後述）に向ける。どちらも無くても同梱教材はネイティブ品質の同梱音声で再生され、同梱に無いテキストは macOS `say` で合成
 - Chrome 系ブラウザ推奨（録音が audio/webm 固定のため。Safari 非対応）
 
 ### セットアップ（初回のみ）
@@ -241,7 +241,7 @@ cd app/client && bun run dev # UI :5173（/api をプロキシ）
 
 Releaseの添付SBOM・第三者NOTICE・native依存manifest・依存監査結果・checksum・provenance JSONで、アプリに含まれる依存と各配布物のSHA-256を確認できます。
 
-会話・添削・解説などLLMを使う機能を使うには、claude / codex いずれかのCLI、OpenAI APIキー、またはローカルLLM（Ollama等）が必要です（未導入でも例文・リスニング・シャドーイング・録音の文字起こしはそのまま使えます）。CLIはログインシェルの PATH から解決します。読み上げ（TTS）は既定で macOS `say` を使い、エンジン・接続先・モデル・voiceは **⚙️ 設定 → モデル接続設定**、キーは **⚙️ 設定 → APIキー**で変更できます（Keychainに保存されるため、OpenAI公式のLLM/TTSも配布アプリ単体で利用できます）。
+会話・添削・解説などLLMを使う機能を使うには、claude / codex いずれかのCLI、OpenAI APIキー、またはローカルLLM（Ollama等）が必要です（未導入でも例文・リスニング・シャドーイング・録音の文字起こしはそのまま使えます）。CLIはログインシェルの PATH から解決します。読み上げ（TTS）の既定は macOS `say` で、同梱音声があればそれを再生し、無いテキストだけを `say` で合成します。エンジン・接続先・モデル・voiceは **⚙️ 設定 → モデル接続設定**、キーは **⚙️ 設定 → APIキー**で変更できます（Keychainに保存されるため、OpenAI公式のLLM/TTSも配布アプリ単体で利用できます）。
 
 機能はブラウザ版と共通ですが、学習データ（会話履歴・進捗・ダウンロード済みモデル・ログ）は `~/Library/Application Support/com.local.solo-eikaiwa.desktop` に保存されます。リポジトリを clone して動かす常駐運用・開発サーバとは完全に別の領域なので、混ざることはありません。
 
@@ -370,13 +370,13 @@ ollama pull qwen3:30b-instruct   # Qwen3-30B-A3B-Instruct（MoE・約18GB・RAM 
 
 ## 音声（TTS）プロバイダの切替
 
-読み上げ音声（AI応答・例文・モデルトーク）は、**macOS say（既定）/ OpenAI公式 / OpenAI互換の独自接続先**から明示的に選ぶ。公式OpenAIは固定URLと専用の `OPENAI_API_KEY`、互換接続は独自のBase URL・モデル・voiceと `TTS_API_KEY` を使い、両者の設定を混ぜない。
+読み上げ音声（AI応答・例文・モデルトーク）は、**macOS say（既定）/ OpenAI公式 / OpenAI互換の独自接続先**から明示的に選ぶ。macOS say（既定）は、既定モデル/voiceの同梱音声があればそれを再生し、同梱に無いテキストだけを macOS say でオフライン合成する。公式OpenAIは固定URLと専用の `OPENAI_API_KEY`、互換接続は独自のBase URL・モデル・voiceと `TTS_API_KEY` を使い、両者の設定を混ぜない。
 
 - 設定場所: **⚙️ 設定 → モデル接続設定 → 音声（TTS）**でエンジン・モデル・voice・互換接続先を設定し、**⚙️ 設定 → APIキー**でOpenAI公式キーまたは互換TTSキーを設定する。旧 `TTS_BASE_URL` / `TTS_MODEL` / `TTS_VOICE` のenvは読まない。
 - HTTPエンジンを明示選択した後の通信失敗は、その場でエラーを表示する。別エンジンへ黙って切り替えないため、課金先・処理場所・声が利用者の選択と食い違わない。macOS sayを使う場合は最初から選択する。
 - **APIキー値は UI・DB に保存されない**。OpenAI公式キーは公式固定URLだけに、`TTS_API_KEY`は保存時に承認したHTTPSまたはloopbackの互換originだけに送る。Kokoro等のLAN内HTTPは鍵なしで利用できる。
 - 旧設定で公式URLをOpenAI互換として使っていた場合は、公式OpenAIの設定へ自動移行する。旧接続先向けに安全に束縛済みのキーも移行元として認識し、専用の公式キーを保存すれば完全に切り離せる。
-- 暗記例文390・多聴42本・モデルトーク72通りの**同梱音声**はOpenAI公式の既定モデル/voiceで事前生成されている。OpenAI公式の既定設定ではキーなしでも同梱音声を再生でき、別モデル・voice・互換接続へ変えた場合は選択したエンジンで都度合成する。
+- 暗記例文390・多聴42本・モデルトーク72通りの**同梱音声**はOpenAI公式の既定モデル/voiceで事前生成されている。macOS say（既定）とOpenAI公式は、既定モデル/voiceのままならキーなし・通信なしで同梱音声をそのまま再生する。同梱に無いテキストのフォールバックは選択エンジンに従う: sayは macOS say でオフライン合成し、OpenAI公式はAPIで都度合成する（失敗時はエラー表示・別エンジンへ黙って切り替えない）。別モデル・voice・互換接続へ変えた場合は同梱音声を使わず、選択したエンジンで都度合成する。
 - キャッシュ（`data/tts-cache`）はエンジン・正規化した接続先・モデル・voice・生成形式で分離し、一時ファイルへの書き込み完了後だけ原子的に公開する。設定やTTSキーの保存・削除時はタブ内キャッシュも即時無効化されるため、リロードや手動削除なしで新しい声へ切り替わる。
 - macOS `say` はOS標準機能からAAC/M4Aを直接生成するため、読み上げ目的のffmpegや追加sidecarは不要。
 
@@ -386,7 +386,7 @@ ollama pull qwen3:30b-instruct   # Qwen3-30B-A3B-Instruct（MoE・約18GB・RAM 
 
 **前提**: 課金が発生するのは「動的に生成された英文をその場で読み上げる」ときだけです。
 
-- **無料**（同梱音声を再生するだけ・通信自体が発生しない）: 暗記例文390・多聴42本・モデルトーク72通りの読み上げ。いずれも `content/` 配下に既定モデル/voiceで事前生成済みの音声が同梱されており、既定設定のままなら常にこちらにヒットする
+- **無料**（同梱音声を再生するだけ・通信自体が発生しない）: 暗記例文390・多聴42本・モデルトーク72通りの読み上げ。いずれも `content/` 配下に既定モデル/voiceで事前生成済みの音声が同梱されており、既定の macOS say でも OpenAI公式でも、既定モデル/voiceのままなら常にこちらにヒットする（APIキー不要）
 - **初回のみ課金・以後は `data/tts-cache` からローカル再生で無料**: 音読ウォームアップ・4/3/2 の準備フレーズ（準備フレーズの音声は同梱対象外で、再生時にその場で合成される設計。上の「教材ラダー」節に既述）。モデルトーク一覧から、同梱外で動的に生成・保存した過去のモデルトークを再生する場合も同じ扱いです。同梱済みの72通りは上の無料対象です
 - **会話が続く限り毎回課金**: 自由会話・ロールプレイでの AI 応答読み上げ（返答は毎ターン新しい文章になるため、原理的にキャッシュが効かない）
 
