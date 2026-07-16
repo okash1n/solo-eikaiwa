@@ -15,9 +15,11 @@ export async function fetchPlacementTasks(): Promise<PlacementTaskDef[]> {
 
 export async function submitPlacement(
   tasks: Array<{ taskId: string; transcript: string; durationSec: number; wordCount: number }>,
+  /** クライアント生成の冪等キー。応答消失後の再試行で結果・XPが二重記録されないよう、同一提出では同じ値を送る */
+  submissionId: string,
 ): Promise<PlacementResult> {
   const res = await fetch("/api/placement/submit", {
-    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ tasks }),
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ tasks, submissionId }),
   });
   if (!res.ok) throw new Error(`placement submit failed: ${await extractErrorMessage(res)}`);
   return res.json();

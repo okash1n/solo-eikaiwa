@@ -5,6 +5,57 @@ import { makeFetchHandler } from "../routes";
 import { makeTestDeps } from "./helpers/route-deps";
 import { postJson } from "./helpers/http";
 
+describe("level change transaction", () => {
+  const T = "2026-07-10";
+
+  test("manual-set: user_progress 更新が失敗したら level_events に行を残さない", () => {
+    const db = openDb(":memory:");
+    const store = makeProgressStore(db);
+    store.getSummary(T); // user_progress を先に作り、UPDATE だけを fault injection 対象にする
+    db.run(`CREATE TRIGGER fail_progress_update BEFORE UPDATE ON user_progress
+      BEGIN SELECT RAISE(ABORT, 'progress update failed'); END`);
+
+    expect(() => store.levelAction("set", 20, T)).toThrow("progress update failed");
+    db.run("DROP TRIGGER fail_progress_update");
+    expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM level_events").get()!.n).toBe(0);
+    expect(store.getLevel()).toBe(5); // DEFAULT_LEVEL のまま
+  });
+
+  test("placement-set: user_progress 更新が失敗したら level_events に行を残さない", () => {
+    const db = openDb(":memory:");
+    const store = makeProgressStore(db);
+    store.getSummary(T);
+    db.run(`CREATE TRIGGER fail_progress_update BEFORE UPDATE ON user_progress
+      BEGIN SELECT RAISE(ABORT, 'progress update failed'); END`);
+
+    expect(() => store.placementSet(23, T)).toThrow("progress update failed");
+    db.run("DROP TRIGGER fail_progress_update");
+    expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM level_events").get()!.n).toBe(0);
+    expect(store.getLevel()).toBe(5);
+  });
+
+  test("accept: user_progress 更新が失敗したら accept イベントを残さない（履歴と実レベルの食い違い防止）", () => {
+    const db = openDb(":memory:");
+    const store = makeProgressStore(db);
+    store.levelAction("set", 23, T); // stage 3 → 降格提案の対象
+    // 直近7日窓の完了率 0/5 で down 提案を成立させる
+    for (let i = 0; i < 5; i++) {
+      db.run("INSERT INTO block_attempts (ts, ymd, kind, completed) VALUES (?, ?, ?, 0)",
+        ["2026-07-08T09:00:00", "2026-07-08", "roleplay"]);
+    }
+    const shown = store.getSummary(T).proposal!;
+    expect(shown.kind).toBe("down");
+    const before = db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM level_events").get()!.n;
+    db.run(`CREATE TRIGGER fail_progress_update BEFORE UPDATE ON user_progress
+      BEGIN SELECT RAISE(ABORT, 'progress update failed'); END`);
+
+    expect(() => store.levelAction("accept", undefined, T, shown)).toThrow("progress update failed");
+    db.run("DROP TRIGGER fail_progress_update");
+    expect(db.query<{ n: number }, []>("SELECT COUNT(*) AS n FROM level_events").get()!.n).toBe(before);
+    expect(store.getLevel()).toBe(23); // レベルは旧値のまま・履歴にも accept は残らない
+  });
+});
+
 describe("block completion transaction", () => {
   test("同じcompletionIdの並列再送でもattempt完了とXPを1回だけcommitする", async () => {
     const db = openDb(":memory:");

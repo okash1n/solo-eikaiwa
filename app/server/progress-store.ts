@@ -259,11 +259,14 @@ export function makeProgressStore(
     if (level === undefined || !Number.isInteger(level) || level < 1 || level > 999) return null;
     // 同一レベルへの set は no-op（xp_into_level を維持し、level_events も記録しない）
     if (level === row.level) return { status: "applied", summary: summarize(row, today), levelChanged: false };
-    recordLevelEvent(eventKind, row.level, level, null, today);
-    row.level = level;
-    row.xp_into_level = 0;
-    save(row);
-    return { status: "applied", summary: summarize(row, today), levelChanged: true };
+    // level_events 追記と user_progress 更新を原子的に行う（片方だけ残ると履歴と実レベルが食い違う）
+    return db.transaction((): LevelChangeResult => {
+      recordLevelEvent(eventKind, row.level, level, null, today);
+      row.level = level;
+      row.xp_into_level = 0;
+      save(row);
+      return { status: "applied", summary: summarize(row, today), levelChanged: true };
+    }).immediate();
   }
 
   /** 検証済みXPを記録して進捗行を更新する。呼び出し側のtransaction内で使う。 */
@@ -444,19 +447,21 @@ export function makeProgressStore(
         recordLevelEvent(proposal.kind === "up" ? "decline-up" : "decline-down", row.level, proposal.toLevel, proposal.rationale, today);
         return { status: "applied", summary: summarize(row, today), levelChanged: false };
       }
-      // accept
-      const fromLevel = row.level; // 変異前に捕捉（up のカスケード / down のレベル上書きで壊れないように）
-      if (proposal.kind === "up") {
-        row.xp_into_level -= needXp(row.level);
-        row.level += 1;
-        autoLevelUp(row);
-      } else {
-        row.level = proposal.toLevel;
-        row.xp_into_level = 0;
-      }
-      recordLevelEvent(proposal.kind === "up" ? "accept-up" : "accept-down", fromLevel, row.level, proposal.rationale, today);
-      save(row);
-      return { status: "applied", summary: summarize(row, today), levelChanged: true };
+      // accept: level_events 追記と user_progress 更新を原子的に行う（部分失敗で履歴だけ残さない）
+      return db.transaction((): LevelChangeResult => {
+        const fromLevel = row.level; // 変異前に捕捉（up のカスケード / down のレベル上書きで壊れないように）
+        if (proposal.kind === "up") {
+          row.xp_into_level -= needXp(row.level);
+          row.level += 1;
+          autoLevelUp(row);
+        } else {
+          row.level = proposal.toLevel;
+          row.xp_into_level = 0;
+        }
+        recordLevelEvent(proposal.kind === "up" ? "accept-up" : "accept-down", fromLevel, row.level, proposal.rationale, today);
+        save(row);
+        return { status: "applied", summary: summarize(row, today), levelChanged: true };
+      }).immediate();
     },
 
     placementSet(level, today = localYmd()) {
