@@ -4,7 +4,7 @@
 
 ## プロジェクト概要
 
-macOS ローカルで完結する英会話練習アプリ。Bun + TypeScript サーバ（`app/server`・127.0.0.1:3111）、React + Vite クライアント（`app/client`・ビルド済み dist を Caddy が配信）、whisper.cpp ローカル STT。LLM設定はUI/DBが唯一の真実で、既定はClaude。
+macOS ローカルで完結する英会話練習アプリ。Bun + TypeScript サーバ（`app/server`・既定 127.0.0.1:3111。デスクトップ版は使用中なら候補ポート3111〜3114へ自動切替）、React + Vite クライアント（`app/client`・ビルド済み dist は API サーバが直配信。Caddy は https 化用の任意併存）、whisper.cpp ローカル STT。LLM設定はUI/DBが唯一の真実で、既定はClaude。
 
 ## 検証ゲート（変更の種類を問わず必須）
 
@@ -12,12 +12,12 @@ macOS ローカルで完結する英会話練習アプリ。Bun + TypeScript サ
 ./scripts/verify.sh pr  # client build → 型 → shellcheck → 全test → 教材検証
 ```
 
-デスクトップ変更は`./scripts/verify.sh desktop`も必須。リリースは`./scripts/verify.sh release`を使い、依存監査まで通す。
+デスクトップ変更は`./scripts/verify.sh desktop`も必須。リリースは`./scripts/verify.sh release`を使い、依存監査まで通す。リリース系の実行には Bun・Tauri CLI に加えて cargo-audit（`toolchain.json` のピン版・`./scripts/check-toolchain.sh audit` で確認）・CMake 3.25以上・gh CLI が必要（導入方法は `desktop/README.md` の「前提」節）。不足すると長い検証やビルドの途中で初めて失敗するため、実行前に存在を確認する。
 
 ## ドキュメント規約（コード完了 ≠ タスク完了）
 
 - **ユーザーに見える機能の追加・変更は、同じブランチで README の該当節（特に「できること」）を更新する。** 実装計画を書く場合は docs タスクを必ず含める。
-- リリース手順: CHANGELOG 追記 → **README 差分チェック**（新機能が「できること」に載っているか・古くなった節はないか）→ バージョンタグ → デプロイ。
+- リリース手順: CHANGELOG 追記 → **README 差分チェック**（新機能が「できること」に載っているか・古くなった節はないか）→ version 整合（`app/package.json` / Tauri config / Cargo manifest・lock）→ push 済み・clean な `main` から標準リリーススクリプト（`scripts/release-desktop.sh`）を実行（**バージョンタグと GitHub Release はスクリプトが作成する**。先に手動でタグを打つとスクリプトが中断する）→ ローカルデプロイ反映。
 - CHANGELOG は Keep a Changelog 形式・日本語・ユーザー視点で書く。
 
 ## サーバ規約（`app/server`）
