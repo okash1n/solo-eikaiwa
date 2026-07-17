@@ -263,7 +263,8 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 .proposal-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-2); }
 /* サイドバー下部のプロジェクトリンクと権利表記 */
 .sidebar-footer { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-1); }
-.sidebar-links { display: flex; align-items: center; gap: var(--sp-3); }
+/* margin-left: 36pxタップ領域と18pxグリフの差の半分を打ち消し、グリフ左端を下の文言と揃える */
+.sidebar-links { display: flex; align-items: center; gap: var(--sp-3); margin-left: -9px; }
 .side-link {
   display: inline-flex; align-items: center; justify-content: center;
   width: 36px; height: 36px; border-radius: var(--radius-sm);

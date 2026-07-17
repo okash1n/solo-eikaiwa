@@ -1,11 +1,13 @@
 mod attach;
 mod diagnostic_log;
+mod navigation;
 mod sidecar;
 mod updater;
 pub mod updater_signature;
 
 use tauri::menu::{Menu, MenuItem};
 use tauri::{Manager, RunEvent};
+use tauri_plugin_opener::OpenerExt;
 
 /// メニュー「アップデートを確認…」のイベントID（アプリ内で一意にする）。
 const MENU_ID_CHECK_UPDATES: &str = "check-for-updates";
@@ -14,6 +16,7 @@ const MENU_ID_CHECK_UPDATES: &str = "check-for-updates";
 pub fn run() {
   tauri::Builder::default()
     .plugin(tauri_plugin_shell::init())
+    .plugin(tauri_plugin_opener::init())
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_updater::Builder::new().build())
     .setup(|app| {
@@ -29,6 +32,35 @@ pub fn run() {
           ])
           .build(),
       )?;
+      // メインウィンドウは on_navigation を仕込むため config（create: false）から手動生成する。
+      // 配信オリジンにはIPC権限を与えない設計のため、外部リンクはこの経路で
+      // システムブラウザへ委譲し、webview 自体は自アプリURL以外へ遷移させない。
+      let main_cfg = app
+        .config()
+        .app
+        .windows
+        .iter()
+        .find(|w| w.label == "main")
+        .cloned()
+        .expect("main window config must exist in tauri.conf.json");
+      let nav_handle = app.handle().clone();
+      tauri::WebviewWindowBuilder::from_config(app.handle(), &main_cfg)?
+        .on_navigation(move |url| {
+          if navigation::is_internal_nav(url) {
+            return true;
+          }
+          if matches!(url.scheme(), "http" | "https") {
+            log::info!("navigation: opening external url in system browser");
+            if let Err(err) = nav_handle.opener().open_url(url.as_str(), None::<&str>) {
+              log::warn!("navigation: failed to open external url: {err}");
+            }
+          } else {
+            log::warn!("navigation: blocked non-http navigation (scheme={})", url.scheme());
+          }
+          false
+        })
+        .build()?;
+
       app.manage(sidecar::SidecarState::default());
       attach::spawn_initial_attach(app.handle().clone());
 
