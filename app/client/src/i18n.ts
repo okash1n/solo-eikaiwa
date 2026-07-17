@@ -43,7 +43,7 @@ type SessionStrings = {
 
 type NavStrings = {
   nav: {
-    home: string; placement: string; free: string; library: string; sentences: string; listening: string; progress: string; feedback: string; settings: string;
+    home: string; guide: string; placement: string; free: string; library: string; sentences: string; listening: string; progress: string; feedback: string; settings: string;
     /** サイドバー項目ではないが、進行中セッション画面のタブ名・遷移読み上げに使う画面名 */
     session: string;
     sectionToday: string; sectionSelf: string; sectionRecords: string; selfStudyHint: string; navigationLabel: string;
@@ -296,6 +296,43 @@ type HabitAnchorStrings = { habitAnchor: {
 type QuickStrings = { quick: {
   label: string; note: string; oneEnough: string;
   suggestionLabel: string; suggestionReason: string;
+  /**
+   * 復習期限のカードがある日の第一提案（#229 拡張4）。中立の情報表示のみ —
+   * 「残っています」「〜しましょう」のような催促・ノルマの語調は使わない（binding制約）。
+   */
+  sentencesFirstStepTitle: (n: number) => string;
+  sentencesFirstStepMinutes: string;
+  sentencesFirstStepReason: string;
+} };
+/** ホームのクイックドリル群に置く暗記例文カード。セッション開始ではなく #/sentences への導線 */
+type SentencesCardStrings = { sentencesCard: {
+  title: string; minutes: string; desc: string; requires: string;
+  /** 復習予定数の情報表示。ノルマ・警告のトーンは禁止（「復習予定: N枚」の中立表現のみ） */
+  dueInfo: (n: number) => string;
+} };
+/**
+ * 学習ガイド画面（#229 拡張4）: 1日の型・メニューの役割マップ・レベル帯別のおすすめ・設計根拠の要約。
+ * すべて提案であり強制ではない — チェックリスト・達成管理・順序ロックは置かない（binding制約）。
+ * メニュー名は nav / drills 辞書の文言をそのまま参照し、ここには役割説明だけを持つ。
+ */
+type GuideStrings = { guide: {
+  title: string; intro: string;
+  dayPatternTitle: string; dayPatternBody: string; dayPatternShort: string;
+  mapTitle: string; mapIntro: string;
+  stageListen: string; stageMemorize: string; stageSpeak: string;
+  roleListening: string; roleShadowing: string;
+  roleSentences: string; roleMyPhrases: string;
+  roleWarmup: string; roleFtt: string; roleRoleplay: string; roleFreeTalk: string;
+  myPhrasesName: string;
+  levelsTitle: string; levelsNote: string;
+  levelBeginnerRange: string; levelBeginnerBody: string;
+  levelIntermediateRange: string; levelIntermediateBody: string;
+  levelAdvancedRange: string; levelAdvancedBody: string;
+  whyTitle: string;
+  whyPoints: readonly [string, string, string];
+  whyLinkLabel: string;
+  /** ホームの控えめな導線（レベル測定バナーと同系の情報表示） */
+  homeLinkLabel: string; homeLinkTitle: string;
 } };
 type IntensiveStrings = { intensive: { label: string; note: string } };
 type DrillsStrings = { drills: Record<DrillKey, { title: string; minutes: string; desc: string; requires: string }> };
@@ -517,7 +554,7 @@ type FooterStrings = { footer: { linksLabel: string; githubLabel: string; websit
 
 type Strings =
   & NavStrings & UiScaleStrings & AppShellStrings & RouteStrings & SupportStrings & StatStrings & HeroStrings & HabitAnchorStrings
-  & QuickStrings & IntensiveStrings & DrillsStrings & SessionCardStrings
+  & QuickStrings & SentencesCardStrings & GuideStrings & IntensiveStrings & DrillsStrings & SessionCardStrings
   & CalendarStrings & FreeTalkHeaderStrings & ProgressStrings & PlacementStrings & SentencesStrings & CollectedPhrasesStrings
   & MenuTitleStrings & SessionStrings
   & WarmupStrings & Ftt432Strings & ReflectionStrings & ChunkListStrings & PlaybackStrings
@@ -532,7 +569,7 @@ const WEEKDAYS_JA = ["日", "月", "火", "水", "木", "金", "土"];
 export const STR: Record<Lang, Strings> = {
   en: {
     nav: {
-      home: "Home", placement: "Level Check", free: "Free Talk", library: "Model Talks", sentences: "390 Sentences", listening: "Listening", progress: "Progress", feedback: "Practice reactions", settings: "Settings",
+      home: "Home", guide: "Learning Guide", placement: "Level Check", free: "Free Talk", library: "Model Talks", sentences: "390 Sentences", listening: "Listening", progress: "Progress", feedback: "Practice reactions", settings: "Settings",
       session: "Practice session",
       sectionToday: "Today's practice", sectionSelf: "Self-study", sectionRecords: "Records, level & settings", navigationLabel: "Main navigation",
       selfStudyHint: "Your main path is Today's practice. Self-study fits spare moments — a good order: listen (Listening) → memorize (Sentences) → speak (Free talk).",
@@ -804,6 +841,53 @@ export const STR: Record<Lang, Strings> = {
       oneEnough: "One practice is enough for today. You can stop whenever it feels right.",
       suggestionLabel: "Not sure where to start? Try this (optional)",
       suggestionReason: "A short way to get your voice moving with today's phrases.",
+      sentencesFirstStepTitle: (n) => n === 1 ? "390 Sentences — 1 card due for review" : `390 Sentences — ${n} cards due for review`,
+      sentencesFirstStepMinutes: "3–5 min",
+      sentencesFirstStepReason: "A few cards have reached their review date — recalling them out loud takes just a few minutes.",
+    },
+    sentencesCard: {
+      title: "390 Sentences", minutes: "5–10 min",
+      desc: "See Japanese, say it in English — spaced review",
+      requires: "No microphone",
+      dueInfo: (n) => n === 1 ? "Due for review: 1 card" : `Due for review: ${n} cards`,
+    },
+    guide: {
+      title: "Learning Guide",
+      intro: "How the menus fit together, and one easy shape for a day. Everything here is a suggestion — what to practice and when to stop is always up to you.",
+      dayPatternTitle: "A simple shape for a day",
+      dayPatternBody: "Sentence review (3–5 min) → one drill you feel like doing.",
+      dayPatternShort: "On days with little time, a single drill on its own is plenty.",
+      mapTitle: "What each menu is for",
+      mapIntro: "The self-study menus follow one path — listen → memorize → speak. Tap a row to open it.",
+      stageListen: "Listen",
+      stageMemorize: "Memorize",
+      stageSpeak: "Speak",
+      roleListening: "Listen to level-fit audio without the script and build your ear",
+      roleShadowing: "Repeat over a short model voice in real time",
+      roleSentences: "See Japanese, recall it in English out loud — spaced repetition schedules each review",
+      roleMyPhrases: "Phrases collected from your own conversations, reviewed the same way",
+      roleWarmup: "Read today's phrases aloud to get your voice moving",
+      roleFtt: "Tell the same story twice, faster each time — fluency training",
+      roleRoleplay: "Scene practice with AI — an easy start (business and IT versions are on Home)",
+      roleFreeTalk: "Just talk with AI in English about anything",
+      myPhrasesName: "My phrases",
+      levelsTitle: "Ideas by level band",
+      levelsNote: "These are suggestions, not rules — every menu stays open at every level.",
+      levelBeginnerRange: "Starting out (Lv 1–10)",
+      levelBeginnerBody: "390 Sentences, Read-Aloud Warm-up, and Shadowing make a solid base. For conversation, Daily Role-play is an easy first step.",
+      levelIntermediateRange: "Intermediate (Lv 11–30)",
+      levelIntermediateBody: "Run Repeat Talk (4/3/2) alongside sentence reviews, and add Listening for input.",
+      levelAdvancedRange: "Advanced (Lv 31–)",
+      levelAdvancedBody: "Free Talk and Business/IT Role-play take the center; sentence reviews continue as light maintenance.",
+      whyTitle: "Why this order",
+      whyPoints: [
+        "Recalling a phrase and saying it out loud fixes it in memory better than re-reading it.",
+        "A phrase you reviewed moments ago is easier to pull out in the conversation right after.",
+        "Repeating content you already fully know is what builds speaking fluency.",
+      ],
+      whyLinkLabel: "More: “Why this design” in the README (opens in a new tab)",
+      homeLinkLabel: "New here?",
+      homeLinkTitle: "Learning Guide — what each menu is for, and a shape for a day",
     },
     intensive: { label: "Intensive sessions", note: "Choose one when you have more time" },
     drills: {
@@ -1130,7 +1214,7 @@ export const STR: Record<Lang, Strings> = {
   },
   ja: {
     nav: {
-      home: "ホーム", placement: "レベル測定", free: "自由会話", library: "モデルトーク", sentences: "暗記例文390", listening: "リスニング（多聴）", progress: "進捗", feedback: "練習の感想", settings: "設定",
+      home: "ホーム", guide: "学習ガイド", placement: "レベル測定", free: "自由会話", library: "モデルトーク", sentences: "暗記例文390", listening: "リスニング（多聴）", progress: "進捗", feedback: "練習の感想", settings: "設定",
       session: "練習セッション",
       sectionToday: "今日の練習", sectionSelf: "自主練", sectionRecords: "記録・測定・設定", navigationLabel: "メインナビゲーション",
       selfStudyHint: "メインは「今日の練習」。自主練はすきま時間に。目安の順番: リスニング → 暗記例文 → 自由会話。",
@@ -1402,6 +1486,53 @@ export const STR: Record<Lang, Strings> = {
       oneEnough: "今日は1つで十分です。やりたいところで終えてかまいません。",
       suggestionLabel: "迷ったら、これから（任意）",
       suggestionReason: "今日の準備フレーズを声に出す、短いスタートです。",
+      sentencesFirstStepTitle: (n) => `暗記例文 — 復習予定 ${n}枚`,
+      sentencesFirstStepMinutes: "3〜5分",
+      sentencesFirstStepReason: "今日が復習予定日のカードを、思い出して声に出す短いスタートです。",
+    },
+    sentencesCard: {
+      title: "暗記例文390", minutes: "5〜10分",
+      desc: "日本語を見て英語で声に出す間隔復習",
+      requires: "録音なし",
+      dueInfo: (n) => `復習予定: ${n}枚`,
+    },
+    guide: {
+      title: "学習ガイド",
+      intro: "メニューどうしのつながりと、1日の型の一例です。ここに書いてあることはすべて提案で、何をどれだけ練習するかはいつでも自由です。",
+      dayPatternTitle: "1日の型",
+      dayPatternBody: "暗記例文の復習（3〜5分） → 気になるドリルを1つ。",
+      dayPatternShort: "時間がない日は、ドリル1つだけでも十分です。",
+      mapTitle: "メニューの役割マップ",
+      mapIntro: "自主練のメニューは「聞く → 覚える → 話す」の一本道でつながっています。行をタップするとその画面が開きます。",
+      stageListen: "聞く",
+      stageMemorize: "覚える",
+      stageSpeak: "話す",
+      roleListening: "レベルに合う英語をスクリプトなしで聴き、耳を育てる",
+      roleShadowing: "短いお手本の音声に重ねて言う",
+      roleSentences: "日本語を見て英語を思い出して声に出す。間隔反復が次の復習日を決める",
+      roleMyPhrases: "自分の会話から収集した表現を、同じ方式で復習する",
+      roleWarmup: "今日の準備フレーズを声に出して読み、口を温める",
+      roleFtt: "同じ話を2回、制限時間を短くしながら話す流暢性トレーニング",
+      roleRoleplay: "AIと場面練習。まずは日常から（ビジネス/IT版はホームにあります）",
+      roleFreeTalk: "英語でなんでもAIと話す",
+      myPhrasesName: "マイフレーズ",
+      levelsTitle: "レベル帯別のおすすめ",
+      levelsNote: "これはおすすめであって決まりではありません。どのレベルでも全メニューを自由に使えます。",
+      levelBeginnerRange: "入門（Lv1〜10）",
+      levelBeginnerBody: "暗記例文・音読ウォームアップ・シャドーイングが土台になります。会話は日常ロールプレイから始めやすいです。",
+      levelIntermediateRange: "中級（Lv11〜30）",
+      levelIntermediateBody: "くり返しトーク（4/3/2）と暗記例文の併走に、リスニング（多聴）でインプットを足します。",
+      levelAdvancedRange: "上級（Lv31〜）",
+      levelAdvancedBody: "自由会話とビジネス/ITロールプレイが中心。例文は維持のための軽い復習を続けます。",
+      whyTitle: "なぜこの順番か",
+      whyPoints: [
+        "読み返すより、思い出して声に出す練習のほうが記憶に定着しやすい。",
+        "直前に復習した表現は、そのあとの会話で取り出しやすい。",
+        "完全に知っている内容の反復が、話す流暢さをつくる。",
+      ],
+      whyLinkLabel: "詳しくは README の「学習設計の根拠」へ（新しいタブで開く）",
+      homeLinkLabel: "はじめての方へ",
+      homeLinkTitle: "学習ガイド — メニューの役割と1日の型",
     },
     intensive: { label: "強化セッション", note: "時間がある日に" },
     drills: {

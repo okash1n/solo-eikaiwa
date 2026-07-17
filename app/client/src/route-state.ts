@@ -5,6 +5,7 @@ export const DEFAULT_SETTINGS_TAB: SettingsTab = "display";
 /** 再読込しても復元できる、セッション以外の画面状態。進行中セッションは意図的に含めない。 */
 export type RouteMode =
   | { kind: "start" }
+  | { kind: "guide" }
   | { kind: "free" }
   | { kind: "library" }
   | { kind: "sentences"; tab?: "practice" | "browse" }
@@ -33,6 +34,7 @@ export function parseRouteHash(hash: string): ParsedRoute {
   const path = url.pathname.replace(/\/+$/, "") || "/";
   switch (path) {
     case "/": return { mode: HOME, notice: null };
+    case "/guide": return { mode: { kind: "guide" }, notice: null };
     case "/free-talk": return { mode: { kind: "free" }, notice: null };
     case "/library": return { mode: { kind: "library" }, notice: null };
     case "/sentences": return {
@@ -58,6 +60,7 @@ function parseSettingsTab(value: string | null): SettingsTab {
 export function routeHash(mode: RouteMode): string {
   switch (mode.kind) {
     case "start": return "#/";
+    case "guide": return "#/guide";
     case "free": return "#/free-talk";
     case "library": return "#/library";
     case "sentences": return mode.tab === "browse" ? "#/sentences?tab=browse" : "#/sentences";

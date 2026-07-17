@@ -96,6 +96,52 @@ test("月次レベル測定の導線も初期予約枠に表示する", async ({
   }
 });
 
+// #229 拡張4: 学習ガイドはURLで開け、役割マップの行から各画面へ遷移できる
+test("学習ガイドはURLで開け、役割マップから対象画面へ遷移できる", async ({ page }) => {
+  await page.goto("/#/guide");
+  await expect(page).toHaveURL(/#\/guide$/);
+  await expect(page.getByRole("heading", { name: "Learning Guide" })).toBeVisible();
+
+  await page.locator(".guide-row").filter({ hasText: "My phrases" }).click();
+  await expect(page).toHaveURL(/#\/sentences\?tab=browse$/);
+  await expect(page.getByRole("button", { name: "Browse", exact: true })).toHaveAttribute("aria-pressed", "true");
+
+  await page.goBack();
+  await expect(page).toHaveURL(/#\/guide$/);
+  await expect(page.getByRole("heading", { name: "Learning Guide" })).toBeVisible();
+});
+
+// #229 拡張4: 復習期限カードがある日は第一提案が暗記例文になり、0枚の日はウォームアップに戻る
+test("復習期限のカードがある日はホームの第一提案が暗記例文になる", async ({ page }) => {
+  const sentence = (no: number, due: string) => ({
+    no, category_no: 1, category: "test", domain: "daily", en: `Sentence ${no}.`, ja: `例文${no}。`, note: "",
+    srs: { stage: 1, due, reviews: 1 },
+  });
+  // beforeEach の preparePage より後に登録したルートが優先される
+  await page.route("**/api/sentences", (route) => route.fulfill({
+    contentType: "application/json",
+    body: JSON.stringify({ sentences: [sentence(1, "2020-01-01"), sentence(2, "2020-01-02"), sentence(3, "2999-01-01")] }),
+  }));
+  await page.goto("/");
+
+  const choice = page.locator(".home-choice-action");
+  await expect(choice).toContainText("390 Sentences — 2 cards due for review");
+  // クイックドリル側の暗記例文カードにも同じ枚数を情報表示する
+  const sentencesCard = page.locator(".drill-card").filter({ hasText: "390 Sentences" });
+  await expect(sentencesCard).toContainText("Due for review: 2 cards");
+  await choice.click();
+  await expect(page).toHaveURL(/#\/sentences$/);
+});
+
+test("復習期限が0枚の日は従来どおりウォームアップを第一提案にする", async ({ page }) => {
+  await page.goto("/");
+  const choice = page.locator(".home-choice-action");
+  await expect(choice).toContainText("Read-Aloud Warm-up");
+  const sentencesCard = page.locator(".drill-card").filter({ hasText: "390 Sentences" });
+  await expect(sentencesCard).toBeVisible();
+  await expect(sentencesCard).not.toContainText("Due for review");
+});
+
 test("不明なURLは説明とともにHomeへ戻す", async ({ page }) => {
   await page.goto("/#/not-a-screen");
   await expect(page).toHaveURL(/\/$/);

@@ -10,6 +10,11 @@ describe("route-state", () => {
     expect(routeHash({ kind: "progress" })).toBe("#/progress");
   });
 
+  test("学習ガイドはhash URLで直接開けて相互変換できる", () => {
+    expect(parseRouteHash("#/guide")).toEqual({ mode: { kind: "guide" }, notice: null });
+    expect(routeHash({ kind: "guide" })).toBe("#/guide");
+  });
+
   test("設定タブはdeep linkで直接開け、既定は学習者向けの表示タブになる", () => {
     expect(parseRouteHash("#/settings")).toEqual({ mode: { kind: "settings", tab: "display" }, notice: null });
     expect(parseRouteHash("#/settings?tab=keys")).toEqual({ mode: { kind: "settings", tab: "keys" }, notice: null });

@@ -9,7 +9,7 @@ export type PracticeHealth = {
 
 /** ホーム・サイドバーから開始できる機能の、事前確認に必要な最小形。 */
 export type ReadinessStartSelection =
-  | { type: "free" | "placement" | "library" }
+  | { type: "free" | "placement" | "library" | "sentences" | "listening" | "guide" }
   | { type: "session"; source: { type: "daily" | "quick"; drill?: string } };
 
 /** 録音開始と、その後の会話・採点まで完了するための要件。 */

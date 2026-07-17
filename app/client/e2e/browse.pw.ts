@@ -45,7 +45,8 @@ test.beforeEach(async ({ page }) => {
 
 test("例文とマイフレーズを検索し、390件は1ページだけ描画する", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "390 Sentences" }).click();
+  // ホームにも暗記例文の導線（第一提案・クイックドリルカード）が増えたため、サイドバーの項目を明示する
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("button", { name: "390 Sentences" }).click();
   await page.getByRole("button", { name: "Browse" }).click();
 
   await expect(page.locator(".sentence-row")).toHaveCount(41);

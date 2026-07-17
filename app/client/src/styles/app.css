@@ -143,6 +143,35 @@ ul, ol { margin: 0 0 var(--sp-3); padding-left: var(--sp-5); }
 .home-choice-label { color: var(--accent); font-size: var(--fs-sm); font-weight: 650; }
 .home-choice-title { font-size: var(--fs-md); font-weight: 650; }
 .home-choice-reason { color: var(--text-muted); font-size: var(--fs-sm); }
+/* ホームの学習ガイド導線: 練習カードより一段軽い、控えめなリンク行 */
+.guide-link {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--sp-2); width: 100%;
+  background: none; border: 1px dashed var(--border); border-radius: var(--radius-md);
+  padding: var(--sp-2) var(--sp-4); cursor: pointer; font: inherit; text-align: left; color: var(--text);
+  transition: border-color var(--ease);
+}
+.guide-link:hover { border-color: var(--accent); }
+.guide-link-label { color: var(--text-muted); font-size: var(--fs-sm); flex: none; }
+.guide-link-title { font-size: var(--fs-sm); font-weight: 650; min-width: 0; }
+.guide-link .drill-arrow { font-size: var(--fs-md); }
+/* 学習ガイド画面: 役割マップの行は drill-card より軽く、1行の役割説明+遷移だけを持つ */
+.guide-section-title { margin: 0 0 var(--sp-2); }
+.guide-pattern { font-size: var(--fs-md); font-weight: 650; margin: 0 0 var(--sp-2); }
+.guide-map { display: grid; gap: var(--sp-3); margin-top: var(--sp-3); }
+.guide-stage { display: grid; gap: var(--sp-2); }
+.guide-stage-title { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); }
+.guide-row {
+  display: flex; align-items: center; gap: var(--sp-3);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: var(--sp-2) var(--sp-4); cursor: pointer; font: inherit; text-align: left;
+  transition: border-color var(--ease), box-shadow var(--ease);
+}
+.guide-row:hover { border-color: var(--accent); box-shadow: var(--shadow-1); }
+.guide-levels { list-style: none; padding: 0; margin: 0 0 var(--sp-3); display: grid; gap: var(--sp-2); }
+.guide-levels li { display: grid; gap: 2px; }
+.guide-level-range { font-weight: 650; }
+.guide-level-body { color: var(--text-muted); font-size: var(--fs-sm); }
+.guide-why { margin: 0 0 var(--sp-3); padding-left: 1.2em; display: grid; gap: var(--sp-1); }
 .start-row { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
 /* レベル測定の導線: 練習メニュー(drill-card)と区別するためアクセント地のcalloutにする */
 .placement-callout {

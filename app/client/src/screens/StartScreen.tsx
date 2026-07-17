@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  fetchPlacementLatest, fetchPracticeDays, fetchProgressSummary, progressLevelAction,
+  fetchChunks, fetchPlacementLatest, fetchPracticeDays, fetchProgressSummary, fetchSentences, progressLevelAction,
   type LevelProposal, type PracticeDaysView, type ProgressSummary, type QuickDrillKind, type RoleplayDomain,
 } from "../api";
 import { STR, type DrillKey, type Lang } from "../i18n";
@@ -12,6 +12,8 @@ import { Card } from "../ui/Card";
 import { type MenuSource } from "./SessionRunner";
 import { HabitAnchorCard, HabitAnchorReminder, useHabitAnchor } from "./HabitAnchorCard";
 import { calendarLevel } from "../lib/calendar-level";
+import { countDueByYmd } from "../lib/practice-summary";
+import { recommendFirstStep, type FirstStep } from "../lib/first-step";
 import {
   placementCalloutKind,
   reservesInitialPlacementSpace,
@@ -22,7 +24,10 @@ export type StartSelection =
   | { type: "session"; source: MenuSource }
   | { type: "free" }
   | { type: "library" }
-  | { type: "placement" };
+  | { type: "placement" }
+  | { type: "sentences"; tab?: "practice" | "browse" }
+  | { type: "listening" }
+  | { type: "guide" };
 
 /** クイックドリルカード。ロールプレイはドメイン別に3枚（i18nキーは drillKey で引く） */
 const QUICK_DRILLS: Array<{ drill: QuickDrillKind; domain?: RoleplayDomain; drillKey: DrillKey; icon: string; tile: string }> = [
@@ -151,6 +156,8 @@ export function StartScreen(props: { onSelect: (sel: StartSelection) => void; la
   const [summary, setSummary] = useState<ProgressSummary | null>(null);
   const [proposalError, setProposalError] = useState(false);
   const [placementLatest, setPlacementLatest] = useState<PlacementLatestState>("loading");
+  // 今日が復習期限の暗記例文+マイフレーズの合算枚数。null=未取得・取得失敗（従来提案へ静かにフォールバック）
+  const [dueToday, setDueToday] = useState<number | null>(null);
   const aliveRef = useRef(true);
   const fetchedRef = useRef(false);
 
@@ -167,6 +174,13 @@ export function StartScreen(props: { onSelect: (sel: StartSelection) => void; la
       fetchedRef.current = true;
       fetchProgressSummary().then((s) => { if (aliveRef.current) setSummary(s); }).catch(() => {});
       loadPlacementLatest();
+      // 第一提案の判定用に例文とマイフレーズのSRS期限を合算する（#229 拡張4）。
+      // 新APIは作らず既存一覧を再利用し、失敗時は null のままウォームアップ提案へ静かに倒す。
+      Promise.all([fetchSentences(), fetchChunks()])
+        .then(([sentences, chunks]) => {
+          if (aliveRef.current) setDueToday(countDueByYmd([...sentences, ...chunks], localYmd(new Date())));
+        })
+        .catch(() => {});
     }
     return () => { aliveRef.current = false; };
   }, []);
@@ -220,12 +234,34 @@ export function StartScreen(props: { onSelect: (sel: StartSelection) => void; la
       <HomeChoiceGuide
         quick={t.quick}
         warmup={t.drills.warmup}
-        onChoose={() => props.onSelect({ type: "session", source: { type: "quick", drill: "warmup" } })}
+        firstStep={recommendFirstStep(dueToday)}
+        onChooseWarmup={() => props.onSelect({ type: "session", source: { type: "quick", drill: "warmup" } })}
+        onChooseSentences={() => props.onSelect({ type: "sentences" })}
       />
+
+      {/* はじめての利用者向けの控えめな導線（情報表示のみ・学習ガイドは #/guide） */}
+      <button className="guide-link" onClick={() => props.onSelect({ type: "guide" })}>
+        <span className="guide-link-label">{t.guide.homeLinkLabel}</span>
+        <span className="guide-link-title">{t.guide.homeLinkTitle}</span>
+        <span className="drill-arrow" aria-hidden="true">→</span>
+      </button>
 
       <div>
         <p className="section-label">{t.quick.label} <span className="section-note">{t.quick.note}</span></p>
         <div className="drill-grid">
+          {/* 暗記例文はセッションではなく #/sentences への導線。カードの体裁は他ドリルと揃える（#229 拡張4） */}
+          <button className="drill-card" onClick={() => props.onSelect({ type: "sentences" })}>
+            <span className="drill-icon c-orange" aria-hidden="true">📖</span>
+            <span className="drill-body">
+              <span className="drill-title">{t.sentencesCard.title} <span className="drill-min">{t.sentencesCard.minutes}</span></span>
+              <span className="drill-desc">{t.sentencesCard.desc}</span>
+              <span className="drill-meta">{t.sentencesCard.requires}</span>
+              {dueToday !== null && dueToday > 0 && (
+                <span className="drill-desc">{t.sentencesCard.dueInfo(dueToday)}</span>
+              )}
+            </span>
+            <span className="drill-arrow" aria-hidden="true">→</span>
+          </button>
           {QUICK_DRILLS.map((q) => {
             const d = t.drills[q.drillKey];
             return (
@@ -296,20 +332,38 @@ export function StartScreen(props: { onSelect: (sel: StartSelection) => void; la
   );
 }
 
-/** 迷った利用者へ任意の最初の一歩を提示する。選ばなくても通常のカードから自由に始められる。 */
+/**
+ * 迷った利用者へ任意の最初の一歩を提示する。選ばなくても通常のカードから自由に始められる。
+ * 復習期限のカードがある日は暗記例文を第一提案にし、0枚・取得失敗の日は従来のウォームアップ提案
+ * （判定は lib/first-step.ts の純関数・#229 拡張4）。どちらも中立の情報表示でノルマ・催促にしない。
+ */
 function HomeChoiceGuide(props: {
   quick: (typeof STR)["en"]["quick"];
   warmup: (typeof STR)["en"]["drills"]["warmup"];
-  onChoose: () => void;
+  firstStep: FirstStep;
+  onChooseWarmup: () => void;
+  onChooseSentences: () => void;
 }) {
-  const { quick, warmup } = props;
+  const { quick, warmup, firstStep } = props;
+  const sentencesFirst = firstStep.kind === "sentences";
   return (
     <div className="home-choice" role="note">
       <p className="text-sm text-muted">{quick.oneEnough}</p>
-      <button className="home-choice-action" onClick={props.onChoose}>
+      <button className="home-choice-action" onClick={sentencesFirst ? props.onChooseSentences : props.onChooseWarmup}>
         <span className="home-choice-label">{quick.suggestionLabel}</span>
-        <span className="home-choice-title">{warmup.title} <span className="drill-min">{warmup.minutes}</span></span>
-        <span className="home-choice-reason">{quick.suggestionReason}</span>
+        {sentencesFirst ? (
+          <>
+            <span className="home-choice-title">
+              {quick.sentencesFirstStepTitle(firstStep.dueCount)} <span className="drill-min">{quick.sentencesFirstStepMinutes}</span>
+            </span>
+            <span className="home-choice-reason">{quick.sentencesFirstStepReason}</span>
+          </>
+        ) : (
+          <>
+            <span className="home-choice-title">{warmup.title} <span className="drill-min">{warmup.minutes}</span></span>
+            <span className="home-choice-reason">{quick.suggestionReason}</span>
+          </>
+        )}
       </button>
     </div>
   );

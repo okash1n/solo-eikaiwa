@@ -37,6 +37,9 @@ describe("recording practice readiness", () => {
     [{ type: "session", source: { type: "quick", drill: "shadowing" } }, false],
     [{ type: "session", source: { type: "daily" } }, false],
     [{ type: "library" }, false],
+    [{ type: "sentences" }, false],
+    [{ type: "listening" }, false],
+    [{ type: "guide" }, false],
   ] as const)("開始CTA %o の録音準備確認=%s", (selection, expected) => {
     expect(startSelectionNeedsRecordingReadiness(selection)).toBe(expected);
   });

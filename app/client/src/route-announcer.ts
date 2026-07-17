@@ -2,7 +2,7 @@ import { STR, type Lang } from "./i18n";
 
 /** App.tsx の Mode["kind"]（RouteMode + 進行中セッション）。遷移通知とタイトルはこの粒度で更新する。 */
 export type ScreenKind =
-  | "start" | "free" | "library" | "sentences" | "listening"
+  | "start" | "guide" | "free" | "library" | "sentences" | "listening"
   | "placement" | "progress" | "feedback" | "settings" | "session";
 
 const APP_NAME = "solo-eikaiwa";
@@ -12,6 +12,7 @@ export function screenLabel(kind: ScreenKind, lang: Lang): string {
   const nav = STR[lang].nav;
   switch (kind) {
     case "start": return nav.home;
+    case "guide": return nav.guide;
     case "free": return nav.free;
     case "library": return nav.library;
     case "sentences": return nav.sentences;

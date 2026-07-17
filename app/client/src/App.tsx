@@ -12,6 +12,7 @@ import { parseRouteHash, routeHash, type ParsedRoute, type RouteMode } from "./r
 import { loadLang, saveLang, STR, type Lang } from "./i18n";
 import { FeedbackScreen } from "./screens/FeedbackScreen";
 import { FreeTalkScreen } from "./screens/FreeTalkScreen";
+import { GuideScreen } from "./screens/GuideScreen";
 import { LibraryScreen } from "./screens/LibraryScreen";
 import { ListeningScreen } from "./screens/ListeningScreen";
 import { PlacementScreen } from "./screens/PlacementScreen";
@@ -292,6 +293,9 @@ export function App() {
     if (sel.type === "free") requestNavigation({ kind: "free" });
     else if (sel.type === "library") requestNavigation({ kind: "library" });
     else if (sel.type === "placement") requestNavigation({ kind: "placement" });
+    else if (sel.type === "sentences") requestNavigation({ kind: "sentences", tab: sel.tab });
+    else if (sel.type === "listening") requestNavigation({ kind: "listening" });
+    else if (sel.type === "guide") requestNavigation({ kind: "guide" });
     else transitionTo({ kind: "session", source: sel.source, sessionId: crypto.randomUUID() });
   }
 
@@ -299,6 +303,8 @@ export function App() {
   const navItems: Array<{ key: string; icon: string; label: string; active: boolean; go: () => void; section: NavSection }> = [
     { key: "home", icon: "🏠", label: t.nav.home, active: isHomeNavigationActive(mode.kind), go: () => requestNavigation({ kind: "start" }), section: "today" },
     { key: "placement", icon: "📐", label: t.nav.placement, active: mode.kind === "placement", go: () => onSelect({ type: "placement" }), section: "records" },
+    // 学習ガイドは自主練の一番上（ⓘヒントの「聞く→覚える→話す」を画面として展開する位置づけ）
+    { key: "guide", icon: "🧭", label: t.nav.guide, active: mode.kind === "guide", go: () => requestNavigation({ kind: "guide" }), section: "self" },
     { key: "free", icon: "💬", label: t.nav.free, active: mode.kind === "free", go: () => onSelect({ type: "free" }), section: "self" },
     { key: "library", icon: "📚", label: t.nav.library, active: mode.kind === "library", go: () => requestNavigation({ kind: "library" }), section: "records" },
     { key: "sentences", icon: "📖", label: t.nav.sentences, active: mode.kind === "sentences", go: () => requestNavigation({ kind: "sentences" }), section: "self" },
@@ -435,6 +441,7 @@ export function App() {
         />
       )}
       {mode.kind === "start" && <StartScreen onSelect={onSelect} lang={lang} />}
+      {mode.kind === "guide" && <GuideScreen lang={lang} onSelect={onSelect} />}
       {mode.kind === "session" && (
         <SessionRunner
           source={mode.source} sessionId={mode.sessionId} lang={lang}

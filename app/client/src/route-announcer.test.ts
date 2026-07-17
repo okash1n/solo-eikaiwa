@@ -9,11 +9,13 @@ describe("route-announcer", () => {
     expect(documentTitleFor("settings", "ja")).toBe("設定 — solo-eikaiwa");
     expect(documentTitleFor("session", "en")).toBe("Practice session — solo-eikaiwa");
     expect(documentTitleFor("session", "ja")).toBe("練習セッション — solo-eikaiwa");
+    expect(documentTitleFor("guide", "en")).toBe("Learning Guide — solo-eikaiwa");
+    expect(documentTitleFor("guide", "ja")).toBe("学習ガイド — solo-eikaiwa");
   });
 
   test("全画面種別が両言語で空でない画面名を持つ", () => {
     const kinds: ScreenKind[] = [
-      "start", "free", "library", "sentences", "listening",
+      "start", "guide", "free", "library", "sentences", "listening",
       "placement", "progress", "feedback", "settings", "session",
     ];
     for (const kind of kinds) {
