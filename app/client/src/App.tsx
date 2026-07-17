@@ -5,6 +5,7 @@ import {
   type Health, type ProgressSummary,
 } from "./api";
 import { isDesktopContext } from "./audio";
+import { externalBlankHref } from "./lib/external-link";
 import { isHomeNavigationActive } from "./navigation-state";
 import { documentTitleFor, routeAnnouncement, shouldAnnounceRoute, type ScreenKind } from "./route-announcer";
 import { parseRouteHash, routeHash, type ParsedRoute, type RouteMode } from "./route-state";
@@ -61,6 +62,21 @@ export function App() {
   const [setupBannerDismissed, setSetupBannerDismissed] = useState(() => isSetupBannerDismissed());
   // 録音系の開始を止めた場合だけ表示する、機能固有の準備案内。初期バナーを閉じても消えない。
   const [blockedCapabilities, setBlockedCapabilities] = useState<PracticeCapability[] | null>(null);
+  // デスクトップでは target="_blank" の外部リンクを同一フレーム遷移へ変換する
+  // (Rust側 on_navigation がシステムブラウザで開き、webview自体は遷移しない。lib/external-link.ts 参照)
+  useEffect(() => {
+    if (!desktop) return;
+    const onClick = (event: MouseEvent) => {
+      const el = event.target instanceof Element ? event.target.closest("a[href]") : null;
+      const href = el ? externalBlankHref(el.getAttribute("href"), el.getAttribute("target")) : null;
+      if (!href) return;
+      event.preventDefault();
+      window.location.assign(href);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [desktop]);
+
   const initialRouteRef = useRef<ParsedRoute>(parseRouteHash(window.location.hash));
   const [mode, setMode] = useState<Mode>(() => initialRouteRef.current.mode);
   const modeRef = useRef<Mode>(initialRouteRef.current.mode);
